@@ -342,6 +342,7 @@ public struct TranscriptionsSettingsTab: View {
             }
         }
         .listStyle(.plain)
+        .subtleScrollbars()
     }
 
     // MARK: - Conversation Page

@@ -23,7 +23,9 @@ private enum LayoutConstants {
 public struct SettingsView: View {
     private enum ToolbarLayout {
         static let transcriptionsSearchWidth: CGFloat = 230
-        static let transcriptionsSearchHeight: CGFloat = AppDesignSystem.Layout.compactButtonHeight
+        static let transcriptionsSearchHeight: CGFloat = 28
+        static let navigationButtonSize: CGFloat = 32
+        static let navigationDividerHeight: CGFloat = 18
     }
 
     fileprivate enum ChromeMode {
@@ -66,14 +68,6 @@ public struct SettingsView: View {
                 detailView
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
             }
-            .overlay(alignment: .top) {
-                if usesToolbarChrome {
-                    SettingsTitleBarMaterialBackground()
-                        .frame(height: AppDesignSystem.Layout.settingsTitleBarMaterialHeight)
-                        .frame(maxWidth: .infinity)
-                        .ignoresSafeArea(edges: .top)
-                }
-            }
             .modifier(SettingsDetailChromeModifier(legacyHeader: detailNavigationBar))
             .tint(AppDesignSystem.Colors.accent)
         }
@@ -83,8 +77,10 @@ public struct SettingsView: View {
                 settingsToolbarContent
             }
         }
+        .toolbarBackgroundVisibility(.automatic, for: .windowToolbar)
         .frame(minWidth: LayoutConstants.windowWidth, minHeight: LayoutConstants.windowHeight)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .subtleScrollbars()
         .onAppear {
             persistSidebarVisibility(columnVisibility)
             if let sectionId = navigationService.requestedSettingsSection,
@@ -128,6 +124,7 @@ public struct SettingsView: View {
                 }
             }
         }
+        .subtleScrollbars()
         .listStyle(.sidebar)
         .frame(maxHeight: .infinity, alignment: .top)
         .navigationSplitViewColumnWidth(
@@ -191,18 +188,15 @@ public struct SettingsView: View {
             ToolbarItem(placement: .navigation) {
                 glassNavigationPill
             }
-            .sharedBackgroundVisibility(.hidden)
 
             ToolbarItem(placement: .principal) {
                 toolbarSectionTitle
             }
-            .sharedBackgroundVisibility(.hidden)
 
             if shouldShowTranscriptionsSearch {
                 ToolbarItem(placement: .primaryAction) {
                     transcriptionsToolbarSearchField
                 }
-                .sharedBackgroundVisibility(.hidden)
             }
         }
     }
@@ -328,11 +322,9 @@ public struct SettingsView: View {
             NativeSearchField(
                 text: $transcriptionsSearchText,
                 placeholder: "settings.transcriptions.search_placeholder".localized,
-                style: .liquidGlass
+                style: .standard
             )
             .frame(height: ToolbarLayout.transcriptionsSearchHeight)
-            .glassEffect(in: Capsule())
-            .padding(.horizontal, 10)
         } else {
             NativeSearchField(
                 text: $transcriptionsSearchText,
@@ -353,8 +345,8 @@ public struct SettingsView: View {
             )
 
             Divider()
-                .frame(height: 20)
-                .padding(.vertical, 6)
+                .frame(height: ToolbarLayout.navigationDividerHeight)
+                .padding(.vertical, 7)
 
             toolbarNavigationButton(
                 systemImage: "chevron.right",
@@ -363,7 +355,6 @@ public struct SettingsView: View {
                 action: navigateForward
             )
         }
-        .glassEffect(in: Capsule())
     }
 
     private var legacySidebarToggleButton: some View {
@@ -392,8 +383,8 @@ public struct SettingsView: View {
         Button(action: action) {
             Image(systemName: systemImage)
                 .symbolRenderingMode(.monochrome)
-                .font(.system(size: 15, weight: .medium))
-                .frame(width: 36, height: 36)
+                .font(.system(size: 13, weight: .medium))
+                .frame(width: ToolbarLayout.navigationButtonSize, height: ToolbarLayout.navigationButtonSize)
                 .contentShape(Rectangle())
         }
         .buttonStyle(.plain)

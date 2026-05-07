@@ -194,6 +194,7 @@ private struct MeetingNotesRichTextRepresentable: NSViewRepresentable {
         scrollView.hasVerticalScroller = true
         scrollView.hasHorizontalScroller = false
         scrollView.autohidesScrollers = true
+        scrollView.scrollerStyle = .overlay
         scrollView.drawsBackground = false
         scrollView.documentView = textView
 
