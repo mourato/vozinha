@@ -24,7 +24,7 @@ struct NativeSearchField: NSViewRepresentable {
         searchField.focusRingType = .default
         searchField.maximumRecents = 0
         searchField.recentsAutosaveName = nil
-        searchField.cell?.controlSize = .regular
+        searchField.controlSize = .regular
         searchField.stringValue = text
         applyStyle(to: searchField)
         return searchField
@@ -46,13 +46,13 @@ struct NativeSearchField: NSViewRepresentable {
         switch style {
         case .standard:
             searchField.isBezeled = true
-            searchField.isBordered = true
+            searchField.isBordered = false
             searchField.drawsBackground = true
             searchField.bezelStyle = .roundedBezel
         case .liquidGlass:
             // Keep the native rounded search-field geometry so focus and text/icon insets remain correct.
             searchField.isBezeled = true
-            searchField.isBordered = true
+            searchField.isBordered = false
             searchField.drawsBackground = false
             searchField.bezelStyle = .roundedBezel
         }
