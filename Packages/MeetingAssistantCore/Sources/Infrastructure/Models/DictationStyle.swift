@@ -43,9 +43,9 @@ public enum DictationStyleTarget: Hashable, Codable, Sendable {
     var normalizedIdentity: String {
         switch self {
         case let .app(bundleIdentifier):
-            return "app|\(Self.normalizeBundleIdentifier(bundleIdentifier))"
+            "app|\(Self.normalizeBundleIdentifier(bundleIdentifier))"
         case let .website(url):
-            return "website|\(Self.normalizeWebsiteURL(url))"
+            "website|\(Self.normalizeWebsiteURL(url))"
         }
     }
 

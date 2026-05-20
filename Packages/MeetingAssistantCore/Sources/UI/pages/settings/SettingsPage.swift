@@ -544,7 +544,7 @@ public struct SettingsView: View {
         case .general:
             GeneralSettingsTab()
         case .rulesPerApp:
-            RulesPerAppSettingsTab()
+            StylesSettingsTab()
         case .vocabulary:
             VocabularySettingsTab()
         case .dictation:
