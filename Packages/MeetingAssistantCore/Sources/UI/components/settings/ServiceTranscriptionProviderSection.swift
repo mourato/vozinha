@@ -19,7 +19,7 @@ public struct ServiceTranscriptionProviderSection: View {
     }
 
     public var body: some View {
-        DSGroup("settings.service.transcription_provider.title".localized, icon: "network") {
+        DSGroup("settings.models.transcription_provider.title".localized, icon: "network") {
             VStack(alignment: .leading, spacing: 12) {
                 Text("settings.service.transcription_provider.description".localized)
                     .font(.caption)

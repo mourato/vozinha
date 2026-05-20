@@ -25,8 +25,8 @@ public struct ServiceSettingsContent: View {
         VStack(alignment: .leading, spacing: AppDesignSystem.Layout.sectionSpacing) {
             transcriptionProviderSection
             modelInfoSection
-            performanceSection
             statusSection
+            performanceSection
         }
         .task {
             guard runInitialTasks else { return }
@@ -40,7 +40,7 @@ public struct ServiceSettingsContent: View {
     }
 
     private var modelInfoSection: some View {
-        DSGroup("settings.service.model_info".localized, icon: "waveform") {
+        DSGroup("settings.models.transcription_model".localized, icon: "waveform") {
             VStack(alignment: .leading, spacing: 12) {
                 HStack(spacing: 12) {
                     ZStack {
@@ -190,7 +190,7 @@ public struct ServiceSettingsContent: View {
     }
 
     private var performanceSection: some View {
-        DSGroup("settings.service.high_performance".localized, icon: "speedometer") {
+        DSGroup("settings.models.high_performance".localized, icon: "speedometer") {
             Text("settings.service.no_internet".localized)
                 .font(.caption)
                 .foregroundStyle(.secondary)
@@ -199,7 +199,7 @@ public struct ServiceSettingsContent: View {
     }
 
     private var statusSection: some View {
-        DSGroup("settings.service.status".localized, icon: "dot.radiowaves.left.and.right") {
+        DSGroup("settings.models.service_status".localized, icon: "dot.radiowaves.left.and.right") {
             HStack {
                 VStack(alignment: .leading, spacing: 8) {
                     HStack(spacing: 6) {

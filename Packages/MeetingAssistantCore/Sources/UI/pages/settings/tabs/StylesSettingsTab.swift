@@ -107,20 +107,16 @@ public struct StylesSettingsTab: View {
 
     private func styleRowContent(_ style: DictationStyle) -> some View {
         HStack(spacing: 12) {
-            Image(systemName: styleIconSymbol(for: style))
-                .font(.title3)
-                .foregroundStyle(AppDesignSystem.Colors.iconHighlight)
-                .frame(width: 24)
+            styleTargetIcons(for: style)
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(styleDisplayName(style))
-                    .font(.subheadline)
-                    .fontWeight(.medium)
+                    .font(.headline)
+                    .fontWeight(.semibold)
 
-                Text(targetSummary(for: style))
+                Text(styleTargetCountText(for: style))
                     .font(.caption)
                     .foregroundStyle(.secondary)
-                    .lineLimit(1)
             }
 
             Spacer()
@@ -186,32 +182,59 @@ public struct StylesSettingsTab: View {
         return trimmedName.isEmpty ? "settings.styles.untitled".localized : trimmedName
     }
 
-    private func styleIconSymbol(for style: DictationStyle) -> String {
-        let trimmedIcon = style.iconSymbol.trimmingCharacters(in: .whitespacesAndNewlines)
-        return trimmedIcon.isEmpty ? "textformat" : trimmedIcon
+    private func styleTargetCountText(for style: DictationStyle) -> String {
+        let count = style.targets.count
+        switch count {
+        case 0:
+            return "settings.styles.empty".localized
+        case 1:
+            return "settings.styles.targets.count.one".localized
+        default:
+            return "settings.styles.targets.count.many".localized(with: count)
+        }
     }
 
-    private func targetSummary(for style: DictationStyle) -> String {
-        let names = style.targets.prefix(2).map { target -> String in
-            switch target {
-            case let .app(bundleIdentifier):
-                return viewModel.resolveAppDisplayName(bundleIdentifier: bundleIdentifier)
-            case let .website(url):
-                return url
+    private func styleTargetIcons(for style: DictationStyle) -> some View {
+        let displayedTargets = Array(style.targets.prefix(3))
+
+        return HStack(spacing: -4) {
+            ForEach(Array(displayedTargets.enumerated()), id: \.offset) { _, target in
+                styleTargetIcon(for: target)
+                    .frame(width: 24, height: 24)
+                    .background(
+                        RoundedRectangle(cornerRadius: 7)
+                            .fill(AppDesignSystem.Colors.subtleFill2)
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 7)
+                            .stroke(AppDesignSystem.Colors.selectionStroke.opacity(0.4), lineWidth: 0.5)
+                    )
             }
         }
+        .accessibilityHidden(true)
+    }
 
-        if style.targets.count > 2 {
-            return names.joined(separator: ", ") + " +\(style.targets.count - 2)"
+    @ViewBuilder
+    private func styleTargetIcon(for target: DictationStyleTarget) -> some View {
+        switch target {
+        case let .app(bundleIdentifier):
+            AppIconView(
+                bundleIdentifier: bundleIdentifier,
+                fallbackSystemName: "app.fill",
+                size: 16,
+                cornerRadius: 5
+            )
+        case .website:
+            Image(systemName: "globe")
+                .font(.system(size: 13, weight: .medium))
+                .foregroundStyle(AppDesignSystem.Colors.iconHighlight)
         }
-
-        return names.joined(separator: ", ")
     }
 
     private func styleAccessibilityLabel(_ style: DictationStyle) -> String {
         [
             styleDisplayName(style),
-            targetSummary(for: style),
+            styleTargetCountText(for: style),
             style.replaceBasePrompt ? "settings.styles.summary.replace".localized : "settings.styles.summary.append".localized,
         ]
         .filter { !$0.isEmpty }

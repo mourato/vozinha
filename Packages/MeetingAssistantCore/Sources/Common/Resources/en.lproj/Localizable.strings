@@ -12,7 +12,7 @@
 "settings.section.rules_per_app" = "Styles";
 "settings.section.vocabulary" = "Vocabulary";
 "settings.section.ai" = "Enhancements";
-"settings.section.service" = "AI Service";
+"settings.section.models" = "Models";
 "settings.section.permissions" = "Permissions";
 
 /* Metrics Dashboard */
@@ -34,7 +34,6 @@
 "metrics.apps.frequency.other" = "Other";
 "metrics.empty.title" = "No data yet";
 "metrics.empty.subtitle" = "Start your first recording to unlock insights.";
-"metrics.error.load" = "Failed to load dashboard data.";
 "metrics.hero.title" = "You have saved %@ with Prisma";
 "metrics.hero.subtitle" = "Dictated %1$@ words across %2$d sessions.";
 "metrics.summary.sessions_recorded" = "Sessions Recorded";
@@ -395,12 +394,14 @@
 "settings.styles.summary.append" = "Append";
 "settings.styles.summary.markdown" = "MD";
 "settings.styles.target.website" = "Website target";
+"settings.styles.targets.count.one" = "1 target selected";
+"settings.styles.targets.count.many" = "%d targets selected";
 "settings.styles.editor.new_title" = "New Style";
 "settings.styles.editor.edit_title" = "Edit Style";
 "settings.styles.editor.name" = "Style name";
 "settings.styles.editor.icon" = "SF Symbol";
 "settings.styles.editor.prompt" = "Instructions";
-"settings.styles.editor.prompt_hint" = "These instructions are applied when this style matches the focused app or website.";
+"settings.styles.editor.prompt_hint" = "Optional. These instructions are applied when this style matches the focused app or website.";
 "settings.styles.editor.markdown_output" = "Force Markdown Output";
 "settings.styles.editor.output_language" = "Force Translation";
 "settings.styles.editor.replace_base_prompt" = "Replace base dictation prompt";
@@ -416,7 +417,6 @@
 "settings.styles.editor.no_targets" = "No targets selected yet.";
 "settings.styles.editor.remove_target" = "Remove target";
 "settings.styles.editor.validation.name_required" = "Style name is required.";
-"settings.styles.editor.validation.prompt_required" = "Instructions are required.";
 "settings.styles.editor.validation.targets_required" = "Select at least one app or website.";
 "settings.styles.editor.validation.target_conflict" = "This target already belongs to another style.";
 "settings.styles.editor.validation.target_conflict_named" = "This target already belongs to style \"%@\".";
@@ -447,15 +447,17 @@
 
 /* Service Settings */
 "settings.service.title" = "Service";
-"settings.service.model_info" = "Transcription Model";
+"settings.models.description" = "Configure transcription provider, transcription model, service status, and performance settings.";
+"settings.models.transcription_provider.title" = "Dictation Transcription Provider";
+"settings.models.transcription_model" = "Transcription Model";
+"settings.models.high_performance" = "High Performance";
+"settings.models.service_status" = "Service Status";
 "settings.service.on_device" = "On-Device Processing";
 "settings.service.ane_opt" = "Optimized for Apple Silicon (ANE)";
 "settings.service.model" = "Model:";
 "settings.service.languages" = "Languages:";
 "settings.service.languages_desc" = "Portuguese and +24 European languages";
-"settings.service.high_performance" = "High Performance";
 "settings.service.no_internet" = "Real-time transcription without internet";
-"settings.service.status" = "Service Status";
 "settings.service.verify" = "Verify";
 "settings.service.diarization" = "Diarization";
 "settings.service.installed" = "Installed";

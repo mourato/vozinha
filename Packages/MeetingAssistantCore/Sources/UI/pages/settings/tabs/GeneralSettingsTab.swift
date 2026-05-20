@@ -260,8 +260,6 @@ public struct GeneralSettingsTab: View {
                 }
             }
 
-            // AI Service
-            ServiceSettingsContent()
         }
         .confirmationDialog(
             "settings.storage.cleanup_confirm_title".localized,

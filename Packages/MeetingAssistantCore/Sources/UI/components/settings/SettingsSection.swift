@@ -16,6 +16,7 @@ public enum SettingsSection: String, CaseIterable, Identifiable, Sendable {
     case meetings
     case transcriptions
     case general
+    case models
     case rulesPerApp
     case vocabulary
     case enhancements
@@ -36,6 +37,7 @@ public enum SettingsSection: String, CaseIterable, Identifiable, Sendable {
 
     public static let settingsSections: [SettingsSection] = [
         .general,
+        .models,
         .rulesPerApp,
         .vocabulary,
         .enhancements,
@@ -53,6 +55,7 @@ public enum SettingsSection: String, CaseIterable, Identifiable, Sendable {
         case .assistant: "settings.section.assistant".localized
         case .integrations: "settings.section.integrations".localized
         case .transcriptions: "settings.section.history".localized
+        case .models: "settings.section.models".localized
         case .rulesPerApp: "settings.section.rules_per_app".localized
         case .vocabulary: "settings.section.vocabulary".localized
         case .enhancements: "settings.section.ai".localized
@@ -70,6 +73,7 @@ public enum SettingsSection: String, CaseIterable, Identifiable, Sendable {
         case .assistant: "sparkle"
         case .integrations: "puzzlepiece.extension"
         case .transcriptions: "clock"
+        case .models: "cpu"
         case .rulesPerApp: "slider.horizontal.3"
         case .vocabulary: "character.book.closed"
         case .enhancements: "sparkles"
@@ -86,6 +90,7 @@ public enum SettingsSection: String, CaseIterable, Identifiable, Sendable {
         case .meetings: .accentColor
         case .transcriptions: .accentColor
         case .general: .accentColor
+        case .models: .accentColor
         case .rulesPerApp: .accentColor
         case .vocabulary: .accentColor
         case .enhancements: .accentColor

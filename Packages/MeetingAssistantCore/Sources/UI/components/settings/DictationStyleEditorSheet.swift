@@ -348,10 +348,6 @@ public struct DictationStyleEditorSheet: View {
         }
 
         let normalizedPrompt = promptInstructions.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !normalizedPrompt.isEmpty else {
-            validationMessage = "settings.styles.editor.validation.prompt_required".localized
-            return
-        }
 
         guard !targets.isEmpty else {
             validationMessage = "settings.styles.editor.validation.targets_required".localized

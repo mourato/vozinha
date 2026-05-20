@@ -543,6 +543,8 @@ public struct SettingsView: View {
             MetricsDashboardSettingsTab(navigationState: $metricsNavigationState)
         case .general:
             GeneralSettingsTab()
+        case .models:
+            ModelsSettingsTab()
         case .rulesPerApp:
             StylesSettingsTab()
         case .vocabulary:

@@ -12,7 +12,7 @@
 "settings.section.rules_per_app" = "Estilos";
 "settings.section.vocabulary" = "Vocabulário";
 "settings.section.ai" = "Aprimoramentos";
-"settings.section.service" = "Serviço de IA";
+"settings.section.models" = "Modelos";
 "settings.section.permissions" = "Permissões";
 
 /* Metrics Dashboard */
@@ -395,12 +395,14 @@
 "settings.styles.summary.append" = "Anexa";
 "settings.styles.summary.markdown" = "MD";
 "settings.styles.target.website" = "Alvo de site";
+"settings.styles.targets.count.one" = "1 alvo selecionado";
+"settings.styles.targets.count.many" = "%d alvos selecionados";
 "settings.styles.editor.new_title" = "Novo Estilo";
 "settings.styles.editor.edit_title" = "Editar Estilo";
 "settings.styles.editor.name" = "Nome do estilo";
 "settings.styles.editor.icon" = "SF Symbol";
 "settings.styles.editor.prompt" = "Instruções";
-"settings.styles.editor.prompt_hint" = "Essas instruções são aplicadas quando este estilo combina com o app ou site em foco.";
+"settings.styles.editor.prompt_hint" = "Opcional. Essas instruções são aplicadas quando este estilo combina com o app ou site em foco.";
 "settings.styles.editor.markdown_output" = "Forçar saída em Markdown";
 "settings.styles.editor.output_language" = "Forçar tradução";
 "settings.styles.editor.replace_base_prompt" = "Substituir prompt base do ditado";
@@ -416,7 +418,6 @@
 "settings.styles.editor.no_targets" = "Nenhum alvo selecionado ainda.";
 "settings.styles.editor.remove_target" = "Remover alvo";
 "settings.styles.editor.validation.name_required" = "O nome do estilo é obrigatório.";
-"settings.styles.editor.validation.prompt_required" = "As instruções são obrigatórias.";
 "settings.styles.editor.validation.targets_required" = "Selecione pelo menos um app ou site.";
 "settings.styles.editor.validation.target_conflict" = "Este alvo já pertence a outro estilo.";
 "settings.styles.editor.validation.target_conflict_named" = "Este alvo já pertence ao estilo \"%@\".";
@@ -447,15 +448,17 @@
 
 /* Service Settings */
 "settings.service.title" = "Serviço";
-"settings.service.model_info" = "Modelo de Transcrição";
+"settings.models.description" = "Configure o provedor de transcrição, o modelo de transcrição, o estado do serviço e as opções de performance.";
+"settings.models.transcription_provider.title" = "Provedor de Transcrição do Ditado";
+"settings.models.transcription_model" = "Modelo de Transcrição";
+"settings.models.high_performance" = "Alta Performance";
+"settings.models.service_status" = "Estado do Serviço";
 "settings.service.on_device" = "Processamento On-Device";
 "settings.service.ane_opt" = "Otimizado para Apple Silicon (ANE)";
 "settings.service.model" = "Modelo:";
 "settings.service.languages" = "Idiomas:";
 "settings.service.languages_desc" = "Português e +24 europeus";
-"settings.service.high_performance" = "Alta Performance";
 "settings.service.no_internet" = "Transcrição em tempo real sem internet";
-"settings.service.status" = "Estado do Serviço";
 "settings.service.verify" = "Verificar";
 "settings.service.diarization" = "Diarização";
 "settings.service.installed" = "Instalado";
