@@ -100,12 +100,30 @@ if [ "${AGENT_MODE}" -eq 0 ]; then
         make test-full
     }
 
-    if [ "${FAST_MODE}" -eq 1 ]; then
-        echo "[1/3] make lint"
-        make lint
+    run_parallel_build_and_lint() {
+        local lint_status=0
+        local build_status=0
 
-        echo "[2/3] make build"
-        make build
+        echo "[1/3] make lint (parallel)"
+        make lint &
+        local lint_pid=$!
+
+        echo "[2/3] make build (parallel)"
+        make build &
+        local build_pid=$!
+
+        wait "${lint_pid}" || lint_status=$?
+        wait "${build_pid}" || build_status=$?
+
+        if [ "${lint_status}" -ne 0 ] || [ "${build_status}" -ne 0 ]; then
+            return 1
+        fi
+
+        return 0
+    }
+
+    if [ "${FAST_MODE}" -eq 1 ]; then
+        run_parallel_build_and_lint
 
         echo "[3/3] make test"
         run_tests
@@ -115,22 +133,10 @@ if [ "${AGENT_MODE}" -eq 0 ]; then
             make test-strict
         fi
     else
-        echo "[1/4] make build"
-        make build
+        run_parallel_build_and_lint
 
-        if [ "${STRICT_LINT_MODE}" -eq 1 ]; then
-            echo "[2/4] make lint (STRICT_LINT=1)"
-            make lint
-
-            echo "[3/4] make test"
-            run_tests
-        else
-            echo "[2/4] make test"
-            run_tests
-
-            echo "[3/4] make lint"
-            make lint
-        fi
+        echo "[3/4] make test"
+        run_tests
 
         if [ "${STRICT_CONCURRENCY}" -eq 1 ]; then
             echo "[4/5] make test-strict"

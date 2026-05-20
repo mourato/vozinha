@@ -20,4 +20,4 @@ This skill is a lightweight bridge for concurrency-related requests.
 ## Verification defaults
 
 - Prefer `make test-strict` for concurrency-focused changes.
-- Use `./scripts/preflight.sh --strict-concurrency` when running full pre-merge checks.
+- Use `./scripts/preflight.sh --strict-concurrency` as an optional comprehensive pass; lane merge gates still follow `quality-assurance` policy.

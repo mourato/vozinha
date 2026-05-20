@@ -147,7 +147,7 @@ Before implementation, classify your task:
 - Run `make build-test` at key milestones (before push/merge, after large rebases, or when escalation triggers fire)
 - **Before push/merge (hard gates, no exceptions):**
   - `make build-test`
-  - `make lint` (mandatory for broad refactors)
+  - `make lint` (mandatory for all Full-lane changes)
 - **Code review:** Full semáforo review (🔴/🟡/🟢). Fix all Critical + Medium findings before merge.
 
 ### Scoped Validation Intelligence (Mandatory During Iteration)
@@ -177,7 +177,9 @@ For every task, leave auditable evidence in the PR description, issue comment, o
 | Lane     | Required quality gates                                                                            | Required evidence                                                                                                                                |
 | -------- | ------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
 | **Fast** | Iteration scoped checks + `make scope-check`                                                      | Risk level, reusable-block decision (reuse/extend/create), scoped commands executed, escalation rationale (if any), test result summary          |
-| **Full** | Iteration scoped checks + `make build-test`, and `make lint` for broad refactors                  | Risk level, reusable-block decision, semáforo review outcome, scoped commands executed, escalation rationale (if any), test/build result summary |
+| **Full** | Iteration scoped checks + `make build-test` + `make lint`                                         | Risk level, reusable-block decision, semáforo review outcome, scoped commands executed, escalation rationale (if any), test/build result summary |
+
+**Note on `make preflight`:** This is not a lane-specific merge gate. It is an optional comprehensive validation (build + test + lint + summary benchmark) and is recommended before release. Lane merge gates remain Fast = `make scope-check`, Full = `make build-test` + `make lint`.
 
 ### PR & Merge Policy
 
@@ -224,7 +226,6 @@ Before responding or committing code, verify:
 - **Assumptions checked:** Did I ask clarification or assume silently?
 - **Hard constraints:** Am I violating any hard constraint above?
 - **Code review:** Did I plan for appropriate review depth (lightweight vs. full semáforo)?
-- **Verification strategy:** Did I run scoped checks during iteration and lane gates at merge (`make test-agent` for Fast, `make build-test` for Full)?
 - **Verification strategy:** Did I run scoped checks during iteration and lane gates at merge (`make scope-check` for Fast, `make build-test` for Full)?
 - **Evidence captured:** Did I record commands/results and assumptions where applicable?
 

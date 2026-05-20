@@ -49,7 +49,9 @@ Minimum expectation:
 - Reserve `make build-test` for milestone validation and mandatory merge gate.
 - Before push/merge (hard gate):
   - `make build-test`
-  - `make lint` (recommended; mandatory for broad refactors)
+  - `make lint` (mandatory for all Full-lane changes)
+
+`make preflight` remains optional and does not replace lane merge gates. Use it for final comprehensive local validation (release readiness, large rebases, or risk spikes).
 
 ## Scoped Validation Intelligence
 
@@ -70,6 +72,17 @@ Escalate immediately to full suite (`make build-test`) when:
 - Large change sets or low-confidence test mapping
 - Scoped checks show flaky or inconsistent behavior
 
+Escalation decision table:
+
+| Trigger | Action | Command |
+| --- | --- | --- |
+| Build/release/test infrastructure changed | Immediate Full gate | `make build-test` |
+| Cross-module/public API change | Immediate Full gate | `make build-test` |
+| High-risk path (audio/persistence/concurrency/security) | Immediate Full gate | `make build-test` |
+| Large delta or high churn | Immediate Full gate | `make build-test` |
+| Low-confidence mapping | Immediate Full gate | `make build-test` |
+| Scoped checks flaky/inconsistent | Escalate and stabilize | `make build-test` + targeted reruns |
+
 ## Scope-driven additional checks
 
 Run these only when relevant to the changed scope:
@@ -85,6 +98,7 @@ Run these only when relevant to the changed scope:
 ```bash
 # Core
 make build-test
+make build-test-strict
 make test-full
 make test-smoke
 make test-sensitive
@@ -118,11 +132,21 @@ make scope-check-agent
 ./scripts/run-tests.sh --agent
 ```
 
+Lane-to-command matrix:
+
+| Goal | Preferred command | Notes |
+| --- | --- | --- |
+| Fast lane merge gate | `make scope-check` | Smart scoped checks + automatic escalation |
+| Full lane merge gate | `make build-test` + `make lint` | Mandatory pair |
+| Fast iteration confidence | `make test-smoke` | Lowest-latency confidence pass |
+| Broader local confidence | `make test-full` | Broad swift-test suite |
+| Optional all-in-one validation | `make preflight` | Comprehensive, not a lane gate |
+
 Compact-mode notes:
 
 - Full logs are written under `${MA_AGENT_LOG_DIR:-/tmp/ma-agent}`.
 - Scripts emit deterministic `AGENT_*` summary lines for pass/fail parsing.
-- Use compact mode for iteration; keep `make build-test` as merge gate for Medium/High tasks.
+- Use compact mode for iteration; keep lane merge gates unchanged (`make scope-check` for Fast, `make build-test` + `make lint` for Full).
 
 ## Related Skills
 

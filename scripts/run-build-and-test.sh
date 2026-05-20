@@ -111,7 +111,21 @@ TEST_OUT="${LOG_DIR}/build-test-test.step.log"
 TEST_PROGRESS_LOG="${LOG_DIR}/test-xcode.log"
 rm -f "${TEST_PROGRESS_LOG}" "${TEST_PROGRESS_LOG%.log}-swift-fallback.log"
 
+STRICT_XCODE_MODE="${MA_BUILD_TEST_STRICT_XCODE:-}"
+if [ -z "${STRICT_XCODE_MODE}" ]; then
+    if [ "${CI:-}" = "true" ]; then
+        STRICT_XCODE_MODE="1"
+    else
+        STRICT_XCODE_MODE="0"
+    fi
+fi
+
+TEST_CMD="MA_AGENT_MODE=1 ./scripts/run-tests-xcode.sh --agent"
+if [ "${STRICT_XCODE_MODE}" = "1" ]; then
+    TEST_CMD="MA_AGENT_MODE=1 MA_SERIAL_SWIFT_FALLBACK_TESTS=1 ./scripts/run-tests-xcode.sh --strict-xcode --agent"
+fi
+
 run_step "Build" "0" "MA_AGENT_MODE=1 ./scripts/run-build.sh --configuration Debug --agent" "${BUILD_OUT}" || exit $?
-run_step "Test" "50" "MA_AGENT_MODE=1 MA_SERIAL_SWIFT_FALLBACK_TESTS=1 ./scripts/run-tests-xcode.sh --strict-xcode --agent" "${TEST_OUT}" "${TEST_PROGRESS_LOG}" "${TEST_PROGRESS_INTERVAL_SEC}" || exit $?
+run_step "Test" "50" "${TEST_CMD}" "${TEST_OUT}" "${TEST_PROGRESS_LOG}" "${TEST_PROGRESS_INTERVAL_SEC}" || exit $?
 
 print_step "100" "Build + Test completed"

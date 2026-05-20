@@ -2,6 +2,14 @@
 
 This document provides comprehensive CLI and workflow reference for building, testing, and validating changes in Prisma.
 
+## Quick Navigation
+
+Choose commands by lane:
+
+- Fast lane merge gate: `make scope-check`
+- Full lane merge gate: `make build-test` + `make lint`
+- Optional comprehensive validation: `make preflight`
+
 ## Primary Build/Test Commands
 
 ### Quick start
@@ -12,7 +20,8 @@ make build
 
 ### Core workflow commands
 ```bash
-make build-test         # Run build + test in sequence (unified gate)
+make build-test         # Run build + test in sequence (fast default locally)
+make build-test-strict  # Run build + test in strict xcode mode
 make build              # Debug build only
 make test               # Fast local dev suite
 make test-full          # Broad swift-test suite
@@ -114,6 +123,20 @@ make test-parity
 make test-verbose        # Detailed output
 make test-ci-strict      # Strict xcodebuild parity mode
 ```
+
+## Test Suite Selection Matrix
+
+| Suite/Command | Best use case | Typical use |
+| --- | --- | --- |
+| `make test-smoke` | Quick iteration confidence | Inner loop |
+| `make test` | Fast local dev suite | Inner loop |
+| `make test-full` | Broad swift-test confidence | Pre-gate validation |
+| `make test-sensitive` | Audio/concurrency/persistence focus | High-risk subsystem checks |
+| `make test-appkit` | Overlay lifecycle coverage | AppKit-specific changes |
+| `make test-parity` | Xcode parity diagnostics | Build-system parity checks |
+| `make scope-check` | Smart scoped validation + escalation | Fast lane merge gate |
+| `make build-test` | Build + xcode test gate | Full lane merge gate |
+| `make preflight` | Build + test + lint + benchmark | Optional comprehensive pass |
 
 ### Run specific tests
 ```bash
@@ -229,12 +252,12 @@ On failure, scripts print compact excerpts to terminal while keeping full logs o
 
 **Before push/merge (mandatory):**
 - ✓ Fast lane: `make scope-check`
-- ✓ Full lane: `make test-full` + `make build-test`
+- ✓ Full lane: `make build-test` + `make lint`
 - ✓ Guidance changes (`AGENTS.md`, `.agents/`, command docs): `make guidance-check`
 
 **Recommended before merge:**
 - ✓ `make preflight` — full validation
-- ✓ `make lint` — code quality checks (mandatory for broad refactors)
+- ✓ `make lint` — code quality checks
 - ✓ `make ci-release-parity` — Sparkle release build/archive parity
 
 **Pre-release:**

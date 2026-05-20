@@ -333,6 +333,7 @@ main() {
     local targeted_count=0
     local code_relevant=0
     local should_run_full=0
+    local should_run_intermediate=0
     local reason
     local test_identifier
     local file_path
@@ -409,7 +410,7 @@ main() {
     targeted_count="$(sed '/^$/d' "${targeted_tests_file}" | wc -l | tr -d ' ')"
 
     if [ "${targeted_count}" -gt "${MAX_TARGETED}" ]; then
-        append_line_once "Mapped targeted tests exceed threshold (${targeted_count} > ${MAX_TARGETED})" "${full_reasons_file}"
+        should_run_intermediate=1
     fi
 
     if [ "${FORCE_FULL}" -eq 1 ]; then
@@ -436,6 +437,29 @@ main() {
 
         run_cmd "make build-test"
         return $?
+    fi
+
+    if [ "${should_run_intermediate}" -eq 1 ]; then
+        echo "- Strategy: intermediate gate (build + test-full)"
+        echo "- Reason: mapped targeted tests exceed threshold (${targeted_count} > ${MAX_TARGETED})"
+
+        if [ "${RUN_BUILD}" -eq 1 ]; then
+            if [ "${AGENT_MODE}" -eq 1 ]; then
+                run_cmd "make build-agent" || return $?
+            else
+                run_cmd "make build" || return $?
+            fi
+        else
+            echo "- Narrow build step skipped (--no-build)"
+        fi
+
+        if [ "${AGENT_MODE}" -eq 1 ]; then
+            run_cmd "make test-full-agent" || return $?
+        else
+            run_cmd "make test-full" || return $?
+        fi
+
+        return 0
     fi
 
     echo "- Strategy: scoped checks"

@@ -18,6 +18,7 @@ SCHEME="${APP_SCHEME}"
 CONFIGURATION="Debug"
 DESTINATION="platform=macOS"
 ACTION="build"
+DEPENDENCY_FINGERPRINT=""
 
 EXTRA_ARGS=()
 
@@ -83,13 +84,61 @@ if [[ ! -d "${XCODEPROJ}" ]]; then
     exit 1
 fi
 
+compute_dependency_fingerprint() {
+    local fingerprint_files=()
+    local file_path
+
+    fingerprint_files+=("${PROJECT_DIR}/Packages/MeetingAssistantCore/Package.swift")
+    fingerprint_files+=("${PROJECT_DIR}/Packages/MeetingAssistantCore/Package.resolved")
+    fingerprint_files+=("${PROJECT_DIR}/Package.swift")
+    fingerprint_files+=("${PROJECT_DIR}/MeetingAssistant.xcworkspace/xcshareddata/swiftpm/Package.resolved")
+
+    for file_path in "${fingerprint_files[@]}"; do
+        if [[ -f "${file_path}" ]]; then
+            cat "${file_path}"
+        fi
+    done | shasum -a 256 | awk '{print $1}'
+}
+
+should_resolve_dependencies() {
+    local marker_path="$1"
+    local current_fingerprint
+    local previous_fingerprint
+
+    current_fingerprint="$(compute_dependency_fingerprint)"
+    if [[ -z "${current_fingerprint}" ]]; then
+        return 0
+    fi
+    DEPENDENCY_FINGERPRINT="${current_fingerprint}"
+
+    if [[ -f "${marker_path}" ]] && [[ -d "${DERIVED_DATA_PATH}/SourcePackages/checkouts" ]]; then
+        previous_fingerprint="$(cat "${marker_path}" 2>/dev/null || true)"
+        if [[ "${previous_fingerprint}" = "${current_fingerprint}" ]]; then
+            return 1
+        fi
+    fi
+
+    return 0
+}
+
 if [[ -x "${PATCH_SCRIPT}" ]]; then
-    xcodebuild \
-        -resolvePackageDependencies \
-        -project "${XCODEPROJ}" \
-        -scheme "${SCHEME}" \
-        -derivedDataPath "${DERIVED_DATA_PATH}" >/dev/null
-    "${PATCH_SCRIPT}" "${DERIVED_DATA_PATH}/SourcePackages/checkouts/FluidAudio"
+    mkdir -p "${DERIVED_DATA_PATH}"
+    MARKER_PATH="${DERIVED_DATA_PATH}/.ma-xcode-resolve-${SCHEME}.fingerprint"
+    if should_resolve_dependencies "${MARKER_PATH}"; then
+        xcodebuild \
+            -resolvePackageDependencies \
+            -project "${XCODEPROJ}" \
+            -scheme "${SCHEME}" \
+            -derivedDataPath "${DERIVED_DATA_PATH}" >/dev/null
+
+        if [[ -n "${DEPENDENCY_FINGERPRINT}" ]]; then
+            printf '%s\n' "${DEPENDENCY_FINGERPRINT}" > "${MARKER_PATH}"
+        fi
+    fi
+
+    if [[ -d "${DERIVED_DATA_PATH}/SourcePackages/checkouts/FluidAudio" ]]; then
+        "${PATCH_SCRIPT}" "${DERIVED_DATA_PATH}/SourcePackages/checkouts/FluidAudio"
+    fi
 fi
 
 CMD=(

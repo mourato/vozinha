@@ -5,7 +5,7 @@
 # with CI/CD pipelines and headless environments.
 # =============================================================================
 
-.PHONY: help build build-debug build-release build-agent build-test xcodebuild-safe test test-agent test-full test-full-agent test-smoke test-perf test-sensitive test-appkit test-parity test-parity-agent test-swift test-verbose test-strict test-ci-strict scope-check scope-check-agent benchmark-summary benchmark-summary-agent lint lint-agent lint-fix arch-check preview-check guidance-check preflight preflight-fast preflight-agent preflight-agent-fast clean run run-release dmg setup-self-signed-cert setup format health ci-build ci-test ci-release-parity ci-release-parity-self-signed deliverable-gate docs docs-preview docs-clean profile profile-report profile-cpu profile-memory profile-animation profile-animation-report
+.PHONY: help build build-debug build-release build-agent build-test build-test-strict xcodebuild-safe test test-agent test-full test-full-agent test-smoke test-perf test-sensitive test-appkit test-parity test-parity-agent test-swift test-verbose test-strict test-ci-strict scope-check scope-check-agent benchmark-summary benchmark-summary-agent lint lint-agent lint-fix arch-check preview-check guidance-check preflight preflight-fast preflight-agent preflight-agent-fast clean run run-release dmg setup-self-signed-cert setup format health ci-build ci-test ci-release-parity ci-release-parity-self-signed deliverable-gate docs docs-preview docs-clean profile profile-report profile-cpu profile-memory profile-animation profile-animation-report
 
 # Default target
 help:
@@ -17,7 +17,8 @@ help:
 	@echo "  make build-debug    - Build debug version explicitly"
 	@echo "  make build-release  - Build release version"
 	@echo "  make build-agent    - Build debug with compact machine-readable output"
-	@echo "  make build-test     - Run build + tests in sequence with concise progress"
+	@echo "  make build-test     - Run build + tests in sequence (fast default, strict in CI)"
+	@echo "  make build-test-strict - Run build + tests in strict xcode mode"
 	@echo "  make xcodebuild-safe - Build via canonical direct xcodebuild wrapper"
 	@echo ""
 	@echo "Test Commands:"
@@ -118,6 +119,9 @@ build-agent:
 
 build-test:
 	@MA_AGENT_MODE=1 MA_AGENT_LOG_DIR="$(AGENT_LOG_DIR)" ./scripts/run-build-and-test.sh
+
+build-test-strict:
+	@MA_AGENT_MODE=1 MA_AGENT_LOG_DIR="$(AGENT_LOG_DIR)" MA_BUILD_TEST_STRICT_XCODE=1 ./scripts/run-build-and-test.sh
 
 xcodebuild-safe:
 	@./scripts/xcodebuild-safe.sh

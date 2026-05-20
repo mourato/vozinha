@@ -46,20 +46,22 @@ Use this skill as the canonical implementation reference for macOS Swift/SwiftUI
 
 1. Reusable-block scan first: `reuse -> extend -> create`.
 2. Implement in small, verifiable slices.
-3. Run scoped checks during development (`make build-test`, targeted tests).
+3. Run scoped checks during development (`make scope-check`, targeted tests, `make build-agent` when needed).
 4. Apply required merge gates through `quality-assurance`.
 
 ## Command Baseline
 
 ```bash
-make build-test
-make preflight-agent
+make scope-check
+make build-agent
+make test-smoke
 ```
 
 For final merge in Medium/High risk work:
 
 ```bash
 make build-test
+make lint
 ```
 
 ## Related Skills

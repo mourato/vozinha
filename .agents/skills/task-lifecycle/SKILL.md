@@ -60,6 +60,15 @@ Lane selection:
 - **Fast lane** for Low risk.
 - **Full lane** for Medium/High risk.
 
+## Command Mapping
+
+Once risk is classified, apply lane gates through `../quality-assurance/SKILL.md`:
+
+- **Fast lane merge gate**: `make scope-check`
+- **Full lane merge gate**: `make build-test` + `make lint`
+
+`make preflight` is optional comprehensive validation and does not replace lane merge gates.
+
 ## Phase 1: Task Initialization
 
 Branch policy:
@@ -123,8 +132,8 @@ Before the final push/merge, perform a local review using **[code-review](../cod
 4. **Hard gate before push/merge**:
    - Fast lane minimum: the Fast-lane merge gate defined in `AGENTS.md` and mapped in `../quality-assurance/SKILL.md`.
    - Full lane minimum: the Full-lane merge gate defined in `AGENTS.md` and mapped in `../quality-assurance/SKILL.md`.
-   - `make lint` remains mandatory for broad refactors.
-   - `make preflight` remains the preferred single-command full verification path.
+   - `make lint` remains mandatory for Full-lane changes.
+   - `make preflight` is optional and useful as a final comprehensive pass.
    - Agent compact commands are for low-noise diagnostics and do not replace required merge gates.
 5. **Atomic commits for review fixes**: Commit review-driven changes separately from feature work.
 
