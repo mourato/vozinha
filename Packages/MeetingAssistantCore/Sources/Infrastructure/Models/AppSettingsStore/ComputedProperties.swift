@@ -15,6 +15,11 @@ public extension AppSettingsStore {
         UserDefaults.standard.object(forKey: Keys.dictationAppRules) != nil
     }
 
+    /// Indicates whether dictation styles have been explicitly configured.
+    var hasConfiguredDictationStyles: Bool {
+        UserDefaults.standard.object(forKey: Keys.dictationStyles) != nil
+    }
+
     /// Indicates whether Markdown web targets have been explicitly configured.
     var hasConfiguredMarkdownWebTargets: Bool {
         UserDefaults.standard.object(forKey: Keys.markdownWebTargets) != nil

@@ -18,6 +18,9 @@ public extension AppSettingsStore {
         DictationAppRule(bundleIdentifier: $0, forceMarkdownOutput: true, outputLanguage: .original)
     }
 
+    /// Default list of dictation styles.
+    static let defaultDictationStyles: [DictationStyle] = []
+
     /// Default list of websites that should force Markdown formatting for dictation.
     static let defaultMarkdownWebTargets: [WebContextTarget] = []
 

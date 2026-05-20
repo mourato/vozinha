@@ -104,6 +104,7 @@ extension AppSettingsStore {
         static let contextAwarenessExcludedBundleIDs = "contextAwarenessExcludedBundleIDs"
         static let markdownTargetBundleIdentifiers = "markdownTargetBundleIdentifiers"
         static let dictationAppRules = "dictationAppRules"
+        static let dictationStyles = "dictationStyles"
         static let vocabularyReplacementRules = "vocabularyReplacementRules"
         static let markdownWebTargets = "markdownWebTargets"
         static let webTargetBrowserBundleIdentifiers = "webTargetBrowserBundleIdentifiers"

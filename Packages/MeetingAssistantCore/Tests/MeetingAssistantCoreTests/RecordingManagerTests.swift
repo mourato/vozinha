@@ -274,24 +274,26 @@ extension RecordingManagerTests {
     func testPromptWithDictationRuleOverrides_EmbedsLanguageAndCustomInstructionsAsPriorityBlock() throws {
         let manager = try XCTUnwrap(manager)
         let settings = AppSettingsStore.shared
-        let originalRules = settings.dictationAppRules
-        let originalMarkdownTargets = settings.markdownTargetBundleIdentifiers
+        let originalStyles = settings.dictationStyles
 
         defer {
-            settings.dictationAppRules = originalRules
-            settings.markdownTargetBundleIdentifiers = originalMarkdownTargets
+            settings.dictationStyles = originalStyles
             manager.dictationStartBundleIdentifier = nil
         }
 
-        settings.dictationAppRules = [
-            DictationAppRule(
-                bundleIdentifier: "com.microsoft.VSCode",
+        settings.dictationStyles = [
+            DictationStyle(
+                name: "Engineering notes",
+                iconSymbol: "chevron.left.forwardslash.chevron.right",
+                promptInstructions: "Keep terminology concise and developer-focused.",
                 forceMarkdownOutput: false,
+                replaceBasePrompt: false,
                 outputLanguage: .english,
-                customPromptInstructions: "Keep terminology concise and developer-focused."
+                targets: [
+                    .app(bundleIdentifier: "com.microsoft.VSCode"),
+                ]
             ),
         ]
-        settings.markdownTargetBundleIdentifiers = []
         manager.dictationStartBundleIdentifier = "com.microsoft.VSCode"
 
         let basePrompt = PostProcessingPrompt(
@@ -315,6 +317,48 @@ extension RecordingManagerTests {
         XCTAssertTrue(
             resolvedPrompt.promptText.contains("Keep terminology concise and developer-focused."),
             "Expected custom app instructions to be included"
+        )
+    }
+
+    func testPromptWithDictationRuleOverrides_ReplacesBasePromptWhenStyleRequiresReplacement() throws {
+        let manager = try XCTUnwrap(manager)
+        let settings = AppSettingsStore.shared
+        let originalStyles = settings.dictationStyles
+
+        defer {
+            settings.dictationStyles = originalStyles
+            manager.dictationStartBundleIdentifier = nil
+        }
+
+        settings.dictationStyles = [
+            DictationStyle(
+                name: "Direct output",
+                iconSymbol: "text.quote",
+                promptInstructions: "Use a direct style prompt as the full instruction set.",
+                forceMarkdownOutput: false,
+                replaceBasePrompt: true,
+                outputLanguage: .original,
+                targets: [
+                    .app(bundleIdentifier: "com.microsoft.VSCode"),
+                ]
+            ),
+        ]
+        manager.dictationStartBundleIdentifier = "com.microsoft.VSCode"
+
+        let basePrompt = PostProcessingPrompt(
+            title: "Dictation",
+            promptText: "Base dictation prompt"
+        )
+        let resolvedPrompt = manager.promptWithDictationRuleOverrides(prompt: basePrompt, settings: settings)
+
+        XCTAssertEqual(
+            resolvedPrompt.promptText,
+            "Use a direct style prompt as the full instruction set.",
+            "Expected style prompt to replace the original base prompt"
+        )
+        XCTAssertFalse(
+            resolvedPrompt.promptText.contains("Base dictation prompt"),
+            "Expected original prompt content to be replaced"
         )
     }
 

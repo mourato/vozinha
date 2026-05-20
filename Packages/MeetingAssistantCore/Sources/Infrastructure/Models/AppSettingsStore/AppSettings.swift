@@ -594,6 +594,19 @@ public class AppSettingsStore: ObservableObject {
         }
     }
 
+    /// Style-based dictation overrides for prompt, formatting, and language behavior.
+    @Published public var dictationStyles: [DictationStyle] {
+        didSet {
+            let normalizedStyles = Self.normalizedDictationStyles(dictationStyles)
+            if normalizedStyles != dictationStyles {
+                dictationStyles = normalizedStyles
+                return
+            }
+
+            save(dictationStyles, forKey: Keys.dictationStyles)
+        }
+    }
+
     /// Deterministic find-and-replace rules applied before post-processing.
     @Published public var vocabularyReplacementRules: [VocabularyReplacementRule] {
         didSet {
@@ -799,6 +812,7 @@ public class AppSettingsStore: ObservableObject {
         let dict = Self.loadDictationRulesAndWebTargets()
         markdownTargetBundleIdentifiers = dict.markdownTargetBundleIdentifiers
         dictationAppRules = dict.dictationAppRules
+        dictationStyles = dict.dictationStyles
         vocabularyReplacementRules = dict.vocabularyReplacementRules
         markdownWebTargets = dict.markdownWebTargets
         webTargetBrowserBundleIdentifiers = dict.webTargetBrowserBundleIdentifiers

@@ -456,6 +456,7 @@ extension AppSettingsStore {
     struct DictationRulesAndWebTargetsValues {
         let markdownTargetBundleIdentifiers: [String]
         let dictationAppRules: [DictationAppRule]
+        let dictationStyles: [DictationStyle]
         let vocabularyReplacementRules: [VocabularyReplacementRule]
         let markdownWebTargets: [WebContextTarget]
         let webTargetBrowserBundleIdentifiers: [String]
@@ -468,6 +469,7 @@ extension AppSettingsStore {
         DictationRulesAndWebTargetsValues(
             markdownTargetBundleIdentifiers: loadDecoded([String].self, forKey: Keys.markdownTargetBundleIdentifiers) ?? defaultMarkdownTargetBundleIdentifiers,
             dictationAppRules: normalizedDictationAppRules(loadDecoded([DictationAppRule].self, forKey: Keys.dictationAppRules) ?? defaultDictationAppRules),
+            dictationStyles: normalizedDictationStyles(loadDecoded([DictationStyle].self, forKey: Keys.dictationStyles) ?? defaultDictationStyles),
             vocabularyReplacementRules: normalizedVocabularyReplacementRules(loadDecoded([VocabularyReplacementRule].self, forKey: Keys.vocabularyReplacementRules) ?? []),
             markdownWebTargets: loadDecoded([WebContextTarget].self, forKey: Keys.markdownWebTargets) ?? defaultMarkdownWebTargets,
             webTargetBrowserBundleIdentifiers: loadDecoded([String].self, forKey: Keys.webTargetBrowserBundleIdentifiers) ?? defaultWebTargetBrowserBundleIdentifiers,

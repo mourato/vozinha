@@ -287,19 +287,33 @@ extension RecordingManager {
         settings: AppSettingsStore,
         session: TranscriptionSessionSnapshot? = nil
     ) -> PostProcessingPrompt {
+        let matchedStyle = matchingDictationStyleForDictation(settings: settings, session: session)
+        let basePromptText = resolvedDictationBasePromptText(
+            defaultPromptText: prompt.promptText,
+            matchedStyle: matchedStyle
+        )
+
         var appliedInstructions: [String] = []
         var priorityInstructions: [String] = []
 
-        if shouldForceMarkdownForDictation(settings: settings, session: session) {
+        if shouldForceMarkdownForDictation(settings: settings, session: session, matchedStyle: matchedStyle) {
             appliedInstructions.append(Self.markdownFormatInstruction)
         }
 
-        let outputLanguage = outputLanguageForDictation(settings: settings, session: session)
+        let outputLanguage = outputLanguageForDictation(
+            settings: settings,
+            session: session,
+            matchedStyle: matchedStyle
+        )
         if outputLanguage != .original {
             priorityInstructions.append(Self.translationInstruction(for: outputLanguage))
         }
 
-        if let customInstructions = effectiveCustomPromptInstructionsForDictation(settings: settings, session: session) {
+        if let customInstructions = effectiveCustomPromptInstructionsForDictation(
+            settings: settings,
+            session: session,
+            matchedStyle: matchedStyle
+        ) {
             priorityInstructions.append(customInstructions)
         }
 
@@ -309,9 +323,9 @@ extension RecordingManager {
             )
         }
 
-        guard !appliedInstructions.isEmpty else { return prompt }
+        guard !(appliedInstructions.isEmpty && basePromptText == prompt.promptText) else { return prompt }
 
-        let augmentedText = ([prompt.promptText] + appliedInstructions).joined(separator: "\n\n")
+        let augmentedText = ([basePromptText] + appliedInstructions).joined(separator: "\n\n")
 
         return PostProcessingPrompt(
             id: prompt.id,
@@ -324,25 +338,48 @@ extension RecordingManager {
         )
     }
 
-    func effectiveCustomPromptInstructionsForDictation(
+    private func resolvedDictationBasePromptText(
+        defaultPromptText: String,
+        matchedStyle: DictationStyle?
+    ) -> String {
+        guard let matchedStyle, matchedStyle.replaceBasePrompt else {
+            return defaultPromptText
+        }
+
+        let stylePrompt = matchedStyle.promptInstructions.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !stylePrompt.isEmpty else { return defaultPromptText }
+        return stylePrompt
+    }
+
+    func matchingDictationStyleForDictation(
         settings: AppSettingsStore,
         session: TranscriptionSessionSnapshot? = nil
+    ) -> DictationStyle? {
+        let bundleIdentifier = session?.dictationStartBundleIdentifier ?? dictationStartBundleIdentifier
+        let activeURL = session?.dictationStartURL ?? dictationStartURL
+
+        guard bundleIdentifier != nil || activeURL != nil else {
+            return nil
+        }
+
+        return settings.dictationStyles.first {
+            $0.matches(bundleIdentifier: bundleIdentifier, activeURL: activeURL)
+        }
+    }
+
+    func effectiveCustomPromptInstructionsForDictation(
+        settings: AppSettingsStore,
+        session: TranscriptionSessionSnapshot? = nil,
+        matchedStyle: DictationStyle? = nil
     ) -> String? {
-        if let websiteTarget = matchingWebContextTargetForDictation(settings: settings, session: session),
-           let instructions = websiteTarget.customPromptInstructions?.trimmingCharacters(in: .whitespacesAndNewlines),
-           !instructions.isEmpty
-        {
-            return instructions
+        guard let style = matchedStyle ?? matchingDictationStyleForDictation(settings: settings, session: session) else {
+            return nil
         }
 
-        if let appRule = matchingDictationAppRule(settings: settings, session: session),
-           let instructions = appRule.customPromptInstructions?.trimmingCharacters(in: .whitespacesAndNewlines),
-           !instructions.isEmpty
-        {
-            return instructions
-        }
+        guard !style.replaceBasePrompt else { return nil }
 
-        return nil
+        let normalized = style.promptInstructions.trimmingCharacters(in: .whitespacesAndNewlines)
+        return normalized.isEmpty ? nil : normalized
     }
 
     func matchingDictationAppRule(
@@ -359,43 +396,22 @@ extension RecordingManager {
 
     func outputLanguageForDictation(
         settings: AppSettingsStore,
-        session: TranscriptionSessionSnapshot? = nil
+        session: TranscriptionSessionSnapshot? = nil,
+        matchedStyle: DictationStyle? = nil
     ) -> DictationOutputLanguage {
         if let override = session?.dictationSessionOutputLanguageOverride ?? dictationSessionOutputLanguageOverride {
             return override
         }
 
-        if let websiteTarget = matchingWebContextTargetForDictation(settings: settings, session: session),
-           websiteTarget.outputLanguage != .original
-        {
-            return websiteTarget.outputLanguage
-        }
-
-        guard let rule = matchingDictationAppRule(settings: settings, session: session) else { return .original }
-        return rule.outputLanguage
+        return (matchedStyle ?? matchingDictationStyleForDictation(settings: settings, session: session))?.outputLanguage ?? .original
     }
 
     func shouldForceMarkdownForDictation(
         settings: AppSettingsStore,
-        session: TranscriptionSessionSnapshot? = nil
+        session: TranscriptionSessionSnapshot? = nil,
+        matchedStyle: DictationStyle? = nil
     ) -> Bool {
-        guard let bundleIdentifier = session?.dictationStartBundleIdentifier ?? dictationStartBundleIdentifier else { return false }
-        let normalized = WebTargetDetection.normalizeBundleIdentifier(bundleIdentifier)
-
-        if let websiteTarget = matchingWebContextTargetForDictation(settings: settings, session: session) {
-            return websiteTarget.forceMarkdownOutput
-        }
-
-        if let rule = matchingDictationAppRule(settings: settings, session: session), rule.forceMarkdownOutput {
-            return true
-        }
-
-        let appTargets = Set(settings.markdownTargetBundleIdentifiers.map(WebTargetDetection.normalizeBundleIdentifier))
-        if appTargets.contains(normalized) {
-            return true
-        }
-
-        return false
+        (matchedStyle ?? matchingDictationStyleForDictation(settings: settings, session: session))?.forceMarkdownOutput ?? false
     }
 
     func matchingWebContextTargetForDictation(

@@ -129,6 +129,47 @@ extension AppSettingsStore {
         return ordered
     }
 
+    static func normalizedDictationStyles(_ styles: [DictationStyle]) -> [DictationStyle] {
+        var seenStyleIDs = Set<UUID>()
+        var globallyAssignedTargetKeys = Set<String>()
+        var ordered: [DictationStyle] = []
+
+        for style in styles {
+            guard seenStyleIDs.insert(style.id).inserted else { continue }
+
+            var seenStyleTargetKeys = Set<String>()
+            var normalizedTargets: [DictationStyleTarget] = []
+
+            for target in style.targets {
+                guard let normalizedTarget = target.normalized() else { continue }
+                let identity = normalizedTarget.normalizedIdentity
+
+                guard !seenStyleTargetKeys.contains(identity), !globallyAssignedTargetKeys.contains(identity) else {
+                    continue
+                }
+
+                seenStyleTargetKeys.insert(identity)
+                globallyAssignedTargetKeys.insert(identity)
+                normalizedTargets.append(normalizedTarget)
+            }
+
+            ordered.append(
+                DictationStyle(
+                    id: style.id,
+                    name: style.normalizedName,
+                    iconSymbol: style.normalizedIconSymbol,
+                    promptInstructions: style.normalizedPromptInstructions,
+                    forceMarkdownOutput: style.forceMarkdownOutput,
+                    replaceBasePrompt: style.replaceBasePrompt,
+                    outputLanguage: style.outputLanguage,
+                    targets: normalizedTargets
+                )
+            )
+        }
+
+        return ordered
+    }
+
     private func deduplicatedNormalizedBundleIdentifiers(_ identifiers: [String]) -> [String] {
         var seenKeys = Set<String>()
         var ordered: [String] = []
