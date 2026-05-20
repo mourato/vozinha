@@ -48,7 +48,7 @@ public final class OnboardingWindowController: NSObject, NSWindowDelegate {
         // Create window
         let window = NSWindow(
             contentRect: NSRect(x: 0, y: 0, width: 620, height: 520),
-            styleMask: [.titled, .closable],
+            styleMask: [.titled, .closable, .resizable],
             backing: .buffered,
             defer: false
         )
@@ -63,9 +63,6 @@ public final class OnboardingWindowController: NSObject, NSWindowDelegate {
         window.titlebarAppearsTransparent = true
         window.titleVisibility = .hidden
         window.styleMask.insert(.fullSizeContentView)
-
-        // Prevent resizing
-        window.styleMask.remove(.resizable)
 
         // Make it modal
         if let mainWindow = NSApplication.shared.mainWindow {

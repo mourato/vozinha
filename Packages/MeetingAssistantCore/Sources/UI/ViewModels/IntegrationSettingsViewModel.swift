@@ -338,6 +338,8 @@ public final class IntegrationSettingsViewModel: ObservableObject {
         }
 
         switch conflict.reason {
+        case .systemReserved:
+            return "settings.shortcuts.modifier.system_reserved".localized
         case .layerLeaderKeyCollision,
              .identicalSignature,
              .effectiveModifierOverlap,

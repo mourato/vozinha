@@ -6,6 +6,7 @@ public enum ModifierShortcutActionID: Hashable, Sendable {
     case assistant
     case meeting
     case cancelActiveRecording
+    case systemReserved
     case assistantIntegration(UUID)
 
     var rawIdentifier: String {
@@ -18,6 +19,8 @@ public enum ModifierShortcutActionID: Hashable, Sendable {
             "meeting"
         case .cancelActiveRecording:
             "cancelActiveRecording"
+        case .systemReserved:
+            "systemReserved"
         case let .assistantIntegration(id):
             "assistantIntegration.\(id.uuidString)"
         }
@@ -64,6 +67,7 @@ public enum ShortcutConflictReason: Equatable, Sendable {
     case effectiveModifierOverlap
     case sideSpecificVsAgnosticOverlap
     case assistantIntegrationConcurrentActivation
+    case systemReserved
     case layerLeaderKeyCollision(layerKey: String)
 }
 
@@ -249,7 +253,7 @@ public enum ModifierShortcutConflictService {
         switch actionID {
         case .assistant, .assistantIntegration:
             true
-        case .dictation, .meeting, .cancelActiveRecording:
+        case .dictation, .meeting, .cancelActiveRecording, .systemReserved:
             false
         }
     }

@@ -11,6 +11,7 @@ import SwiftUI
 public struct TranscriptionStatusView: View {
     @ObservedObject var viewModel: TranscriptionViewModel
     @State private var isExpanded = false
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     public init(viewModel: TranscriptionViewModel) {
         self.viewModel = viewModel
@@ -51,7 +52,7 @@ public struct TranscriptionStatusView: View {
         }
         .contentShape(Rectangle())
         .onTapGesture {
-            withAnimation(.easeInOut(duration: 0.2)) {
+            withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.2)) {
                 isExpanded.toggle()
             }
         }

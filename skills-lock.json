@@ -6,6 +6,12 @@
       "sourceType": "github",
       "computedHash": "784f0dbb7403b0f00324bce9a112f715342777a0daee7bbb7385f9c6f0a170ea"
     },
+    "macos-app-design": {
+      "source": "petekp/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/macos-app-design/SKILL.md",
+      "computedHash": "5029321dfc7eb85d56175b1552c509b8be68ace721cd4aea6b09cc89153350c7"
+    },
     "macos-design-guidelines": {
       "source": "ehmo/platform-design-skills",
       "sourceType": "github",

@@ -1,3 +1,4 @@
+import AppKit
 import Combine
 import Foundation
 import MeetingAssistantCoreAI
@@ -40,7 +41,11 @@ public class MeetingSettingsViewModel: ObservableObject {
     }
 
     public func selectPrompt(_ id: UUID, forceSelect: Bool = false) {
-        withAnimation(.easeInOut(duration: 0.2)) {
+        let animation: Animation? = NSWorkspace.shared.accessibilityDisplayShouldReduceMotion
+            ? nil
+            : .easeInOut(duration: 0.2)
+
+        withAnimation(animation) {
             if forceSelect {
                 settings.meetingTypeAutoDetectEnabled = false
                 settings.selectedPromptId = id

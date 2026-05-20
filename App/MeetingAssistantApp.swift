@@ -260,10 +260,6 @@ struct MeetingAssistantCommands: Commands {
         }
 
         CommandGroup(after: .windowArrangement) {
-            Button("menubar.settings".localized) {
-                commandRouter.openSettings()
-            }
-
             Button("commands.window.bring_all_to_front".localized) {
                 commandRouter.bringAllToFront()
             }

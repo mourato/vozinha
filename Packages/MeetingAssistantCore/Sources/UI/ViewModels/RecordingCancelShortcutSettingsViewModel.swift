@@ -73,6 +73,8 @@ public final class RecordingCancelShortcutSettingsViewModel: ObservableObject {
 
     private func conflictMessage(for conflict: ShortcutConflict) -> String {
         switch conflict.reason {
+        case .systemReserved:
+            "settings.shortcuts.modifier.system_reserved".localized
         case .layerLeaderKeyCollision,
              .identicalSignature,
              .effectiveModifierOverlap,

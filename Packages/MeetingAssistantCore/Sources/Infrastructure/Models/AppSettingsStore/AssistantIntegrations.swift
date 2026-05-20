@@ -106,7 +106,19 @@ public extension AppSettingsStore {
     }
 
     func shortcutConflict(for candidate: ShortcutBinding) -> ShortcutConflict? {
-        ModifierShortcutConflictService.conflict(
+        if Self.isSystemReservedShortcut(candidate.shortcut) {
+            return ShortcutConflict(
+                candidate: candidate,
+                conflicting: ShortcutBinding(
+                    actionID: .systemReserved,
+                    actionDisplayName: "macOS",
+                    shortcut: candidate.shortcut
+                ),
+                reason: .systemReserved
+            )
+        }
+
+        return ModifierShortcutConflictService.conflict(
             for: candidate,
             in: configuredShortcutBindings,
             context: ShortcutConflictContext()
@@ -140,6 +152,67 @@ public extension AppSettingsStore {
         let filtered = assistantIntegrations.filter { $0.id != id }
         guard filtered.count != assistantIntegrations.count else { return }
         assistantIntegrations = filtered
+    }
+
+    private static func isSystemReservedShortcut(_ shortcut: ShortcutDefinition) -> Bool {
+        guard shortcut.trigger == .singleTap,
+              let primaryKey = shortcut.primaryKey
+        else {
+            return false
+        }
+
+        let hasCommand = shortcut.modifiers.contains { modifier in
+            switch modifier {
+            case .command, .leftCommand, .rightCommand:
+                true
+            default:
+                false
+            }
+        }
+        let hasShift = shortcut.modifiers.contains { modifier in
+            switch modifier {
+            case .shift, .leftShift, .rightShift:
+                true
+            default:
+                false
+            }
+        }
+        let hasOption = shortcut.modifiers.contains { modifier in
+            switch modifier {
+            case .option, .leftOption, .rightOption:
+                true
+            default:
+                false
+            }
+        }
+        let hasControl = shortcut.modifiers.contains { modifier in
+            switch modifier {
+            case .control, .leftControl, .rightControl:
+                true
+            default:
+                false
+            }
+        }
+
+        guard hasCommand, !hasOption, !hasControl else {
+            return false
+        }
+
+        if primaryKey.kind == .space {
+            return true
+        }
+
+        let token = primaryKey.display.lowercased()
+        if hasShift {
+            return token == "z"
+        }
+
+        switch token {
+        case "a", "c", "f", "h", "m", "n", "o", "p", "q", "s", "v", "w", "x", "z", ",":
+            return true
+        default:
+            return false
+        }
     }
 }
 
