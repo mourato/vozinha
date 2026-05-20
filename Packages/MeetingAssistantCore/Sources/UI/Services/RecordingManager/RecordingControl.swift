@@ -13,6 +13,20 @@ import UserNotifications
 // MARK: - Recording Control
 
 public extension RecordingManager {
+    func setMeetingDetectionEnabled(_ isEnabled: Bool) {
+        guard let bundleId = Bundle.main.bundleIdentifier,
+              !bundleId.lowercased().contains("xctest")
+        else {
+            return
+        }
+
+        if isEnabled {
+            meetingDetector.startMonitoring()
+        } else {
+            meetingDetector.stopMonitoring()
+        }
+    }
+
     func startCapture(purpose: CapturePurpose) async {
         let triggerLabel = purpose == .dictation ? "recording.start.dictation" : "recording.start.meeting"
         await startCapture(purpose: purpose, requestedAt: Date(), triggerLabel: triggerLabel)

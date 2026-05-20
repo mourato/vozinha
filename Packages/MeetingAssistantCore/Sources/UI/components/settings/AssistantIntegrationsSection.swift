@@ -9,13 +9,16 @@ import SwiftUI
 
 public struct AssistantIntegrationsSection: View {
     @ObservedObject private var viewModel: IntegrationSettingsViewModel
+    @ObservedObject private var settings: AppSettingsStore
     @Binding private var editingIntegration: AssistantIntegrationConfig?
 
     public init(
         viewModel: IntegrationSettingsViewModel,
+        settings: AppSettingsStore = .shared,
         editingIntegration: Binding<AssistantIntegrationConfig?>
     ) {
         _viewModel = ObservedObject(wrappedValue: viewModel)
+        _settings = ObservedObject(wrappedValue: settings)
         _editingIntegration = editingIntegration
     }
 
@@ -25,6 +28,22 @@ public struct AssistantIntegrationsSection: View {
             icon: "puzzlepiece.extension"
         ) {
             VStack(alignment: .leading, spacing: 12) {
+                DSToggleRow(
+                    "settings.capabilities.assistant_integrations".localized,
+                    description: "settings.capabilities.assistant_integrations_desc".localized,
+                    isOn: $settings.isAssistantIntegrationsEnabled
+                )
+
+                if !settings.isAssistantIntegrationsEnabled {
+                    DSCallout(
+                        kind: .info,
+                        title: "settings.capabilities.assistant_integrations_disabled_title".localized,
+                        message: "settings.capabilities.assistant_integrations_disabled_desc".localized
+                    )
+                }
+
+                Divider()
+
                 Text("settings.assistant.integrations.description".localized)
                     .font(.caption)
                     .foregroundStyle(.secondary)
@@ -74,6 +93,7 @@ public struct AssistantIntegrationsSection: View {
                         .foregroundStyle(statusColor)
                 }
             }
+            .disabled(!settings.isAssistantIntegrationsEnabled)
         }
     }
 
@@ -82,8 +102,8 @@ public struct AssistantIntegrationsSection: View {
             SettingsRowClickSurface(
                 onDoubleClick: {
                     editingIntegration = integration
-                }
-            ) {
+                },
+                content: {
                 HStack(spacing: 12) {
                     if isCardStyle {
                         RoundedRectangle(cornerRadius: AppDesignSystem.Layout.smallCornerRadius)
@@ -111,7 +131,7 @@ public struct AssistantIntegrationsSection: View {
 
                     Spacer()
                 }
-            }
+            })
 
             Button {
                 editingIntegration = integration

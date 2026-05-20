@@ -158,6 +158,22 @@ public class AppSettingsStore: ObservableObject {
         }
     }
 
+    /// Controls whether meeting transcription features are available.
+    /// New installs default to disabled for lower runtime footprint.
+    @Published public var isMeetingTranscriptionEnabled: Bool {
+        didSet {
+            UserDefaults.standard.set(isMeetingTranscriptionEnabled, forKey: Keys.isMeetingTranscriptionEnabled)
+        }
+    }
+
+    /// Controls whether assistant third-party integrations are available.
+    /// New installs default to disabled for lower runtime footprint.
+    @Published public var isAssistantIntegrationsEnabled: Bool {
+        didSet {
+            UserDefaults.standard.set(isAssistantIntegrationsEnabled, forKey: Keys.isAssistantIntegrationsEnabled)
+        }
+    }
+
     /// Optional language hint used by transcription providers to improve speech recognition accuracy.
     @Published public var transcriptionInputLanguageHint: TranscriptionInputLanguageHint {
         didSet {
@@ -678,8 +694,6 @@ public class AppSettingsStore: ObservableObject {
 
     // MARK: - Initialization
 
-    // MARK: - Initialization
-
     private init() {
         let context = Self.createInitializationContext()
         let ai = Self.loadAIConfigurationValues(from: context)
@@ -702,39 +716,47 @@ public class AppSettingsStore: ObservableObject {
         isDiarizationEnabled = postProcessing.isDiarizationEnabled
         modelResidencyTimeout = postProcessing.modelResidencyTimeout
         transcriptionInputLanguageHint = postProcessing.transcriptionInputLanguageHint
-        minSpeakers = postProcessing.minSpeakers
-        maxSpeakers = postProcessing.maxSpeakers
-        numSpeakers = postProcessing.numSpeakers
+        (minSpeakers, maxSpeakers, numSpeakers) = (postProcessing.minSpeakers, postProcessing.maxSpeakers, postProcessing.numSpeakers)
         audioFormat = postProcessing.audioFormat
         selectedPromptId = postProcessing.selectedPromptId
         dictationSelectedPromptId = postProcessing.dictationSelectedPromptId
         shouldMergeAudioFiles = postProcessing.shouldMergeAudioFiles
 
+        let capabilities = Self.loadCapabilitySettings()
+        (isMeetingTranscriptionEnabled, isAssistantIntegrationsEnabled) = (
+            capabilities.isMeetingTranscriptionEnabled,
+            capabilities.isAssistantIntegrationsEnabled
+        )
+
         let audioSettings = Self.loadAudioAndLanguageSettings()
-        selectedLanguage = audioSettings.selectedLanguage
-        audioDevicePriority = audioSettings.audioDevicePriority
+        (selectedLanguage, audioDevicePriority) = (audioSettings.selectedLanguage, audioSettings.audioDevicePriority)
         useSystemDefaultInput = audioSettings.useSystemDefaultInput
-        microphoneWhenChargingUID = audioSettings.microphoneWhenChargingUID
-        microphoneOnBatteryUID = audioSettings.microphoneOnBatteryUID
+        (microphoneWhenChargingUID, microphoneOnBatteryUID) = (audioSettings.microphoneWhenChargingUID, audioSettings.microphoneOnBatteryUID)
         recordingMediaHandlingMode = audioSettings.recordingMediaHandlingMode
         audioDuckingLevelPercent = audioSettings.audioDuckingLevelPercent
         autoIncreaseMicrophoneVolume = audioSettings.autoIncreaseMicrophoneVolume
         removeSilenceBeforeProcessing = audioSettings.removeSilenceBeforeProcessing
 
         let shortcuts = Self.loadShortcutActivationSettings()
-        shortcutActivationMode = shortcuts.shortcutActivationMode
-        dictationShortcutActivationMode = shortcuts.dictationShortcutActivationMode
+        (shortcutActivationMode, dictationShortcutActivationMode) = (
+            shortcuts.shortcutActivationMode,
+            shortcuts.dictationShortcutActivationMode
+        )
         shortcutDoubleTapIntervalMilliseconds = shortcuts.shortcutDoubleTapIntervalMilliseconds
         useEscapeToCancelRecording = shortcuts.useEscapeToCancelRecording
-        selectedPresetKey = shortcuts.selectedPresetKey
-        dictationSelectedPresetKey = shortcuts.dictationSelectedPresetKey
-        meetingSelectedPresetKey = shortcuts.meetingSelectedPresetKey
+        (selectedPresetKey, dictationSelectedPresetKey, meetingSelectedPresetKey) = (
+            shortcuts.selectedPresetKey,
+            shortcuts.dictationSelectedPresetKey,
+            shortcuts.meetingSelectedPresetKey
+        )
         cancelRecordingShortcutDefinition = shortcuts.cancelRecordingShortcutDefinition
 
         let gestures = Self.loadModifierShortcutGestures()
-        dictationModifierShortcutGesture = gestures.dictation
-        assistantModifierShortcutGesture = gestures.assistant
-        meetingModifierShortcutGesture = gestures.meeting
+        (dictationModifierShortcutGesture, assistantModifierShortcutGesture, meetingModifierShortcutGesture) = (
+            gestures.dictation,
+            gestures.assistant,
+            gestures.meeting
+        )
 
         let assistant = Self.loadAssistantSettings(from: context)
         assistantShortcutActivationMode = assistant.assistantShortcutActivationMode
@@ -743,8 +765,7 @@ public class AppSettingsStore: ObservableObject {
         assistantSelectedPresetKey = assistant.assistantSelectedPresetKey
         assistantIntegrations = assistant.assistantIntegrations
         assistantSelectedIntegrationId = assistant.assistantSelectedIntegrationId
-        assistantRaycastEnabled = assistant.assistantRaycastEnabled
-        assistantRaycastDeepLink = assistant.assistantRaycastDeepLink
+        (assistantRaycastEnabled, assistantRaycastDeepLink) = (assistant.assistantRaycastEnabled, assistant.assistantRaycastDeepLink)
 
         let meeting = Self.loadMeetingSummarySettings()
         meetingTypeAutoDetectEnabled = meeting.meetingTypeAutoDetectEnabled
@@ -755,18 +776,24 @@ public class AppSettingsStore: ObservableObject {
         summaryTemplateEnabled = meeting.summaryTemplateEnabled
         autoExportSummaries = meeting.autoExportSummaries
         summaryExportSafetyPolicyLevel = meeting.summaryExportSafetyPolicyLevel
-        meetingNotesFontFamilyKey = meeting.meetingNotesFontFamilyKey
-        meetingNotesFontSize = meeting.meetingNotesFontSize
-        meetingQnAEnabled = meeting.meetingQnAEnabled
+        (meetingNotesFontFamilyKey, meetingNotesFontSize, meetingQnAEnabled) = (
+            meeting.meetingNotesFontFamilyKey,
+            meeting.meetingNotesFontSize,
+            meeting.meetingQnAEnabled
+        )
 
         let ctx = Self.loadContextAwarenessSettings(from: context)
         contextAwarenessEnabled = ctx.contextAwarenessEnabled
         contextAwarenessExplicitActionOnly = ctx.contextAwarenessExplicitActionOnly
-        contextAwarenessIncludeClipboard = ctx.contextAwarenessIncludeClipboard
-        contextAwarenessIncludeWindowOCR = ctx.contextAwarenessIncludeWindowOCR
+        (contextAwarenessIncludeClipboard, contextAwarenessIncludeWindowOCR) = (
+            ctx.contextAwarenessIncludeClipboard,
+            ctx.contextAwarenessIncludeWindowOCR
+        )
         contextAwarenessIncludeAccessibilityText = ctx.contextAwarenessIncludeAccessibilityText
-        contextAwarenessProtectSensitiveApps = ctx.contextAwarenessProtectSensitiveApps
-        contextAwarenessRedactSensitiveData = ctx.contextAwarenessRedactSensitiveData
+        (contextAwarenessProtectSensitiveApps, contextAwarenessRedactSensitiveData) = (
+            ctx.contextAwarenessProtectSensitiveApps,
+            ctx.contextAwarenessRedactSensitiveData
+        )
         contextAwarenessExcludedBundleIDs = ctx.contextAwarenessExcludedBundleIDs
 
         let dict = Self.loadDictationRulesAndWebTargets()

@@ -46,6 +46,7 @@ final class AssistantShortcutController {
     let healthCheckIntervalSeconds: TimeInterval = 15
     var healthCheckTimer: Timer?
     var shortcutCaptureHealthSnapshot: ShortcutCaptureHealthSnapshot?
+    var isStarted = false
 
     init(
         assistantService: AssistantVoiceCommandService,

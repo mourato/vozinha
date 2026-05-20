@@ -23,6 +23,8 @@ public extension AppSettingsStore {
         dictationStructuredPostProcessingEnabled = false
         isDiarizationEnabled = false
         modelResidencyTimeout = .minutes30
+        isMeetingTranscriptionEnabled = false
+        isAssistantIntegrationsEnabled = false
         transcriptionInputLanguageHint = .automatic
         minSpeakers = nil
         maxSpeakers = nil

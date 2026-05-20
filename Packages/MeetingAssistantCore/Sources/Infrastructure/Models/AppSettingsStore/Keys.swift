@@ -21,6 +21,8 @@ extension AppSettingsStore {
         static let dictationStructuredPostProcessingEnabled = "dictationStructuredPostProcessingEnabled"
         static let isDiarizationEnabled = "isDiarizationEnabled"
         static let modelResidencyTimeout = "modelResidencyTimeout"
+        static let isMeetingTranscriptionEnabled = "isMeetingTranscriptionEnabled"
+        static let isAssistantIntegrationsEnabled = "isAssistantIntegrationsEnabled"
         static let transcriptionInputLanguageHint = "transcriptionInputLanguageHint"
         static let minSpeakers = "minSpeakers"
         static let maxSpeakers = "maxSpeakers"

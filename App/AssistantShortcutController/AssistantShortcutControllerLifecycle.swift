@@ -7,6 +7,9 @@ import MeetingAssistantCore
 @MainActor
 extension AssistantShortcutController {
     func start() {
+        guard !isStarted else { return }
+        isStarted = true
+
         setupKeyboardShortcutHandlers()
         observeSettings()
         observeAssistantRecordingState()
@@ -16,6 +19,28 @@ extension AssistantShortcutController {
         refreshIntegrationCustomShortcutRegistrations()
         refreshEventMonitors()
         startShortcutCaptureHealthChecks()
+    }
+
+    func stop() {
+        guard isStarted else { return }
+        isStarted = false
+
+        stopShortcutCaptureHealthChecks()
+        removeEventMonitors()
+        resetShortcutState()
+        KeyboardShortcuts.disable(.assistantCommand)
+        for id in registeredIntegrationShortcutIDs {
+            KeyboardShortcuts.disable(.assistantIntegration(id))
+        }
+        registeredIntegrationShortcutIDs.removeAll()
+        integrationShortcutHandlers.removeAll()
+        integrationPresetStates.removeAll()
+        cancellables.removeAll()
+
+        runShortcutCaptureHealthCheck(
+            source: "controller_stop",
+            expectation: ShortcutCaptureBackendExpectation.none
+        )
     }
 
     private func setupKeyboardShortcutHandlers() {

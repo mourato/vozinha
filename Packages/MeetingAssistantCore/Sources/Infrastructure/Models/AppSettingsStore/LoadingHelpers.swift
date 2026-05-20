@@ -235,6 +235,39 @@ extension AppSettingsStore {
         return UserDefaults.standard.bool(forKey: key)
     }
 
+    static func loadCapabilityToggle(
+        forKey key: String,
+        defaultForNewInstall: Bool,
+        defaultForExistingInstall: Bool
+    ) -> Bool {
+        guard UserDefaults.standard.object(forKey: key) == nil else {
+            return UserDefaults.standard.bool(forKey: key)
+        }
+
+        return isExistingInstallForCapabilityMigration()
+            ? defaultForExistingInstall
+            : defaultForNewInstall
+    }
+
+    static func isExistingInstallForCapabilityMigration() -> Bool {
+        let defaults = UserDefaults.standard
+
+        if defaults.object(forKey: Keys.hasCompletedOnboarding) != nil {
+            return true
+        }
+
+        let legacyInstallMarkers: [String] = [
+            Keys.aiConfiguration,
+            Keys.assistantIntegrations,
+            Keys.dictationSelectedPresetKey,
+            Keys.meetingSelectedPresetKey,
+        ]
+
+        return legacyInstallMarkers.contains { marker in
+            defaults.object(forKey: marker) != nil
+        }
+    }
+
     static func loadEnum<T: RawRepresentable & Sendable>(forKey key: String, defaultValue: T) -> T where T.RawValue == String {
         let rawValue = UserDefaults.standard.string(forKey: key)
         return rawValue.flatMap(T.init(rawValue:)) ?? defaultValue

@@ -24,20 +24,13 @@ extension AppDelegate {
         verifyPrimaryInterfaceAfterLaunch()
         setupContextMenu()
         globalShortcutController.start()
-        assistantShortcutController.start()
         recordingCancelShortcutController.start()
+        setupCapabilityObservation()
+        applyMeetingTranscriptionCapabilityState(isEnabled: settingsStore.isMeetingTranscriptionEnabled)
+        applyAssistantIntegrationsCapabilityState(isEnabled: settingsStore.isAssistantIntegrationsEnabled)
         setupRecordingObservation()
         prewarmFloatingIndicatorIfEligible()
         updateMenuTitles() // Initial update
-
-        // Warmup transcription model
-        Task { @MainActor in
-            do {
-                try await TranscriptionClient.shared.warmupModel()
-            } catch {
-                self.logger.error("Failed to warmup model: \(error.localizedDescription)")
-            }
-        }
 
         localModelResidencyCoordinator.startMonitoring()
 
@@ -128,20 +121,13 @@ extension AppDelegate {
         verifyPrimaryInterfaceAfterLaunch()
         setupContextMenu()
         globalShortcutController.start()
-        assistantShortcutController.start()
         recordingCancelShortcutController.start()
+        setupCapabilityObservation()
+        applyMeetingTranscriptionCapabilityState(isEnabled: settingsStore.isMeetingTranscriptionEnabled)
+        applyAssistantIntegrationsCapabilityState(isEnabled: settingsStore.isAssistantIntegrationsEnabled)
         setupRecordingObservation()
         prewarmFloatingIndicatorIfEligible()
         updateMenuTitles()
-
-        // Warmup transcription model
-        Task { @MainActor in
-            do {
-                try await TranscriptionClient.shared.warmupModel()
-            } catch {
-                self.logger.error("Failed to warmup model: \(error.localizedDescription)")
-            }
-        }
 
         localModelResidencyCoordinator.startMonitoring()
 
@@ -298,7 +284,9 @@ extension AppDelegate {
             assistantVoiceCommandService.$isProcessing.map { _ in () }.eraseToAnyPublisher(),
             recordingManager.currentMeetingPublisher.map { _ in () }.eraseToAnyPublisher(),
             recordingManager.$isMeetingNotesPanelVisible.map { _ in () }.eraseToAnyPublisher(),
-            settingsStore.$cancelRecordingShortcutDefinition.map { _ in () }.eraseToAnyPublisher()
+            settingsStore.$cancelRecordingShortcutDefinition.map { _ in () }.eraseToAnyPublisher(),
+            settingsStore.$isMeetingTranscriptionEnabled.map { _ in () }.eraseToAnyPublisher(),
+            settingsStore.$isAssistantIntegrationsEnabled.map { _ in () }.eraseToAnyPublisher()
         )
         // @Published emits in willSet; schedule refresh so re-reads observe committed values.
         .receive(on: DispatchQueue.main)
@@ -337,7 +325,9 @@ extension AppDelegate {
                 capturePurpose: recordingManager.currentCapturePurpose,
                 isAssistantRecording: isAssistantRecording || isAssistantOwnedOverlayVisible
             ),
-            cancelRecordingShortcutDefinition: settingsStore.cancelRecordingShortcutDefinition
+            cancelRecordingShortcutDefinition: settingsStore.cancelRecordingShortcutDefinition,
+            meetingCapabilityEnabled: settingsStore.isMeetingTranscriptionEnabled,
+            assistantCapabilityEnabled: settingsStore.isAssistantIntegrationsEnabled
         )
         let renderState = RecordingUIRenderState(
             isRecording: isRecording,
@@ -394,6 +384,15 @@ extension AppDelegate {
     func startRecording(source: RecordingSource) async {
         let purpose: CapturePurpose = source == .microphone ? .dictation : .meeting
 
+        if purpose == .meeting, !settingsStore.isMeetingTranscriptionEnabled {
+            AppLogger.info(
+                "Meeting capture start blocked because meeting transcription capability is disabled",
+                category: .uiController
+            )
+            floatingIndicatorController.showError("recording.error.meeting_transcription_disabled".localized)
+            return
+        }
+
         if recordingManager.currentCapturePurpose == purpose,
            recordingManager.isRecording
         {
@@ -420,5 +419,76 @@ extension AppDelegate {
             requestedAt: Date(),
             triggerLabel: triggerLabel
         )
+    }
+
+    private func setupCapabilityObservation() {
+        guard !hasConfiguredCapabilityObservers else { return }
+        hasConfiguredCapabilityObservers = true
+
+        settingsStore.$isMeetingTranscriptionEnabled
+            .dropFirst()
+            .removeDuplicates()
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] isEnabled in
+                self?.applyMeetingTranscriptionCapabilityState(isEnabled: isEnabled)
+                self?.refreshRecordingUIState()
+            }
+            .store(in: &cancellables)
+
+        settingsStore.$isAssistantIntegrationsEnabled
+            .dropFirst()
+            .removeDuplicates()
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] isEnabled in
+                self?.applyAssistantIntegrationsCapabilityState(isEnabled: isEnabled)
+                self?.refreshRecordingUIState()
+            }
+            .store(in: &cancellables)
+    }
+
+    private func maybeWarmupMeetingTranscriptionModel() {
+        guard settingsStore.isMeetingTranscriptionEnabled else { return }
+
+        Task { @MainActor in
+            do {
+                try await TranscriptionClient.shared.warmupModel()
+            } catch {
+                self.logger.error("Failed to warmup model: \(error.localizedDescription)")
+            }
+        }
+    }
+
+    private func applyMeetingTranscriptionCapabilityState(isEnabled: Bool) {
+        recordingManager.setMeetingDetectionEnabled(isEnabled)
+
+        guard !isEnabled else {
+            maybeWarmupMeetingTranscriptionModel()
+            return
+        }
+
+        if recordingManager.currentCapturePurpose == .meeting,
+           recordingManager.isRecording || recordingManager.isStartingRecording
+        {
+            Task {
+                await recordingManager.cancelRecording()
+            }
+        }
+
+        _ = FluidAIModelManager.shared.unloadDiarizationFromMemoryIfPossible()
+        _ = FluidAIModelManager.shared.unloadASRFromMemoryIfPossible()
+    }
+
+    private func applyAssistantIntegrationsCapabilityState(isEnabled: Bool) {
+        guard isEnabled else {
+            if assistantVoiceCommandService.isRecording || assistantVoiceCommandService.isProcessing {
+                Task {
+                    await assistantVoiceCommandService.cancelRecording()
+                }
+            }
+            assistantShortcutController.stop()
+            return
+        }
+
+        assistantShortcutController.start()
     }
 }

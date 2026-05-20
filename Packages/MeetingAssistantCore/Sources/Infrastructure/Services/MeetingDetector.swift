@@ -55,7 +55,7 @@ public class MeetingDetector: ObservableObject {
     }
 
     /// Stop monitoring for meeting apps.
-    func stopMonitoring() {
+    public func stopMonitoring() {
         logger.info("Stopping meeting detection monitoring")
         isMonitoring = false
         monitoringTimer?.invalidate()

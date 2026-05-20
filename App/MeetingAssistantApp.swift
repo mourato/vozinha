@@ -543,6 +543,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     lazy var settingsWindowController = SettingsWindowController()
     var cancellables = Set<AnyCancellable>()
     var dockObserver: AnyCancellable?
+    var hasConfiguredCapabilityObservers = false
     var lastRecordingUIRenderState: RecordingUIRenderState?
 }
 

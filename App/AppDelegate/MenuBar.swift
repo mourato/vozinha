@@ -396,6 +396,11 @@ extension AppDelegate {
     }
 
     @objc func startMeetingFromMenu() {
+        guard settingsStore.isMeetingTranscriptionEnabled else {
+            floatingIndicatorController.showError("recording.error.meeting_transcription_disabled".localized)
+            return
+        }
+
         Task { @MainActor in
             // Meeting mode (System + Mic) permissions will be checked by manager
             await self.startRecording(source: .all)
@@ -403,6 +408,11 @@ extension AppDelegate {
     }
 
     @objc func startAssistantFromMenu() {
+        guard settingsStore.isAssistantIntegrationsEnabled else {
+            floatingIndicatorController.showError("assistant.error.integrations_disabled".localized)
+            return
+        }
+
         Task {
             if assistantVoiceCommandService.isRecording {
                 await assistantVoiceCommandService.stopAndProcess()

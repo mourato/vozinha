@@ -193,6 +193,26 @@ extension AppSettingsStore {
         )
     }
 
+    struct CapabilitySettingsValues {
+        let isMeetingTranscriptionEnabled: Bool
+        let isAssistantIntegrationsEnabled: Bool
+    }
+
+    static func loadCapabilitySettings() -> CapabilitySettingsValues {
+        CapabilitySettingsValues(
+            isMeetingTranscriptionEnabled: loadCapabilityToggle(
+                forKey: Keys.isMeetingTranscriptionEnabled,
+                defaultForNewInstall: false,
+                defaultForExistingInstall: true
+            ),
+            isAssistantIntegrationsEnabled: loadCapabilityToggle(
+                forKey: Keys.isAssistantIntegrationsEnabled,
+                defaultForNewInstall: false,
+                defaultForExistingInstall: true
+            )
+        )
+    }
+
     /// Struct for audio and language settings to avoid large tuple.
     struct AudioAndLanguageSettingsValues {
         let selectedLanguage: AppLanguage

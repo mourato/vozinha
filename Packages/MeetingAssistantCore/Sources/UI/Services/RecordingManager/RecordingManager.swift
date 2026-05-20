@@ -284,7 +284,7 @@ public class RecordingManager: ObservableObject, RecordingServiceProtocol {
 
         setupBindings()
         setupRecorderErrorForwarding()
-        if isRunningAsAppBundle {
+        if isRunningAsAppBundle, AppSettingsStore.shared.isMeetingTranscriptionEnabled {
             meetingDetector.startMonitoring()
         }
         notificationService.requestAuthorization()

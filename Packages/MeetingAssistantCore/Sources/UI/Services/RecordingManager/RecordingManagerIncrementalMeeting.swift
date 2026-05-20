@@ -11,6 +11,7 @@ extension RecordingManager {
         purpose: CapturePurpose,
         source: RecordingSource
     ) -> Bool {
+        guard AppSettingsStore.shared.isMeetingTranscriptionEnabled else { return false }
         guard transcriptionClient is any TranscriptionServiceFinalDiarization else { return false }
         let config = IncrementalCaptureSupportConfig(
             expectedPurpose: .meeting,

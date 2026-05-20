@@ -113,6 +113,15 @@ public class TranscriptionClient: ObservableObject, TranscriptionService, Transc
 
     /// Warm up the transcription model.
     public func warmupModel() async throws {
+        guard settingsStore.isMeetingTranscriptionEnabled else {
+            updateCachedReadiness(.unknown)
+            AppLogger.debug(
+                "Skipped model warmup because meeting transcription capability is disabled",
+                category: .transcriptionEngine
+            )
+            return
+        }
+
         switch transcriptionImplementation {
         case .xpc:
             do {
@@ -313,6 +322,7 @@ public class TranscriptionClient: ObservableObject, TranscriptionService, Transc
 
     public func warmupModelIfNeededInBackground() {
         guard FeatureFlags.enableCachedTranscriptionReadinessGate else { return }
+        guard settingsStore.isMeetingTranscriptionEnabled else { return }
         guard cachedReadinessState != .healthy else { return }
 
         Task { @MainActor [weak self] in

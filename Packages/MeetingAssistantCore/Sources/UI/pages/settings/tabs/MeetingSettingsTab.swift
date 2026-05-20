@@ -98,6 +98,24 @@ public struct MeetingSettingsTab: View {
                 description: "settings.shortcuts.meeting_desc".localized
             )
 
+            DSGroup("settings.capabilities.title".localized, icon: "switch.2") {
+                VStack(alignment: .leading, spacing: 12) {
+                    DSToggleRow(
+                        "settings.capabilities.meeting_transcription".localized,
+                        description: "settings.capabilities.meeting_transcription_desc".localized,
+                        isOn: $meetingViewModel.settings.isMeetingTranscriptionEnabled
+                    )
+
+                    if !meetingViewModel.settings.isMeetingTranscriptionEnabled {
+                        DSCallout(
+                            kind: .info,
+                            title: "settings.capabilities.meeting_transcription_disabled_title".localized,
+                            message: "settings.capabilities.meeting_transcription_disabled_desc".localized
+                        )
+                    }
+                }
+            }
+
             ShortcutSettingsSection(
                 groupTitle: "settings.shortcuts.meeting".localized,
                 descriptionText: "settings.shortcuts.meeting_desc".localized,

@@ -3,13 +3,19 @@ import MeetingAssistantCoreInfrastructure
 public struct AppCommandState: Equatable, Sendable {
     public var recordingSection: MenuBarRecordingSectionState
     public var cancelRecordingShortcutDefinition: ShortcutDefinition?
+    public var meetingCapabilityEnabled: Bool
+    public var assistantCapabilityEnabled: Bool
 
     public init(
         recordingSection: MenuBarRecordingSectionState = .idle,
-        cancelRecordingShortcutDefinition: ShortcutDefinition? = nil
+        cancelRecordingShortcutDefinition: ShortcutDefinition? = nil,
+        meetingCapabilityEnabled: Bool = true,
+        assistantCapabilityEnabled: Bool = true
     ) {
         self.recordingSection = recordingSection
         self.cancelRecordingShortcutDefinition = cancelRecordingShortcutDefinition
+        self.meetingCapabilityEnabled = meetingCapabilityEnabled
+        self.assistantCapabilityEnabled = assistantCapabilityEnabled
     }
 
     public var dictationTitleKey: String {
@@ -33,11 +39,11 @@ public struct AppCommandState: Equatable, Sendable {
     }
 
     public var showsMeetingAction: Bool {
-        recordingSection == .idle || recordingSection == .meetingActive
+        meetingCapabilityEnabled && (recordingSection == .idle || recordingSection == .meetingActive)
     }
 
     public var showsAssistantAction: Bool {
-        recordingSection == .idle || recordingSection == .assistantActive
+        assistantCapabilityEnabled && (recordingSection == .idle || recordingSection == .assistantActive)
     }
 
     public var showsCancelAction: Bool {

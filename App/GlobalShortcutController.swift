@@ -118,78 +118,41 @@ final class GlobalShortcutController {
     }
 
     private func observeSettings() {
-        settings.$dictationSelectedPresetKey
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] _ in
-                self?.resetShortcutState()
-                self?.refreshCustomShortcutRegistration()
-                self?.refreshEventMonitors()
-            }
-            .store(in: &cancellables)
+        observeRegistrationInputs(settings.$dictationSelectedPresetKey.map { _ in () }.eraseToAnyPublisher())
+        observeRegistrationInputs(settings.$meetingSelectedPresetKey.map { _ in () }.eraseToAnyPublisher())
+        observeRegistrationInputs(settings.$dictationShortcutDefinition.map { _ in () }.eraseToAnyPublisher())
+        observeRegistrationInputs(settings.$meetingShortcutDefinition.map { _ in () }.eraseToAnyPublisher())
+        observeRegistrationInputs(settings.$dictationModifierShortcutGesture.map { _ in () }.eraseToAnyPublisher())
+        observeRegistrationInputs(settings.$meetingModifierShortcutGesture.map { _ in () }.eraseToAnyPublisher())
+        observeRegistrationInputs(settings.$isMeetingTranscriptionEnabled.map { _ in () }.eraseToAnyPublisher())
 
-        settings.$meetingSelectedPresetKey
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] _ in
-                self?.resetShortcutState()
-                self?.refreshCustomShortcutRegistration()
-                self?.refreshEventMonitors()
-            }
-            .store(in: &cancellables)
-
-        settings.$dictationShortcutDefinition
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] _ in
-                self?.resetShortcutState()
-                self?.refreshCustomShortcutRegistration()
-                self?.refreshEventMonitors()
-            }
-            .store(in: &cancellables)
-
-        settings.$meetingShortcutDefinition
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] _ in
-                self?.resetShortcutState()
-                self?.refreshCustomShortcutRegistration()
-                self?.refreshEventMonitors()
-            }
-            .store(in: &cancellables)
-
-        settings.$dictationModifierShortcutGesture
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] _ in
-                self?.resetShortcutState()
-                self?.refreshCustomShortcutRegistration()
-                self?.refreshEventMonitors()
-            }
-            .store(in: &cancellables)
-
-        settings.$meetingModifierShortcutGesture
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] _ in
-                self?.resetShortcutState()
-                self?.refreshCustomShortcutRegistration()
-                self?.refreshEventMonitors()
-            }
-            .store(in: &cancellables)
-
-        settings.$shortcutActivationMode
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] _ in
-                self?.resetShortcutState()
-            }
-            .store(in: &cancellables)
-
-        settings.$dictationShortcutActivationMode
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] _ in
-                self?.resetShortcutState()
-            }
-            .store(in: &cancellables)
+        observeResetOnly(settings.$shortcutActivationMode.map { _ in () }.eraseToAnyPublisher())
+        observeResetOnly(settings.$dictationShortcutActivationMode.map { _ in () }.eraseToAnyPublisher())
 
         settings.$shortcutDoubleTapIntervalMilliseconds
             .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in
                 self?.applyGlobalDoubleTapInterval()
+                self?.resetShortcutState()
+            }
+            .store(in: &cancellables)
+    }
+
+    private func observeRegistrationInputs(_ publisher: AnyPublisher<Void, Never>) {
+        publisher
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                self?.resetShortcutState()
+                self?.refreshCustomShortcutRegistration()
+                self?.refreshEventMonitors()
+            }
+            .store(in: &cancellables)
+    }
+
+    private func observeResetOnly(_ publisher: AnyPublisher<Void, Never>) {
+        publisher
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
                 self?.resetShortcutState()
             }
             .store(in: &cancellables)
@@ -231,7 +194,8 @@ final class GlobalShortcutController {
 
         if settings.meetingShortcutDefinition == nil,
            settings.meetingModifierShortcutGesture == nil,
-           settings.meetingSelectedPresetKey == .custom
+           settings.meetingSelectedPresetKey == .custom,
+           settings.isMeetingTranscriptionEnabled
         {
             KeyboardShortcuts.enable(.meetingToggle)
         } else {
@@ -254,6 +218,8 @@ final class GlobalShortcutController {
     }
 
     private func inHouseRegistration(for type: ShortcutType) -> HotkeyRegistration? {
+        guard isCapabilityEnabled(for: type) else { return nil }
+
         let definition: ShortcutDefinition? = switch type {
         case .dictation:
             settings.dictationShortcutDefinition
@@ -310,11 +276,12 @@ final class GlobalShortcutController {
     private func isCustomShortcutEnabled(for type: ShortcutType) -> Bool {
         switch type {
         case .dictation:
-            settings.dictationShortcutDefinition == nil
+            return settings.dictationShortcutDefinition == nil
                 && settings.dictationModifierShortcutGesture == nil
                 && settings.dictationSelectedPresetKey == .custom
         case .meeting:
-            settings.meetingShortcutDefinition == nil
+            guard settings.isMeetingTranscriptionEnabled else { return false }
+            return settings.meetingShortcutDefinition == nil
                 && settings.meetingModifierShortcutGesture == nil
                 && settings.meetingSelectedPresetKey == .custom
         }
@@ -402,6 +369,16 @@ final class GlobalShortcutController {
     }
 
     func handleCustomShortcutDown(for type: ShortcutType) async {
+        guard isCapabilityEnabled(for: type) else {
+            emitShortcutRejected(
+                for: type,
+                source: "keyboardshortcuts_custom",
+                trigger: activationMode(for: type),
+                reason: "capability_disabled"
+            )
+            return
+        }
+
         let outcomes = shortcutRouter.routeCustomShortcutDown(
             configuration: routingConfiguration(for: type)
         )
@@ -409,6 +386,8 @@ final class GlobalShortcutController {
     }
 
     func handleCustomShortcutUp(for type: ShortcutType) async {
+        guard isCapabilityEnabled(for: type) else { return }
+
         let outcomes = shortcutRouter.routeCustomShortcutUp(
             configuration: routingConfiguration(for: type)
         )
@@ -419,6 +398,8 @@ final class GlobalShortcutController {
         for type: ShortcutType,
         activationModeOverride: ShortcutActivationMode? = nil
     ) async {
+        guard isCapabilityEnabled(for: type) else { return }
+
         let handler = type == .dictation ? dictationHandler : meetingHandler
         handler.handleShortcutDown(activationMode: activationModeOverride ?? activationMode(for: type))
     }
@@ -427,11 +408,23 @@ final class GlobalShortcutController {
         for type: ShortcutType,
         activationModeOverride: ShortcutActivationMode? = nil
     ) async {
+        guard isCapabilityEnabled(for: type) else { return }
+
         let handler = type == .dictation ? dictationHandler : meetingHandler
         handler.handleShortcutUp(activationMode: activationModeOverride ?? activationMode(for: type))
     }
 
     func performAction(_ action: SmartShortcutHandler.Action, for type: ShortcutType) async {
+        guard isCapabilityEnabled(for: type) else {
+            emitShortcutRejected(
+                for: type,
+                source: "shortcut_engine",
+                trigger: activationMode(for: type),
+                reason: "capability_disabled"
+            )
+            return
+        }
+
         switch action {
         case .startRecording:
             if let blockingMode = await RecordingExclusivityCoordinator.shared
@@ -617,6 +610,15 @@ final class GlobalShortcutController {
             .dictation
         case .meeting:
             .meeting
+        }
+    }
+
+    private func isCapabilityEnabled(for type: ShortcutType) -> Bool {
+        switch type {
+        case .dictation:
+            true
+        case .meeting:
+            settings.isMeetingTranscriptionEnabled
         }
     }
 }

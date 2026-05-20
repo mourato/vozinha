@@ -503,6 +503,15 @@
 "settings.shortcuts.toggle_recording" = "Alternar Gravação";
 "settings.shortcuts.toggle_recording_desc" = "Inicia ou encerra a gravação atual";
 "settings.shortcuts.reset" = "Resetar para atalhos padrão";
+"settings.capabilities.title" = "Recursos Opcionais";
+"settings.capabilities.meeting_transcription" = "Transcrição de Reuniões";
+"settings.capabilities.meeting_transcription_desc" = "Ativa fluxos de gravação e transcrição de reuniões.";
+"settings.capabilities.meeting_transcription_disabled_title" = "Transcrição de reuniões desativada";
+"settings.capabilities.meeting_transcription_disabled_desc" = "Atalhos de reunião e captura automática de reuniões ficam inativos até você ativar este recurso.";
+"settings.capabilities.assistant_integrations" = "Integrações do Assistant";
+"settings.capabilities.assistant_integrations_desc" = "Ativa integrações e ações de despacho do Assistant.";
+"settings.capabilities.assistant_integrations_disabled_title" = "Integrações do Assistant desativadas";
+"settings.capabilities.assistant_integrations_disabled_desc" = "Ações de integração e despacho por atalho do Assistant ficam pausados até você ativar este recurso.";
 "settings.assistant.header_desc" = "Configure o atalho do Assistant para editar o texto selecionado com comandos de voz em qualquer app.";
 "settings.integrations.header_desc" = "Configure integrações para enviar comandos de voz transcritos e pós-processados sem exigir texto selecionado.";
 "settings.assistant.controls" = "Atalho do Assistant";
@@ -610,7 +619,9 @@
 "assistant.error.stop_failed" = "Não foi possível finalizar a gravação do Assistant.";
 "assistant.error.recording_in_progress" = "Há uma gravação em andamento. Finalize antes de usar o Assistant.";
 "recording.error.mode_switch_blocked" = "Finalize a gravação atual antes de iniciar outro modo.";
+"recording.error.meeting_transcription_disabled" = "A transcrição de reuniões está desativada. Ative nas Configurações para iniciar reuniões.";
 "assistant.error.processing_failed" = "Não foi possível processar o comando do Assistant.";
+"assistant.error.integrations_disabled" = "As integrações do Assistant estão desativadas. Ative nas Configurações para continuar.";
 "assistant.error.integration_disabled" = "A integração selecionada está desativada nas configurações de Integrações.";
 "assistant.error.raycast_integration_disabled" = "A integração com Raycast está desativada nas configurações de Integrações.";
 "assistant.error.raycast_deeplink_invalid" = "O deeplink do Raycast é inválido. Verifique as configurações de Integrações.";
