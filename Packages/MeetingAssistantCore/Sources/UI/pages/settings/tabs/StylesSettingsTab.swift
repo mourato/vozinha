@@ -150,7 +150,7 @@ public struct StylesSettingsTab: View {
     private func styleSummary(for style: DictationStyle) -> some View {
         HStack(spacing: 8) {
             if style.forceMarkdownOutput {
-                Text("settings.markdown_targets.websites.summary.markdown_on".localized)
+                Text("settings.styles.summary.markdown".localized)
                     .font(.caption2)
                     .fontWeight(.semibold)
                     .padding(.horizontal, 6)

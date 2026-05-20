@@ -96,17 +96,17 @@ public struct DictationStyleEditorSheet: View {
                         .clipShape(RoundedRectangle(cornerRadius: AppDesignSystem.Layout.smallCornerRadius))
                 }
 
-                DSToggleRow("settings.rules_per_app.markdown.title".localized, isOn: $forceMarkdownOutput)
+                DSToggleRow("settings.styles.editor.markdown_output".localized, isOn: $forceMarkdownOutput)
                 DSToggleRow("settings.styles.editor.replace_base_prompt".localized, isOn: $replaceBasePrompt)
 
                 HStack(spacing: 12) {
-                    Text("settings.rules_per_app.language.title".localized)
+                    Text("settings.styles.editor.output_language".localized)
                         .font(.body)
                         .fontWeight(.regular)
 
                     Spacer()
 
-                    Picker("settings.rules_per_app.language.title".localized, selection: $outputLanguage) {
+                    Picker("settings.styles.editor.output_language".localized, selection: $outputLanguage) {
                         ForEach(DictationOutputLanguage.allCases, id: \.self) { language in
                             Text(language.displayName).tag(language)
                         }
@@ -157,7 +157,7 @@ public struct DictationStyleEditorSheet: View {
 
                                                 Spacer()
 
-                                                Button("settings.rules_per_app.add".localized) {
+                                                Button("settings.styles.editor.add_app_target".localized) {
                                                     addAppTarget(app.bundleIdentifier)
                                                 }
                                                 .buttonStyle(.bordered)
