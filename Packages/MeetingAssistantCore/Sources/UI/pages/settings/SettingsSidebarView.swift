@@ -1,10 +1,6 @@
 import MeetingAssistantCoreCommon
 import SwiftUI
 
-private enum SidebarLayout {
-    static let searchHeight: CGFloat = 28
-}
-
 struct SettingsSidebarView: View {
     @Binding var selectedSection: SettingsSection
     @Binding var searchText: String
@@ -46,11 +42,10 @@ struct SettingsSidebarView: View {
     }
 
     private var searchField: some View {
-        NativeSearchField(
+        SettingsSearchField(
             text: $searchText,
             placeholder: "settings.search.placeholder".localized
         )
-        .frame(height: SidebarLayout.searchHeight)
     }
 
     private var hasActiveSearch: Bool {

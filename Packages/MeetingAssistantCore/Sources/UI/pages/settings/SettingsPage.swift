@@ -23,7 +23,6 @@ private enum LayoutConstants {
 public struct SettingsView: View {
     private enum ToolbarLayout {
         static let transcriptionsSearchWidth: CGFloat = 230
-        static let transcriptionsSearchHeight: CGFloat = 28
         static let navigationButtonSize: CGFloat = 32
         static let navigationDividerHeight: CGFloat = 18
     }
@@ -287,20 +286,10 @@ private extension SettingsView {
 
     @ViewBuilder
     private var transcriptionsSearchField: some View {
-        if #available(macOS 26.0, *) {
-            NativeSearchField(
-                text: $transcriptionsSearchText,
-                placeholder: "settings.transcriptions.search_placeholder".localized,
-                style: .standard
-            )
-            .frame(height: ToolbarLayout.transcriptionsSearchHeight)
-        } else {
-            NativeSearchField(
-                text: $transcriptionsSearchText,
-                placeholder: "settings.transcriptions.search_placeholder".localized
-            )
-            .frame(height: ToolbarLayout.transcriptionsSearchHeight)
-        }
+        SettingsSearchField(
+            text: $transcriptionsSearchText,
+            placeholder: "settings.transcriptions.search_placeholder".localized
+        )
     }
 
     @available(macOS 26.0, *)
