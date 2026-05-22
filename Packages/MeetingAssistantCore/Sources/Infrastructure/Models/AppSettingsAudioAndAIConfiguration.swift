@@ -368,6 +368,7 @@ public enum TranscriptionInputLanguageHint: String, CaseIterable, Codable, Senda
 public enum TranscriptionProvider: String, CaseIterable, Codable, Sendable {
     case local
     case groq
+    case elevenLabs
 
     public static let localModelID = LocalTranscriptionModel.parakeetTdt06BV3.rawValue
     public static let cohereLocalModelID = LocalTranscriptionModel.cohereTranscribe032026CoreML6Bit.rawValue
@@ -379,12 +380,19 @@ public enum TranscriptionProvider: String, CaseIterable, Codable, Sendable {
         "whisper-large-v3",
     ]
 
+    public static let elevenLabsPresetModelIDs = [
+        "scribe_v1",
+        "scribe_v2",
+    ]
+
     public var defaultModelID: String {
         switch self {
         case .local:
             Self.localModelID
         case .groq:
             Self.groqPresetModelIDs[0]
+        case .elevenLabs:
+            Self.elevenLabsPresetModelIDs[0]
         }
     }
 
@@ -392,7 +400,7 @@ public enum TranscriptionProvider: String, CaseIterable, Codable, Sendable {
         switch self {
         case .local:
             false
-        case .groq:
+        case .groq, .elevenLabs:
             true
         }
     }

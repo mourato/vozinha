@@ -12,6 +12,10 @@ public protocol KeychainProvider: Sendable {
     func retrieveAPIKey(for provider: AIProvider) throws -> String?
     func retrieveAPIKeys(for providers: [AIProvider]) throws -> [AIProvider: String]
     func existsAPIKey(for provider: AIProvider) -> Bool
+    func storeTranscriptionAPIKey(_ value: String, for provider: TranscriptionProvider) throws
+    func retrieveTranscriptionAPIKey(for provider: TranscriptionProvider) throws -> String?
+    func existsTranscriptionAPIKey(for provider: TranscriptionProvider) -> Bool
+    func deleteTranscriptionAPIKey(for provider: TranscriptionProvider) throws
 }
 
 public extension KeychainProvider {
@@ -28,6 +32,22 @@ public extension KeychainProvider {
         }
 
         return valuesByProvider
+    }
+
+    func storeTranscriptionAPIKey(_ value: String, for provider: TranscriptionProvider) throws {
+        try KeychainManager.storeTranscriptionAPIKey(value, for: provider)
+    }
+
+    func retrieveTranscriptionAPIKey(for provider: TranscriptionProvider) throws -> String? {
+        try KeychainManager.retrieveTranscriptionAPIKey(for: provider)
+    }
+
+    func existsTranscriptionAPIKey(for provider: TranscriptionProvider) -> Bool {
+        KeychainManager.existsTranscriptionAPIKey(for: provider)
+    }
+
+    func deleteTranscriptionAPIKey(for provider: TranscriptionProvider) throws {
+        try KeychainManager.deleteTranscriptionAPIKey(for: provider)
     }
 }
 
@@ -60,6 +80,22 @@ public struct DefaultKeychainProvider: KeychainProvider {
     public func existsAPIKey(for provider: AIProvider) -> Bool {
         KeychainManager.existsAPIKey(for: provider)
     }
+
+    public func storeTranscriptionAPIKey(_ value: String, for provider: TranscriptionProvider) throws {
+        try KeychainManager.storeTranscriptionAPIKey(value, for: provider)
+    }
+
+    public func retrieveTranscriptionAPIKey(for provider: TranscriptionProvider) throws -> String? {
+        try KeychainManager.retrieveTranscriptionAPIKey(for: provider)
+    }
+
+    public func existsTranscriptionAPIKey(for provider: TranscriptionProvider) -> Bool {
+        KeychainManager.existsTranscriptionAPIKey(for: provider)
+    }
+
+    public func deleteTranscriptionAPIKey(for provider: TranscriptionProvider) throws {
+        try KeychainManager.deleteTranscriptionAPIKey(for: provider)
+    }
 }
 
 public enum KeychainManager {
@@ -80,6 +116,7 @@ public enum KeychainManager {
         case aiAPIKeyGroq = "ai_api_key_groq"
         case aiAPIKeyGoogle = "ai_api_key_google"
         case aiAPIKeyCustom = "ai_api_key_custom"
+        case transcriptionAPIKeyElevenLabs = "transcription_api_key_elevenlabs"
     }
 
     // MARK: - Errors
@@ -237,6 +274,50 @@ public enum KeychainManager {
             return true
         }
         return exists(for: .aiAPIKey)
+    }
+
+    public static func storeTranscriptionAPIKey(_ value: String, for provider: TranscriptionProvider) throws {
+        switch provider {
+        case .local:
+            return
+        case .groq:
+            try store(value, for: .aiAPIKeyGroq)
+        case .elevenLabs:
+            try store(value, for: .transcriptionAPIKeyElevenLabs)
+        }
+    }
+
+    public static func retrieveTranscriptionAPIKey(for provider: TranscriptionProvider) throws -> String? {
+        switch provider {
+        case .local:
+            return nil
+        case .groq:
+            return try retrieveAPIKey(for: .groq)
+        case .elevenLabs:
+            return try retrieve(for: .transcriptionAPIKeyElevenLabs)
+        }
+    }
+
+    public static func existsTranscriptionAPIKey(for provider: TranscriptionProvider) -> Bool {
+        switch provider {
+        case .local:
+            return true
+        case .groq:
+            return existsAPIKey(for: .groq)
+        case .elevenLabs:
+            return exists(for: .transcriptionAPIKeyElevenLabs)
+        }
+    }
+
+    public static func deleteTranscriptionAPIKey(for provider: TranscriptionProvider) throws {
+        switch provider {
+        case .local:
+            return
+        case .groq:
+            try delete(for: .aiAPIKeyGroq)
+        case .elevenLabs:
+            try delete(for: .transcriptionAPIKeyElevenLabs)
+        }
     }
 
     public static func registrationAPIKeyAccount(for registrationID: UUID) -> String {

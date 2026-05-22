@@ -87,7 +87,7 @@ public struct ServiceTranscriptionProviderSection: View {
                     .font(.caption)
                     .foregroundStyle(.secondary)
 
-                if viewModel.shouldShowGroqAPIKeyActions {
+                if viewModel.shouldShowRemoteTranscriptionAPIKeyActions {
                     if viewModel.isDictationProviderReady {
                         HStack(spacing: 8) {
                             Image(systemName: "lock.fill")
@@ -96,17 +96,68 @@ public struct ServiceTranscriptionProviderSection: View {
                             Text("settings.ai.keychain_secure".localized)
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
+
+                            Button {
+                                viewModel.removeTranscriptionAPIKey()
+                            } label: {
+                                Text("settings.ai.remove_key".localized)
+                            }
+                            .buttonStyle(.bordered)
+                            .tint(AppDesignSystem.Colors.error)
+                            .controlSize(.regular)
                         }
                     } else {
                         DSCallout(
                             kind: .warning,
-                            title: "settings.service.transcription_provider.missing_key.title".localized,
-                            message: "settings.service.transcription_provider.missing_key.message".localized
+                            title: "settings.service.transcription_provider.missing_key.title".localized(
+                                with: viewModel.selectedRemoteProviderDisplayName
+                            ),
+                            message: "settings.service.transcription_provider.missing_key.message".localized(
+                                with: viewModel.selectedRemoteProviderDisplayName
+                            )
                         )
                     }
 
-                    if let url = AIProvider.groq.apiKeyURL {
-                        Button("settings.service.transcription_provider.get_api_key".localized) {
+                    if viewModel.shouldShowInlineTranscriptionAPIKeyInput {
+                        HStack(alignment: .firstTextBaseline, spacing: 10) {
+                            Text("settings.ai.api_key".localized)
+                                .foregroundStyle(.secondary)
+                                .frame(width: 100, alignment: .leading)
+
+                            SecureField(
+                                "settings.ai.api_key_placeholder".localized,
+                                text: Binding(
+                                    get: { viewModel.transcriptionAPIKeyInput },
+                                    set: { viewModel.transcriptionAPIKeyInput = $0 }
+                                )
+                            )
+                            .textFieldStyle(.roundedBorder)
+
+                            Button("common.save".localized) {
+                                viewModel.saveTranscriptionAPIKey()
+                            }
+                            .buttonStyle(.borderedProminent)
+                            .controlSize(.regular)
+                            .disabled(!viewModel.hasPendingTranscriptionAPIKeyInput)
+                        }
+
+                        if let keyError = viewModel.transcriptionAPIKeyErrorMessage,
+                           !keyError.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+                        {
+                            DSCallout(
+                                kind: .error,
+                                title: "common.error".localized,
+                                message: keyError
+                            )
+                        }
+                    }
+
+                    if let url = viewModel.selectedRemoteProviderGetAPIKeyURL {
+                        Button(
+                            "settings.service.transcription_provider.get_api_key".localized(
+                                with: viewModel.selectedRemoteProviderDisplayName
+                            )
+                        ) {
                             NSWorkspace.shared.open(url)
                         }
                         .buttonStyle(.bordered)
@@ -163,6 +214,8 @@ public struct ServiceTranscriptionProviderSection: View {
             "settings.service.transcription_provider.option.local".localized
         case .groq:
             "settings.service.transcription_provider.option.groq".localized
+        case .elevenLabs:
+            "settings.service.transcription_provider.option.elevenlabs".localized
         }
     }
 }

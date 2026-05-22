@@ -16,6 +16,7 @@ public class TranscriptionClient: ObservableObject, TranscriptionService, Transc
     private let logger = Logger(subsystem: AppIdentity.logSubsystem, category: "TranscriptionClient")
     private let settingsStore: AppSettingsStore
     private let groqTranscriptionClient: GroqTranscriptionClient
+    private let elevenLabsTranscriptionClient: ElevenLabsTranscriptionClient
 
     public enum CachedReadinessState: String, Sendable {
         case unknown
@@ -33,6 +34,7 @@ public class TranscriptionClient: ObservableObject, TranscriptionService, Transc
         case xpc
         case local
         case groq(modelID: String)
+        case elevenLabs(modelID: String)
     }
 
     private var transcriptionImplementation: TranscriptionImplementation {
@@ -52,10 +54,12 @@ public class TranscriptionClient: ObservableObject, TranscriptionService, Transc
 
     private init(
         settingsStore: AppSettingsStore = .shared,
-        groqTranscriptionClient: GroqTranscriptionClient = GroqTranscriptionClient()
+        groqTranscriptionClient: GroqTranscriptionClient = GroqTranscriptionClient(),
+        elevenLabsTranscriptionClient: ElevenLabsTranscriptionClient = ElevenLabsTranscriptionClient()
     ) {
         self.settingsStore = settingsStore
         self.groqTranscriptionClient = groqTranscriptionClient
+        self.elevenLabsTranscriptionClient = elevenLabsTranscriptionClient
     }
 
     /// Check if the transcription service is healthy.
@@ -227,6 +231,8 @@ public class TranscriptionClient: ObservableObject, TranscriptionService, Transc
             "local"
         case .groq:
             "groq"
+        case .elevenLabs:
+            "elevenlabs"
         }
 
         AppLogger.info(
@@ -260,6 +266,13 @@ public class TranscriptionClient: ObservableObject, TranscriptionService, Transc
             )
         case let .groq(modelID):
             return try await transcribeViaGroq(
+                audioURL: audioURL,
+                modelID: modelID,
+                onProgress: onProgress,
+                inputLanguageCode: inputLanguageCode
+            )
+        case let .elevenLabs(modelID):
+            return try await transcribeViaElevenLabs(
                 audioURL: audioURL,
                 modelID: modelID,
                 onProgress: onProgress,
@@ -429,6 +442,38 @@ public class TranscriptionClient: ObservableObject, TranscriptionService, Transc
         }
     }
 
+    private func transcribeViaElevenLabs(
+        audioURL: URL,
+        modelID: String,
+        onProgress: (@Sendable (Double) -> Void)?,
+        inputLanguageCode: String?
+    ) async throws -> TranscriptionResponse {
+        do {
+            let response = try await elevenLabsTranscriptionClient.transcribe(
+                audioURL: audioURL,
+                modelID: modelID,
+                inputLanguageCode: inputLanguageCode,
+                onProgress: onProgress
+            )
+            updateCachedReadiness(.healthy)
+            AppLogger.info(
+                "Transcription completed via ElevenLabs",
+                category: .transcriptionEngine,
+                extra: ["words": response.text.split(separator: " ").count, "model": response.model]
+            )
+            return response
+        } catch {
+            updateCachedReadiness(.unhealthy)
+            AppLogger.error(
+                "Transcription failed via ElevenLabs",
+                category: .transcriptionEngine,
+                error: error,
+                extra: ["filename": audioURL.lastPathComponent, "model": modelID]
+            )
+            throw error
+        }
+    }
+
     private func executionMode(for capturePurpose: CapturePurpose) -> TranscriptionExecutionMode {
         switch capturePurpose {
         case .meeting:
@@ -444,6 +489,8 @@ public class TranscriptionClient: ObservableObject, TranscriptionService, Transc
             transcriptionImplementation == .xpc ? .xpc : .local
         case .groq:
             .groq(modelID: selection.selectedModel)
+        case .elevenLabs:
+            .elevenLabs(modelID: selection.selectedModel)
         }
     }
 

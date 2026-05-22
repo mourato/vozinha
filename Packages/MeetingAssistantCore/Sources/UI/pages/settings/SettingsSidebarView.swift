@@ -7,9 +7,7 @@ struct SettingsSidebarView: View {
     let onSelectSection: (SettingsSection) -> Void
 
     var body: some View {
-        VStack(spacing: 8) {
-            searchField
-
+        Group {
             if hasActiveSearch {
                 searchResultsList
             } else {
@@ -39,12 +37,10 @@ struct SettingsSidebarView: View {
             }
         }
         .listStyle(.sidebar)
-    }
-
-    private var searchField: some View {
-        SettingsSearchField(
+        .searchable(
             text: $searchText,
-            placeholder: "settings.search.placeholder".localized
+            placement: .sidebar,
+            prompt: "settings.search.placeholder".localized
         )
     }
 
@@ -85,6 +81,11 @@ struct SettingsSidebarView: View {
             }
         }
         .listStyle(.sidebar)
+        .searchable(
+            text: $searchText,
+            placement: .sidebar,
+            prompt: "settings.search.placeholder".localized
+        )
     }
 
     private func sidebarLabel(for section: SettingsSection) -> some View {

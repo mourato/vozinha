@@ -217,7 +217,8 @@ public enum AppDesignSystem {
                 let lightSurface = NSColor.windowBackgroundColor.withAlphaComponent(
                     Accessibility.increaseContrast ? alpha.highContrastLight : alpha.light
                 )
-                let darkSurface = NSColor.controlBackgroundColor.withAlphaComponent(
+                let darkBase = elevatedDarkSettingsSurface(for: intensity)
+                let darkSurface = darkBase.withAlphaComponent(
                     Accessibility.increaseContrast ? alpha.highContrastDark : alpha.dark
                 )
 
@@ -367,6 +368,25 @@ public enum AppDesignSystem {
                     highContrastDark: 0.52
                 )
             }
+        }
+
+        private static func elevatedDarkSettingsSurface(
+            for intensity: AppDesignSystem.SettingsSurfaceIntensity
+        ) -> NSColor {
+            let brightenFraction: CGFloat
+
+            switch intensity {
+            case .subtle:
+                brightenFraction = Accessibility.increaseContrast ? 0.12 : 0.07
+            case .regular:
+                brightenFraction = Accessibility.increaseContrast ? 0.16 : 0.10
+            case .strong:
+                brightenFraction = Accessibility.increaseContrast ? 0.20 : 0.13
+            }
+
+            return NSColor.controlBackgroundColor
+                .blended(withFraction: brightenFraction, of: .white)
+                ?? .controlBackgroundColor
         }
     }
 

@@ -72,7 +72,7 @@ public extension AppSettingsStore {
     func resolvedTranscriptionInputLanguageCode(for mode: TranscriptionExecutionMode) -> String? {
         let provider = resolvedTranscriptionSelection(for: mode).provider
         switch provider {
-        case .local, .groq:
+        case .local, .groq, .elevenLabs:
             return transcriptionInputLanguageHint.languageCode
         }
     }

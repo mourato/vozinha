@@ -15,6 +15,8 @@ public class ServiceSettingsViewModel: ObservableObject {
     @Published public var isASRInstalled: Bool = false
     @Published public var isDiarizationLoaded: Bool = false
     @Published public var asrLastErrorMessage: String?
+    @Published public var transcriptionAPIKeyInput: String = ""
+    @Published public var transcriptionAPIKeyErrorMessage: String?
 
     private let transcriptionClient: TranscriptionClient
     private let settings: AppSettingsStore
@@ -160,6 +162,8 @@ public class ServiceSettingsViewModel: ObservableObject {
             MeetingAssistantCoreInfrastructure.TranscriptionProvider.localPresetModelIDs
         case .groq:
             MeetingAssistantCoreInfrastructure.TranscriptionProvider.groqPresetModelIDs
+        case .elevenLabs:
+            MeetingAssistantCoreInfrastructure.TranscriptionProvider.elevenLabsPresetModelIDs
         }
     }
 
@@ -217,8 +221,34 @@ public class ServiceSettingsViewModel: ObservableObject {
         }
     }
 
-    public var shouldShowGroqAPIKeyActions: Bool {
-        selectedDictationProvider == .groq
+    public var shouldShowRemoteTranscriptionAPIKeyActions: Bool {
+        selectedDictationProvider.usesRemoteInference
+    }
+
+    public var shouldShowInlineTranscriptionAPIKeyInput: Bool {
+        selectedDictationProvider == .elevenLabs && !isDictationProviderReady
+    }
+
+    public var selectedRemoteProviderGetAPIKeyURL: URL? {
+        switch selectedDictationProvider {
+        case .local:
+            nil
+        case .groq:
+            AIProvider.groq.apiKeyURL
+        case .elevenLabs:
+            URL(string: "https://elevenlabs.io/app/settings/api-keys")
+        }
+    }
+
+    public var selectedRemoteProviderDisplayName: String {
+        switch selectedDictationProvider {
+        case .local:
+            "settings.service.transcription_provider.option.local".localized
+        case .groq:
+            "settings.service.transcription_provider.option.groq".localized
+        case .elevenLabs:
+            "settings.service.transcription_provider.option.elevenlabs".localized
+        }
     }
 
     public var isDictationProviderReady: Bool {
@@ -227,7 +257,13 @@ public class ServiceSettingsViewModel: ObservableObject {
             true
         case .groq:
             keychain.existsAPIKey(for: .groq)
+        case .elevenLabs:
+            keychain.existsTranscriptionAPIKey(for: .elevenLabs)
         }
+    }
+
+    public var hasPendingTranscriptionAPIKeyInput: Bool {
+        !transcriptionAPIKeyInput.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
 
     public func updateDictationProvider(rawValue: String) {
@@ -235,6 +271,8 @@ public class ServiceSettingsViewModel: ObservableObject {
             return
         }
         settings.updateTranscriptionDictationProvider(provider)
+        transcriptionAPIKeyErrorMessage = nil
+        loadTranscriptionAPIKeyInputForCurrentProvider()
         objectWillChange.send()
     }
 
@@ -249,6 +287,34 @@ public class ServiceSettingsViewModel: ObservableObject {
         objectWillChange.send()
     }
 
+    public func saveTranscriptionAPIKey() {
+        let trimmed = transcriptionAPIKeyInput.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else {
+            transcriptionAPIKeyErrorMessage = "settings.service.transcription_provider.api_key.error.empty".localized
+            return
+        }
+
+        do {
+            try keychain.storeTranscriptionAPIKey(trimmed, for: selectedDictationProvider)
+            transcriptionAPIKeyInput = ""
+            transcriptionAPIKeyErrorMessage = nil
+            objectWillChange.send()
+        } catch {
+            transcriptionAPIKeyErrorMessage = error.localizedDescription
+        }
+    }
+
+    public func removeTranscriptionAPIKey() {
+        do {
+            try keychain.deleteTranscriptionAPIKey(for: selectedDictationProvider)
+            transcriptionAPIKeyInput = ""
+            transcriptionAPIKeyErrorMessage = nil
+            objectWillChange.send()
+        } catch {
+            transcriptionAPIKeyErrorMessage = error.localizedDescription
+        }
+    }
+
     public func displayName(forModelID modelID: String) -> String {
         if let localModel = MeetingAssistantCoreInfrastructure.LocalTranscriptionModel(rawValue: modelID) {
             switch localModel {
@@ -257,8 +323,17 @@ public class ServiceSettingsViewModel: ObservableObject {
             case .cohereTranscribe032026CoreML6Bit:
                 "settings.service.transcription_provider.model_option.local.cohere".localized
             }
+        } else if modelID == "scribe_v1" {
+            "settings.service.transcription_provider.model_option.elevenlabs.scribe_v1".localized
+        } else if modelID == "scribe_v2" {
+            "settings.service.transcription_provider.model_option.elevenlabs.scribe_v2".localized
         } else {
             modelID
         }
+    }
+
+    private func loadTranscriptionAPIKeyInputForCurrentProvider() {
+        transcriptionAPIKeyInput = ""
+        transcriptionAPIKeyErrorMessage = nil
     }
 }

@@ -487,4 +487,26 @@ final class AppSettingsStoreAISelectionTests: XCTestCase {
 
         XCTAssertFalse(settings.supportsIncrementalTranscription(for: .meeting))
     }
+
+    func testResolvedTranscriptionSelection_DictationSupportsElevenLabsProvider() {
+        settings.updateTranscriptionDictationSelection(
+            provider: .elevenLabs,
+            model: "scribe_v2"
+        )
+
+        let resolved = settings.resolvedTranscriptionSelection(for: .dictation)
+
+        XCTAssertEqual(resolved.provider, .elevenLabs)
+        XCTAssertEqual(resolved.selectedModel, "scribe_v2")
+    }
+
+    func testSupportsIncrementalTranscription_DisabledForElevenLabsDictationEnabledForMeeting() {
+        settings.updateTranscriptionDictationSelection(
+            provider: .elevenLabs,
+            model: "scribe_v1"
+        )
+
+        XCTAssertFalse(settings.supportsIncrementalTranscription(for: .dictation))
+        XCTAssertTrue(settings.supportsIncrementalTranscription(for: .meeting))
+    }
 }
