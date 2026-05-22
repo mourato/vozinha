@@ -12,20 +12,28 @@ public struct SettingsInlineList<Item: Identifiable, RowContent: View>: View {
         case warning(title: String, message: String? = nil)
     }
 
+    public enum ContainerStyle {
+        case card
+        case plain
+    }
+
     private let items: [Item]
     private let emptyText: String
     private let state: State
+    private let containerStyle: ContainerStyle
     private let rowContent: (Item) -> RowContent
 
     public init(
         items: [Item],
         emptyText: String,
         state: State = .ready,
+        containerStyle: ContainerStyle = .card,
         @ViewBuilder rowContent: @escaping (Item) -> RowContent
     ) {
         self.items = items
         self.emptyText = emptyText
         self.state = state
+        self.containerStyle = containerStyle
         self.rowContent = rowContent
     }
 
@@ -47,17 +55,26 @@ public struct SettingsInlineList<Item: Identifiable, RowContent: View>: View {
                 .font(.caption)
                 .foregroundStyle(.secondary)
         } else {
-            VStack(spacing: 0) {
-                ForEach(Array(items.enumerated()), id: \.element.id) { index, item in
-                    rowContent(item)
+            switch containerStyle {
+            case .card:
+                rows
+                    .background(AppDesignSystem.Colors.subtleFill2)
+                    .clipShape(RoundedRectangle(cornerRadius: AppDesignSystem.Layout.smallCornerRadius))
+            case .plain:
+                rows
+            }
+        }
+    }
 
-                    if index < items.count - 1 {
-                        Divider()
-                    }
+    private var rows: some View {
+        VStack(spacing: 0) {
+            ForEach(Array(items.enumerated()), id: \.element.id) { index, item in
+                rowContent(item)
+
+                if index < items.count - 1 {
+                    Divider()
                 }
             }
-            .background(AppDesignSystem.Colors.subtleFill2)
-            .clipShape(RoundedRectangle(cornerRadius: AppDesignSystem.Layout.smallCornerRadius))
         }
     }
 }

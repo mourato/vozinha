@@ -411,7 +411,8 @@ public struct MeetingSettingsTab: View {
             VStack(alignment: .leading, spacing: 12) {
                 SettingsInlineList(
                     items: webTargetsViewModel.targets,
-                    emptyText: "settings.meetings.web_targets.empty".localized
+                    emptyText: "settings.meetings.web_targets.empty".localized,
+                    containerStyle: .plain
                 ) { target in
                     webTargetRow(target)
                 }

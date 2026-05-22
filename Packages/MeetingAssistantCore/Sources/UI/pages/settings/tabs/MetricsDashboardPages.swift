@@ -220,7 +220,7 @@ private struct MetricsDashboardMoreInsightsLinkSection: View {
     let openMoreInsights: () -> Void
 
     var body: some View {
-        DSCard {
+        DSGroup {
             SettingsDrillDownButtonRow(
                 title: "metrics.more_insights.title".localized,
                 accessibilityHint: "metrics.more_insights.accessibility_hint".localized

@@ -58,7 +58,11 @@ public struct StylesSettingsTab: View {
                 .font(.caption)
                 .foregroundStyle(.secondary)
         } else {
-            SettingsInlineList(items: viewModel.styles, emptyText: "settings.styles.empty".localized) { style in
+            SettingsInlineList(
+                items: viewModel.styles,
+                emptyText: "settings.styles.empty".localized,
+                containerStyle: .plain
+            ) { style in
                 styleRow(style)
             }
         }

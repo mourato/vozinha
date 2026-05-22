@@ -294,7 +294,8 @@ private extension AudioSettingsTab {
 
             SettingsInlineList(
                 items: [AudioDeviceOption(id: viewModel.systemDefaultInputDevice?.id ?? "__current_system_default__", device: viewModel.systemDefaultInputDevice)],
-                emptyText: "settings.general.audio_devices_empty".localized
+                emptyText: "settings.general.audio_devices_empty".localized,
+                containerStyle: .plain
             ) { option in
                 audioDeviceStatusRow(
                     iconSystemName: option.device == nil ? "desktopcomputer" : "mic.fill",
@@ -338,7 +339,8 @@ private extension AudioSettingsTab {
 
                 SettingsInlineList(
                     items: audioDeviceOptions(for: selectedCustomPowerSource),
-                    emptyText: "settings.general.audio_devices_empty".localized
+                    emptyText: "settings.general.audio_devices_empty".localized,
+                    containerStyle: .plain
                 ) { option in
                     audioDeviceSelectionRow(option: option, powerSource: selectedCustomPowerSource)
                 }

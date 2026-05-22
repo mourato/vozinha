@@ -27,7 +27,8 @@ public struct VocabularySettingsTab: View {
 
                     SettingsInlineList(
                         items: viewModel.rules,
-                        emptyText: "settings.vocabulary.empty".localized
+                        emptyText: "settings.vocabulary.empty".localized,
+                        containerStyle: .plain
                     ) { rule in
                         row(for: rule)
                     }

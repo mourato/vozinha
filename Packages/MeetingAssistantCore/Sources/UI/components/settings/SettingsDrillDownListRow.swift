@@ -5,6 +5,7 @@ public struct SettingsDrillDownListRow<Destination: Hashable>: View {
     private let title: String
     private let subtitle: String?
     private let accessibilityHint: String?
+    @State private var isHovered = false
 
     public init(
         destination: Destination,
@@ -20,9 +21,12 @@ public struct SettingsDrillDownListRow<Destination: Hashable>: View {
 
     public var body: some View {
         NavigationLink(value: destination) {
-            SettingsDrillDownRowLabel(title: title, subtitle: subtitle)
+            SettingsDrillDownRowLabel(title: title, subtitle: subtitle, isHovered: isHovered)
         }
         .buttonStyle(.plain)
+        .onHover { hovering in
+            isHovered = hovering
+        }
         .accessibilityElement(children: .combine)
         .modifier(OptionalAccessibilityHintModifier(accessibilityHint: accessibilityHint))
     }
@@ -33,6 +37,7 @@ public struct SettingsDrillDownButtonRow: View {
     private let subtitle: String?
     private let accessibilityHint: String?
     private let action: () -> Void
+    @State private var isHovered = false
 
     public init(
         title: String,
@@ -48,9 +53,12 @@ public struct SettingsDrillDownButtonRow: View {
 
     public var body: some View {
         Button(action: action) {
-            SettingsDrillDownRowLabel(title: title, subtitle: subtitle)
+            SettingsDrillDownRowLabel(title: title, subtitle: subtitle, isHovered: isHovered)
         }
         .buttonStyle(.plain)
+        .onHover { hovering in
+            isHovered = hovering
+        }
         .accessibilityElement(children: .combine)
         .modifier(OptionalAccessibilityHintModifier(accessibilityHint: accessibilityHint))
     }
@@ -59,6 +67,7 @@ public struct SettingsDrillDownButtonRow: View {
 private struct SettingsDrillDownRowLabel: View {
     let title: String
     let subtitle: String?
+    let isHovered: Bool
 
     var body: some View {
         HStack(spacing: 8) {
@@ -75,7 +84,13 @@ private struct SettingsDrillDownRowLabel: View {
         }
         .padding(.horizontal, 0)
         .padding(.vertical, 16)
+        .background(
+            RoundedRectangle(cornerRadius: AppDesignSystem.Layout.smallCornerRadius)
+                .fill(AppDesignSystem.Colors.settingsInlineBackground(intensity: .subtle))
+                .opacity(isHovered ? 1 : 0)
+        )
         .clipShape(RoundedRectangle(cornerRadius: AppDesignSystem.Layout.smallCornerRadius))
+        .animation(.easeOut(duration: 0.12), value: isHovered)
         .contentShape(Rectangle())
     }
 }

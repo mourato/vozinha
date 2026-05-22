@@ -433,69 +433,71 @@ private struct UpcomingCalendarEventRow: View {
     let onIgnore: () -> Void
 
     var body: some View {
-        DSCard {
-            HStack(alignment: .top, spacing: 12) {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(event.trimmedTitle.isEmpty ? "metrics.calendar.event.untitled".localized : event.trimmedTitle)
-                        .font(.subheadline.weight(.semibold))
+        HStack(alignment: .top, spacing: 12) {
+            VStack(alignment: .leading, spacing: 4) {
+                Text(event.trimmedTitle.isEmpty ? "metrics.calendar.event.untitled".localized : event.trimmedTitle)
+                    .font(.subheadline.weight(.semibold))
 
-                    Text(timeLabel)
+                Text(timeLabel)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+
+                if let location = event.location?.trimmingCharacters(in: .whitespacesAndNewlines), !location.isEmpty {
+                    Label(location, systemImage: "mappin.and.ellipse")
                         .font(.caption)
                         .foregroundStyle(.secondary)
-
-                    if let location = event.location?.trimmingCharacters(in: .whitespacesAndNewlines), !location.isEmpty {
-                        Label(location, systemImage: "mappin.and.ellipse")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    }
                 }
+            }
 
-                Spacer(minLength: 0)
+            Spacer(minLength: 0)
 
-                if isLinked {
-                    VStack(alignment: .trailing, spacing: 8) {
-                        Label("metrics.calendar.event.linked".localized, systemImage: "checkmark.circle.fill")
-                            .font(.caption.weight(.medium))
-                            .foregroundStyle(AppDesignSystem.Colors.success)
+            if isLinked {
+                VStack(alignment: .trailing, spacing: 8) {
+                    Label("metrics.calendar.event.linked".localized, systemImage: "checkmark.circle.fill")
+                        .font(.caption.weight(.medium))
+                        .foregroundStyle(AppDesignSystem.Colors.success)
 
-                        if isRecording {
-                            Button("metrics.calendar.event.clear".localized) {
-                                onClear()
-                            }
-                            .buttonStyle(.bordered)
-                            .controlSize(.small)
-                        }
-
-                        Button("metrics.calendar.event.ignore".localized, role: .destructive) {
-                            onIgnore()
+                    if isRecording {
+                        Button("metrics.calendar.event.clear".localized) {
+                            onClear()
                         }
                         .buttonStyle(.bordered)
                         .controlSize(.small)
                     }
-                } else if isRecording {
-                    VStack(alignment: .trailing, spacing: 8) {
-                        Button("metrics.calendar.event.use_for_recording".localized) {
-                            onLink()
-                        }
-                        .buttonStyle(.bordered)
-                        .controlSize(.small)
 
-                        Button("metrics.calendar.event.ignore".localized, role: .destructive) {
-                            onIgnore()
-                        }
-                        .buttonStyle(.bordered)
-                        .controlSize(.small)
-                    }
-                } else {
                     Button("metrics.calendar.event.ignore".localized, role: .destructive) {
                         onIgnore()
                     }
                     .buttonStyle(.bordered)
                     .controlSize(.small)
                 }
+            } else if isRecording {
+                VStack(alignment: .trailing, spacing: 8) {
+                    Button("metrics.calendar.event.use_for_recording".localized) {
+                        onLink()
+                    }
+                    .buttonStyle(.bordered)
+                    .controlSize(.small)
+
+                    Button("metrics.calendar.event.ignore".localized, role: .destructive) {
+                        onIgnore()
+                    }
+                    .buttonStyle(.bordered)
+                    .controlSize(.small)
+                }
+            } else {
+                Button("metrics.calendar.event.ignore".localized, role: .destructive) {
+                    onIgnore()
+                }
+                .buttonStyle(.bordered)
+                .controlSize(.small)
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.horizontal, 12)
+        .padding(.vertical, 10)
+        .background(AppDesignSystem.Colors.settingsInlineBackground(intensity: .subtle))
+        .clipShape(RoundedRectangle(cornerRadius: AppDesignSystem.Layout.smallCornerRadius))
         .contentShape(Rectangle())
         .onTapGesture {
             onOpen()
