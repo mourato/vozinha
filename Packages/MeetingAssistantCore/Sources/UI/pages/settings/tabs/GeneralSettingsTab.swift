@@ -78,15 +78,19 @@ public struct GeneralSettingsTab: View {
 
                     Divider()
 
-                    VStack(alignment: .leading, spacing: 8) {
+                    HStack(alignment: .top, spacing: 12) {
                         SettingsTitleWithPopover(
                             title: "settings.general.cancel_recording_shortcut".localized,
                             helperMessage: "settings.general.cancel_recording_shortcut_desc".localized
                         )
 
+                        Spacer()
+
                         DSModifierShortcutEditor(
                             shortcut: $recordingCancelShortcutViewModel.cancelRecordingShortcutDefinition,
-                            conflictMessage: recordingCancelShortcutViewModel.cancelRecordingShortcutConflictMessage
+                            conflictMessage: recordingCancelShortcutViewModel.cancelRecordingShortcutConflictMessage,
+                            showsTitle: false,
+                            maxInputWidth: AppDesignSystem.Layout.maxCompactTextFieldWidth
                         )
                     }
                 }
@@ -160,14 +164,13 @@ public struct GeneralSettingsTab: View {
 
                             Divider()
 
-                            VStack(
-                                alignment: .leading,
-                                spacing: 8
-                            ) {
+                            HStack(spacing: 12) {
                                 SettingsTitleWithPopover(
                                     title: "settings.general.recording_indicator.animation_speed".localized,
                                     helperMessage: "settings.general.recording_indicator.animation_speed_desc".localized
                                 )
+
+                                Spacer()
 
                                 Picker("", selection: $viewModel.recordingIndicatorAnimationSpeed) {
                                     ForEach(RecordingIndicatorAnimationSpeed.allCases, id: \.self) { speed in

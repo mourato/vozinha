@@ -25,6 +25,7 @@ public struct SettingsView: View {
         static let transcriptionsSearchWidth: CGFloat = 230
         static let navigationButtonSize: CGFloat = 32
         static let navigationDividerHeight: CGFloat = 18
+        static let titleSpacing: CGFloat = 10
     }
 
     fileprivate enum ChromeMode {
@@ -132,6 +133,7 @@ public struct SettingsView: View {
 }
 
 private extension SettingsView {
+
     // MARK: - Detail View
 
     var usesToolbarChrome: Bool {
@@ -152,11 +154,7 @@ private extension SettingsView {
     private var settingsToolbarContent: some ToolbarContent {
         if #available(macOS 26.0, *) {
             ToolbarItem(placement: .navigation) {
-                glassNavigationPill
-            }
-
-            ToolbarItem(placement: .principal) {
-                toolbarSectionTitle
+                toolbarLeadingGroup
             }
 
             if shouldShowTranscriptionsSearch {
@@ -206,9 +204,8 @@ private extension SettingsView {
 
     @available(macOS 26.0, *)
     private var tahoeDetailNavigationBar: some View {
-        HStack(spacing: 8) {
-            glassNavigationPill
-            toolbarSectionTitle
+        HStack(spacing: ToolbarLayout.titleSpacing) {
+            toolbarLeadingGroup
             if shouldShowTranscriptionsSearch {
                 Spacer()
                 transcriptionsToolbarSearchField
@@ -217,6 +214,14 @@ private extension SettingsView {
         .padding(.horizontal, 10)
         .padding(.top, 6)
         .padding(.bottom, 6)
+    }
+
+    @available(macOS 26.0, *)
+    private var toolbarLeadingGroup: some View {
+        HStack(spacing: ToolbarLayout.titleSpacing) {
+            glassNavigationPill
+            toolbarSectionTitle
+        }
     }
 
     @available(macOS 26.0, *)
@@ -232,7 +237,6 @@ private extension SettingsView {
         }
         .labelStyle(.titleAndIcon)
         .fixedSize(horizontal: true, vertical: false)
-        .padding(.horizontal, 4)
     }
 
     private var legacyDetailNavigationBar: some View {
@@ -284,7 +288,6 @@ private extension SettingsView {
             .frame(width: ToolbarLayout.transcriptionsSearchWidth)
     }
 
-    @ViewBuilder
     private var transcriptionsSearchField: some View {
         SettingsSearchField(
             text: $transcriptionsSearchText,

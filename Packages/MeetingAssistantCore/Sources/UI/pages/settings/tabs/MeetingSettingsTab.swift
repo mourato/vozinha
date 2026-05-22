@@ -258,19 +258,20 @@ public struct MeetingSettingsTab: View {
                             if meetingViewModel.settings.summaryTemplateEnabled {
                                 Divider()
 
-                                HStack(spacing: 8) {
-                                    Image(systemName: "doc.text")
-                                        .foregroundStyle(AppDesignSystem.Colors.iconHighlight)
-                                    SettingsTitleWithPopover(
-                                        title: "settings.meetings.template".localized,
-                                        helperMessage: "settings.meetings.template_desc".localized,
-                                        font: .subheadline,
-                                        fontWeight: .semibold
-                                    )
-                                }
+                                HStack(spacing: 12) {
+                                    HStack(spacing: 8) {
+                                        Image(systemName: "doc.text")
+                                            .foregroundStyle(AppDesignSystem.Colors.iconHighlight)
+                                        SettingsTitleWithPopover(
+                                            title: "settings.meetings.template".localized,
+                                            helperMessage: "settings.meetings.template_desc".localized,
+                                            font: .subheadline,
+                                            fontWeight: .semibold
+                                        )
+                                    }
 
-                                HStack {
                                     Spacer()
+
                                     Button {
                                         showSummaryTemplateEditor = true
                                     } label: {
