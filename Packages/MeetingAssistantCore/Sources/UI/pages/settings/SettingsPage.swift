@@ -88,6 +88,7 @@ public struct SettingsView: View {
         .toolbarBackgroundVisibility(settingsToolbarBackgroundVisibility, for: .windowToolbar)
         .frame(minWidth: LayoutConstants.windowWidth, minHeight: LayoutConstants.windowHeight)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .subtleScrollbars()
         .onAppear {
             persistSidebarVisibility(columnVisibility)
             if let sectionId = navigationService.requestedSettingsSection,
@@ -119,6 +120,7 @@ public struct SettingsView: View {
             searchText: $settingsSearchText,
             onSelectSection: selectSection
         )
+        .subtleScrollbars()
         .frame(maxHeight: .infinity, alignment: .top)
         .navigationSplitViewColumnWidth(
             min: LayoutConstants.sidebarMinWidth,
@@ -156,7 +158,7 @@ private extension SettingsView {
     }
 
     var settingsNavigationTitle: String {
-        usesToolbarChrome ? selectedSection.title : ""
+        ""
     }
 
     @ToolbarContentBuilder
@@ -164,6 +166,12 @@ private extension SettingsView {
         if #available(macOS 26.0, *) {
             ToolbarItem(placement: .navigation) {
                 toolbarNavigationControlGroup
+            }
+
+            ToolbarSpacer(.fixed, placement: .navigation)
+
+            ToolbarItem(placement: .navigation) {
+                toolbarSectionTitle
             }
 
             if shouldShowTranscriptionsSearch {

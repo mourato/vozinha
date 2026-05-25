@@ -568,10 +568,17 @@ final class SettingsWindowController {
         )
         settingsWindow.setContentSize(Layout.defaultContentSize)
         settingsWindow.contentMinSize = Layout.defaultContentSize
-        settingsWindow.styleMask.insert(.fullSizeContentView)
         settingsWindow.title = "settings.title".localized
-        settingsWindow.titleVisibility = .hidden
-        settingsWindow.titlebarAppearsTransparent = true
+
+        if #available(macOS 26.0, *) {
+            settingsWindow.titleVisibility = .visible
+            settingsWindow.titlebarAppearsTransparent = false
+        } else {
+            settingsWindow.styleMask.insert(.fullSizeContentView)
+            settingsWindow.titleVisibility = .hidden
+            settingsWindow.titlebarAppearsTransparent = true
+        }
+
         settingsWindow.toolbarStyle = .unified
         settingsWindow.toolbar = NSToolbar(identifier: NSToolbar.Identifier(AppIdentity.settingsToolbarIdentifier))
         settingsWindow.isOpaque = false
