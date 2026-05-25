@@ -52,31 +52,15 @@ struct SwiftEnergyMeterKernel: EnergyMeterKernel {
         }
 
         let sanitizedBarCount = max(0, barCount)
-        let barPowerDBLevels: [Float] = if sanitizedBarCount == 0 {
-            []
-        } else {
-            (0..<sanitizedBarCount).map { bucketIndex in
-                let start = Int(Double(bucketIndex) * Double(frameLength) / Double(sanitizedBarCount))
-                let end = Int(Double(bucketIndex + 1) * Double(frameLength) / Double(sanitizedBarCount))
-                guard end > start else { return -160.0 }
+        let barPowerDBLevels = Self.makeBarPowerDBLevels(
+            channelData: channelData,
+            channelCount: channelCount,
+            frameLength: frameLength,
+            barCount: sanitizedBarCount
+        )
 
-                var maxBucketPeak: Float = 0.0
-                for channelIndex in 0..<channelCount {
-                    let channel = channelData[channelIndex]
-                    for frame in start..<end {
-                        let sample = abs(channel[frame])
-                        if sample > maxBucketPeak {
-                            maxBucketPeak = sample
-                        }
-                    }
-                }
-
-                return 20.0 * log10(max(maxBucketPeak, 1e-10))
-            }
-        }
-
-        let averagePowerDB = 20.0 * log10(max(maxRMS, 1e-10))
-        let peakPowerDB = 20.0 * log10(max(maxPeak, 1e-10))
+        let averagePowerDB = Self.powerDB(fromLinear: maxRMS)
+        let peakPowerDB = Self.powerDB(fromLinear: maxPeak)
 
         return AudioRecordingWorker.MeterSnapshot(
             averagePowerDB: averagePowerDB,
@@ -84,6 +68,38 @@ struct SwiftEnergyMeterKernel: EnergyMeterKernel {
             barPowerDBLevels: barPowerDBLevels,
             deltaTime: Double(frameLength) / sampleRate
         )
+    }
+
+    static func makeBarPowerDBLevels(
+        channelData: UnsafePointer<UnsafeMutablePointer<Float>>,
+        channelCount: Int,
+        frameLength: Int,
+        barCount: Int
+    ) -> [Float] {
+        guard barCount > 0 else { return [] }
+
+        return (0..<barCount).map { bucketIndex in
+            let start = Int(Double(bucketIndex) * Double(frameLength) / Double(barCount))
+            let end = Int(Double(bucketIndex + 1) * Double(frameLength) / Double(barCount))
+            guard end > start else { return -160.0 }
+
+            var maxBucketPeak: Float = 0.0
+            for channelIndex in 0..<channelCount {
+                let channel = channelData[channelIndex]
+                for frame in start..<end {
+                    let sample = abs(channel[frame])
+                    if sample > maxBucketPeak {
+                        maxBucketPeak = sample
+                    }
+                }
+            }
+
+            return powerDB(fromLinear: maxBucketPeak)
+        }
+    }
+
+    static func powerDB(fromLinear value: Float) -> Float {
+        20.0 * log10(max(value, 1e-10))
     }
 }
 

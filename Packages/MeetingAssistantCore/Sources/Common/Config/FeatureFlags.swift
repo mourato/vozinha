@@ -34,6 +34,11 @@ public enum FeatureFlags {
     /// Enable real-time VAD for meeting incremental transcription windows.
     public static let enableRealtimeVADForMeetings: Bool = true
 
+    /// Selects Rust-backed audio math kernels for the pilot path.
+    /// Current behavior keeps Swift math as the effective implementation while
+    /// preserving backend routing for Phase 2 integration.
+    public static let enableRustAudioMathKernels: Bool = false
+
     /// Enable cached readiness gating instead of synchronous health checks in the critical path.
     public static let enableCachedTranscriptionReadinessGate: Bool = true
 
