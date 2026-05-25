@@ -52,7 +52,16 @@ public struct AudioKernelProvider: Sendable {
     }
 
     static func forFeatureFlags(enableRustAudioMathKernels: Bool) -> AudioKernelProvider {
-        enableRustAudioMathKernels ? rustPilot : swift
+        let provider = enableRustAudioMathKernels ? rustPilot : swift
+        AppLogger.info(
+            "Audio kernel backend selected",
+            category: .audio,
+            extra: [
+                "backend": provider.backend.diagnosticsValue,
+                "enableRustAudioMathKernels": enableRustAudioMathKernels,
+            ]
+        )
+        return provider
     }
 
     private static let swift = AudioKernelProvider(
@@ -92,9 +101,32 @@ private actor RustVoiceActivityKernel: VoiceActivityKernel {
 
 struct RustEnergyMeterKernel: EnergyMeterKernel {
     private let ffi: RustAudioKernelFFI?
+    private let loadSource: RustAudioKernelFFI.LoadSource
+    private let loadedLibraryPath: String?
 
-    init(ffi: RustAudioKernelFFI? = RustAudioKernelFFI.loadFromProcessSymbols()) {
-        self.ffi = ffi
+    private enum RuntimePath: String {
+        case swiftFallback = "swift_fallback"
+        case rustFFI = "rust_ffi"
+    }
+
+    private enum FallbackReason: String {
+        case nonMonoInput = "non_mono_input"
+        case ffiUnavailable = "ffi_unavailable"
+        case ffiComputationFailed = "ffi_computation_failed"
+    }
+
+    init(ffi: RustAudioKernelFFI? = nil) {
+        if let ffi {
+            self.ffi = ffi
+            loadSource = .processSymbols
+            loadedLibraryPath = nil
+        } else {
+            let loadResult = RustAudioKernelFFI.loadForRuntime()
+            self.ffi = loadResult.ffi
+            loadSource = loadResult.source
+            loadedLibraryPath = loadResult.libraryPath
+            logLoaderDiagnostics(loadResult: loadResult)
+        }
     }
 
     func makeMeterSnapshot(
@@ -114,14 +146,43 @@ struct RustEnergyMeterKernel: EnergyMeterKernel {
             barCount: max(0, barCount)
         )
 
-        guard channelCount == 1, let ffi else {
+        guard channelCount == 1 else {
+            logRuntimePath(
+                .swiftFallback,
+                frameLength: frameLength,
+                barCount: barCount,
+                fallbackReason: .nonMonoInput
+            )
+            return SwiftEnergyMeterKernel.shared.makeMeterSnapshot(from: buffer, barCount: barCount)
+        }
+
+        guard let ffi else {
+            logRuntimePath(
+                .swiftFallback,
+                frameLength: frameLength,
+                barCount: barCount,
+                fallbackReason: .ffiUnavailable
+            )
             return SwiftEnergyMeterKernel.shared.makeMeterSnapshot(from: buffer, barCount: barCount)
         }
 
         let samples = Array(UnsafeBufferPointer(start: channelData[0], count: frameLength))
         guard let ffiResult = ffi.computeRmsPeak(samples: samples) else {
+            logRuntimePath(
+                .swiftFallback,
+                frameLength: frameLength,
+                barCount: barCount,
+                fallbackReason: .ffiComputationFailed
+            )
             return SwiftEnergyMeterKernel.shared.makeMeterSnapshot(from: buffer, barCount: barCount)
         }
+
+        logRuntimePath(
+            .rustFFI,
+            frameLength: frameLength,
+            barCount: barCount,
+            fallbackReason: nil
+        )
 
         let averagePowerDB = SwiftEnergyMeterKernel.powerDB(fromLinear: ffiResult.rmsLinear)
         let peakPowerDB = SwiftEnergyMeterKernel.powerDB(fromLinear: ffiResult.peakLinear)
@@ -132,6 +193,64 @@ struct RustEnergyMeterKernel: EnergyMeterKernel {
             barPowerDBLevels: barPowerDBLevels,
             deltaTime: Double(frameLength) / sampleRate
         )
+    }
+
+    private func logLoaderDiagnostics(loadResult: RustAudioKernelFFI.LoadResult) {
+        var extra: [String: Any] = [
+            "backend": AudioKernelBackend.rustPilot.diagnosticsValue,
+            "loadSource": loadResult.source.diagnosticsValue,
+            "ffiAvailable": loadResult.ffi != nil,
+        ]
+        if let path = loadResult.libraryPath {
+            extra["libraryPath"] = path
+        }
+
+        AppLogger.info(
+            "Rust audio kernel loader result",
+            category: .audio,
+            extra: extra
+        )
+    }
+
+    private func logRuntimePath(
+        _ runtimePath: RuntimePath,
+        frameLength: Int,
+        barCount: Int,
+        fallbackReason: FallbackReason?
+    ) {
+        var extra: [String: Any] = [
+            "backend": AudioKernelBackend.rustPilot.diagnosticsValue,
+            "runtimePath": runtimePath.rawValue,
+            "loadSource": loadSource.diagnosticsValue,
+            "frameLength": frameLength,
+            "barCount": barCount,
+            "ffiAvailable": ffi != nil,
+        ]
+
+        if let loadedLibraryPath {
+            extra["libraryPath"] = loadedLibraryPath
+        }
+
+        if let fallbackReason {
+            extra["fallbackReason"] = fallbackReason.rawValue
+        }
+
+        AppLogger.debug(
+            "Rust audio kernel runtime path",
+            category: .audio,
+            extra: extra
+        )
+    }
+}
+
+private extension AudioKernelBackend {
+    var diagnosticsValue: String {
+        switch self {
+        case .swift:
+            "swift"
+        case .rustPilot:
+            "rust_pilot"
+        }
     }
 }
 

@@ -13,6 +13,37 @@ struct RustAudioKernelFFI: @unchecked Sendable {
         let peakLinear: Float
     }
 
+    enum LoadSource: String {
+        case processSymbols
+        case environmentOverride
+        case bundledFrameworks
+        case unavailable
+
+        var diagnosticsValue: String {
+            switch self {
+            case .processSymbols:
+                "process_symbols"
+            case .environmentOverride:
+                "environment_override"
+            case .bundledFrameworks:
+                "bundled_frameworks"
+            case .unavailable:
+                "unavailable"
+            }
+        }
+    }
+
+    struct LoadResult {
+        let ffi: RustAudioKernelFFI?
+        let source: LoadSource
+        let libraryPath: String?
+    }
+
+    private struct LibraryCandidate {
+        let path: String
+        let source: LoadSource
+    }
+
     typealias VersionFunction = @convention(c) () -> UInt32
     typealias ComputeRmsPeakFunction = @convention(c) (
         UnsafePointer<Float>?,
@@ -32,7 +63,7 @@ struct RustAudioKernelFFI: @unchecked Sendable {
     }
 
     func version() -> UInt32 {
-        return versionImpl()
+        versionImpl()
     }
 
     func computeRmsPeak(samples: [Float]) -> RmsPeakResult? {
@@ -62,12 +93,28 @@ struct AKRmsPeakResult {
 }
 
 extension RustAudioKernelFFI {
-    static func loadFromProcessSymbols() -> RustAudioKernelFFI? {
+    static func loadForRuntime() -> LoadResult {
         if let ffi = loadFromSymbols(symbolHandle: UnsafeMutableRawPointer(bitPattern: -2)) {
-            return ffi
+            return .init(
+                ffi: ffi,
+                source: .processSymbols,
+                libraryPath: nil
+            )
         }
 
-        return loadFromBundledDynamicLibrary()
+        if let loadResult = loadFromBundledDynamicLibrary() {
+            return loadResult
+        }
+
+        return .init(
+            ffi: nil,
+            source: .unavailable,
+            libraryPath: nil
+        )
+    }
+
+    static func loadFromProcessSymbols() -> RustAudioKernelFFI? {
+        loadForRuntime().ffi
     }
 
     private static func loadFromSymbols(symbolHandle: UnsafeMutableRawPointer?) -> RustAudioKernelFFI? {
@@ -86,10 +133,10 @@ extension RustAudioKernelFFI {
         )
     }
 
-    private static func loadFromBundledDynamicLibrary() -> RustAudioKernelFFI? {
+    private static func loadFromBundledDynamicLibrary() -> LoadResult? {
         let loadFlags = RTLD_NOW | RTLD_LOCAL
-        for libraryPath in bundledLibraryCandidatePaths() {
-            guard let handle = dlopen(libraryPath, loadFlags) else {
+        for candidate in bundledLibraryCandidatePaths() {
+            guard let handle = dlopen(candidate.path, loadFlags) else {
                 continue
             }
 
@@ -98,23 +145,32 @@ extension RustAudioKernelFFI {
                 continue
             }
 
-            return ffi
+            return .init(
+                ffi: ffi,
+                source: candidate.source,
+                libraryPath: candidate.path
+            )
         }
 
         return nil
     }
 
-    private static func bundledLibraryCandidatePaths() -> [String] {
+    private static func bundledLibraryCandidatePaths() -> [LibraryCandidate] {
         let libraryName = "libaudio_kernels_rust.dylib"
-        var paths: [String] = []
+        var candidates: [LibraryCandidate] = []
 
         let envPath = ProcessInfo.processInfo.environment["MA_RUST_AUDIO_KERNELS_DYLIB_PATH"]?.trimmingCharacters(in: .whitespacesAndNewlines)
         if let envPath, !envPath.isEmpty {
-            paths.append(envPath)
+            candidates.append(LibraryCandidate(path: envPath, source: .environmentOverride))
         }
 
         if let frameworksURL = Bundle.main.privateFrameworksURL {
-            paths.append(frameworksURL.appendingPathComponent(libraryName).path)
+            candidates.append(
+                LibraryCandidate(
+                    path: frameworksURL.appendingPathComponent(libraryName).path,
+                    source: .bundledFrameworks
+                )
+            )
         }
 
         if let executableURL = Bundle.main.executableURL {
@@ -122,10 +178,15 @@ extension RustAudioKernelFFI {
                 .deletingLastPathComponent()
                 .appendingPathComponent("../Frameworks/\(libraryName)")
                 .standardizedFileURL
-            paths.append(frameworkURL.path)
+            candidates.append(
+                LibraryCandidate(
+                    path: frameworkURL.path,
+                    source: .bundledFrameworks
+                )
+            )
         }
 
         var seen = Set<String>()
-        return paths.filter { seen.insert($0).inserted }
+        return candidates.filter { seen.insert($0.path).inserted }
     }
 }

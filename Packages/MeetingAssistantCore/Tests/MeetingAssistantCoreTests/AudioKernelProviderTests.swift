@@ -23,6 +23,14 @@ final class AudioKernelProviderTests: XCTestCase {
 
         XCTAssertEqual(provider.backend, .rustPilot)
     }
+
+    func testForFeatureFlags_WhenSelectionToggles_BackendValueRemainsDeterministic() {
+        let swiftProvider = AudioKernelProvider.forFeatureFlags(enableRustAudioMathKernels: false)
+        let rustProvider = AudioKernelProvider.forFeatureFlags(enableRustAudioMathKernels: true)
+
+        XCTAssertEqual(swiftProvider.backend, .swift)
+        XCTAssertEqual(rustProvider.backend, .rustPilot)
+    }
 }
 
 private actor StubVoiceActivityKernel: VoiceActivityKernel {

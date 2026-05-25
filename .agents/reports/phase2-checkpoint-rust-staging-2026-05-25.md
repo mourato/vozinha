@@ -55,4 +55,21 @@
   - Uses `XCTSkip` when dylib is not staged to keep suite deterministic outside on-mode build flows.
 - Verification command:
   - `./scripts/run-tests.sh --suite dev --test 'RustEnergyMeterKernelTests|AudioKernelProviderTests'`
-  - Result: `Total: 8 | Passed: 8 | Failed: 0`
+  - Result: `Total: 9 | Passed: 9 | Failed: 0`
+
+### Runtime Telemetry Checkpoint (Backend Path Signals)
+- Added backend selection + runtime path diagnostics in:
+  - `Packages/MeetingAssistantCore/Sources/Audio/Services/AudioKernels/AudioKernelProvider.swift`
+  - `Packages/MeetingAssistantCore/Sources/Audio/Services/AudioKernels/RustAudioKernelFFI.swift`
+- New emitted signals via `AppLogger` (category `.audio`):
+  - `Audio kernel backend selected`
+    - fields: `backend`, `enableRustAudioMathKernels`
+  - `Rust audio kernel loader result`
+    - fields: `backend`, `loadSource`, `ffiAvailable`, optional `libraryPath`
+  - `Rust audio kernel runtime path`
+    - fields: `backend`, `runtimePath`, `loadSource`, `ffiAvailable`, `frameLength`, `barCount`, optional `fallbackReason`, optional `libraryPath`
+- `loadSource` values are normalized for observability:
+  - `process_symbols`, `environment_override`, `bundled_frameworks`, `unavailable`
+- Verification command:
+  - `./scripts/run-tests.sh --suite dev --test 'RustEnergyMeterKernelTests|AudioKernelProviderTests'`
+  - Result: `Total: 9 | Passed: 9 | Failed: 0`
