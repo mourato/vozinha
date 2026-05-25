@@ -50,8 +50,12 @@ public final class AudioSilenceCompactor: AudioSilenceCompacting, @unchecked Sen
         static let analysisChunkFrames: AVAudioFrameCount = 8_192
     }
 
-    public init() {
-        silenceAnalysisKernel = SwiftSilenceAnalysisKernel()
+    public convenience init() {
+        self.init(kernelProvider: .live)
+    }
+
+    public init(kernelProvider: AudioKernelProvider) {
+        silenceAnalysisKernel = kernelProvider.makeSilenceAnalysisKernel()
     }
 
     init(silenceAnalysisKernel: any SilenceAnalysisKernel) {
@@ -493,7 +497,7 @@ private struct AudioAnalysis {
     }
 }
 
-private struct SwiftSilenceAnalysisKernel: SilenceAnalysisKernel {
+struct SwiftSilenceAnalysisKernel: SilenceAnalysisKernel {
     func analyze(inputURL: URL) throws -> AudioSilenceAnalysis {
         let analysis = try AudioSilenceCompactor.analyzeAudio(inputURL: inputURL)
         return AudioSilenceAnalysis(

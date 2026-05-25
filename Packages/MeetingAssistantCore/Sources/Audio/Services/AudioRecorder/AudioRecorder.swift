@@ -133,11 +133,11 @@ public class AudioRecorder: ObservableObject, AudioRecordingService {
     }
 
     init(
-        energyMeterKernel: any EnergyMeterKernel = SwiftEnergyMeterKernel.shared,
+        kernelProvider: AudioKernelProvider = .live,
         muteController: any OutputDuckingControlling = SystemAudioMuteController.shared,
         mediaPlaybackController: any MediaPlaybackControlling = MediaPlaybackController.shared
     ) {
-        worker = AudioRecordingWorker(energyMeterKernel: energyMeterKernel)
+        worker = AudioRecordingWorker(energyMeterKernel: kernelProvider.makeEnergyMeterKernel())
         self.muteController = muteController
         self.mediaPlaybackController = mediaPlaybackController
         microphoneInputSelectionResolver = MicrophoneInputSelectionResolver(deviceManager: deviceManager)
