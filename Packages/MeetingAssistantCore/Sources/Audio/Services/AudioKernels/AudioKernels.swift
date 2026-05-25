@@ -107,7 +107,7 @@ protocol SilenceAnalysisKernel: Sendable {
     func analyze(inputURL: URL) throws -> AudioSilenceAnalysis
 }
 
-struct AudioSilenceAnalysis: Sendable {
+struct AudioSilenceAnalysis {
     let sampleRate: Double
     let totalFrames: AVAudioFramePosition
     let keepRanges: [Range<AVAudioFramePosition>]

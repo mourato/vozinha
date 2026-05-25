@@ -17,8 +17,8 @@ struct RustAudioKernelFFI {
     typealias ComputeRmsPeakFunction = @convention(c) (
         UnsafePointer<Float>?,
         Int,
-        UnsafeMutablePointer<AKRmsPeakResult>
-    ) -> AKResultCode
+        UnsafeMutableRawPointer?
+    ) -> Int32
 
     private let versionImpl: VersionFunction
     private let computeRmsPeakImpl: ComputeRmsPeakFunction
@@ -40,10 +40,12 @@ struct RustAudioKernelFFI {
 
         var ffiResult = AKRmsPeakResult(rms_linear: 0, peak_linear: 0)
         let ffiCode = samples.withUnsafeBufferPointer { buffer in
-            computeRmsPeakImpl(buffer.baseAddress, buffer.count, &ffiResult)
+            withUnsafeMutablePointer(to: &ffiResult) { resultPointer in
+                computeRmsPeakImpl(buffer.baseAddress, buffer.count, UnsafeMutableRawPointer(resultPointer))
+            }
         }
 
-        guard ResultCode(rawValue: ffiCode.code) == .ok else {
+        guard ResultCode(rawValue: ffiCode) == .ok else {
             return nil
         }
 
@@ -52,10 +54,6 @@ struct RustAudioKernelFFI {
             peakLinear: ffiResult.peak_linear
         )
     }
-}
-
-struct AKResultCode {
-    let code: Int32
 }
 
 struct AKRmsPeakResult {
