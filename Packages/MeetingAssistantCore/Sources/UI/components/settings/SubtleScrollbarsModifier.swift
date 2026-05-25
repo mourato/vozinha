@@ -63,5 +63,17 @@ public extension View {
             SubtleScrollbarsConfigurator()
                 .frame(width: 0, height: 0)
         )
+        .settingsWindowScrollEdgeEffect()
+    }
+}
+
+private extension View {
+    @ViewBuilder
+    func settingsWindowScrollEdgeEffect() -> some View {
+        if #available(macOS 26.0, *) {
+            scrollEdgeEffectStyle(.soft, for: [.top, .bottom])
+        } else {
+            self
+        }
     }
 }
