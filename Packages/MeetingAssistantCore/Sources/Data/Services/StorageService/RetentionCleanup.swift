@@ -147,7 +147,9 @@ public extension FileSystemStorageService {
     }
 
     func computeRetentionCleanupPreview(olderThanDays days: Int) async throws -> RetentionCleanupPreview {
-        try await Task.detached(priority: .utility) { [self] in
+        let currentPriority = Task.currentPriority
+
+        return try await Task.detached(priority: currentPriority) { [self] in
             let retentionDays = max(1, days)
             let cutoffDate = Calendar.current.date(byAdding: .day, value: -retentionDays, to: Date()) ?? Date()
 
@@ -251,8 +253,9 @@ public extension FileSystemStorageService {
         let audioToDelete = preview.audioFiles.map(\.url)
         let recordingsDirPath = recordingsDirectory.standardizedFileURL.path
         let deletedTranscriptions = 0
+        let currentPriority = Task.currentPriority
 
-        let deletedAudio = try await Task.detached(priority: .utility) {
+        let deletedAudio = try await Task.detached(priority: currentPriority) {
             let fileManager = FileManager.default
             var deletedAudio = 0
             let normalizedRecordingsDir = Self.normalizeDirectoryPath(recordingsDirPath)
@@ -287,8 +290,9 @@ public extension FileSystemStorageService {
 
     func cleanupOrphanedRecordings() async throws {
         let recordingsDir = recordingsDirectory
+        let currentPriority = Task.currentPriority
 
-        try await Task.detached(priority: .background) { [self] in
+        try await Task.detached(priority: currentPriority) { [self] in
             let allMetadata = try await loadAllMetadata()
             let knownAudioPaths = Set(allMetadata.compactMap(\.audioFilePath))
             let fileManager = FileManager.default

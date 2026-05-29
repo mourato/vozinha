@@ -93,26 +93,36 @@ public class MeetingDetector: ObservableObject {
     private func setupAppNotifications() {
         let workspace = NSWorkspace.shared
 
-        // App launched
+        // Ignore Prisma's own lifecycle notifications to avoid work during teardown.
+        let handleWorkspaceAppChange: @MainActor @Sendable (NSRunningApplication, String) -> Void = { [weak self] app, eventName in
+            guard let self,
+                  app.bundleIdentifier != AppIdentity.bundleIdentifier
+            else {
+                return
+            }
+
+            self.logger.debug("App \(eventName): \(app.bundleIdentifier ?? "unknown")")
+
+            guard self.isMonitoring else { return }
+            self.checkForMeetings()
+        }
+
         workspace.notificationCenter.publisher(for: NSWorkspace.didLaunchApplicationNotification)
-            .sink { [weak self] notification in
+            .sink { notification in
                 let appInfo = notification.userInfo?[NSWorkspace.applicationUserInfoKey]
                 guard let app = appInfo as? NSRunningApplication else { return }
-                self?.logger.debug("App launched: \(app.bundleIdentifier ?? "unknown")")
                 Task { @MainActor in
-                    self?.checkForMeetings()
+                    handleWorkspaceAppChange(app, "launched")
                 }
             }
             .store(in: &cancellables)
 
-        // App terminated
         workspace.notificationCenter.publisher(for: NSWorkspace.didTerminateApplicationNotification)
-            .sink { [weak self] notification in
+            .sink { notification in
                 let appInfo = notification.userInfo?[NSWorkspace.applicationUserInfoKey]
                 guard let app = appInfo as? NSRunningApplication else { return }
-                self?.logger.debug("App terminated: \(app.bundleIdentifier ?? "unknown")")
                 Task { @MainActor in
-                    self?.checkForMeetings()
+                    handleWorkspaceAppChange(app, "terminated")
                 }
             }
             .store(in: &cancellables)
