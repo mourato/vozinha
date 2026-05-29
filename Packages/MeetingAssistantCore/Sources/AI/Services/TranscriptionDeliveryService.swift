@@ -8,6 +8,8 @@ import MeetingAssistantCoreInfrastructure
 
 @MainActor
 public struct TranscriptionDeliveryService {
+    public static var cursorTextContextProvider: any CursorTextContextProvider = AXCursorTextContextProvider()
+
     public static func deliver(
         transcription: Transcription,
         recordingSource: RecordingSource? = nil,
@@ -27,7 +29,19 @@ public struct TranscriptionDeliveryService {
 
         guard shouldAutoCopy || shouldAutoPaste else { return }
 
-        let textToCopy = transcriptionDeliveryText(from: transcription)
+        let baseText = transcriptionDeliveryText(from: transcription)
+        let textToCopy: String
+        if shouldApplySmartSpacing(
+            transcription: transcription,
+            shouldDeliver: shouldAutoCopy || shouldAutoPaste,
+            settings: settings
+        ) {
+            let cursorContext = cursorTextContextProvider.fetchCursorTextContext()
+            textToCopy = SmartSpacingFormatter.format(dictatedText: baseText, cursorContext: cursorContext)
+        } else {
+            textToCopy = baseText
+        }
+
         pasteboard.clearContents()
         pasteboard.setString(textToCopy, forType: .string)
 
@@ -64,6 +78,16 @@ public struct TranscriptionDeliveryService {
             return candidate
         }
         return transcription.rawText
+    }
+
+    private static func shouldApplySmartSpacing(
+        transcription: Transcription,
+        shouldDeliver: Bool,
+        settings: DeliverySettingsConfig
+    ) -> Bool {
+        shouldDeliver
+            && settings.smartSpacingAndCapitalizationEnabled
+            && transcription.capturePurpose == .dictation
     }
 
     private static func pasteTranscriptionIntoActiveApp() {

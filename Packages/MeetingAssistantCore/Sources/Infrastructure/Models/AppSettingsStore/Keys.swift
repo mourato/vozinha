@@ -111,5 +111,6 @@ extension AppSettingsStore {
         static let monitoredMeetingBundleIdentifiers = "monitoredMeetingBundleIdentifiers"
         static let webMeetingTargets = "webMeetingTargets"
         static let hasCompletedOnboarding = "hasCompletedOnboarding"
+        static let smartSpacingAndCapitalizationEnabled = "smartSpacingAndCapitalizationEnabled"
     }
 }

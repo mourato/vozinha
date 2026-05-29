@@ -37,6 +37,7 @@ public extension AppSettingsStore {
         audioDuckingLevelPercent = Self.defaultAudioDuckingLevelPercent
         autoIncreaseMicrophoneVolume = false
         removeSilenceBeforeProcessing = false
+        smartSpacingAndCapitalizationEnabled = true
         shortcutActivationMode = .holdOrToggle
         dictationShortcutActivationMode = .holdOrToggle
         shortcutDoubleTapIntervalMilliseconds = Self.defaultShortcutDoubleTapIntervalMilliseconds

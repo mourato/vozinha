@@ -68,6 +68,14 @@ final class AppSettingsStoreAISelectionTests: XCTestCase {
         XCTAssertFalse(settings.dictationStructuredPostProcessingEnabled)
     }
 
+    func testResetDefaultsEnablesSmartSpacingAndCapitalization() {
+        settings.smartSpacingAndCapitalizationEnabled = false
+
+        settings.resetToDefaults()
+
+        XCTAssertTrue(settings.smartSpacingAndCapitalizationEnabled)
+    }
+
     func testResetDefaultsRestoresMeetingNotesTypographySettings() {
         settings.meetingNotesFontFamilyKey = "Helvetica"
         settings.meetingNotesFontSize = 24

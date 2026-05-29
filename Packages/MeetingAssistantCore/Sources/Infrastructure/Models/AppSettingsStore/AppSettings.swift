@@ -308,6 +308,11 @@ public class AppSettingsStore: ObservableObject {
         }
     }
 
+    /// Adjusts spacing and capitalization before delivering dictation text.
+    @Published public var smartSpacingAndCapitalizationEnabled: Bool {
+        didSet { UserDefaults.standard.set(smartSpacingAndCapitalizationEnabled, forKey: Keys.smartSpacingAndCapitalizationEnabled) }
+    }
+
     /// Whether pressing Escape cancels recording.
     @Published public var useEscapeToCancelRecording: Bool {
         didSet { UserDefaults.standard.set(useEscapeToCancelRecording, forKey: Keys.useEscapeToCancelRecording) }
@@ -749,6 +754,10 @@ public class AppSettingsStore: ObservableObject {
         audioDuckingLevelPercent = audioSettings.audioDuckingLevelPercent
         autoIncreaseMicrophoneVolume = audioSettings.autoIncreaseMicrophoneVolume
         removeSilenceBeforeProcessing = audioSettings.removeSilenceBeforeProcessing
+        smartSpacingAndCapitalizationEnabled = Self.loadBoolDefaultIfUnset(
+            forKey: Keys.smartSpacingAndCapitalizationEnabled,
+            defaultValue: true
+        )
 
         let shortcuts = Self.loadShortcutActivationSettings()
         (shortcutActivationMode, dictationShortcutActivationMode) = (

@@ -108,6 +108,8 @@
 "settings.general.auto_copy_transcription" = "Copiar transcrições automaticamente para a área de transferência";
 "settings.general.auto_copy_transcription_desc" = "Copia o texto pós-processado quando disponível; caso contrário, a transcrição bruta.";
 "settings.general.auto_paste_transcription" = "Colar transcrição automaticamente no app ativo";
+"settings.dictation.smart_spacing" = "Espaçamento e capitalização inteligentes";
+"settings.dictation.smart_spacing_desc" = "Adiciona espaços ao redor do texto ditado quando necessário e coloca a primeira letra em minúscula dentro de uma frase. Roda localmente e usa Acessibilidade quando disponível.";
 "settings.general.recordings_path_hint" = "Caminho";
 "settings.general.choose" = "Escolher...";
 "settings.general.monitored_apps" = "Apps Monitorados";

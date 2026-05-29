@@ -58,6 +58,14 @@ public struct DictationSettingsTab: View {
                         "settings.general.auto_paste_transcription".localized,
                         isOn: $viewModel.autoPasteTranscriptionToActiveApp
                     )
+
+                    Divider()
+
+                    DSToggleRow(
+                        "settings.dictation.smart_spacing".localized,
+                        description: "settings.dictation.smart_spacing_desc".localized,
+                        isOn: $viewModel.smartSpacingAndCapitalizationEnabled
+                    )
                 }
             }
 

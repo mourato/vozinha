@@ -71,6 +71,12 @@ public class GeneralSettingsViewModel: ObservableObject {
         }
     }
 
+    @Published public var smartSpacingAndCapitalizationEnabled: Bool {
+        didSet {
+            settingsStore.smartSpacingAndCapitalizationEnabled = smartSpacingAndCapitalizationEnabled
+        }
+    }
+
     @Published public var recordingMediaHandlingMode: AppSettingsStore.RecordingMediaHandlingMode {
         didSet {
             settingsStore.recordingMediaHandlingMode = recordingMediaHandlingMode
@@ -222,6 +228,7 @@ public class GeneralSettingsViewModel: ObservableObject {
         autoCopyTranscriptionToClipboard = settingsStore.autoCopyTranscriptionToClipboard
         shortcutDoubleTapIntervalMilliseconds = settingsStore.shortcutDoubleTapIntervalMilliseconds
         autoPasteTranscriptionToActiveApp = settingsStore.autoPasteTranscriptionToActiveApp
+        smartSpacingAndCapitalizationEnabled = settingsStore.smartSpacingAndCapitalizationEnabled
         recordingMediaHandlingMode = settingsStore.recordingMediaHandlingMode
         audioDuckingLevelPercent = settingsStore.audioDuckingLevelPercent
         useSystemDefaultInput = settingsStore.useSystemDefaultInput

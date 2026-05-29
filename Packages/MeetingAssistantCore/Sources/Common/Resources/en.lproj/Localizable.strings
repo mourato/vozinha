@@ -107,6 +107,8 @@
 "settings.general.auto_copy_transcription" = "Auto-copy transcriptions to clipboard";
 "settings.general.auto_copy_transcription_desc" = "Copies the post-processed text when available, otherwise the raw transcription.";
 "settings.general.auto_paste_transcription" = "Auto paste transcript into the active app";
+"settings.dictation.smart_spacing" = "Smart spacing and capitalization";
+"settings.dictation.smart_spacing_desc" = "Adds spaces around dictated text when needed and lowercases the first character inside a sentence. Runs locally and uses Accessibility when available.";
 "settings.general.recordings_path_hint" = "Path";
 "settings.general.choose" = "Choose...";
 "settings.general.monitored_apps" = "Monitored Apps";
