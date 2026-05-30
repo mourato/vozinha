@@ -12,12 +12,20 @@ public class NavigationService: ObservableObject {
     @Published public private(set) var isSettingsSidebarVisible = true
     private var openSettingsHandler: (@MainActor () -> Void)?
     private var openOnboardingHandler: (@MainActor () -> Void)?
+    private var hasPendingOpenSettingsRequest = false
 
     private init() {}
 
     /// Registers an explicit settings opener provided by the app target.
     public func registerOpenSettingsHandler(_ handler: @escaping @MainActor () -> Void) {
         openSettingsHandler = handler
+
+        guard hasPendingOpenSettingsRequest else { return }
+        hasPendingOpenSettingsRequest = false
+
+        DispatchQueue.main.async {
+            handler()
+        }
     }
 
     /// Registers an explicit onboarding opener provided by the app target.
@@ -28,43 +36,13 @@ public class NavigationService: ObservableObject {
     /// Opens the settings/dashboard window.
     public func openSettings() {
         if let openSettingsHandler {
-            let previousPolicy = NSApp.activationPolicy()
-            if previousPolicy == .accessory {
-                NSApp.setActivationPolicy(.regular)
-            }
-
-            NSApp.activate(ignoringOtherApps: true)
             openSettingsHandler()
-
-            if previousPolicy == .accessory {
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                    NSApp.setActivationPolicy(.accessory)
-                }
-            }
             return
         }
 
-        let previousPolicy = NSApp.activationPolicy()
-        if previousPolicy == .accessory {
-            NSApp.setActivationPolicy(.regular)
-        }
-
-        NSApp.activate(ignoringOtherApps: true)
-
-        let openSettingsSelector = Selector(("openSettings:"))
-        let legacySettingsSelector = Selector(("show" + "SettingsWindow:"))
-        let legacyPreferencesSelector = Selector(("show" + "PreferencesWindow:"))
-
-        let opened = NSApp.sendAction(openSettingsSelector, to: nil, from: nil)
-            || NSApp.sendAction(legacySettingsSelector, to: nil, from: nil)
-            || NSApp.sendAction(legacyPreferencesSelector, to: nil, from: nil)
-
-        if previousPolicy == .accessory {
-            let restoreDelay: TimeInterval = opened ? 0.5 : 0.1
-            DispatchQueue.main.asyncAfter(deadline: .now() + restoreDelay) {
-                NSApp.setActivationPolicy(.accessory)
-            }
-        }
+        // The SwiftUI settings window opener may register after AppDelegate launch work.
+        // Queue one pending request instead of falling back to the legacy Settings scene API.
+        hasPendingOpenSettingsRequest = true
     }
 
     /// Opens the settings window and requests a specific section.

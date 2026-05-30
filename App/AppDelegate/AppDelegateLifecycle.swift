@@ -8,6 +8,9 @@ import SwiftUI
 extension AppDelegate {
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        ProcessInfo.processInfo.disableAutomaticTermination("Prisma menu bar app must remain resident")
+        ProcessInfo.processInfo.disableSuddenTermination()
+
         // Initialize Monitoring Services
         CrashReporter.shared.setup()
         PerformanceMonitor.shared.startMonitoring()
@@ -59,6 +62,18 @@ extension AppDelegate {
     func applicationWillTerminate(_ notification: Notification) {
         localModelResidencyCoordinator.stopMonitoring()
         recordingCancelShortcutController.stop()
+    }
+
+    func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
+        guard isPerformingExplicitQuit else {
+            return .terminateCancel
+        }
+
+        return .terminateNow
+    }
+
+    func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
+        false
     }
 
     // MARK: - Onboarding

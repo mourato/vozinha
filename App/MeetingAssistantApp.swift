@@ -541,4 +541,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     var lastAppCommandState = AppCommandState()
     var isContextMenuOpen = false
     var hasPendingCommandMenuSync = false
+    var hasPendingContextMenuRefresh = false
+    var isPerformingExplicitQuit = false
 }

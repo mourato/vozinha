@@ -7,6 +7,14 @@ import SwiftUI
 
 extension AppDelegate {
 
+    private func performAfterMenuDismissal(_ action: @escaping @MainActor () -> Void) {
+        DispatchQueue.main.async {
+            Task { @MainActor in
+                action()
+            }
+        }
+    }
+
     // MARK: - Menu Bar Setup
 
     func setupMenuBar() {
@@ -21,6 +29,9 @@ extension AppDelegate {
             button.image = image
             button.title = image == nil ? String(AppIdentity.displayName.prefix(1)) : ""
             button.imagePosition = image == nil ? .noImage : .imageOnly
+            button.action = #selector(handleStatusItemClick)
+            button.sendAction(on: [.leftMouseUp, .rightMouseUp])
+            button.target = self
         }
     }
 
@@ -91,8 +102,6 @@ extension AppDelegate {
             action: #selector(quitApp),
             keyEquivalent: "q"
         ))
-
-        statusItem?.menu = contextMenu
     }
 
     /// Creates a localized menu item with the given key and action.
@@ -122,6 +131,11 @@ extension AppDelegate {
     }
 
     func updateMenuTitles() {
+        guard !isContextMenuOpen else {
+            hasPendingContextMenuRefresh = true
+            return
+        }
+
         renderRecordingSection(for: lastAppCommandState)
     }
 
@@ -357,78 +371,115 @@ extension AppDelegate {
         item.keyEquivalentModifierMask = []
     }
 
+    @objc private func handleStatusItemClick() {
+        showContextMenu()
+    }
+
+    private func showContextMenu() {
+        guard let menu = contextMenu, let button = statusItem?.button else { return }
+
+        updateMenuTitles()
+        statusItem?.menu = menu
+        button.performClick(nil)
+    }
+
     // MARK: - Menu Actions
 
     @objc func openSettings() {
-        NavigationService.shared.openSettings()
+        performAfterMenuDismissal { [weak self] in
+            self?.promoteAppForWindowPresentation()
+            NavigationService.shared.openSettings()
+        }
     }
 
     @objc func openOnboarding() {
-        promoteAppForWindowPresentation()
-        presentOnboarding {}
+        performAfterMenuDismissal { [weak self] in
+            self?.promoteAppForWindowPresentation()
+            self?.presentOnboarding {}
+        }
     }
 
     @objc func openHistory() {
-        NavigationService.shared.openSettings(section: SettingsSection.transcriptions.rawValue)
+        performAfterMenuDismissal { [weak self] in
+            self?.promoteAppForWindowPresentation()
+            NavigationService.shared.openSettings(section: SettingsSection.transcriptions.rawValue)
+        }
     }
 
     @objc func toggleRecordingFromMenu() {
-        Task { @MainActor in
-            // Default "Dictation" mode (Mic Only)
-            await self.startRecording(source: .microphone)
+        performAfterMenuDismissal { [weak self] in
+            Task { @MainActor in
+                // Default "Dictation" mode (Mic Only)
+                await self?.startRecording(source: .microphone)
+            }
         }
     }
 
     @objc func startMeetingFromMenu() {
-        guard settingsStore.isMeetingTranscriptionEnabled else {
-            floatingIndicatorController.showError("recording.error.meeting_transcription_disabled".localized)
-            return
-        }
+        performAfterMenuDismissal { [weak self] in
+            guard let self else { return }
+            guard settingsStore.isMeetingTranscriptionEnabled else {
+                floatingIndicatorController.showError("recording.error.meeting_transcription_disabled".localized)
+                return
+            }
 
-        Task { @MainActor in
-            // Meeting mode (System + Mic) permissions will be checked by manager
-            await self.startRecording(source: .all)
+            Task { @MainActor in
+                // Meeting mode (System + Mic) permissions will be checked by manager
+                await self.startRecording(source: .all)
+            }
         }
     }
 
     @objc func startAssistantFromMenu() {
-        guard settingsStore.isAssistantIntegrationsEnabled else {
-            floatingIndicatorController.showError("assistant.error.integrations_disabled".localized)
-            return
-        }
+        performAfterMenuDismissal { [weak self] in
+            guard let self else { return }
+            guard settingsStore.isAssistantIntegrationsEnabled else {
+                floatingIndicatorController.showError("assistant.error.integrations_disabled".localized)
+                return
+            }
 
-        Task {
-            if assistantVoiceCommandService.isRecording {
-                await assistantVoiceCommandService.stopAndProcess()
-            } else if recordingManager.isRecording || recordingManager.isStartingRecording {
-                AppLogger.info(
-                    "Assistant menu start blocked by active recording capture",
-                    category: .assistant
-                )
-                floatingIndicatorController.showError("assistant.error.recording_in_progress".localized)
-            } else {
-                await assistantVoiceCommandService.startRecording()
+            Task {
+                if self.assistantVoiceCommandService.isRecording {
+                    await self.assistantVoiceCommandService.stopAndProcess()
+                } else if self.recordingManager.isRecording || self.recordingManager.isStartingRecording {
+                    AppLogger.info(
+                        "Assistant menu start blocked by active recording capture",
+                        category: .assistant
+                    )
+                    self.floatingIndicatorController.showError("assistant.error.recording_in_progress".localized)
+                } else {
+                    await self.assistantVoiceCommandService.startRecording()
+                }
             }
         }
     }
 
     @objc func cancelRecordingFromMenu() {
-        Task {
-            if assistantVoiceCommandService.isRecording {
-                await assistantVoiceCommandService.cancelRecording()
-            } else if recordingManager.isRecording || recordingManager.isStartingRecording {
-                await recordingManager.cancelRecording()
+        performAfterMenuDismissal { [weak self] in
+            guard let self else { return }
+            Task {
+                if self.assistantVoiceCommandService.isRecording {
+                    await self.assistantVoiceCommandService.cancelRecording()
+                } else if self.recordingManager.isRecording || self.recordingManager.isStartingRecording {
+                    await self.recordingManager.cancelRecording()
+                }
             }
         }
     }
 
     @objc func checkForUpdates() {
-        NavigationService.shared.checkForUpdates()
+        performAfterMenuDismissal { [weak self] in
+            self?.promoteAppForWindowPresentation()
+            NavigationService.shared.checkForUpdates()
+        }
     }
 
     @objc func quitApp() {
-        Task { @MainActor in
-            await self.performGracefulShutdown()
+        performAfterMenuDismissal { [weak self] in
+            self?.isPerformingExplicitQuit = true
+            Task { @MainActor in
+                await self?.performGracefulShutdown()
+            }
         }
     }
 
@@ -469,12 +520,30 @@ extension AppDelegate: NSMenuDelegate {
     func menuWillOpen(_ menu: NSMenu) {
         guard menu === contextMenu else { return }
         isContextMenuOpen = true
-        updateMenuTitles()
+        renderRecordingSection(for: lastAppCommandState)
     }
 
     func menuDidClose(_ menu: NSMenu) {
         guard menu === contextMenu else { return }
-        isContextMenuOpen = false
-        syncCommandMenuStateIfNeeded(force: true)
+
+        let shouldSyncCommandMenu = hasPendingCommandMenuSync
+        let shouldRefreshContextMenu = hasPendingContextMenuRefresh
+
+        DispatchQueue.main.async { [weak self] in
+            guard let self else { return }
+            statusItem?.menu = nil
+            isContextMenuOpen = false
+            hasPendingContextMenuRefresh = false
+
+            if shouldRefreshContextMenu {
+                renderRecordingSection(for: lastAppCommandState)
+            }
+
+            guard shouldSyncCommandMenu else { return }
+
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) { [weak self] in
+                self?.syncCommandMenuStateIfNeeded(force: true)
+            }
+        }
     }
 }
