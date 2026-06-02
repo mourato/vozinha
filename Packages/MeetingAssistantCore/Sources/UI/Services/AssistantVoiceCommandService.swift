@@ -82,6 +82,11 @@ public final class AssistantVoiceCommandService: ObservableObject {
         guard !isRecording, !isProcessing else { return }
         let requestedAt = Date()
 
+        if flow == .integrationDispatch, !settings.isAssistantIntegrationsEnabled {
+            showError(.integrationDisabled)
+            return
+        }
+
         guard !recordingManager.isRecording, !recordingManager.isStartingRecording else {
             AppLogger.info(
                 "Assistant start blocked because RecordingManager capture is active",
@@ -249,6 +254,7 @@ public final class AssistantVoiceCommandService: ObservableObject {
 
     private func resolveSelectedIntegration(for executionFlow: AssistantExecutionFlow) -> AssistantIntegrationConfig? {
         guard executionFlow == .integrationDispatch,
+              settings.isAssistantIntegrationsEnabled,
               let integration = settings.assistantSelectedIntegration,
               integration.isEnabled
         else {

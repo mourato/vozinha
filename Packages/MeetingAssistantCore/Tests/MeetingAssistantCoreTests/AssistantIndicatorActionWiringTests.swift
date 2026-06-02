@@ -101,6 +101,40 @@ final class AssistantIndicatorActionWiringTests: XCTestCase {
 
         XCTAssertNil(indicator.processingSnapshot)
     }
+
+    func testAssistantModeStartStillWorksWhenIntegrationsAreDisabled() async {
+        settings.isAssistantIntegrationsEnabled = false
+
+        let recorder = MockAssistantAudioRecorder()
+        let indicator = FloatingRecordingIndicatorController(settingsStore: settings)
+        let service = AssistantVoiceCommandService(
+            audioRecorder: recorder,
+            indicator: indicator,
+            settings: settings
+        )
+
+        await service.startRecording(flow: .assistantMode)
+
+        XCTAssertTrue(service.isRecording)
+        XCTAssertEqual(recorder.startCallCount, 1)
+    }
+
+    func testIntegrationDispatchStartIsBlockedWhenIntegrationsAreDisabled() async {
+        settings.isAssistantIntegrationsEnabled = false
+
+        let recorder = MockAssistantAudioRecorder()
+        let indicator = FloatingRecordingIndicatorController(settingsStore: settings)
+        let service = AssistantVoiceCommandService(
+            audioRecorder: recorder,
+            indicator: indicator,
+            settings: settings
+        )
+
+        await service.startRecording(flow: .integrationDispatch)
+
+        XCTAssertFalse(service.isRecording)
+        XCTAssertEqual(recorder.startCallCount, 0)
+    }
 }
 
 @MainActor

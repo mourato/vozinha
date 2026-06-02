@@ -36,7 +36,7 @@ extension AppDelegate {
         }
 
         applyMeetingTranscriptionCapabilityState(isEnabled: settingsStore.isMeetingTranscriptionEnabled)
-        applyAssistantIntegrationsCapabilityState(isEnabled: settingsStore.isAssistantIntegrationsEnabled)
+        assistantShortcutController.start()
         setupRecordingObservation()
         setupCommandMenuObservation()
         prewarmFloatingIndicatorIfEligible()
@@ -147,7 +147,7 @@ extension AppDelegate {
         }
 
         applyMeetingTranscriptionCapabilityState(isEnabled: settingsStore.isMeetingTranscriptionEnabled)
-        applyAssistantIntegrationsCapabilityState(isEnabled: settingsStore.isAssistantIntegrationsEnabled)
+        assistantShortcutController.start()
         setupRecordingObservation()
         setupCommandMenuObservation()
         prewarmFloatingIndicatorIfEligible()
@@ -353,7 +353,7 @@ extension AppDelegate {
             ),
             cancelRecordingShortcutDefinition: settingsStore.cancelRecordingShortcutDefinition,
             meetingCapabilityEnabled: settingsStore.isMeetingTranscriptionEnabled,
-            assistantCapabilityEnabled: settingsStore.isAssistantIntegrationsEnabled
+            assistantCapabilityEnabled: true
         )
         let renderState = RecordingUIRenderState(
             isRecording: isRecording,
@@ -480,8 +480,8 @@ extension AppDelegate {
             .dropFirst()
             .removeDuplicates()
             .receive(on: DispatchQueue.main)
-            .sink { [weak self] isEnabled in
-                self?.applyAssistantIntegrationsCapabilityState(isEnabled: isEnabled)
+            .sink { [weak self] _ in
+                self?.assistantShortcutController.refresh()
                 self?.refreshRecordingUIState()
             }
             .store(in: &cancellables)
@@ -519,17 +519,4 @@ extension AppDelegate {
         _ = FluidAIModelManager.shared.unloadASRFromMemoryIfPossible()
     }
 
-    private func applyAssistantIntegrationsCapabilityState(isEnabled: Bool) {
-        guard isEnabled else {
-            if assistantVoiceCommandService.isRecording || assistantVoiceCommandService.isProcessing {
-                Task {
-                    await assistantVoiceCommandService.cancelRecording()
-                }
-            }
-            assistantShortcutController.stop()
-            return
-        }
-
-        assistantShortcutController.start()
-    }
 }

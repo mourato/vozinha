@@ -43,6 +43,14 @@ extension AssistantShortcutController {
             integrationPresetStates.removeValue(forKey: removedID)
         }
 
+        guard settings.isAssistantIntegrationsEnabled else {
+            for integrationID in currentIDs {
+                KeyboardShortcuts.disable(.assistantIntegration(integrationID))
+            }
+            registeredIntegrationShortcutIDs = currentIDs
+            return
+        }
+
         for integration in settings.assistantIntegrations {
             let shortcutName = KeyboardShortcuts.Name.assistantIntegration(integration.id)
 
@@ -127,7 +135,11 @@ extension AssistantShortcutController {
     }
 
     private func integrationInHouseRegistrations() -> [HotkeyRegistration] {
-        settings.assistantIntegrations.compactMap { integration in
+        guard settings.isAssistantIntegrationsEnabled else {
+            return []
+        }
+
+        return settings.assistantIntegrations.compactMap { integration in
             guard integration.isEnabled,
                   let definition = integration.shortcutDefinition,
                   let descriptor = GlobalHotkeyMapper.descriptor(for: definition)
@@ -173,7 +185,11 @@ extension AssistantShortcutController {
     }
 
     var integrationCustomEnabledCount: Int {
-        settings.assistantIntegrations.count(where: { integration in
+        guard settings.isAssistantIntegrationsEnabled else {
+            return 0
+        }
+
+        return settings.assistantIntegrations.count(where: { integration in
             integration.isEnabled
                 && integration.shortcutDefinition == nil
                 && integration.modifierShortcutGesture == nil

@@ -433,10 +433,6 @@ extension AppDelegate {
     @objc func startAssistantFromMenu() {
         performAfterMenuDismissal { [weak self] in
             guard let self else { return }
-            guard settingsStore.isAssistantIntegrationsEnabled else {
-                floatingIndicatorController.showError("assistant.error.integrations_disabled".localized)
-                return
-            }
 
             Task {
                 if self.assistantVoiceCommandService.isRecording {

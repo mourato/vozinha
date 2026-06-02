@@ -21,6 +21,14 @@ extension AssistantShortcutController {
         startShortcutCaptureHealthChecks()
     }
 
+    func refresh() {
+        guard isStarted else { return }
+        resetShortcutState()
+        refreshCustomShortcutRegistration()
+        refreshIntegrationCustomShortcutRegistrations()
+        refreshEventMonitors()
+    }
+
     func stop() {
         guard isStarted else { return }
         isStarted = false
