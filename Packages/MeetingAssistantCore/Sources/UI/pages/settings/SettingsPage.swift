@@ -40,6 +40,7 @@ public struct SettingsView: View {
     @State private var transcriptionsNavigationHistory = TranscriptionsNavigationHistory()
     @State private var transcriptionsSearchText = ""
     @State private var meetingNavigationState = MeetingSettingsNavigationState()
+    @State private var dictationNavigationState = SettingsSubpageNavigationState<DictationSettingsRoute>()
     @State private var enhancementsNavigationState = SettingsSubpageNavigationState<EnhancementsSettingsRoute>()
     @State private var columnVisibility: NavigationSplitViewVisibility
     @StateObject private var navigationService = NavigationService.shared
@@ -344,6 +345,11 @@ private extension SettingsView {
             return
         }
 
+        if selectedSection == .dictation, dictationNavigationState.canGoBack {
+            _ = dictationNavigationState.goBack()
+            return
+        }
+
         if selectedSection == .enhancements, enhancementsNavigationState.canGoBack {
             _ = enhancementsNavigationState.goBack()
             return
@@ -363,6 +369,11 @@ private extension SettingsView {
 
         if selectedSection == .meetings, meetingNavigationState.canGoForward {
             _ = meetingNavigationState.goForward()
+            return
+        }
+
+        if selectedSection == .dictation, dictationNavigationState.canGoForward {
+            _ = dictationNavigationState.goForward()
             return
         }
 
@@ -409,6 +420,10 @@ private extension SettingsView {
             return meetingNavigationState.canGoBack
         }
 
+        if selectedSection == .dictation {
+            return dictationNavigationState.canGoBack
+        }
+
         if selectedSection == .enhancements {
             return enhancementsNavigationState.canGoBack
         }
@@ -429,6 +444,10 @@ private extension SettingsView {
             return meetingNavigationState.canGoForward
         }
 
+        if selectedSection == .dictation {
+            return dictationNavigationState.canGoForward
+        }
+
         if selectedSection == .enhancements {
             return enhancementsNavigationState.canGoForward
         }
@@ -446,12 +465,10 @@ private extension SettingsView {
             GeneralSettingsTab()
         case .models:
             ModelsSettingsTab()
-        case .rulesPerApp:
-            StylesSettingsTab()
         case .vocabulary:
             VocabularySettingsTab()
         case .dictation:
-            DictationSettingsTab()
+            DictationSettingsTab(navigationState: $dictationNavigationState)
         case .meetings:
             MeetingSettingsTab(navigationState: $meetingNavigationState)
         case .assistant:

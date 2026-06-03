@@ -6,25 +6,65 @@ import MeetingAssistantCoreDomain
 import MeetingAssistantCoreInfrastructure
 import SwiftUI
 
+public enum DictationSettingsRoute: Hashable {
+    case styles
+}
+
 // MARK: - Dictation Settings Tab
 
 /// Tab for dictation-specific settings like auto-copy/paste and shortcuts.
 public struct DictationSettingsTab: View {
-    @StateObject private var viewModel = GeneralSettingsViewModel()
+    @Binding private var navigationState: SettingsSubpageNavigationState<DictationSettingsRoute>
+    @StateObject private var viewModel: GeneralSettingsViewModel
     @StateObject private var shortcutsViewModel = ShortcutSettingsViewModel()
-    @StateObject private var promptViewModel = DictationPromptSettingsViewModel()
-    @StateObject private var serviceViewModel = ServiceSettingsViewModel()
+    @StateObject private var promptViewModel: DictationPromptSettingsViewModel
+    @StateObject private var serviceViewModel: ServiceSettingsViewModel
 
-    public init() {}
+    public init(
+        settings: AppSettingsStore = .shared,
+        navigationState: Binding<SettingsSubpageNavigationState<DictationSettingsRoute>> = .constant(SettingsSubpageNavigationState())
+    ) {
+        _navigationState = navigationState
+        _viewModel = StateObject(wrappedValue: GeneralSettingsViewModel(settingsStore: settings))
+        _promptViewModel = StateObject(wrappedValue: DictationPromptSettingsViewModel(settings: settings))
+        _serviceViewModel = StateObject(wrappedValue: ServiceSettingsViewModel(settings: settings))
+    }
 
     public var body: some View {
+        Group {
+            switch navigationState.currentRoute {
+            case nil:
+                rootPage
+            case .some(.styles):
+                StylesSettingsTab()
+            }
+        }
+        .sheet(isPresented: $promptViewModel.showPromptEditor) {
+            PromptEditorSheet(
+                prompt: promptViewModel.editingPrompt,
+                onSave: promptViewModel.handleSavePrompt,
+                onCancel: { promptViewModel.showPromptEditor = false }
+            )
+        }
+        .alert("settings.post_processing.delete_confirm_title".localized, isPresented: $promptViewModel.showDeleteConfirmation) {
+            Button("common.cancel".localized, role: .cancel) {}
+            Button("common.delete".localized, role: .destructive) {
+                promptViewModel.executeDelete()
+            }
+        } message: {
+            if let prompt = promptViewModel.promptToDelete {
+                Text("settings.post_processing.delete_confirm_message".localized(with: prompt.title))
+            }
+        }
+    }
+
+    private var rootPage: some View {
         SettingsScrollableContent {
             SettingsSectionHeader(
                 title: "settings.section.dictation".localized,
                 description: "settings.shortcuts.header_desc".localized
             )
 
-            // Keyboard Shortcut
             ShortcutSettingsSection(
                 groupTitle: "settings.shortcuts.dictation".localized,
                 descriptionText: "settings.shortcuts.dictation_desc".localized,
@@ -46,7 +86,6 @@ public struct DictationSettingsTab: View {
 
             ServiceTranscriptionProviderSection(viewModel: serviceViewModel)
 
-            // Workflow
             DSGroup("settings.dictation.text_handling".localized, icon: "cpu") {
                 VStack(alignment: .leading, spacing: 16) {
                     DSToggleRow(
@@ -77,10 +116,19 @@ public struct DictationSettingsTab: View {
                         description: "settings.dictation.smart_paragraphs_desc".localized,
                         isOn: $viewModel.smartParagraphsEnabled
                     )
+
+                    Divider()
+
+                    SettingsDrillDownButtonRow(
+                        title: "settings.styles.title".localized,
+                        subtitle: "settings.styles.description".localized,
+                        accessibilityHint: "settings.dictation.styles.accessibility_hint".localized
+                    ) {
+                        navigationState.open(.styles)
+                    }
                 }
             }
 
-            // Dictation Prompts Section
             DSGroup("settings.dictation.prompts".localized, icon: "sparkles") {
                 VStack(alignment: .leading, spacing: AppDesignSystem.Layout.cardPadding) {
                     HStack {
@@ -110,23 +158,6 @@ public struct DictationSettingsTab: View {
                         }
                     }
                 }
-            }
-        }
-        .sheet(isPresented: $promptViewModel.showPromptEditor) {
-            PromptEditorSheet(
-                prompt: promptViewModel.editingPrompt,
-                onSave: promptViewModel.handleSavePrompt,
-                onCancel: { promptViewModel.showPromptEditor = false }
-            )
-        }
-        .alert("settings.post_processing.delete_confirm_title".localized, isPresented: $promptViewModel.showDeleteConfirmation) {
-            Button("common.cancel".localized, role: .cancel) {}
-            Button("common.delete".localized, role: .destructive) {
-                promptViewModel.executeDelete()
-            }
-        } message: {
-            if let prompt = promptViewModel.promptToDelete {
-                Text("settings.post_processing.delete_confirm_message".localized(with: prompt.title))
             }
         }
     }

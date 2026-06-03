@@ -123,6 +123,7 @@
 "settings.meetings.workflow" = "Fluxo de Trabalho";
 "settings.dictation.workflow" = "Fluxo de Trabalho";
 "settings.dictation.text_handling" = "Tratamento de texto";
+"settings.dictation.styles.accessibility_hint" = "Abre estilos reutilizaveis de ditado para apps e sites.";
 
 /* Exportação de Reuniões */
 "settings.meetings.export" = "Exportação";

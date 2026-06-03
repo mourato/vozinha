@@ -28,6 +28,12 @@ final class SettingsSearchIndexTests: XCTestCase {
         XCTAssertEqual(section, .assistant)
     }
 
+    func testSectionMappingRoutesStylesKeysToDictationSection() {
+        let section = SettingsSearchIndex.section(forLocalizationKey: "settings.styles.title")
+
+        XCTAssertEqual(section, .dictation)
+    }
+
     func testSectionMappingKeepsGeneralAudioFormatInGeneralSection() {
         let section = SettingsSearchIndex.section(forLocalizationKey: "settings.general.audio_format")
 

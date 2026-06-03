@@ -122,6 +122,7 @@
 "settings.meetings.workflow" = "Workflow";
 "settings.dictation.workflow" = "Workflow";
 "settings.dictation.text_handling" = "Text handling";
+"settings.dictation.styles.accessibility_hint" = "Opens reusable dictation styles for apps and websites.";
 
 /* Meetings Export */
 "settings.meetings.export" = "Export";
