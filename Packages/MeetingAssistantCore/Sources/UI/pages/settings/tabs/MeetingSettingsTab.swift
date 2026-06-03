@@ -14,6 +14,7 @@ public struct MeetingSettingsTab: View {
     @Binding private var navigationState: MeetingSettingsNavigationState
     @StateObject private var meetingViewModel: MeetingSettingsViewModel
     @StateObject private var shortcutsViewModel = ShortcutSettingsViewModel()
+    @StateObject private var serviceViewModel: ServiceSettingsViewModel
     @StateObject private var monitoredAppsViewModel: InstalledAppsSelectionViewModel
     @StateObject private var webTargetsViewModel: WebMeetingTargetsViewModel
     @State private var showSummaryTemplateEditor = false
@@ -25,6 +26,7 @@ public struct MeetingSettingsTab: View {
     ) {
         _navigationState = navigationState
         _meetingViewModel = StateObject(wrappedValue: MeetingSettingsViewModel(settings: settings))
+        _serviceViewModel = StateObject(wrappedValue: ServiceSettingsViewModel(settings: settings))
         _monitoredAppsViewModel = StateObject(
             wrappedValue: InstalledAppsSelectionViewModel(
                 defaultBundleIdentifiers: AppSettingsStore.defaultMonitoredMeetingBundleIdentifiers,
@@ -151,6 +153,8 @@ public struct MeetingSettingsTab: View {
                         )
                     }
                 }
+
+                ServiceMeetingTranscriptionSection(viewModel: serviceViewModel)
 
                 meetingIntelligenceSection
 

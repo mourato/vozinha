@@ -20,7 +20,10 @@ public struct ModelsSettingsTab: View {
                 description: "settings.models.description".localized
             )
 
-            ServiceSettingsContent()
+            ServiceSettingsContent(
+                includeTranscriptionProviderSection: false,
+                includeMeetingTranscriptionSection: false
+            )
         }
     }
 }

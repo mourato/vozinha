@@ -13,6 +13,7 @@ public struct DictationSettingsTab: View {
     @StateObject private var viewModel = GeneralSettingsViewModel()
     @StateObject private var shortcutsViewModel = ShortcutSettingsViewModel()
     @StateObject private var promptViewModel = DictationPromptSettingsViewModel()
+    @StateObject private var serviceViewModel = ServiceSettingsViewModel()
 
     public init() {}
 
@@ -42,6 +43,8 @@ public struct DictationSettingsTab: View {
                     }
                 }
             )
+
+            ServiceTranscriptionProviderSection(viewModel: serviceViewModel)
 
             // Workflow
             DSGroup("settings.dictation.text_handling".localized, icon: "cpu") {
