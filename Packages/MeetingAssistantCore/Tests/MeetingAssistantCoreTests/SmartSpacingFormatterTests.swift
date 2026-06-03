@@ -55,7 +55,63 @@ final class SmartSpacingFormatterTests: XCTestCase {
             )
         )
 
-        XCTAssertEqual(result, "Store today")
+        XCTAssertEqual(result, " Store today")
+    }
+
+    func testFormat_AddsLeadingSpaceAfterPeriod() {
+        let result = SmartSpacingFormatter.format(
+            dictatedText: "Store today",
+            cursorContext: CursorTextContext(
+                previousCharacter: ".",
+                nextCharacter: nil,
+                isEmptyDocument: false,
+                support: .supported
+            )
+        )
+
+        XCTAssertEqual(result, " Store today")
+    }
+
+    func testFormat_AddsLeadingSpaceAfterExclamationMark() {
+        let result = SmartSpacingFormatter.format(
+            dictatedText: "Store today",
+            cursorContext: CursorTextContext(
+                previousCharacter: "!",
+                nextCharacter: nil,
+                isEmptyDocument: false,
+                support: .supported
+            )
+        )
+
+        XCTAssertEqual(result, " Store today")
+    }
+
+    func testFormat_AddsLeadingSpaceAfterQuestionMark() {
+        let result = SmartSpacingFormatter.format(
+            dictatedText: "Store today",
+            cursorContext: CursorTextContext(
+                previousCharacter: "?",
+                nextCharacter: nil,
+                isEmptyDocument: false,
+                support: .supported
+            )
+        )
+
+        XCTAssertEqual(result, " Store today")
+    }
+
+    func testFormat_DoesNotDuplicateLeadingSpaceAfterSentenceTerminator() {
+        let result = SmartSpacingFormatter.format(
+            dictatedText: " Store today",
+            cursorContext: CursorTextContext(
+                previousCharacter: ".",
+                nextCharacter: nil,
+                isEmptyDocument: false,
+                support: .supported
+            )
+        )
+
+        XCTAssertEqual(result, " Store today")
     }
 
     func testFormat_DoesNotChangeEmptyDocument() {

@@ -35,7 +35,7 @@ public enum SmartSpacingFormatter {
 
     private static func shouldAddLeadingSpace(previousCharacter: Character?) -> Bool {
         guard let previousCharacter else { return false }
-        return isWordCharacter(previousCharacter)
+        return isWordCharacter(previousCharacter) || isSentenceTerminator(previousCharacter)
     }
 
     private static func shouldAddTrailingSpace(nextCharacter: Character?) -> Bool {

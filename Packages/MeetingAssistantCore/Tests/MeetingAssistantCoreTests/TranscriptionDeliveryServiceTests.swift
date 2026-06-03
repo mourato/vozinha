@@ -178,6 +178,28 @@ final class TranscriptionDeliveryServiceTests: XCTestCase {
         XCTAssertEqual(mockPasteboard.storedString, " store today")
     }
 
+    func testDeliver_WithSentenceTerminatorBeforeCursor_PrependsSpace() {
+        let meeting = Meeting(app: .unknown)
+        let transcription = Transcription(meeting: meeting, text: kDictationText, rawText: "Next step starts now")
+        let settings = makeSettings(autoCopy: true, autoPaste: false, smartSpacingEnabled: true)
+        TranscriptionDeliveryService.cursorTextContextProvider = MockCursorTextContextProvider(
+            context: CursorTextContext(
+                previousCharacter: ".",
+                nextCharacter: nil,
+                isEmptyDocument: false,
+                support: .supported
+            )
+        )
+
+        TranscriptionDeliveryService.deliver(
+            transcription: transcription,
+            settings: settings,
+            pasteboard: mockPasteboard
+        )
+
+        XCTAssertEqual(mockPasteboard.storedString, " Next step starts now")
+    }
+
     func testDeliver_WithSmartParagraphsEnabled_ParagraphizesBeforeSpacing() {
         let meeting = Meeting(app: .unknown)
         let text = [
