@@ -53,7 +53,10 @@ public struct DSCard<Content: View>: View {
     }
 
     private var showsStroke: Bool {
-        style == .standard
+        switch style {
+        case .standard, .settings:
+            true
+        }
     }
 
     private var backgroundColor: Color {
