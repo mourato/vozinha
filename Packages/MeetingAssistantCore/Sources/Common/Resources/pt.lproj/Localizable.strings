@@ -540,12 +540,8 @@
 "settings.shortcuts.reset" = "Resetar para atalhos padrão";
 "settings.capabilities.meeting_transcription" = "Transcrição de Reuniões";
 "settings.capabilities.meeting_transcription_desc" = "Ativa fluxos de gravação e transcrição de reuniões.";
-"settings.capabilities.meeting_transcription_disabled_title" = "Transcrição de reuniões desativada";
-"settings.capabilities.meeting_transcription_disabled_desc" = "Atalhos de reunião e captura automática de reuniões ficam inativos até você ativar este recurso.";
 "settings.capabilities.assistant_integrations" = "Integrações do Assistant";
 "settings.capabilities.assistant_integrations_desc" = "Ativa integrações e ações de despacho do Assistant.";
-"settings.capabilities.assistant_integrations_disabled_title" = "Integrações do Assistant desativadas";
-"settings.capabilities.assistant_integrations_disabled_desc" = "Ações de integração e despacho por atalho do Assistant ficam pausados até você ativar este recurso.";
 "settings.assistant.header_desc" = "Configure o atalho do Assistant para editar o texto selecionado com comandos de voz em qualquer app.";
 "settings.integrations.header_desc" = "Configure integrações para enviar comandos de voz transcritos e pós-processados sem exigir texto selecionado.";
 "settings.assistant.controls" = "Atalho do Assistant";

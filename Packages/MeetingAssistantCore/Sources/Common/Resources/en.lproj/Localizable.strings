@@ -539,12 +539,8 @@
 "settings.shortcuts.reset" = "Reset to Default Shortcuts";
 "settings.capabilities.meeting_transcription" = "Meeting Transcription";
 "settings.capabilities.meeting_transcription_desc" = "Enable meeting recording and transcription workflows.";
-"settings.capabilities.meeting_transcription_disabled_title" = "Meeting transcription is disabled";
-"settings.capabilities.meeting_transcription_disabled_desc" = "Meeting shortcuts and automatic meeting capture remain inactive until you enable this feature.";
 "settings.capabilities.assistant_integrations" = "Assistant Integrations";
 "settings.capabilities.assistant_integrations_desc" = "Enable integrations and Assistant dispatch actions.";
-"settings.capabilities.assistant_integrations_disabled_title" = "Assistant integrations are disabled";
-"settings.capabilities.assistant_integrations_disabled_desc" = "Integration actions and Assistant shortcut dispatch are paused until you enable this feature.";
 "settings.assistant.header_desc" = "Configure the Assistant shortcut to edit selected text with voice commands in any app.";
 "settings.integrations.header_desc" = "Configure integrations to dispatch transcribed and post-processed voice commands without requiring selected text.";
 "settings.assistant.controls" = "Assistant Shortcut";

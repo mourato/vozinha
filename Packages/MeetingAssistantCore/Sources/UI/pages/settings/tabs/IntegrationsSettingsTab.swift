@@ -27,11 +27,6 @@ public struct IntegrationsSettingsTab: View {
                 description: "settings.integrations.header_desc".localized
             )
 
-            capabilityStateBlock(
-                title: "settings.capabilities.assistant_integrations_disabled_title".localized,
-                message: "settings.capabilities.assistant_integrations_disabled_desc".localized
-            )
-
             integrationsSection
                 .disabled(!settings.isAssistantIntegrationsEnabled)
                 .opacity(settings.isAssistantIntegrationsEnabled ? 1 : CapabilityLayout.disabledOpacity)
@@ -91,13 +86,6 @@ public struct IntegrationsSettingsTab: View {
         )
     }
 
-    @ViewBuilder
-    private func capabilityStateBlock(title: String, message: String) -> some View {
-        if !settings.isAssistantIntegrationsEnabled {
-            SettingsStateBlock(kind: .warning, title: title, message: message)
-                .transition(SettingsMotion.sectionTransition(reduceMotion: reduceMotion))
-        }
-    }
 }
 
 #Preview {

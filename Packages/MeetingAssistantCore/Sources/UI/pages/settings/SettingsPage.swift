@@ -23,7 +23,6 @@ private enum LayoutConstants {
 public struct SettingsView: View {
     private enum ToolbarLayout {
         static let transcriptionsSearchWidth: CGFloat = 230
-        static let capabilityToggleSpacing: CGFloat = 8
     }
 
     fileprivate enum ChromeMode {
@@ -331,20 +330,12 @@ private extension SettingsView {
     }
 
     private func makeCapabilityToolbarToggle(title: String, isOn: Binding<Bool>) -> some View {
-        HStack(spacing: ToolbarLayout.capabilityToggleSpacing) {
-            Text(title)
-                .font(.system(size: 12, weight: .medium))
-                .foregroundStyle(.secondary)
-                .lineLimit(1)
-
-            Toggle(title, isOn: isOn.animated(using: SettingsMotion.sectionAnimation))
-                .labelsHidden()
-                .toggleStyle(.switch)
-                .controlSize(.small)
-        }
-        .accessibilityElement(children: .combine)
-        .accessibilityLabel(title)
-        .animation(SettingsMotion.sectionAnimation(reduceMotion: reduceMotion), value: isOn.wrappedValue)
+        Toggle(title, isOn: isOn.animated(using: SettingsMotion.sectionAnimation))
+            .labelsHidden()
+            .toggleStyle(.switch)
+            .controlSize(.small)
+            .accessibilityLabel(title)
+            .animation(SettingsMotion.sectionAnimation(reduceMotion: reduceMotion), value: isOn.wrappedValue)
     }
 
     private var legacySidebarToggleButton: some View {

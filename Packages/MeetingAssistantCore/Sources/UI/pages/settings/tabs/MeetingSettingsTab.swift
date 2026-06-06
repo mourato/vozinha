@@ -105,11 +105,6 @@ public struct MeetingSettingsTab: View {
                 description: "settings.shortcuts.meeting_desc".localized
             )
 
-            capabilityStateBlock(
-                title: "settings.capabilities.meeting_transcription_disabled_title".localized,
-                message: "settings.capabilities.meeting_transcription_disabled_desc".localized
-            )
-
             VStack(alignment: .leading, spacing: AppDesignSystem.Layout.sectionSpacing) {
                 ShortcutSettingsSection(
                     groupTitle: "settings.shortcuts.meeting".localized,
@@ -355,14 +350,6 @@ public struct MeetingSettingsTab: View {
         }
     }
 
-    @ViewBuilder
-    private func capabilityStateBlock(title: String, message: String) -> some View {
-        if !meetingViewModel.settings.isMeetingTranscriptionEnabled {
-            SettingsStateBlock(kind: .warning, title: title, message: message)
-                .transition(SettingsMotion.sectionTransition(reduceMotion: reduceMotion))
-        }
-    }
-
     private var meetingIntelligenceSection: some View {
         DSGroup("settings.enhancements.meeting_intelligence_model".localized, icon: "bubble.left.and.bubble.right.fill") {
             VStack(alignment: .leading, spacing: AppDesignSystem.Layout.itemSpacing) {
@@ -386,11 +373,6 @@ public struct MeetingSettingsTab: View {
 
     private var monitoringTargetsPage: some View {
         SettingsScrollableContent {
-            capabilityStateBlock(
-                title: "settings.capabilities.meeting_transcription_disabled_title".localized,
-                message: "settings.capabilities.meeting_transcription_disabled_desc".localized
-            )
-
             DSCallout(
                 kind: .info,
                 title: "settings.meetings.monitoring_access.context_title".localized,

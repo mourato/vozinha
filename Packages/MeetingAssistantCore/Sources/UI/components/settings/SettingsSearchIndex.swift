@@ -166,15 +166,11 @@ enum SettingsSearchIndex {
     private static let meetingCapabilityKeys: Set<String> = [
         "settings.capabilities.meeting_transcription",
         "settings.capabilities.meeting_transcription_desc",
-        "settings.capabilities.meeting_transcription_disabled_title",
-        "settings.capabilities.meeting_transcription_disabled_desc",
     ]
 
     private static let integrationCapabilityKeys: Set<String> = [
         "settings.capabilities.assistant_integrations",
         "settings.capabilities.assistant_integrations_desc",
-        "settings.capabilities.assistant_integrations_disabled_title",
-        "settings.capabilities.assistant_integrations_disabled_desc",
         "settings.integrations.header_desc",
         "settings.section.integrations",
     ]
