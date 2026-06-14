@@ -75,8 +75,6 @@ public final class MeetingNotesFloatingPanelController {
         panel.hidesOnDeactivate = false
         panel.collectionBehavior = [.fullScreenAuxiliary, .canJoinAllSpaces]
         panel.title = "recording_indicator.meeting_notes.title".localized
-        panel.isOpaque = false
-        panel.backgroundColor = .clear
         panel.minSize = NSSize(width: Self.minimumPanelWidth, height: Self.minimumPanelHeight)
         let delegate = PanelDelegate(
             onClose: onClose,
@@ -99,19 +97,7 @@ public final class MeetingNotesFloatingPanelController {
             Self.minimumPanelHeight,
             floor(visibleFrame.height * Self.maximumScreenHeightRatio)
         )
-
         panel.maxSize = NSSize(width: CGFloat.greatestFiniteMagnitude, height: maxHeight)
-
-        let clampedFrame = Self.clampedPanelFrame(
-            panel.frame,
-            within: visibleFrame,
-            maxHeight: maxHeight
-        )
-        guard !panel.frame.equalTo(clampedFrame) else {
-            return
-        }
-
-        panel.setFrame(clampedFrame, display: false, animate: false)
     }
 
     private func targetVisibleFrame(for panel: NSPanel) -> NSRect? {
@@ -122,22 +108,6 @@ public final class MeetingNotesFloatingPanelController {
             return mainScreenFrame
         }
         return NSScreen.screens.first?.visibleFrame
-    }
-
-    static func clampedPanelFrame(
-        _ frame: NSRect,
-        within visibleFrame: NSRect,
-        maxHeight: CGFloat
-    ) -> NSRect {
-        let clampedHeight = min(frame.height, maxHeight)
-        let maxOriginY = visibleFrame.maxY - clampedHeight
-        let clampedOriginY = min(max(frame.origin.y, visibleFrame.minY), maxOriginY)
-        return NSRect(
-            x: frame.origin.x,
-            y: clampedOriginY,
-            width: frame.width,
-            height: clampedHeight
-        )
     }
 }
 
