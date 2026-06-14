@@ -239,9 +239,8 @@ rm -rf "${MOUNT_POINT}"
 
 # Convert writable DMG to compressed DMG
 echo -e "${YELLOW}[4/5]${NC} Finalizing compressed DMG..."
-hdiutil convert "${RW_DMG_PATH}" \
-    -ov -format UDZO \
-    -o "${DMG_PATH%.dmg}"
+rm -f "${DMG_PATH}"
+diskutil image create from -format UDZO "${RW_DMG_PATH}" "${DMG_PATH}"
 
 echo -e "${YELLOW}[5/6]${NC} Code signing DMG..."
 if [ "${MA_RELEASE_SIGNING_MODE}" = "self-signed" ]; then
