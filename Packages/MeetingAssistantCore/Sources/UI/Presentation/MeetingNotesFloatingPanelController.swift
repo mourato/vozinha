@@ -8,8 +8,8 @@ public final class MeetingNotesFloatingPanelController {
     private static let initialPanelHeight: CGFloat = 400
     private static let minimumPanelWidth: CGFloat = 320
     private static let minimumPanelHeight: CGFloat = 220
-    static let maximumScreenHeightRatio: CGFloat = 0.9
-    private static let frameOriginKey = "MeetingNotesPanel.frameOrigin"
+    private static let maximumPanelWidth: CGFloat = 700
+    private static let autosaveName = "MeetingNotesPanel"
 
     private var panel: NSPanel?
     private var hostingView: NSHostingView<MeetingNotesFloatingPanelView>?
@@ -43,7 +43,6 @@ public final class MeetingNotesFloatingPanelController {
             hostingView = host
         }
 
-        enforcePanelHeightLimit(panel)
         panel.level = .floating
         panel.orderFrontRegardless()
         panel.makeKey()
@@ -71,97 +70,28 @@ public final class MeetingNotesFloatingPanelController {
         panel.collectionBehavior = [.canJoinAllSpaces]
         panel.title = "recording_indicator.meeting_notes.title".localized
         panel.minSize = NSSize(width: Self.minimumPanelWidth, height: Self.minimumPanelHeight)
-        let delegate = PanelDelegate(
-            onClose: onClose,
-            onGeometryChange: { [weak self, weak panel] in
-                guard let self, let panel else { return }
-                enforcePanelHeightLimit(panel)
-            },
-            onSaveFrame: { [weak self] origin in
-                self?.saveFrameOrigin(origin)
-            }
-        )
+        panel.maxSize = NSSize(width: Self.maximumPanelWidth, height: CGFloat.greatestFiniteMagnitude)
+
+        let delegate = PanelDelegate(onClose: onClose)
         panel.delegate = delegate
         panelDelegate = delegate
-        restoreSavedFrameOrigin(for: panel)
+
+        if !panel.setFrameUsingName(Self.autosaveName) || panel.frame.origin == .zero {
+            panel.center()
+        }
+        panel.setFrameAutosaveName(Self.autosaveName)
 
         self.panel = panel
         return panel
     }
 
-    private func enforcePanelHeightLimit(_ panel: NSPanel) {
-        guard let visibleFrame = targetVisibleFrame(for: panel) else { return }
-        let maxHeight = max(
-            Self.minimumPanelHeight,
-            floor(visibleFrame.height * Self.maximumScreenHeightRatio)
-        )
-        panel.maxSize = NSSize(width: CGFloat.greatestFiniteMagnitude, height: maxHeight)
-
-        guard panel.frame.height > maxHeight else { return }
-
-        let clampedHeight = maxHeight
-        let maxOriginY = visibleFrame.maxY - clampedHeight
-        let clampedOriginY = min(max(panel.frame.origin.y, visibleFrame.minY), maxOriginY)
-        let clampedFrame = NSRect(
-            x: panel.frame.origin.x,
-            y: clampedOriginY,
-            width: panel.frame.width,
-            height: clampedHeight
-        )
-        panel.setFrame(clampedFrame, display: false, animate: false)
-    }
-
-    private func restoreSavedFrameOrigin(for panel: NSPanel) {
-        guard let data = UserDefaults.standard.data(forKey: Self.frameOriginKey),
-              let origin = try? NSKeyedUnarchiver.unarchivedObject(ofClass: NSValue.self, from: data)
-        else {
-            panel.center()
-            return
-        }
-        let point = origin.pointValue
-        let savedRect = NSRect(origin: point, size: panel.frame.size)
-
-        let screens = NSScreen.screens
-        let isOnScreen = screens.contains { screen in
-            screen.visibleFrame.intersects(savedRect)
-        }
-        guard isOnScreen else {
-            panel.center()
-            return
-        }
-
-        panel.setFrameOrigin(point)
-    }
-
-    private func saveFrameOrigin(_ origin: NSPoint) {
-        let value = NSValue(point: origin)
-        guard let data = try? NSKeyedArchiver.archivedData(withRootObject: value, requiringSecureCoding: false) else { return }
-        UserDefaults.standard.set(data, forKey: Self.frameOriginKey)
-    }
-    private func targetVisibleFrame(for panel: NSPanel) -> NSRect? {
-        if let screenFrame = panel.screen?.visibleFrame {
-            return screenFrame
-        }
-        if let mainScreenFrame = NSScreen.main?.visibleFrame {
-            return mainScreenFrame
-        }
-        return NSScreen.screens.first?.visibleFrame
-    }
 }
 
 private final class PanelDelegate: NSObject, NSWindowDelegate {
     var onClose: () -> Void
-    private let onGeometryChange: () -> Void
-    private let onSaveFrame: (NSPoint) -> Void
 
-    init(
-        onClose: @escaping () -> Void,
-        onGeometryChange: @escaping () -> Void,
-        onSaveFrame: @escaping (NSPoint) -> Void
-    ) {
+    init(onClose: @escaping () -> Void) {
         self.onClose = onClose
-        self.onGeometryChange = onGeometryChange
-        self.onSaveFrame = onSaveFrame
     }
 
     func windowWillClose(_ notification: Notification) {
@@ -174,21 +104,6 @@ private final class PanelDelegate: NSObject, NSWindowDelegate {
 
     func windowShouldZoom(_ window: NSWindow, toFrame newFrame: NSRect) -> Bool {
         false
-    }
-
-    func windowDidMove(_ notification: Notification) {
-        guard let window = notification.object as? NSWindow else { return }
-        onSaveFrame(window.frame.origin)
-    }
-
-    func windowDidChangeScreen(_ notification: Notification) {
-        onGeometryChange()
-    }
-
-    func windowDidEndLiveResize(_ notification: Notification) {
-        onGeometryChange()
-        guard let window = notification.object as? NSWindow else { return }
-        onSaveFrame(window.frame.origin)
     }
 }
 
