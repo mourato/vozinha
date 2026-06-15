@@ -37,14 +37,8 @@ public final class MeetingNotesFloatingPanelController {
             hostingView.rootView = rootView
         } else {
             let host = NSHostingView(rootView: rootView)
-            host.translatesAutoresizingMaskIntoConstraints = false
+            host.autoresizingMask = [.width, .height]
             panel.contentView = host
-            NSLayoutConstraint.activate([
-                host.leadingAnchor.constraint(equalTo: panel.contentView!.leadingAnchor),
-                host.trailingAnchor.constraint(equalTo: panel.contentView!.trailingAnchor),
-                host.topAnchor.constraint(equalTo: panel.contentView!.topAnchor),
-                host.bottomAnchor.constraint(equalTo: panel.contentView!.bottomAnchor),
-            ])
             hostingView = host
         }
 
@@ -73,7 +67,7 @@ public final class MeetingNotesFloatingPanelController {
         )
         panel.isFloatingPanel = true
         panel.hidesOnDeactivate = false
-        panel.collectionBehavior = [.fullScreenAuxiliary, .canJoinAllSpaces]
+        panel.collectionBehavior = [.canJoinAllSpaces]
         panel.title = "recording_indicator.meeting_notes.title".localized
         panel.minSize = NSSize(width: Self.minimumPanelWidth, height: Self.minimumPanelHeight)
         let delegate = PanelDelegate(
@@ -85,7 +79,11 @@ public final class MeetingNotesFloatingPanelController {
         )
         panel.delegate = delegate
         panelDelegate = delegate
-        panel.center()
+        panel.setFrameUsingName("MeetingNotesPanel")
+        panel.setFrameAutosaveName("MeetingNotesPanel")
+        if panel.frame.origin == .zero {
+            panel.center()
+        }
 
         self.panel = panel
         return panel
@@ -125,6 +123,10 @@ private final class PanelDelegate: NSObject, NSWindowDelegate {
 
     func windowWillClose(_ notification: Notification) {
         onClose()
+    }
+
+    func windowShouldMiniaturize(_ notification: Notification) -> Bool {
+        false
     }
 
     func windowDidChangeScreen(_ notification: Notification) {
