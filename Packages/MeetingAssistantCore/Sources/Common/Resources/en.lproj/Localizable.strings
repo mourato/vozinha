@@ -1293,3 +1293,6 @@
 "metrics.performance.avg_audio" = "Avg. Audio";
 "metrics.performance.avg_process_time" = "Avg. Process";
 "metrics.performance.avg_enhancement_time" = "Avg. Enhancement Time";
+
+/* Error */
+"metrics.error.load" = "Could not load dashboard data.";

@@ -2,16 +2,13 @@ import Foundation
 import MeetingAssistantCoreCommon
 
 public struct ModelPerformanceStat: Identifiable, Equatable, Sendable {
+    public let id = UUID()
     public let name: String
     public let fileCount: Int
     public let totalProcessingTime: TimeInterval
     public let avgProcessingTime: TimeInterval
     public let avgAudioDuration: TimeInterval
     public let speedFactor: Double
-
-    public var id: String {
-        name
-    }
 
     public init(
         name: String,

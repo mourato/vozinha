@@ -38,39 +38,12 @@ public enum ModelPerformanceAggregator {
         durationKeyPath: KeyPath<Transcription, Double>,
         audioDurationKeyPath: KeyPath<Transcription, TimeInterval>? = nil
     ) -> [ModelPerformanceStat] {
-        let relevant = transcriptions.filter { $0[keyPath: durationKeyPath] > 0 }
-        let grouped = Dictionary(grouping: relevant) { $0[keyPath: modelNameKeyPath] }
-
-        return grouped.map { modelName, items in
-            let fileCount = items.count
-            let totalProcessingTime = items.reduce(0) { $0 + $1[keyPath: durationKeyPath] }
-            let avgProcessingTime = totalProcessingTime / Double(fileCount)
-            let totalAudioDuration = items.reduce(0) { $0 + $1.meeting.duration }
-            let avgAudioDuration = totalAudioDuration / Double(fileCount)
-
-            var speedFactor = 0.0
-            if let audioDurationKeyPath {
-                let ratios = items.compactMap { item -> Double? in
-                    let audio = item[keyPath: audioDurationKeyPath]
-                    let proc = item[keyPath: durationKeyPath]
-                    guard proc > 0, audio > 0 else { return nil }
-                    return audio / proc
-                }
-                if !ratios.isEmpty {
-                    speedFactor = ratios.reduce(0, +) / Double(ratios.count)
-                }
-            }
-
-            return ModelPerformanceStat(
-                name: modelName,
-                fileCount: fileCount,
-                totalProcessingTime: totalProcessingTime,
-                avgProcessingTime: avgProcessingTime,
-                avgAudioDuration: avgAudioDuration,
-                speedFactor: speedFactor
-            )
-        }
-        .sorted { $0.avgProcessingTime < $1.avgProcessingTime }
+        computeStats(
+            for: transcriptions,
+            extractModelName: { $0[keyPath: modelNameKeyPath] },
+            extractDuration: durationKeyPath,
+            extractAudioDuration: audioDurationKeyPath
+        )
     }
 
     static func processStats(
@@ -79,23 +52,41 @@ public enum ModelPerformanceAggregator {
         durationKeyPath: KeyPath<Transcription, Double>,
         audioDurationKeyPath: KeyPath<Transcription, TimeInterval>? = nil
     ) -> [ModelPerformanceStat] {
-        let relevant = transcriptions.filter {
-            $0[keyPath: modelNameKeyPath] != nil && $0[keyPath: durationKeyPath] > 0
-        }
-        let grouped = Dictionary(grouping: relevant) { $0[keyPath: modelNameKeyPath] ?? "Unknown" }
+        computeStats(
+            for: transcriptions,
+            extractModelName: { $0[keyPath: modelNameKeyPath] ?? "Unknown" },
+            extractDuration: durationKeyPath,
+            extractAudioDuration: audioDurationKeyPath
+        )
+    }
+
+    private static func computeStats(
+        for transcriptions: [Transcription],
+        extractModelName: (Transcription) -> String,
+        extractDuration: KeyPath<Transcription, Double>,
+        extractAudioDuration: KeyPath<Transcription, TimeInterval>?
+    ) -> [ModelPerformanceStat] {
+        let relevant = transcriptions.filter { $0[keyPath: extractDuration] > 0 }
+        let grouped = Dictionary(grouping: relevant) { extractModelName($0) }
 
         return grouped.map { modelName, items in
             let fileCount = items.count
-            let totalProcessingTime = items.reduce(0) { $0 + $1[keyPath: durationKeyPath] }
+            let totalProcessingTime = items.reduce(0) { $0 + $1[keyPath: extractDuration] }
             let avgProcessingTime = totalProcessingTime / Double(fileCount)
-            let totalAudioDuration = items.reduce(0) { $0 + $1.meeting.duration }
+
+            let totalAudioDuration: TimeInterval
+            if let extractAudioDuration {
+                totalAudioDuration = items.reduce(0) { $0 + $1[keyPath: extractAudioDuration] }
+            } else {
+                totalAudioDuration = items.reduce(0) { $0 + $1.meeting.duration }
+            }
             let avgAudioDuration = totalAudioDuration / Double(fileCount)
 
             var speedFactor = 0.0
-            if let audioDurationKeyPath {
+            if let extractAudioDuration {
                 let ratios = items.compactMap { item -> Double? in
-                    let audio = item[keyPath: audioDurationKeyPath]
-                    let proc = item[keyPath: durationKeyPath]
+                    let audio = item[keyPath: extractAudioDuration]
+                    let proc = item[keyPath: extractDuration]
                     guard proc > 0, audio > 0 else { return nil }
                     return audio / proc
                 }

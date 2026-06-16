@@ -261,8 +261,17 @@ struct MetricsDashboardPerformancePage: View {
     @State private var selectedFilter: PerformanceFilter = .all
     @State private var isLoading = true
     @State private var errorMessage: String?
+    @State private var performanceLoadTask: Task<Void, Never>?
 
-    private let storage: StorageService = FileSystemStorageService.shared
+    private let storage: StorageService
+
+    init(
+        viewModel: MetricsDashboardViewModel,
+        storage: StorageService = FileSystemStorageService.shared
+    ) {
+        self.viewModel = viewModel
+        self.storage = storage
+    }
 
     private let columns: [GridItem] = [
         GridItem(.adaptive(minimum: 260), spacing: 16),
@@ -393,21 +402,30 @@ struct MetricsDashboardPerformancePage: View {
     }
 
     private func loadPerformanceData() async {
-        isLoading = true
-        errorMessage = nil
-        defer { isLoading = false }
+        performanceLoadTask?.cancel()
+        let task = Task {
+            isLoading = true
+            errorMessage = nil
+            defer { isLoading = false }
 
-        do {
-            let allTranscriptions = try await storage.loadTranscriptions()
-            let filtered: [Transcription] = switch selectedFilter {
-            case .all: allTranscriptions
-            case .dictation: allTranscriptions.filter { $0.capturePurpose == .dictation }
-            case .meeting: allTranscriptions.filter { $0.capturePurpose == .meeting }
+            do {
+                try Task.checkCancellation()
+                let allTranscriptions = try await storage.loadTranscriptions()
+                try Task.checkCancellation()
+                let filtered: [Transcription] = switch selectedFilter {
+                case .all: allTranscriptions
+                case .dictation: allTranscriptions.filter { $0.capturePurpose == .dictation }
+                case .meeting: allTranscriptions.filter { $0.capturePurpose == .meeting }
+                }
+                analysis = ModelPerformanceAggregator.computeAnalysis(transcriptions: filtered)
+            } catch is CancellationError {
+                return
+            } catch {
+                errorMessage = "metrics.error.load".localized
             }
-            analysis = ModelPerformanceAggregator.computeAnalysis(transcriptions: filtered)
-        } catch {
-            errorMessage = "metrics.error.load".localized
         }
+        performanceLoadTask = task
+        await task.value
     }
 }
 
