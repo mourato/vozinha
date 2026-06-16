@@ -104,6 +104,6 @@ public enum ModelPerformanceAggregator {
                 speedFactor: speedFactor
             )
         }
-        .sorted { $0.avgProcessingTime < $1.avgProcessingTime }
+        .sorted { $0.speedFactor > $1.speedFactor }
     }
 }
