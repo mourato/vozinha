@@ -6,10 +6,10 @@ import SwiftUI
 public final class MeetingNotesFloatingPanelController {
     private static let initialPanelWidth: CGFloat = 420
     private static let initialPanelHeight: CGFloat = 400
-    private static let minimumPanelWidth: CGFloat = 320
-    private static let minimumPanelHeight: CGFloat = 220
-    private static let maximumPanelWidth: CGFloat = 700
-    private static let maximumScreenHeightRatio: CGFloat = 0.9
+    fileprivate static let minimumPanelWidth: CGFloat = 320
+    fileprivate static let minimumPanelHeight: CGFloat = 220
+    fileprivate static let maximumPanelWidth: CGFloat = 700
+    fileprivate static let maximumScreenHeightRatio: CGFloat = 0.9
     private static let autosaveName = "MeetingNotesPanel"
 
     private var panel: NSPanel?
@@ -29,6 +29,20 @@ public final class MeetingNotesFloatingPanelController {
         onClose: @escaping () -> Void
     ) {
         let panel = ensurePanel(onClose: onClose)
+
+        let maxHeight = Self.maximumPanelHeight(for: panel.screen)
+        panel.maxSize = NSSize(width: Self.maximumPanelWidth, height: maxHeight)
+
+        var frame = panel.frame
+        frame.size.width = min(max(frame.size.width, Self.minimumPanelWidth), Self.maximumPanelWidth)
+        frame.size.height = min(max(frame.size.height, Self.minimumPanelHeight), maxHeight)
+
+        if let screenFrame = panel.screen?.visibleFrame {
+            frame.origin.x = max(screenFrame.minX, min(frame.origin.x, screenFrame.maxX - frame.width))
+            frame.origin.y = max(screenFrame.minY, min(frame.origin.y, screenFrame.maxY - frame.height))
+        }
+        panel.setFrame(frame, display: true)
+
         let rootView = MeetingNotesFloatingPanelView(
             content: content,
             documentId: documentId,
@@ -39,6 +53,7 @@ public final class MeetingNotesFloatingPanelController {
             hostingView.rootView = rootView
         } else {
             let host = NSHostingView(rootView: rootView)
+            host.sizingOptions = []
             host.autoresizingMask = [.width, .height]
             panel.contentView = host
             hostingView = host
@@ -54,10 +69,9 @@ public final class MeetingNotesFloatingPanelController {
         panel?.orderOut(nil)
     }
 
-    private func visibleFrameMaxHeight() -> CGFloat {
-        let screen = panel?.screen ?? NSScreen.main ?? NSScreen.screens.first
+    fileprivate static func maximumPanelHeight(for screen: NSScreen?) -> CGFloat {
         guard let visibleFrame = screen?.visibleFrame else {
-            return CGFloat.greatestFiniteMagnitude
+            return Self.minimumPanelHeight
         }
         return max(Self.minimumPanelHeight, floor(visibleFrame.height * Self.maximumScreenHeightRatio))
     }
@@ -79,7 +93,6 @@ public final class MeetingNotesFloatingPanelController {
         panel.collectionBehavior = [.canJoinAllSpaces]
         panel.title = "recording_indicator.meeting_notes.title".localized
         panel.minSize = NSSize(width: Self.minimumPanelWidth, height: Self.minimumPanelHeight)
-        panel.maxSize = NSSize(width: Self.maximumPanelWidth, height: visibleFrameMaxHeight())
 
         let delegate = PanelDelegate(onClose: onClose)
         panel.delegate = delegate
@@ -107,12 +120,21 @@ private final class PanelDelegate: NSObject, NSWindowDelegate {
         onClose()
     }
 
-    func windowShouldMiniaturize(_ notification: Notification) -> Bool {
-        false
+    func windowWillResize(_ window: NSWindow, to newSize: NSSize) -> NSSize {
+        NSSize(
+            width: min(max(newSize.width, window.minSize.width), window.maxSize.width),
+            height: min(max(newSize.height, window.minSize.height), window.maxSize.height)
+        )
     }
 
-    func windowShouldZoom(_ window: NSWindow, toFrame newFrame: NSRect) -> Bool {
-        false
+    func windowDidChangeScreen(_ notification: Notification) {
+        guard let window = notification.object as? NSWindow,
+              let screen = window.screen else { return }
+        let maxHeight = MeetingNotesFloatingPanelController.maximumPanelHeight(for: screen)
+        window.maxSize = NSSize(
+            width: MeetingNotesFloatingPanelController.maximumPanelWidth,
+            height: maxHeight
+        )
     }
 }
 
