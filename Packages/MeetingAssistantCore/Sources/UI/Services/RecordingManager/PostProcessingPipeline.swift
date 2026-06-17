@@ -16,6 +16,7 @@ extension RecordingManager {
         let model: String?
         let requestSystemPrompt: String?
         let requestUserPrompt: String?
+        let failureReason: String?
 
         static var empty: PostProcessingResult {
             PostProcessingResult(
@@ -26,8 +27,31 @@ extension RecordingManager {
                 duration: 0,
                 model: nil,
                 requestSystemPrompt: nil,
-                requestUserPrompt: nil
+                requestUserPrompt: nil,
+                failureReason: nil
             )
+        }
+
+        init(
+            processedContent: String? = nil,
+            canonicalSummary: CanonicalSummary? = nil,
+            promptId: UUID? = nil,
+            promptTitle: String? = nil,
+            duration: Double = 0,
+            model: String? = nil,
+            requestSystemPrompt: String? = nil,
+            requestUserPrompt: String? = nil,
+            failureReason: String? = nil
+        ) {
+            self.processedContent = processedContent
+            self.canonicalSummary = canonicalSummary
+            self.promptId = promptId
+            self.promptTitle = promptTitle
+            self.duration = duration
+            self.model = model
+            self.requestSystemPrompt = requestSystemPrompt
+            self.requestUserPrompt = requestUserPrompt
+            self.failureReason = failureReason
         }
     }
 
@@ -46,7 +70,9 @@ extension RecordingManager {
         )
 
         let settings = AppSettingsStore.shared
-        guard settings.postProcessingEnabled else { return .empty }
+        guard settings.postProcessingEnabled else {
+            return PostProcessingResult(failureReason: "Post-processing is disabled globally.")
+        }
         let kernelMode = postProcessingKernelMode(
             for: meeting,
             capturePurposeOverride: capturePurposeOverride
@@ -60,11 +86,13 @@ extension RecordingManager {
                 category: .recordingManager,
                 extra: ["reasonCode": reasonCode]
             )
-            return .empty
+            return PostProcessingResult(failureReason: "recording_indicator.post_processing_warning.missing_config".localized)
         }
 
         let isDictation = kernelMode == .dictation
-        guard !isPostProcessingDisabled(isDictation: isDictation, settings: settings) else { return .empty }
+        guard !isPostProcessingDisabled(isDictation: isDictation, settings: settings) else {
+            return PostProcessingResult(failureReason: "Post-processing is disabled for this recording type.")
+        }
 
         let type = meeting?.type ?? currentMeeting?.type ?? .general
         if type == .autodetect {
@@ -192,7 +220,10 @@ extension RecordingManager {
             )
         } catch {
             AppLogger.error("Post-processing failed, using raw transcription", category: .recordingManager, error: error)
-            return .empty
+            RecordingIndicatorProcessingStateStore.shared.update(
+                snapshot: RecordingIndicatorProcessingSnapshot(step: .postProcessingFailed, progressPercent: nil)
+            )
+            return PostProcessingResult(failureReason: error.localizedDescription)
         }
     }
 

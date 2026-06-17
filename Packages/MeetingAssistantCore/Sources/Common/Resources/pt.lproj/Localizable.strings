@@ -1141,6 +1141,20 @@
 "notification.transcription_body" = "%@: %d palavras %@";
 "notification.transcription_processed" = "(processado)";
 "notification.transcription_transcribed" = "transcritas";
+"notification.transcription_body_with_post_processing_failure" = "%@: %d palavras (aprimoramento não aplicado: %@)";
+
+/* Etapas do indicador de processamento */
+"recording_indicator.processing.step.transcribing_failed" = "Falha na transcrição";
+"recording_indicator.processing.step.post_processing_failed" = "Falha no aprimoramento";
+
+/* Mensagens de aviso de pós-processamento */
+"recording_indicator.post_processing_warning.missing_config" = "A configuração de aprimoramento está incompleta.";
+
+/* Mensagens de erro de transcrição */
+"error.transcription.invalid_audio_file" = "O arquivo de áudio é inválido ou está corrompido.";
+"error.transcription.no_output_path" = "Não foi possível determinar o caminho de saída para a gravação.";
+"error.transcription.merge_failed" = "Falha ao mesclar arquivos de áudio.";
+"error.transcription.no_input_files" = "Nenhum arquivo de áudio foi gravado.";
 
 /* Assistant */
 "assistant.prompt_title" = "Comando do Assistant";

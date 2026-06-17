@@ -312,6 +312,15 @@ extension AppDelegate {
         }
         .store(in: &cancellables)
 
+        // Show error on floating indicator when recording fails
+        recordingManager.$meetingState
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] state in
+                guard case let .failed(message) = state else { return }
+                self?.floatingIndicatorController.showError(message, autoHideAfter: 4.0)
+            }
+            .store(in: &cancellables)
+
         refreshRecordingUIState()
     }
 

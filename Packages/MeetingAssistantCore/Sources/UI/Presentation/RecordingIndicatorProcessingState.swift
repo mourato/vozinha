@@ -4,8 +4,10 @@ import Foundation
 public enum RecordingIndicatorProcessingStep: String, Sendable, Equatable, CaseIterable {
     case preparingAudio
     case transcribingAudio
+    case transcribingFailed
     case detectingMeetingType
     case postProcessing
+    case postProcessingFailed
     case finalizingResult
     case transcribingCommand
     case capturingContext
@@ -18,6 +20,10 @@ public enum RecordingIndicatorProcessingStep: String, Sendable, Equatable, CaseI
             "recording_indicator.processing.step.preparing_audio"
         case .transcribingAudio:
             "recording_indicator.processing.step.transcribing_audio"
+        case .transcribingFailed:
+            "recording_indicator.processing.step.transcribing_failed"
+        case .postProcessingFailed:
+            "recording_indicator.processing.step.post_processing_failed"
         case .detectingMeetingType:
             "recording_indicator.processing.step.detecting_meeting_type"
         case .postProcessing:

@@ -1150,6 +1150,20 @@
 "notification.transcription_body" = "%@: %d words %@";
 "notification.transcription_processed" = "(processed)";
 "notification.transcription_transcribed" = "transcribed";
+"notification.transcription_body_with_post_processing_failure" = "%@: %d words (enhancement not applied: %@)";
+
+/* Recording Indicator Processing Steps */
+"recording_indicator.processing.step.transcribing_failed" = "Transcription failed";
+"recording_indicator.processing.step.post_processing_failed" = "Enhancement failed";
+
+/* Post-Processing Warning Messages */
+"recording_indicator.post_processing_warning.missing_config" = "Enhancement configuration is incomplete.";
+
+/* Transcription Error Messages */
+"error.transcription.invalid_audio_file" = "The audio file is invalid or corrupted.";
+"error.transcription.no_output_path" = "Could not determine output path for the recording.";
+"error.transcription.merge_failed" = "Failed to merge audio files.";
+"error.transcription.no_input_files" = "No audio files were recorded.";
 
 /* Assistant */
 "assistant.prompt_title" = "Assistant Command";

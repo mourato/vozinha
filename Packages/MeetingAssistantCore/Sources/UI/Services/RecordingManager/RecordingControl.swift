@@ -770,6 +770,8 @@ extension RecordingManager {
         )
         isStartingRecording = false
         lastError = error
+        meetingState = .failed(error.localizedDescription)
+        currentMeeting?.state = .failed(error.localizedDescription)
         cancelPostStartCaptureTasks()
 
         // Cleanup partial starts

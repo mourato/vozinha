@@ -49,6 +49,7 @@ extension TranscribeAudioUseCase {
         let meetingType: String?
         let requestSystemPrompt: String?
         let requestUserPrompt: String?
+        let failureReason: String?
     }
 
     func performPostProcessing(
@@ -65,7 +66,8 @@ extension TranscribeAudioUseCase {
                 promptTitle: nil,
                 meetingType: nil,
                 requestSystemPrompt: nil,
-                requestUserPrompt: nil
+                requestUserPrompt: nil,
+                failureReason: nil
             )
         }
 
@@ -128,7 +130,8 @@ extension TranscribeAudioUseCase {
                 promptTitle: nil,
                 meetingType: nil,
                 requestSystemPrompt: nil,
-                requestUserPrompt: nil
+                requestUserPrompt: nil,
+                failureReason: error.localizedDescription
             )
         }
     }
@@ -205,7 +208,8 @@ extension TranscribeAudioUseCase {
                 promptTitle: prompt.title,
                 meetingType: meetingType,
                 requestSystemPrompt: systemPrompt,
-                requestUserPrompt: userPrompt
+                requestUserPrompt: userPrompt,
+                failureReason: nil
             )
         }
 
@@ -221,7 +225,8 @@ extension TranscribeAudioUseCase {
             promptTitle: prompt.title,
             meetingType: meetingType,
             requestSystemPrompt: systemPrompt,
-            requestUserPrompt: userPrompt
+            requestUserPrompt: userPrompt,
+            failureReason: nil
         )
     }
 
@@ -286,7 +291,8 @@ extension TranscribeAudioUseCase {
                 promptTitle: nil,
                 meetingType: meetingType,
                 requestSystemPrompt: nil,
-                requestUserPrompt: nil
+                requestUserPrompt: nil,
+                failureReason: nil
             )
         }
 
@@ -301,7 +307,8 @@ extension TranscribeAudioUseCase {
             promptTitle: nil,
             meetingType: meetingType,
             requestSystemPrompt: nil,
-            requestUserPrompt: nil
+            requestUserPrompt: nil,
+            failureReason: nil
         )
     }
 

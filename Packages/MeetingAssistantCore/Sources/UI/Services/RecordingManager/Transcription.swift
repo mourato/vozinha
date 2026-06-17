@@ -218,7 +218,8 @@ extension RecordingManager {
             postProcessingDuration: entity.postProcessingDuration,
             postProcessingModel: entity.postProcessingModel,
             meetingType: entity.meetingType,
-            lifecycleState: entity.lifecycleState
+            lifecycleState: entity.lifecycleState,
+            postProcessingFailureReason: entity.postProcessingFailureReason
         )
     }
 
@@ -404,15 +405,29 @@ extension RecordingManager {
     // MARK: - Notifications
 
     func notifySuccess(for transcription: Transcription) {
-        let suffix =
-            transcription.isPostProcessed
+        let body: String
+        if let failureReason = transcription.postProcessingFailureReason {
+            RecordingIndicatorProcessingStateStore.shared.update(
+                snapshot: RecordingIndicatorProcessingSnapshot(
+                    step: .postProcessingFailed,
+                    progressPercent: nil
+                )
+            )
+            body = "notification.transcription_body_with_post_processing_failure".localized(
+                with: transcription.meeting.appName,
+                transcription.wordCount,
+                failureReason
+            )
+        } else {
+            let suffix = transcription.isPostProcessed
                 ? "notification.transcription_processed".localized
                 : "notification.transcription_transcribed".localized
-        let body = "notification.transcription_body".localized(
-            with: transcription.meeting.appName,
-            transcription.wordCount,
-            suffix
-        )
+            body = "notification.transcription_body".localized(
+                with: transcription.meeting.appName,
+                transcription.wordCount,
+                suffix
+            )
+        }
 
         notificationService.sendNotification(
             title: "notification.transcription_completed".localized,
@@ -430,17 +445,66 @@ extension RecordingManager {
         AppLogger.error("Transcription failed", category: .recordingManager, error: error)
         lastError = error
         cancelEstimatedPostProcessingProgress(for: sessionID)
-        resetIndicatorProcessingSnapshot(sessionID: sessionID)
+
+        updateIndicatorProcessingSnapshot(
+            step: .transcribingFailed,
+            progressPercent: nil,
+            sessionID: sessionID
+        )
+
+        let statusError = self.transcriptionStatusError(from: error)
 
         if shouldDriveForegroundTranscriptionUI(for: sessionID) {
-            transcriptionStatus.recordError(.transcriptionFailed(error.localizedDescription))
+            transcriptionStatus.recordError(statusError)
             transcriptionStatus.completeTranscription(success: false)
         }
 
         notificationService.sendNotification(
             title: "notification.transcription_failed".localized,
-            body: error.localizedDescription
+            body: statusError.localizedDescription
         )
+    }
+
+    private func transcriptionStatusError(from error: Error) -> TranscriptionStatusError {
+        switch error {
+        case let error as TranscriptionError:
+            switch error {
+            case .serviceUnavailable:
+                return .serviceUnavailable
+            case .warmupFailed:
+                return .modelLoadFailed(error.localizedDescription)
+            case .invalidResponse:
+                return .transcriptionFailed(error.localizedDescription)
+            case .invalidURL:
+                return .connectionFailed(error.localizedDescription)
+            case .transcriptionFailed(let message):
+                return .transcriptionFailed(message)
+            }
+        case let error as DomainTranscriptionError:
+            switch error {
+            case .serviceUnavailable:
+                return .serviceUnavailable
+            case .invalidAudioFile:
+                return .transcriptionFailed("error.transcription.invalid_audio_file".localized)
+            case .transcriptionFailed(let message):
+                return .transcriptionFailed(message)
+            case .postProcessingFailed(let message):
+                return .transcriptionFailed(message)
+            }
+        case let error as PostProcessingError:
+            return .transcriptionFailed(error.localizedDescription)
+        case let error as RecordingManagerError:
+            switch error {
+            case .noOutputPath:
+                return .transcriptionFailed("error.transcription.no_output_path".localized)
+            case .mergeFailed:
+                return .transcriptionFailed("error.transcription.merge_failed".localized)
+            case .noInputFiles:
+                return .transcriptionFailed("error.transcription.no_input_files".localized)
+            }
+        default:
+            return .transcriptionFailed(error.localizedDescription)
+        }
     }
 
     func scheduleStatusReset(sessionID: UUID? = nil) {
@@ -514,8 +578,10 @@ extension RecordingManager {
 
     func indicatorProcessingStep(for phase: TranscriptionPhase) -> RecordingIndicatorProcessingStep? {
         switch phase {
-        case .idle, .failed:
+        case .idle:
             nil
+        case .failed:
+            .transcribingFailed
         case .preparing:
             .preparingAudio
         case .processing:

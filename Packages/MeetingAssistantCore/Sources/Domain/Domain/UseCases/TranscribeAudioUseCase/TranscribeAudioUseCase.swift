@@ -202,7 +202,8 @@ public final class TranscribeAudioUseCase: Sendable {
                         postProcessingDuration: postProcessingDuration,
                         postProcessingModel: postProcessingModel,
                         requestSystemPrompt: postProcessingResult.requestSystemPrompt,
-                        requestUserPrompt: postProcessingResult.requestUserPrompt
+                        requestUserPrompt: postProcessingResult.requestUserPrompt,
+                        postProcessingFailureReason: postProcessingResult.failureReason
                     )
                 )
             )
@@ -306,6 +307,7 @@ public final class TranscribeAudioUseCase: Sendable {
         let postProcessingModel: String?
         let requestSystemPrompt: String?
         let requestUserPrompt: String?
+        let postProcessingFailureReason: String?
     }
 
     private func buildConfiguration(_ input: ConfigurationBuildInput) -> TranscriptionEntity.Configuration {
@@ -349,6 +351,7 @@ public final class TranscribeAudioUseCase: Sendable {
         config.postProcessingModel = input.processedContent == nil ? nil : input.postProcessingModel
         config.postProcessingRequestSystemPrompt = input.requestSystemPrompt
         config.postProcessingRequestUserPrompt = input.requestUserPrompt
+        config.postProcessingFailureReason = input.postProcessingFailureReason
         return config
     }
 

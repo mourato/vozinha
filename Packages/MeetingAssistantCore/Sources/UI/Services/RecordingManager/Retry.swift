@@ -171,7 +171,8 @@ extension RecordingManager {
             transcriptionDuration: transcriptionProcessingDuration,
             postProcessingDuration: postProcessing.duration,
             postProcessingModel: postProcessing.model,
-            meetingType: transcription.meeting.type.rawValue
+            meetingType: transcription.meeting.type.rawValue,
+            postProcessingFailureReason: postProcessing.failureReason
         )
     }
 

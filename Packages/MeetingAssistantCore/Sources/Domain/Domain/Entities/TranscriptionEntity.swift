@@ -53,6 +53,7 @@ public struct TranscriptionEntity: Identifiable, Codable, Hashable, Sendable {
     public let meetingType: String?
     public let lifecycleState: TranscriptionLifecycleState
     public var meetingConversationState: MeetingConversationState?
+    public var postProcessingFailureReason: String?
 
     /// Inicializador completo com suporte a pós-processamento.
     /// Configuração para inicialização flexível de TranscriptionEntity.
@@ -79,6 +80,7 @@ public struct TranscriptionEntity: Identifiable, Codable, Hashable, Sendable {
         public var meetingType: String?
         public var lifecycleState: TranscriptionLifecycleState = .completed
         public var meetingConversationState: MeetingConversationState?
+        public var postProcessingFailureReason: String?
 
         public init(
             text: String,
@@ -119,6 +121,7 @@ public struct TranscriptionEntity: Identifiable, Codable, Hashable, Sendable {
         meetingType = config.meetingType
         lifecycleState = config.lifecycleState
         meetingConversationState = config.meetingConversationState
+        postProcessingFailureReason = config.postProcessingFailureReason
     }
 
     /// Inicializador depreciado mantido para compatibilidade temporária (será removido).
