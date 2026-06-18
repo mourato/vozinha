@@ -254,7 +254,7 @@ public final class MetricsDashboardViewModel: ObservableObject {
         )
         weekdayBuckets = MetricsAggregator.computeWeekdayBuckets(metadata: filtered)
         hourlyBuckets = MetricsAggregator.computeHourlyBuckets(metadata: filtered)
-        dailyBuckets = MetricsAggregator.computeDailyBuckets(metadata: allMetadata)
+        dailyBuckets = MetricsAggregator.computeDailyBuckets(metadata: filtered)
         appUsageBuckets = MetricsAggregator.computeTopAppUsageBuckets(
             metadata: filtered,
             topLimit: 6,
