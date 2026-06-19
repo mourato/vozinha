@@ -41,7 +41,7 @@ public enum AppDesignSystem {
             let highContrastDark: CGFloat
         }
 
-        private static func isDarkAppearance(_ appearance: NSAppearance) -> Bool {
+        static func isDarkAppearance(_ appearance: NSAppearance) -> Bool {
             if let bestMatch = appearance.bestMatch(from: [.darkAqua, .aqua]) {
                 return bestMatch == .darkAqua
             }
@@ -49,15 +49,28 @@ public enum AppDesignSystem {
             return appearance.name.rawValue.localizedCaseInsensitiveContains("dark")
         }
 
+        static func resolveColor(
+            in appearance: NSAppearance,
+            _ provider: () -> NSColor
+        ) -> NSColor {
+            var resolvedColor: NSColor?
+            appearance.performAsCurrentDrawingAppearance {
+                resolvedColor = provider()
+            }
+            return resolvedColor ?? provider()
+        }
+
         private static func dynamicNSColor(
             light: @escaping @autoclosure () -> NSColor,
             dark: @escaping @autoclosure () -> NSColor
         ) -> NSColor {
             NSColor(name: nil) { appearance in
-                if isDarkAppearance(appearance) {
-                    dark()
-                } else {
-                    light()
+                resolveColor(in: appearance) {
+                    if isDarkAppearance(appearance) {
+                        dark()
+                    } else {
+                        light()
+                    }
                 }
             }
         }
@@ -112,9 +125,13 @@ public enum AppDesignSystem {
         public static let textBackground = Color(NSColor.textBackgroundColor)
         public static let separator = Color(NSColor.separatorColor)
 
-        public static var settingsCanvasBackground: Color {
+        static func settingsCanvasBackgroundNSColor() -> NSColor {
             let lightCanvas = NSColor.windowBackgroundColor.blended(withFraction: 0.06, of: .black) ?? .windowBackgroundColor
-            return Color(nsColor: dynamicNSColor(light: lightCanvas, dark: .windowBackgroundColor))
+            return dynamicNSColor(light: lightCanvas, dark: .windowBackgroundColor)
+        }
+
+        public static var settingsCanvasBackground: Color {
+            Color(nsColor: settingsCanvasBackgroundNSColor())
         }
 
         public static var glassBackground: Color {
@@ -209,9 +226,9 @@ public enum AppDesignSystem {
             settingsCardBackground(intensity: .subtle)
         }
 
-        public static func settingsCardBackground(
+        static func settingsCardBackgroundNSColor(
             intensity: AppDesignSystem.SettingsSurfaceIntensity = .subtle
-        ) -> Color {
+        ) -> NSColor {
             if !Accessibility.reduceTransparency {
                 let alpha = settingsCardAlpha(for: intensity)
                 let lightSurface = NSColor.windowBackgroundColor.withAlphaComponent(
@@ -222,7 +239,7 @@ public enum AppDesignSystem {
                     Accessibility.increaseContrast ? alpha.highContrastDark : alpha.dark
                 )
 
-                return Color(nsColor: dynamicNSColor(light: lightSurface, dark: darkSurface))
+                return dynamicNSColor(light: lightSurface, dark: darkSurface)
             }
 
             let blendFractions = settingsCardBlendFractions(for: intensity)
@@ -239,7 +256,13 @@ public enum AppDesignSystem {
                 )
                 ?? .controlBackgroundColor
 
-            return Color(nsColor: dynamicNSColor(light: lightSurface, dark: darkSurface))
+            return dynamicNSColor(light: lightSurface, dark: darkSurface)
+        }
+
+        public static func settingsCardBackground(
+            intensity: AppDesignSystem.SettingsSurfaceIntensity = .subtle
+        ) -> Color {
+            Color(nsColor: settingsCardBackgroundNSColor(intensity: intensity))
         }
 
         public static func settingsInlineBackground(
@@ -373,15 +396,13 @@ public enum AppDesignSystem {
         private static func elevatedDarkSettingsSurface(
             for intensity: AppDesignSystem.SettingsSurfaceIntensity
         ) -> NSColor {
-            let brightenFraction: CGFloat
-
-            switch intensity {
+            let brightenFraction: CGFloat = switch intensity {
             case .subtle:
-                brightenFraction = Accessibility.increaseContrast ? 0.12 : 0.07
+                Accessibility.increaseContrast ? 0.12 : 0.07
             case .regular:
-                brightenFraction = Accessibility.increaseContrast ? 0.16 : 0.10
+                Accessibility.increaseContrast ? 0.16 : 0.10
             case .strong:
-                brightenFraction = Accessibility.increaseContrast ? 0.20 : 0.13
+                Accessibility.increaseContrast ? 0.20 : 0.13
             }
 
             return NSColor.controlBackgroundColor
