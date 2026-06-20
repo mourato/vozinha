@@ -298,15 +298,33 @@ public enum KeychainManager {
 
     private static func storeConsolidatedBlob(_ data: Data) throws {
         let query = baseQuery(account: consolidatedAccount, serviceIdentifier: serviceIdentifier)
-        SecItemDelete(query as CFDictionary)
+        let updateAttributes: [String: Any] = [
+            kSecValueData as String: data,
+        ]
 
-        var addQuery = query
-        addQuery[kSecValueData as String] = data
-        addQuery[kSecAttrAccessible as String] = kSecAttrAccessibleWhenUnlockedThisDeviceOnly
+        let updateStatus = SecItemUpdate(query as CFDictionary, updateAttributes as CFDictionary)
+        switch updateStatus {
+        case errSecSuccess:
+            return
+        case errSecItemNotFound:
+            var addQuery = query
+            addQuery[kSecValueData as String] = data
+            addQuery[kSecAttrAccessible as String] = kSecAttrAccessibleWhenUnlockedThisDeviceOnly
 
-        let status = SecItemAdd(addQuery as CFDictionary, nil)
-        guard status == errSecSuccess else {
-            throw KeychainError.unexpectedStatus(status)
+            let addStatus = SecItemAdd(addQuery as CFDictionary, nil)
+            if addStatus == errSecDuplicateItem {
+                let retryStatus = SecItemUpdate(query as CFDictionary, updateAttributes as CFDictionary)
+                guard retryStatus == errSecSuccess else {
+                    throw KeychainError.unexpectedStatus(retryStatus)
+                }
+                return
+            }
+
+            guard addStatus == errSecSuccess else {
+                throw KeychainError.unexpectedStatus(addStatus)
+            }
+        default:
+            throw KeychainError.unexpectedStatus(updateStatus)
         }
     }
 

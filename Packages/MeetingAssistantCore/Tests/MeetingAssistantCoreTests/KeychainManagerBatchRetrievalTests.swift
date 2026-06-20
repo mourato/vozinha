@@ -8,6 +8,19 @@ final class KeychainManagerBatchRetrievalTests: XCTestCase {
         KeychainManager.invalidateCache()
     }
 
+    func testProviderAPIKey_CanOverwriteExistingConsolidatedValue() throws {
+        let keychain = DefaultKeychainProvider()
+        let key = KeychainManager.apiKeyKey(for: .groq)
+
+        try? keychain.delete(for: key)
+        defer { try? keychain.delete(for: key) }
+
+        try keychain.store("sk-groq-initial", for: key)
+        try keychain.store("sk-groq-updated", for: key)
+
+        XCTAssertEqual(try keychain.retrieveAPIKey(for: .groq), "sk-groq-updated")
+    }
+
     func testRegistrationAPIKeyAccount_IsStableLowercaseKey() throws {
         let registrationID = try XCTUnwrap(UUID(uuidString: "9E6F0DB4-7B48-4599-A7C5-47CB7C2F368A"))
 
