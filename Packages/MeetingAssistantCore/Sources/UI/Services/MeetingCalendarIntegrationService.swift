@@ -3,8 +3,22 @@ import MeetingAssistantCoreCommon
 import MeetingAssistantCoreDomain
 import MeetingAssistantCoreInfrastructure
 
-extension RecordingManager {
-    func applyAutomaticCalendarEventIfAvailable(to meeting: Meeting) async -> Meeting {
+@MainActor
+public final class MeetingCalendarIntegrationService {
+    private let calendarEventService: any CalendarEventServiceProtocol
+    private let ignoredEventIdentifiers: () -> Set<String>
+
+    public init(
+        calendarEventService: any CalendarEventServiceProtocol,
+        ignoredEventIdentifiers: @escaping () -> Set<String> = {
+            AppSettingsStore.shared.ignoredCalendarEventIdentifiers()
+        }
+    ) {
+        self.calendarEventService = calendarEventService
+        self.ignoredEventIdentifiers = ignoredEventIdentifiers
+    }
+
+    public func applyAutomaticCalendarEventIfAvailable(to meeting: Meeting) async -> Meeting {
         guard meeting.supportsMeetingConversation else {
             return meeting.sanitizedForPersistence()
         }
@@ -14,12 +28,11 @@ extension RecordingManager {
         }
 
         do {
-            let ignoredEventIdentifiers = AppSettingsStore.shared.ignoredCalendarEventIdentifiers()
             let events = try calendarEventService.fetchUpcomingEvents(
                 limit: 10,
                 now: meeting.startTime,
                 window: 24 * 60 * 60,
-                ignoredEventIdentifiers: ignoredEventIdentifiers
+                ignoredEventIdentifiers: ignoredEventIdentifiers()
             )
             let selectedEvent = calendarEventService.bestMatchingEvent(at: meeting.startTime, in: events)
             return meetingApplyingCalendarEvent(selectedEvent, to: meeting, clearTitleWhenRemoving: false)
@@ -29,13 +42,7 @@ extension RecordingManager {
         }
     }
 
-    func linkCurrentMeeting(to event: MeetingCalendarEventSnapshot?) {
-        guard var currentMeeting else { return }
-        currentMeeting = meetingApplyingCalendarEvent(event, to: currentMeeting, clearTitleWhenRemoving: true)
-        synchronizeMeetingNotesWithLinkedCalendarEventIfNeeded(linkedEventIdentifier: event?.eventIdentifier)
-    }
-
-    func meetingApplyingCalendarEvent(
+    public func meetingApplyingCalendarEvent(
         _ event: MeetingCalendarEventSnapshot?,
         to meeting: Meeting,
         clearTitleWhenRemoving: Bool
@@ -55,7 +62,7 @@ extension RecordingManager {
         return updatedMeeting
     }
 
-    func calendarContextBlock(for event: MeetingCalendarEventSnapshot) -> String {
+    public func calendarContextBlock(for event: MeetingCalendarEventSnapshot) -> String {
         let formatter = DateFormatter()
         formatter.dateStyle = .medium
         formatter.timeStyle = .short

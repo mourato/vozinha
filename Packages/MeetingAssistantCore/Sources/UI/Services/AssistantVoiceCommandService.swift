@@ -20,6 +20,7 @@ public final class AssistantVoiceCommandService: ObservableObject {
     private let settings: AppSettingsStore
     private let normalizationPhase: AssistantNormalizationPhase
     private let dispatchPhase: AssistantDispatchPhase
+    private let recordingOrchestrator: AssistantRecordingOrchestrator
 
     private var currentRecordingURL: URL?
     private var currentExecutionFlow: AssistantExecutionFlow = .assistantMode
@@ -56,54 +57,21 @@ public final class AssistantVoiceCommandService: ObservableObject {
             textSelectionService: textSelectionService,
             normalizationPhase: normalizationPhase
         )
+        recordingOrchestrator = AssistantRecordingOrchestrator(
+            audioRecorder: audioRecorder,
+            recordingManager: recordingManager,
+            indicator: indicator,
+            screenBorder: screenBorder,
+            settings: settings
+        )
     }
 
     public func startRecording(flow: AssistantExecutionFlow = .assistantMode) async {
         guard !isRecording, !isProcessing else { return }
-        let requestedAt = Date()
-
-        if flow == .integrationDispatch, !settings.isAssistantIntegrationsEnabled {
-            showError(.integrationDisabled)
-            return
-        }
-
-        guard !recordingManager.isRecording, !recordingManager.isStartingRecording else {
-            AppLogger.info(
-                "Assistant start blocked because RecordingManager capture is active",
-                category: .assistant
-            )
-            showError(.recordingInProgress)
-            return
-        }
-
-        guard await RecordingExclusivityCoordinator.shared.beginAssistant() else {
-            AppLogger.info("Assistant recording start blocked by exclusivity coordinator", category: .assistant)
-            showError(.recordingInProgress)
-            return
-        }
-
-        let hasPermission = await audioRecorder.hasPermission()
-        if !hasPermission {
-            await audioRecorder.requestPermission()
-        }
-
-        guard await audioRecorder.hasPermission() else {
-            await RecordingExclusivityCoordinator.shared.endAssistant()
-            showError(.microphonePermissionRequired)
-            return
-        }
-
-        recordingManager.refreshPostProcessingReadinessWarning(for: .assistant, settings: settings)
-
         do {
-            let outputURL = makeTemporaryRecordingURL()
-            currentRecordingURL = outputURL
-            currentExecutionFlow = flow
-
-            try await audioRecorder.startRecording(to: outputURL, source: .microphone)
-            isRecording = true
-            indicator.show(
-                renderState: recordingIndicatorRenderState(mode: .recording),
+            let outputURL = try await recordingOrchestrator.startRecording(
+                flow: flow,
+                requestedAt: Date(),
                 onStop: { [weak self] in
                     Task { @MainActor [weak self] in
                         await self?.stopAndProcess()
@@ -115,16 +83,12 @@ public final class AssistantVoiceCommandService: ObservableObject {
                     }
                 }
             )
-            screenBorder.show()
-            let now = Date()
-            PerformanceMonitor.shared.reportMetric(
-                name: "assistant_start_requested_to_recorder_ms",
-                value: now.timeIntervalSince(requestedAt) * 1_000,
-                unit: "ms"
-            )
+            currentRecordingURL = outputURL
+            currentExecutionFlow = flow
+            isRecording = true
+        } catch let error as AssistantVoiceCommandError {
+            showError(error)
         } catch {
-            recordingManager.clearPostProcessingReadinessWarning()
-            await RecordingExclusivityCoordinator.shared.endAssistant()
             showError(.failedToStartRecording)
         }
     }
@@ -137,15 +101,14 @@ public final class AssistantVoiceCommandService: ObservableObject {
         indicator.updateProcessingSnapshot(.init(step: .transcribingCommand))
         indicator.update(mode: .processing)
 
-        let recordingURL = await audioRecorder.stopRecording()
+        let recordingURL = await recordingOrchestrator.stopRecording()
         isRecording = false
-        await RecordingExclusivityCoordinator.shared.endAssistant()
 
         defer {
             isProcessing = false
             currentExecutionFlow = .assistantMode
             screenBorder.hide()
-            cleanupRecordingFile(recordingURL ?? currentRecordingURL)
+            recordingOrchestrator.cleanupRecordingFile(recordingURL ?? currentRecordingURL)
             currentRecordingURL = nil
             recordingManager.clearPostProcessingReadinessWarning()
         }
@@ -236,20 +199,6 @@ public final class AssistantVoiceCommandService: ObservableObject {
         )
     }
 
-    private func applyNormalization(
-        processedCommand: String,
-        command: String,
-        executionFlow: AssistantExecutionFlow,
-        sourceText: String
-    ) -> String {
-        normalizationPhase.applyNormalization(
-            processedCommand: processedCommand,
-            command: command,
-            executionFlow: executionFlow,
-            sourceText: sourceText
-        )
-    }
-
     private func executeDispatch(
         executionFlow: AssistantExecutionFlow,
         finalCommand: String,
@@ -269,48 +218,14 @@ public final class AssistantVoiceCommandService: ObservableObject {
         )
     }
 
-    private func logPayloadIfNeeded(_ message: String, _ extras: [String: Any]) {
-        guard AssistantPayloadLogging.shouldLogPayloadDetails else { return }
-        AppLogger.debug(message, category: .assistant, extra: extras)
-    }
-
     public func cancelRecording() async {
         guard isRecording || audioRecorder.isRecording else { return }
 
-        _ = await audioRecorder.stopRecording()
+        await recordingOrchestrator.cancelRecording(currentRecordingURL: currentRecordingURL)
         isRecording = false
         isProcessing = false
         currentExecutionFlow = .assistantMode
-        await RecordingExclusivityCoordinator.shared.endAssistant()
-        SoundFeedbackService.shared.playRecordingCancelledSound()
-        recordingManager.clearPostProcessingReadinessWarning()
-        indicator.hide()
-        screenBorder.hide()
-        cleanupRecordingFile(currentRecordingURL)
         currentRecordingURL = nil
-    }
-
-    private func makeTemporaryRecordingURL() -> URL {
-        let fileName = "assistant-command-\(UUID().uuidString).m4a"
-        return FileManager.default.temporaryDirectory.appendingPathComponent(fileName)
-    }
-
-    private func cleanupRecordingFile(_ url: URL?) {
-        guard let url else { return }
-        try? FileManager.default.removeItem(at: url)
-    }
-
-    private func recordingIndicatorRenderState(mode: FloatingRecordingIndicatorMode) -> RecordingIndicatorRenderState {
-        switch currentExecutionFlow {
-        case .assistantMode:
-            RecordingIndicatorRenderState(mode: mode, kind: .assistant)
-        case .integrationDispatch:
-            RecordingIndicatorRenderState(
-                mode: mode,
-                kind: .assistantIntegration,
-                assistantIntegrationID: settings.assistantSelectedIntegrationId
-            )
-        }
     }
 
     private func showError(_ error: AssistantVoiceCommandError) {

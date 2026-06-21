@@ -1,20 +1,40 @@
 import Foundation
-import MeetingAssistantCoreAudio
 import MeetingAssistantCoreCommon
+import MeetingAssistantCoreDomain
 import MeetingAssistantCoreInfrastructure
 
-extension RecordingManager {
-    struct PreparedTranscriptionAudio {
-        let transcriptionURL: URL
-        let cleanupURL: URL?
+public struct PreparedTranscriptionAudio {
+    public let transcriptionURL: URL
+    public let cleanupURL: URL?
+
+    public init(transcriptionURL: URL, cleanupURL: URL?) {
+        self.transcriptionURL = transcriptionURL
+        self.cleanupURL = cleanupURL
+    }
+}
+
+@MainActor
+public final class AudioPreparationService {
+    private let audioSilenceCompactor: any AudioSilenceCompacting
+    private let settings: AppSettingsStore
+    private let cleanupTemporaryFiles: ([URL]) -> Void
+
+    public init(
+        audioSilenceCompactor: any AudioSilenceCompacting,
+        settings: AppSettingsStore,
+        cleanupTemporaryFiles: @escaping ([URL]) -> Void
+    ) {
+        self.audioSilenceCompactor = audioSilenceCompactor
+        self.settings = settings
+        self.cleanupTemporaryFiles = cleanupTemporaryFiles
     }
 
-    func shouldRemoveSilenceBeforeTranscription(for session: TranscriptionSessionSnapshot) -> Bool {
-        let executionMode: TranscriptionExecutionMode = session.meeting.capturePurpose == .dictation ? .dictation : .meeting
-        return !AppSettingsStore.shared.shouldUseRemoteTranscription(for: executionMode)
+    public func shouldRemoveSilenceBeforeTranscription(capturePurpose: CapturePurpose) -> Bool {
+        let executionMode: TranscriptionExecutionMode = capturePurpose == .dictation ? .dictation : .meeting
+        return !settings.shouldUseRemoteTranscription(for: executionMode)
     }
 
-    func prepareAudioForTranscription(
+    public func prepareAudioForTranscription(
         audioURL: URL,
         allowSilenceRemoval: Bool
     ) async -> PreparedTranscriptionAudio {
@@ -22,13 +42,10 @@ extension RecordingManager {
             return PreparedTranscriptionAudio(transcriptionURL: audioURL, cleanupURL: nil)
         }
 
-        let settings = AppSettingsStore.shared
         guard settings.removeSilenceBeforeProcessing else {
             return PreparedTranscriptionAudio(transcriptionURL: audioURL, cleanupURL: nil)
         }
 
-        // The compacted copy is only an internal transcription artifact.
-        // Keep it PCM/WAV to avoid fragile AAC re-encoding in the hot path.
         let compactionFormat: AppSettingsStore.AudioFormat = .wav
         let tempOutputURL = temporaryCompactedAudioURL(for: compactionFormat)
         let startedAt = Date()
@@ -68,7 +85,7 @@ extension RecordingManager {
             )
 
             guard result.wasCompacted else {
-                storage.cleanupTemporaryFiles(urls: [tempOutputURL])
+                cleanupTemporaryFiles([tempOutputURL])
                 return PreparedTranscriptionAudio(transcriptionURL: audioURL, cleanupURL: nil)
             }
 
@@ -77,7 +94,7 @@ extension RecordingManager {
                 cleanupURL: result.outputURL
             )
         } catch {
-            storage.cleanupTemporaryFiles(urls: [tempOutputURL])
+            cleanupTemporaryFiles([tempOutputURL])
             AppLogger.warning(
                 "Silence compaction failed; falling back to original audio",
                 category: .recordingManager,
@@ -90,9 +107,9 @@ extension RecordingManager {
         }
     }
 
-    func cleanupPreparedTranscriptionAudio(_ preparedAudio: PreparedTranscriptionAudio) {
+    public func cleanupPreparedTranscriptionAudio(_ preparedAudio: PreparedTranscriptionAudio) {
         guard let cleanupURL = preparedAudio.cleanupURL else { return }
-        storage.cleanupTemporaryFiles(urls: [cleanupURL])
+        cleanupTemporaryFiles([cleanupURL])
     }
 
     private func temporaryCompactedAudioURL(for format: AppSettingsStore.AudioFormat) -> URL {

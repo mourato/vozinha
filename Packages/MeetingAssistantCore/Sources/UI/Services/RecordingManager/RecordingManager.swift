@@ -103,6 +103,10 @@ public class RecordingManager: ObservableObject, RecordingServiceProtocol {
     let apiKeyExists: (AIProvider) -> Bool
     let transcriptionAPIKeyExists: (TranscriptionProvider) -> Bool
     let isLocalRetryModelReady: (LocalTranscriptionModel) -> Bool
+    let audioPreparationService: AudioPreparationService
+    let calendarIntegrationService: MeetingCalendarIntegrationService
+    let contextCaptureService: AssistantContextCaptureService
+    let postProcessingConfigurationProvider: PostProcessingConfigurationProvider
     var browserProviders: [String: BrowserActiveTabURLProviding] = BrowserProviderRegistry.defaultProviders()
 
     var cancellables = Set<AnyCancellable>()
@@ -261,6 +265,10 @@ public class RecordingManager: ObservableObject, RecordingServiceProtocol {
         audioKernelProvider: AudioKernelProvider = .live,
         meetingNotesRichTextStore: any MeetingNotesRichTextStoreProtocol = MeetingNotesRichTextStore(),
         meetingNotesMarkdownStore: any MeetingNotesMarkdownDocumentStoreProtocol = MeetingNotesMarkdownDocumentStore.shared,
+        audioPreparationService: AudioPreparationService? = nil,
+        calendarIntegrationService: MeetingCalendarIntegrationService? = nil,
+        contextCaptureService: AssistantContextCaptureService? = nil,
+        postProcessingConfigurationProvider: PostProcessingConfigurationProvider? = nil,
         apiKeyExists: @escaping (AIProvider) -> Bool = { provider in
             KeychainManager.existsAPIKey(for: provider)
         },
@@ -293,6 +301,25 @@ public class RecordingManager: ObservableObject, RecordingServiceProtocol {
         self.apiKeyExists = apiKeyExists
         self.transcriptionAPIKeyExists = transcriptionAPIKeyExists
         self.isLocalRetryModelReady = isLocalRetryModelReady
+        self.audioPreparationService = audioPreparationService ?? AudioPreparationService(
+            audioSilenceCompactor: audioSilenceCompactor,
+            settings: .shared,
+            cleanupTemporaryFiles: { urls in
+                storage.cleanupTemporaryFiles(urls: urls)
+            }
+        )
+        self.calendarIntegrationService = calendarIntegrationService ?? MeetingCalendarIntegrationService(
+            calendarEventService: calendarEventService
+        )
+        self.contextCaptureService = contextCaptureService ?? AssistantContextCaptureService(
+            contextAwarenessService: contextAwarenessService,
+            textContextProvider: textContextProvider ?? Self.defaultTextContextProvider(),
+            textContextGuardrails: textContextGuardrails,
+            textContextPolicy: textContextPolicy
+        )
+        self.postProcessingConfigurationProvider = postProcessingConfigurationProvider ?? PostProcessingConfigurationProvider(
+            apiKeyExists: apiKeyExists
+        )
         microphoneInputSelectionResolver = MicrophoneInputSelectionResolver(deviceManager: audioDeviceManager)
 
         // Initialize UseCase with Adapters
