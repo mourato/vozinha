@@ -13,7 +13,6 @@ import SwiftUI
 public struct TranscriptionsSettingsTab: View {
     @StateObject private var viewModel = TranscriptionSettingsViewModel()
     @StateObject private var dictationService = MeetingQuestionDictationService()
-    @State private var searchReloadTask: Task<Void, Never>?
     @Binding private var searchText: String
     @Binding private var navigationHistory: TranscriptionsNavigationHistory
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -45,36 +44,13 @@ public struct TranscriptionsSettingsTab: View {
                 await viewModel.loadTranscriptions()
             }
         }
-        .onChange(of: viewModel.sourceFilter) { _, _ in
-            Task {
-                await viewModel.loadTranscriptions()
-            }
-        }
-        .onChange(of: viewModel.dateFilter) { _, _ in
-            Task {
-                await viewModel.loadTranscriptions()
-            }
-        }
-        .onChange(of: viewModel.appFilterId) { _, _ in
-            Task {
-                await viewModel.loadTranscriptions()
-            }
-        }
         .onChange(of: viewModel.searchText) { _, _ in
             synchronizeChromeSearchText()
-            searchReloadTask?.cancel()
-            searchReloadTask = Task {
-                try? await Task.sleep(for: .milliseconds(300))
-                guard !Task.isCancelled else { return }
-                await viewModel.loadTranscriptions()
-            }
         }
         .onChange(of: searchText) { _, _ in
             synchronizeSearchTextFromChrome()
         }
         .onDisappear {
-            searchReloadTask?.cancel()
-            searchReloadTask = nil
             Task {
                 await dictationService.cancel()
             }

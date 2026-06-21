@@ -109,6 +109,8 @@ extension TranscriptionSettingsViewModelTests {
         XCTAssertEqual(teamsMetadata?.duration ?? 0, 60, accuracy: 0.1)
         XCTAssertEqual(zoomMetadata?.appRawValue, MeetingApp.zoom.rawValue)
         XCTAssertEqual(zoomMetadata?.duration ?? 0, 120, accuracy: 0.1)
+        XCTAssertEqual(storage.loadAllMetadataCallCount, 1)
+        XCTAssertEqual(storage.loadMetadataCallCount, 0)
     }
 
     func testLoadTranscriptions_IncludesFailedEmptyHistoryItems() async {
@@ -267,6 +269,51 @@ extension TranscriptionSettingsViewModelTests {
         // Then
         XCTAssertEqual(viewModel.filteredTranscriptions.count, 1)
         XCTAssertEqual(viewModel.filteredTranscriptions.first?.id, teamsMetadata.id)
+    }
+
+    func testFilterChangesDoNotTriggerAdditionalStorageLoads() async {
+        let now = Date()
+        let meetingID = UUID()
+        let dictationID = UUID()
+        storage.mockTranscriptions = [
+            Transcription(
+                id: meetingID,
+                meeting: Meeting(
+                    id: meetingID,
+                    app: .zoom,
+                    capturePurpose: .meeting,
+                    startTime: now,
+                    endTime: now.addingTimeInterval(60)
+                ),
+                segments: [],
+                text: "Quarterly review",
+                rawText: "Quarterly review"
+            ),
+            Transcription(
+                id: dictationID,
+                meeting: Meeting(
+                    id: dictationID,
+                    app: .unknown,
+                    capturePurpose: .dictation,
+                    startTime: now,
+                    endTime: now.addingTimeInterval(30)
+                ),
+                segments: [],
+                text: "Quick dictation",
+                rawText: "Quick dictation"
+            ),
+        ]
+
+        await viewModel.loadTranscriptions()
+        XCTAssertEqual(storage.loadAllMetadataCallCount, 1)
+
+        viewModel.sourceFilter = .dictations
+        viewModel.searchText = "quick"
+        viewModel.dateFilter = .allEntries
+
+        XCTAssertEqual(viewModel.filteredTranscriptions.count, 1)
+        XCTAssertEqual(storage.loadAllMetadataCallCount, 1)
+        XCTAssertEqual(storage.loadMetadataCallCount, 0)
     }
 
     func testFilteredTranscriptions_SearchMatchesMeetingTitleOnlyForMeetings() {

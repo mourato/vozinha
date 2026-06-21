@@ -349,6 +349,8 @@ class MockStorageService: StorageService, @unchecked Sendable {
     // Call tracking properties
     var createRecordingURLParams: [(meeting: Meeting, type: RecordingType)] = []
     var loadTranscriptionsCallCount = 0
+    var loadAllMetadataCallCount = 0
+    var loadMetadataCallCount = 0
 
     /// Mock data for testing
     var mockTranscriptions: [Transcription] = []
@@ -386,11 +388,13 @@ class MockStorageService: StorageService, @unchecked Sendable {
     }
 
     func loadAllMetadata() async throws -> [TranscriptionMetadata] {
-        allMetadata()
+        loadAllMetadataCallCount += 1
+        return allMetadata()
     }
 
     func loadMetadata(matching query: TranscriptionMetadataQuery) async throws -> [TranscriptionMetadata] {
-        allMetadata()
+        loadMetadataCallCount += 1
+        return allMetadata()
             .filter { metadata in
                 query.includeNonVisibleLifecycleStates || metadata.lifecycleState.isVisibleInHistory
             }

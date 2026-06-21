@@ -333,15 +333,7 @@ public class TranscriptionSettingsViewModel: ObservableObject {
         isLoading = true
         loadErrorMessage = nil
         do {
-            let query = TranscriptionMetadataQuery(
-                sourceFilter: sourceFilter,
-                dateFilter: dateFilter,
-                searchText: searchText,
-                appRawValue: nil
-            )
-
-            let allTranscriptions = try await storage.loadMetadata(matching: query)
-            transcriptions = allTranscriptions.filter {
+            transcriptions = try await storage.loadAllMetadata().filter {
                 $0.lifecycleState == .failed || !($0.duration == 0 && $0.previewText.isEmpty)
             }
             if !appFilterOptions.contains(where: { $0.id == appFilterId }) {
