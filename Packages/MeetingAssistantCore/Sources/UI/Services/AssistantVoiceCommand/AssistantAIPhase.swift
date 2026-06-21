@@ -5,15 +5,29 @@ import MeetingAssistantCoreDomain
 import MeetingAssistantCoreInfrastructure
 
 public struct AssistantAIPhase: @unchecked Sendable {
-    private let postProcessingService: PostProcessingService
-    private let scriptRunner: AssistantBashScriptRunner
+    private let postProcessingService: any PostProcessingServiceProtocol
+    private let runScript: @Sendable (_ script: String, _ input: String, _ timeoutSeconds: UInt64) async throws -> String?
 
     public init(
-        postProcessingService: PostProcessingService,
+        postProcessingService: any PostProcessingServiceProtocol,
         scriptRunner: AssistantBashScriptRunner
     ) {
         self.postProcessingService = postProcessingService
-        self.scriptRunner = scriptRunner
+        runScript = { script, input, timeoutSeconds in
+            try await scriptRunner.run(
+                script: script,
+                input: input,
+                timeoutSeconds: timeoutSeconds
+            )
+        }
+    }
+
+    init(
+        postProcessingService: any PostProcessingServiceProtocol,
+        runScript: @escaping @Sendable (_ script: String, _ input: String, _ timeoutSeconds: UInt64) async throws -> String?
+    ) {
+        self.postProcessingService = postProcessingService
+        self.runScript = runScript
     }
 
     public func processWithAI(
@@ -126,11 +140,7 @@ public struct AssistantAIPhase: @unchecked Sendable {
             return input
         }
 
-        let output = try await scriptRunner.run(
-            script: scriptConfig.script,
-            input: input,
-            timeoutSeconds: 15
-        )
+        let output = try await runScript(scriptConfig.script, input, 15)
 
         if AssistantPayloadLogging.shouldLogPayloadDetails {
             AppLogger.debug(

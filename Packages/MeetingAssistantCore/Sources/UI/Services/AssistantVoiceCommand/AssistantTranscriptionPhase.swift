@@ -4,10 +4,26 @@ import MeetingAssistantCoreCommon
 import MeetingAssistantCoreDomain
 import MeetingAssistantCoreInfrastructure
 
+@MainActor
+protocol AssistantCommandTranscribing: AnyObject {
+    func transcribe(
+        audioURL: URL,
+        onProgress: (@Sendable (Double) -> Void)?,
+        executionMode: TranscriptionExecutionMode,
+        diarizationEnabledOverride: Bool?
+    ) async throws -> TranscriptionResponse
+}
+
+extension TranscriptionClient: AssistantCommandTranscribing {}
+
 public struct AssistantTranscriptionPhase: @unchecked Sendable {
-    private let transcriptionClient: TranscriptionClient
+    private let transcriptionClient: any AssistantCommandTranscribing
 
     public init(transcriptionClient: TranscriptionClient) {
+        self.transcriptionClient = transcriptionClient
+    }
+
+    init(transcriptionClient: any AssistantCommandTranscribing) {
         self.transcriptionClient = transcriptionClient
     }
 

@@ -208,6 +208,8 @@ class MockPostProcessingService: PostProcessingServiceProtocol {
     var lastPrompt: PostProcessingPrompt?
     var lastPromptTitle: String?
     var lastPromptText: String?
+    var lastMode: IntelligenceKernelMode?
+    var lastSystemPromptOverride: String?
 
     func processTranscription(_ text: String, with prompt: PostProcessingPrompt) async throws -> String {
         processTranscriptionCallCount += 1
@@ -225,10 +227,12 @@ class MockPostProcessingService: PostProcessingServiceProtocol {
     func processTranscription(
         _ text: String,
         with prompt: PostProcessingPrompt,
-        mode _: IntelligenceKernelMode,
-        systemPromptOverride _: String?
+        mode: IntelligenceKernelMode,
+        systemPromptOverride: String?
     ) async throws -> String {
-        try await processTranscription(text, with: prompt)
+        lastMode = mode
+        lastSystemPromptOverride = systemPromptOverride
+        return try await processTranscription(text, with: prompt)
     }
 
     func processTranscription(_ text: String) async throws -> String {

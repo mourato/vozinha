@@ -313,7 +313,7 @@ public class RecordingManager: ObservableObject, RecordingServiceProtocol {
         )
         self.contextCaptureService = contextCaptureService ?? AssistantContextCaptureService(
             contextAwarenessService: contextAwarenessService,
-            textContextProvider: textContextProvider ?? Self.defaultTextContextProvider(),
+            textContextProvider: self.textContextProvider,
             textContextGuardrails: textContextGuardrails,
             textContextPolicy: textContextPolicy
         )

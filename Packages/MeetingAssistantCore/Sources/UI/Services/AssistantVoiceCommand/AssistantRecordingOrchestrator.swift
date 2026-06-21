@@ -98,11 +98,14 @@ public final class AssistantRecordingOrchestrator {
     }
 
     public func cancelRecording(currentRecordingURL: URL?) async {
-        guard audioRecorder.isRecording else { return }
-
-        _ = await audioRecorder.stopRecording()
+        let wasRecording = audioRecorder.isRecording
+        if wasRecording {
+            _ = await audioRecorder.stopRecording()
+        }
         await RecordingExclusivityCoordinator.shared.endAssistant()
-        playCancelSound()
+        if wasRecording {
+            playCancelSound()
+        }
         recordingManager.clearPostProcessingReadinessWarning()
         indicator.hide()
         screenBorder.hide()
