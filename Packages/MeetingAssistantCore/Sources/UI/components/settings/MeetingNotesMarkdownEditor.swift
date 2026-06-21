@@ -393,7 +393,7 @@ private final class KeyboardHandlerHostView: NSView {
         }
     }
 
-    deinit {
+    @MainActor deinit {
         removeMonitor()
     }
 }

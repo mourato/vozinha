@@ -1,5 +1,4 @@
 @testable import MeetingAssistantCore
-import Security
 import XCTest
 
 final class KeychainManagerBatchRetrievalTests: XCTestCase {
@@ -64,46 +63,52 @@ final class KeychainManagerBatchRetrievalTests: XCTestCase {
         XCTAssertEqual(try KeychainManager.retrieveAPIKeys(for: [registrationID]), [:])
     }
 
-    func testMapAPIKeyItems_MapsKnownProviderAccounts() {
-        let items: [[String: Any]] = [
-            [
-                kSecAttrAccount as String: KeychainManager.Key.aiAPIKeyOpenAI.rawValue,
-                kSecValueData as String: Data("sk-openai".utf8),
-            ],
-            [
-                kSecAttrAccount as String: KeychainManager.Key.aiAPIKeyGoogle.rawValue,
-                kSecValueData as String: Data("sk-google".utf8),
-            ],
-        ]
+    func testRetrieveAPIKeysMap_ReturnsStoredAllowedProviders() throws {
+        let keychain = DefaultKeychainProvider()
+        let openAIKey = KeychainManager.apiKeyKey(for: .openai)
+        let googleKey = KeychainManager.apiKeyKey(for: .google)
 
-        let mapped = KeychainManager.mapAPIKeyItems(items, allowedProviders: [.openai, .google, .anthropic])
+        try? keychain.delete(for: openAIKey)
+        try? keychain.delete(for: googleKey)
+        defer {
+            try? keychain.delete(for: openAIKey)
+            try? keychain.delete(for: googleKey)
+        }
+
+        try keychain.store("sk-openai", for: openAIKey)
+        try keychain.store("sk-google", for: googleKey)
+
+        let mapped = try KeychainManager.retrieveAPIKeysMap(allowedProviders: [.openai, .google, .anthropic])
 
         XCTAssertEqual(mapped[.openai], "sk-openai")
         XCTAssertEqual(mapped[.google], "sk-google")
         XCTAssertNil(mapped[.anthropic])
     }
 
-    func testMapAPIKeyItems_IgnoresUnknownAccounts() {
-        let items: [[String: Any]] = [
-            [
-                kSecAttrAccount as String: "unknown_account",
-                kSecValueData as String: Data("ignored".utf8),
-            ],
-            [
-                kSecAttrAccount as String: KeychainManager.Key.aiAPIKeyAnthropic.rawValue,
-                kSecValueData as String: Data("sk-anthropic".utf8),
-            ],
-        ]
+    func testRetrieveAPIKeysMap_IgnoresProvidersWithoutStoredValues() throws {
+        let keychain = DefaultKeychainProvider()
+        let anthropicKey = KeychainManager.apiKeyKey(for: .anthropic)
 
-        let mapped = KeychainManager.mapAPIKeyItems(items, allowedProviders: [.openai, .anthropic])
+        try? keychain.delete(for: anthropicKey)
+        defer { try? keychain.delete(for: anthropicKey) }
 
+        try keychain.store("sk-anthropic", for: anthropicKey)
+
+        let mapped = try KeychainManager.retrieveAPIKeysMap(allowedProviders: [.openai, .anthropic])
         XCTAssertEqual(mapped.count, 1)
         XCTAssertEqual(mapped[.anthropic], "sk-anthropic")
         XCTAssertNil(mapped[.openai])
     }
 
-    func testMapAPIKeyItems_ReturnsEmptyForEmptyInput() {
-        let mapped = KeychainManager.mapAPIKeyItems([], allowedProviders: [.openai, .google])
+    func testRetrieveAPIKeysMap_ReturnsEmptyWhenNothingIsStored() throws {
+        let keychain = DefaultKeychainProvider()
+        let openAIKey = KeychainManager.apiKeyKey(for: .openai)
+        let googleKey = KeychainManager.apiKeyKey(for: .google)
+
+        try? keychain.delete(for: openAIKey)
+        try? keychain.delete(for: googleKey)
+
+        let mapped = try KeychainManager.retrieveAPIKeysMap(allowedProviders: [.openai, .google])
         XCTAssertTrue(mapped.isEmpty)
     }
 }

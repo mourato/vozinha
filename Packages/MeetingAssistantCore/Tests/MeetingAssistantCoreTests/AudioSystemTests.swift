@@ -176,7 +176,7 @@ final class AudioSystemTests: XCTestCase {
         XCTAssertTrue(try FileManager.default.fileExists(atPath: XCTUnwrap(finalURL?.path)))
 
         // Verificar se arquivo tem conteúdo
-        let asset = try AVAsset(url: XCTUnwrap(finalURL))
+        let asset = AVURLAsset(url: try XCTUnwrap(finalURL))
         let duration = try await asset.load(.duration)
         XCTAssertGreaterThan(duration.seconds, 0)
     }
