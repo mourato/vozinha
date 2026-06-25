@@ -13,10 +13,6 @@ extension PostProcessingService {
             throw PostProcessingError.emptyTranscription
         }
 
-        guard trimmedTranscription.count <= Constants.maxInputCharacters else {
-            throw PostProcessingError.transcriptionTooLong(trimmedTranscription.count)
-        }
-
         return trimmedTranscription
     }
 

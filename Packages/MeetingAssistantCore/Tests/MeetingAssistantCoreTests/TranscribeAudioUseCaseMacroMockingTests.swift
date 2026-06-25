@@ -30,7 +30,7 @@ private final class UseCaseCallbackRecorder: @unchecked Sendable {
 final class TranscribeAudioUseCaseMacroMockingTests: XCTestCase {
     func testExecuteSuccess_SavesTranscription() async throws {
         let transcriptionRepository = MeetingAssistantCoreDomain.MacroMockTranscriptionRepository()
-        let storageRepository = MeetingAssistantCoreDomain.MacroMockTranscriptionStorageRepository()
+        let storageRepository = makeMacroMockTranscriptionStorageRepository()
 
         transcriptionRepository.healthCheckHandler = { () async throws -> Bool in true }
 
@@ -68,7 +68,7 @@ final class TranscribeAudioUseCaseMacroMockingTests: XCTestCase {
 
     func testExecuteSuccess_PersistsModelPerformanceAttempts() async throws {
         let transcriptionRepository = MeetingAssistantCoreDomain.MacroMockTranscriptionRepository()
-        let storageRepository = MeetingAssistantCoreDomain.MacroMockTranscriptionStorageRepository()
+        let storageRepository = makeMacroMockTranscriptionStorageRepository()
         let postProcessingRepository = MeetingAssistantCoreDomain.MacroMockPostProcessingRepository()
 
         transcriptionRepository.transcribeHandler = { _, _ in
@@ -130,7 +130,7 @@ final class TranscribeAudioUseCaseMacroMockingTests: XCTestCase {
 
     func testExecute_EmitsPhaseAndProgressCallbacks() async throws {
         let transcriptionRepository = MeetingAssistantCoreDomain.MacroMockTranscriptionRepository()
-        let storageRepository = MeetingAssistantCoreDomain.MacroMockTranscriptionStorageRepository()
+        let storageRepository = makeMacroMockTranscriptionStorageRepository()
         let postProcessingRepository = MeetingAssistantCoreDomain.MacroMockPostProcessingRepository()
 
         transcriptionRepository.healthCheckHandler = { () async throws -> Bool in true }

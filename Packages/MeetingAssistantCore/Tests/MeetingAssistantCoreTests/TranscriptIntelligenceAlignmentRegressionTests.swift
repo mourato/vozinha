@@ -7,7 +7,7 @@ import XCTest
 final class TranscriptIntelligenceAlignmentRegressionTests: XCTestCase {
     func testASRConfidencePropagatesToEntityQualityProfile() async throws {
         let transcriptionRepository = MeetingAssistantCoreDomain.MacroMockTranscriptionRepository()
-        let storageRepository = MeetingAssistantCoreDomain.MacroMockTranscriptionStorageRepository()
+        let storageRepository = makeMacroMockTranscriptionStorageRepository()
 
         transcriptionRepository.healthCheckHandler = { () async throws -> Bool in true }
         transcriptionRepository.transcribeHandler = { _, _ in
@@ -94,7 +94,7 @@ final class TranscriptIntelligenceAlignmentRegressionTests: XCTestCase {
 
     func testPostProcessingInputContainsQualityBlockAndCorrectOrder() async throws {
         let transcriptionRepository = MeetingAssistantCoreDomain.MacroMockTranscriptionRepository()
-        let storageRepository = MeetingAssistantCoreDomain.MacroMockTranscriptionStorageRepository()
+        let storageRepository = makeMacroMockTranscriptionStorageRepository()
         let postProcessingRepository = MeetingAssistantCoreDomain.MacroMockPostProcessingRepository()
 
         transcriptionRepository.healthCheckHandler = { () async throws -> Bool in true }
@@ -149,7 +149,7 @@ final class TranscriptIntelligenceAlignmentRegressionTests: XCTestCase {
 
     func testSummaryTrustFlagsAreRecalibratedByTranscriptQuality() async throws {
         let transcriptionRepository = MeetingAssistantCoreDomain.MacroMockTranscriptionRepository()
-        let storageRepository = MeetingAssistantCoreDomain.MacroMockTranscriptionStorageRepository()
+        let storageRepository = makeMacroMockTranscriptionStorageRepository()
         let postProcessingRepository = MeetingAssistantCoreDomain.MacroMockPostProcessingRepository()
 
         transcriptionRepository.healthCheckHandler = { () async throws -> Bool in true }

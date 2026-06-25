@@ -1009,7 +1009,6 @@
 "error.post_processing.invalid_response" = "Invalid API response";
 "error.post_processing.api_error" = "API error: %@";
 "error.post_processing.empty_transcription" = "Transcription is empty";
-"error.post_processing.transcription_too_long" = "Transcription too long (%d characters). Maximum allowed: 100,000";
 "error.post_processing.configuration_not_ready" = "AI configuration not ready for %2$@: %1$@. Check your AI settings for this mode.";
 "error.post_processing.configuration_not_ready.missing_api_key" = "Missing API key";
 "error.post_processing.configuration_not_ready.missing_model" = "Missing model";

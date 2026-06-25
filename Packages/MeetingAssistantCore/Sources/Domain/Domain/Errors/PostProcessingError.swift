@@ -9,7 +9,6 @@ public enum PostProcessingError: LocalizedError {
     case invalidResponse
     case apiError(String)
     case emptyTranscription
-    case transcriptionTooLong(Int)
     case configurationNotReady(reason: String, modeName: String)
 
     public var errorDescription: String? {
@@ -28,8 +27,6 @@ public enum PostProcessingError: LocalizedError {
             "error.post_processing.api_error".localized(with: message)
         case .emptyTranscription:
             "error.post_processing.empty_transcription".localized
-        case let .transcriptionTooLong(count):
-            "error.post_processing.transcription_too_long".localized(with: count)
         case let .configurationNotReady(reason, modeName):
             "error.post_processing.configuration_not_ready".localized(with: Self.localizedReason(for: reason), modeName)
         }

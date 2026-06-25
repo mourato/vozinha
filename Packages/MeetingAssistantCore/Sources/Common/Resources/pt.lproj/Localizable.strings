@@ -1010,7 +1010,6 @@
 "error.post_processing.invalid_response" = "Resposta inválida da API";
 "error.post_processing.api_error" = "Erro da API: %@";
 "error.post_processing.empty_transcription" = "A transcrição está vazia";
-"error.post_processing.transcription_too_long" = "Transcrição muito longa (%d caracteres). Máximo permitido: 100.000";
 "error.post_processing.configuration_not_ready" = "Configuração de IA não está pronta para %2$@: %1$@. Verifique suas configurações de IA para este modo.";
 "error.post_processing.configuration_not_ready.missing_api_key" = "Chave de API ausente";
 "error.post_processing.configuration_not_ready.missing_model" = "Modelo não selecionado";

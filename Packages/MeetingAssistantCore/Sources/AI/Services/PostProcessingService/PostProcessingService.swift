@@ -21,8 +21,6 @@ public final class PostProcessingService: ObservableObject, PostProcessingServic
         static let dictationFallbackTimeoutSeconds: TimeInterval = 8
         /// Anthropic API version header value.
         static let anthropicAPIVersion = "2023-06-01"
-        /// Maximum input characters to prevent excessive API costs.
-        static let maxInputCharacters = 100_000
         /// Retry count for meeting profile (3 attempts total).
         static let meetingRetryCount = 2
         /// Base delay for exponential backoff (in nanoseconds).
