@@ -175,8 +175,16 @@ extension AppDelegate {
     /// Applies the dock visibility setting by changing the app's activation policy.
     /// - Parameter showInDock: If true, shows the app in Dock and Cmd+Tab switcher.
     func applyDockVisibility(_ showInDock: Bool) {
-        let policy: NSApplication.ActivationPolicy = showInDock ? .regular : .accessory
+        let keepsSettingsWindowFocusable = !showInDock && settingsWindow?.isVisible == true
+        let policy: NSApplication.ActivationPolicy = showInDock || keepsSettingsWindowFocusable ? .regular : .accessory
         NSApp.setActivationPolicy(policy)
-        logger.info("Activation policy set to: \(showInDock ? "regular (dock)" : "accessory (menu bar only)")")
+        let policyDescription = if showInDock {
+            "regular (dock)"
+        } else if keepsSettingsWindowFocusable {
+            "regular (settings window)"
+        } else {
+            "accessory (menu bar only)"
+        }
+        logger.info("Activation policy set to: \(policyDescription)")
     }
 }

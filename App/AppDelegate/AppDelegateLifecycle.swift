@@ -172,7 +172,6 @@ extension AppDelegate {
 
     private func openSettingsOnLaunchIfEnabled() {
         guard settingsStore.showSettingsOnLaunch else { return }
-        promoteAppForWindowPresentation()
         NavigationService.shared.openSettings()
     }
 
@@ -188,8 +187,9 @@ extension AppDelegate {
     }
 
     func promoteAppForWindowPresentation() {
-        guard NSApp.activationPolicy() != .regular else { return }
-        NSApp.setActivationPolicy(.regular)
+        if NSApp.activationPolicy() != .regular {
+            NSApp.setActivationPolicy(.regular)
+        }
         NSApp.activate(ignoringOtherApps: true)
     }
 
@@ -200,7 +200,6 @@ extension AppDelegate {
             let isStatusItemVisible = statusItem?.isVisible ?? false
             guard hasStatusButton, isStatusItemVisible else {
                 logger.fault("Primary UI did not initialize correctly. Presenting settings recovery window.")
-                promoteAppForWindowPresentation()
                 NavigationService.shared.openSettings()
                 return
             }
@@ -208,6 +207,9 @@ extension AppDelegate {
     }
 
     private func configureNavigationService() {
+        NavigationService.shared.registerOpenSettingsHandler { [weak self] in
+            self?.openSettingsWindow()
+        }
         NavigationService.shared.registerOpenOnboardingHandler { [weak self] in
             self?.promoteAppForWindowPresentation()
             self?.presentOnboarding {}
@@ -231,8 +233,7 @@ extension AppDelegate {
                     self?.cancelRecordingFromMenu()
                 },
                 openSettings: { [weak self] in
-                    self?.promoteAppForWindowPresentation()
-                    NavigationService.shared.openSettings()
+                    self?.openSettingsWindow()
                 },
                 openHistory: { [weak self] in
                     self?.openHistory()
@@ -265,18 +266,112 @@ extension AppDelegate {
             guard !hasStatusButton || !isStatusItemVisible else { return }
 
             logger.fault("Launch recovery triggered: no visible status item and no visible window.")
-            promoteAppForWindowPresentation()
             NavigationService.shared.openSettings()
+        }
+    }
+
+    // MARK: - Settings Window Presentation
+
+    func openSettingsWindow() {
+        settingsWindowPresenter.openSettings()
+    }
+
+    func configureSettingsWindow(_ window: NSWindow?) {
+        guard let window else { return }
+        guard settingsWindow !== window else {
+            focusSettingsWindow()
+            return
+        }
+
+        settingsWindow = window
+        window.title = "settings.title".localized
+        window.setFrameAutosaveName(AppIdentity.settingsWindowAutosaveName)
+        applyPersistedSettingsWindowLayout(to: window)
+        observeSettingsWindowClose(window)
+        focusSettingsWindow()
+    }
+
+    func focusSettingsWindow() {
+        focusSettingsWindow(retryCount: 4)
+    }
+
+    private func focusSettingsWindow(retryCount: Int) {
+        guard let window = settingsWindow else {
+            guard retryCount > 0 else { return }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) { [weak self] in
+                self?.focusSettingsWindow(retryCount: retryCount - 1)
+            }
+            return
+        }
+
+        window.makeKeyAndOrderFront(nil)
+        NSApp.activate(ignoringOtherApps: true)
+    }
+
+    private func observeSettingsWindowClose(_ window: NSWindow) {
+        settingsWindowCloseObserver = NotificationCenter.default
+            .publisher(for: NSWindow.willCloseNotification, object: window)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self, weak window] _ in
+                guard let self else { return }
+                settingsWindowCloseObserver = nil
+                if settingsWindow === window {
+                    settingsWindow = nil
+                }
+                settingsWindowPresenter.settingsWindowDidClose(
+                    showInDock: settingsStore.showInDock,
+                    hasOtherVisibleNormalWindow: hasVisibleNormalWindow(excluding: window)
+                )
+            }
+    }
+
+    private func applyPersistedSettingsWindowLayout(to window: NSWindow) {
+        let evaluation = SettingsWindowLayoutStateEvaluator.evaluate(
+            visibleScreenFrames: NSScreen.screens.map(\.visibleFrame)
+        )
+
+        if evaluation.shouldResetPersistedLayout {
+            for key in evaluation.keysToReset {
+                UserDefaults.standard.removeObject(forKey: key)
+            }
+        }
+
+        if evaluation.shouldCenterWindow {
+            window.center()
+        } else if evaluation.requiresFrameClamp {
+            clampSettingsWindowToVisibleScreen(window)
+        }
+    }
+
+    private func clampSettingsWindowToVisibleScreen(_ window: NSWindow) {
+        let visibleFrames = NSScreen.screens.map(\.visibleFrame)
+        guard let targetFrame = visibleFrames.max(by: {
+            window.frame.intersection($0).area < window.frame.intersection($1).area
+        }) else {
+            return
+        }
+
+        var frame = window.frame
+        frame.size.width = min(frame.width, targetFrame.width)
+        frame.size.height = min(frame.height, targetFrame.height)
+        frame.origin.x = min(max(frame.minX, targetFrame.minX), targetFrame.maxX - frame.width)
+        frame.origin.y = min(max(frame.minY, targetFrame.minY), targetFrame.maxY - frame.height)
+        window.setFrame(frame, display: true)
+    }
+
+    private func hasVisibleNormalWindow(excluding excludedWindow: NSWindow?) -> Bool {
+        NSApp.windows.contains { window in
+            guard window !== excludedWindow else { return false }
+            guard window.isVisible else { return false }
+            return !(window is NSPanel)
         }
     }
 
     // MARK: - Document Handling (Disabled for Menu Bar App)
 
-    /// Prevent the app from reopening windows when activated.
-    /// This is critical for menu bar-only apps in SPM builds.
+    /// Reopens the primary settings window when Dock/Cmd+Tab activation has no visible window.
     func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
-        // Do not create new windows when app is reactivated
-        false
+        settingsWindowPresenter.handleApplicationReopen(hasVisibleWindows: flag)
     }
 
     /// Prevent the app from opening untitled files on launch.
@@ -539,4 +634,11 @@ extension AppDelegate {
         _ = FluidAIModelManager.shared.unloadASRFromMemoryIfPossible()
     }
 
+}
+
+private extension CGRect {
+    var area: CGFloat {
+        guard !isNull else { return 0 }
+        return width * height
+    }
 }

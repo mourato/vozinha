@@ -387,8 +387,7 @@ extension AppDelegate {
 
     @objc func openSettings() {
         performAfterMenuDismissal { [weak self] in
-            self?.promoteAppForWindowPresentation()
-            NavigationService.shared.openSettings()
+            self?.openSettingsWindow()
         }
     }
 
@@ -400,8 +399,7 @@ extension AppDelegate {
     }
 
     @objc func openHistory() {
-        performAfterMenuDismissal { [weak self] in
-            self?.promoteAppForWindowPresentation()
+        performAfterMenuDismissal {
             NavigationService.shared.openSettings(section: SettingsSection.transcriptions.rawValue)
         }
     }
