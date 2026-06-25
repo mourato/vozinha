@@ -73,7 +73,7 @@ help:
 	@echo ""
 	@echo "Maintenance:"
 	@echo "  make clean          - Clean build artifacts"
-	@echo "  make setup          - Install development dependencies"
+	@echo "  make setup          - Verify toolchain and install development dependencies"
 	@echo ""
 	@echo "CI/CD Commands:"
 	@echo "  make ci-build       - Full CI build (lint + test + build-release)"
@@ -278,12 +278,7 @@ clean:
 	@echo -e "$(GREEN)✓ Clean completed$(NC)"
 
 setup:
-	@echo -e "$(BLUE)Setting up development environment...$(NC)"
-	@echo "Installing SwiftLint..."
-	@brew install swiftlint || echo "SwiftLint already installed"
-	@echo "Installing SwiftFormat..."
-	@brew install swiftformat || echo "SwiftFormat already installed"
-	@echo -e "$(GREEN)✓ Setup completed$(NC)"
+	@./scripts/setup-dev-environment.sh
 
 # Profiling Commands
 profile: build-debug

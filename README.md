@@ -17,6 +17,8 @@ A native macOS app that detects video-call meetings, captures system audio, and 
 - macOS 15.0+ (Sequoia or later)
 - Apple Silicon (recommended)
 - Xcode 16.0+ (development)
+- Xcode command line tools selected (`xcode-select -p`)
+- Homebrew (for `make setup`)
 
 ## Documentation
 
@@ -29,11 +31,15 @@ A native macOS app that detects video-call meetings, captures system audio, and 
 This project is **CLI-first** (for parity with CI), with Xcode supported for debugging and UI iteration.
 
 ```bash
-make setup
+git clone https://github.com/mourato/prisma.git
+cd prisma
+./scripts/setup-dev-environment.sh
 make build
-make test
 make run
+make dmg
 ```
+
+`./scripts/setup-dev-environment.sh` verifies the local developer toolchain, including `make`, and installs Homebrew-managed tools (`swiftlint`, `swiftformat`). After `make` is available, `make setup` runs the same script. SwiftPM dependencies resolve automatically during build. Local AI model assets may download on first use.
 
 Use `make help` to print the current target list from the `Makefile`.
 
@@ -54,12 +60,12 @@ Use `make help` to print the current target list from the `Makefile`.
 
 | Target | Description |
 |--------|-------------|
-| `make test` | Run the full test suite with strict `xcodebuild`. |
+| `make test` | Run the fast local development test suite. |
 | `make test-agent` | Run tests with compact agent-oriented output. |
 | `make test-swift` | Run tests with `swift test` for a faster non-Xcode path. |
 | `make test-verbose` | Run tests with verbose output. |
 | `make test-strict` | Run tests with strict concurrency checking enabled. |
-| `make test-ci-strict` | Alias for `make test`. |
+| `make test-ci-strict` | Run the strict Xcode parity gate. |
 | `make scope-check` | Run scoped validation (targeted checks + automatic escalation to full gate when needed). |
 | `make scope-check-agent` | Run scoped validation in compact agent mode. |
 | `make benchmark-summary` | Run the summary benchmark gate in report-only mode. |
@@ -87,7 +93,7 @@ Use `make help` to print the current target list from the `Makefile`.
 |--------|-------------|
 | `make run` | Build Debug and open the app. |
 | `make run-release` | Build Release and open the app. |
-| `make dmg` | Create a DMG installer and prompt for automatic, forced self-signed, or forced unsigned/ad-hoc signing. |
+| `make dmg` | Build Release and create `dist/Prisma.dmg`, prompting for automatic, self-signed, or ad-hoc signing. |
 | `make setup-self-signed-cert` | Create or import the local self-signed signing certificate. |
 | `make new-release` | Create a GitHub release interactively with generated notes. |
 
@@ -227,6 +233,7 @@ make ci-release-parity-self-signed \
 Notes:
 - Keep `CFBundleIdentifier` unchanged between versions.
 - Keep `MA_RELEASE_CODE_SIGN_IDENTITY` stable if you customize the certificate name.
+- `make dmg` builds the Release app, packages it, signs the DMG, and writes `dist/Prisma.dmg`.
 - `make dmg` now prompts for signing mode. The default choice is automatic detection: if the exact configured identity is found in keychain, the DMG is self-signed; otherwise it falls back to unsigned/ad-hoc.
 - Use `MA_RELEASE_SIGNING_MODE=adhoc make dmg` or `MA_RELEASE_SIGNING_MODE=self-signed make dmg` to skip the prompt and force a specific mode.
 - Install by replacing the existing app in `/Applications` to maximize permission persistence.
