@@ -156,6 +156,18 @@ resolve_spm_dependencies() {
     2>&1 | tee "${resolve_log}"
 }
 
+apply_dependency_patches() {
+  local fluidaudio_checkout="${DERIVED_DATA}/SourcePackages/checkouts/FluidAudio"
+
+  if [ ! -d "${fluidaudio_checkout}" ]; then
+    log_info "FluidAudio checkout not found at ${fluidaudio_checkout}; skipping dependency patches"
+    return 0
+  fi
+
+  log_info "Applying FluidAudio compatibility patches"
+  "${SCRIPT_DIR}/apply-fluidaudio-patches.sh" "${fluidaudio_checkout}"
+}
+
 locate_and_copy_sparkle_tools() {
   local sparkle_tool
   local sparkle_bin_dir
@@ -186,6 +198,7 @@ run_build_archive_phase() {
 
   xcode_version_check
   resolve_spm_dependencies "${PROJECT_ROOT}/build/ci-release-resolve-packages.log"
+  apply_dependency_patches
   locate_and_copy_sparkle_tools
 
   log_info "Running release build gate"
