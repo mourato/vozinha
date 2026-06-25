@@ -196,10 +196,10 @@ public class AudioRecorder: ObservableObject, AudioRecordingService {
                     error: error
                 )
                 self.error = error
-                onRecordingError?(error)
+                self.onRecordingError?(error)
 
-                if isRecording {
-                    _ = await stopRecording()
+                if self.isRecording {
+                    _ = await self.stopRecording()
                 }
             }
         }
@@ -308,9 +308,9 @@ public class AudioRecorder: ObservableObject, AudioRecordingService {
         // Periodic metering for UI power updates
         simpleMeterTimer = Timer.scheduledTimer(withTimeInterval: Constants.simpleMeterUpdateInterval, repeats: true) { [weak self] _ in
             Task { @MainActor [weak self] in
-                guard let self, let rec = simpleRecorder else { return }
+                guard let self, let rec = self.simpleRecorder else { return }
                 rec.updateMeters()
-                publishMeterSnapshot(
+                self.publishMeterSnapshot(
                     averagePower: rec.averagePower(forChannel: 0),
                     peakPower: rec.peakPower(forChannel: 0),
                     barPowerLevels: []

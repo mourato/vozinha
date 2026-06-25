@@ -50,7 +50,7 @@ extension RecordingManager {
                 onProcessedDurationChanged: { [weak self] (processedDuration: Double) in
                     Task { @MainActor [weak self] in
                         guard let self else { return }
-                        transcriptionStatus.updateProgress(
+                        self.transcriptionStatus.updateProgress(
                             phase: .processing,
                             processedSeconds: processedDuration
                         )
