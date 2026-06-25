@@ -209,7 +209,7 @@ public final class FloatingRecordingIndicatorController: ObservableObject {
             } completionHandler: { [weak self, weak panelToHide] in
                 Task { @MainActor [weak self, weak panelToHide] in
                     guard let self, let panelToHide else { return }
-                    guard visibilityTransitionID == transitionID else { return }
+                    guard self.visibilityTransitionID == transitionID else { return }
                     panelToHide.orderOut(nil)
                     panelToHide.alphaValue = 1
                 }

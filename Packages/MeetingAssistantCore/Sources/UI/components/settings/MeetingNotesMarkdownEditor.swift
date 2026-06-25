@@ -343,6 +343,10 @@ private struct MeetingNotesMarkdownKeyboardHandler: NSViewRepresentable {
         nsView.onItalic = onItalic
         nsView.onLink = onLink
     }
+
+    static func dismantleNSView(_ nsView: KeyboardHandlerHostView, coordinator: ()) {
+        nsView.detach()
+    }
 }
 
 private final class KeyboardHandlerHostView: NSView {
@@ -356,6 +360,13 @@ private final class KeyboardHandlerHostView: NSView {
         removeMonitor()
         guard window != nil else { return }
         installMonitor()
+    }
+
+    func detach() {
+        removeMonitor()
+        onBold = nil
+        onItalic = nil
+        onLink = nil
     }
 
     private func installMonitor() {
@@ -391,10 +402,6 @@ private final class KeyboardHandlerHostView: NSView {
         default:
             return event
         }
-    }
-
-    @MainActor deinit {
-        removeMonitor()
     }
 }
 

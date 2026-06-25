@@ -231,6 +231,10 @@ private struct MeetingNotesRichTextRepresentable: NSViewRepresentable {
         }
     }
 
+    static func dismantleNSView(_ nsView: NSScrollView, coordinator: Coordinator) {
+        coordinator.disconnect()
+    }
+
     func makeCoordinator() -> Coordinator {
         Coordinator(content: $content, controller: controller)
     }
@@ -259,10 +263,13 @@ private struct MeetingNotesRichTextRepresentable: NSViewRepresentable {
             self.controller = controller
         }
 
-        @MainActor deinit {
+        func disconnect() {
             if let textStorageDidProcessEditingObserver {
                 NotificationCenter.default.removeObserver(textStorageDidProcessEditingObserver)
+                self.textStorageDidProcessEditingObserver = nil
             }
+            observedTextStorage = nil
+            controller.textView = nil
         }
 
         func connect(textView: NSTextView) {
