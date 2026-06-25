@@ -22,9 +22,6 @@ struct MeetingAssistantApp: App {
     var body: some Scene {
         Window("settings.title".localized, id: WindowID.settings) {
             SettingsView()
-                .background(SettingsWindowAccessor { window in
-                    appDelegate.configureSettingsWindow(window)
-                })
         }
         .defaultLaunchBehavior(.suppressed)
         .windowResizability(.contentSize)
@@ -275,27 +272,8 @@ struct MeetingAssistantCommands: Commands {
 
     @MainActor
     private func configureSettingsSceneOpener() {
-        guard let appDelegate = NSApp.delegate as? AppDelegate else { return }
-        appDelegate.settingsWindowPresenter.registerOpenWindowHandler {
+        NavigationService.shared.registerOpenSettingsHandler {
             openWindow(id: MeetingAssistantApp.WindowID.settings)
-        }
-    }
-}
-
-private struct SettingsWindowAccessor: NSViewRepresentable {
-    let onWindowChange: @MainActor (NSWindow?) -> Void
-
-    func makeNSView(context: Context) -> NSView {
-        let view = NSView()
-        DispatchQueue.main.async {
-            onWindowChange(view.window)
-        }
-        return view
-    }
-
-    func updateNSView(_ nsView: NSView, context: Context) {
-        DispatchQueue.main.async {
-            onWindowChange(nsView.window)
         }
     }
 }
@@ -556,24 +534,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
     )
     lazy var onboardingController = OnboardingWindowController()
-    lazy var settingsWindowPresenter = SettingsWindowPresentationCoordinator(
-        activationPolicy: {
-            NSApp.activationPolicy()
-        },
-        setActivationPolicy: { policy in
-            NSApp.setActivationPolicy(policy)
-        },
-        activateApp: {
-            NSApp.activate(ignoringOtherApps: true)
-        },
-        focusSettingsWindow: { [weak self] in
-            self?.focusSettingsWindow()
-        }
-    )
     var cancellables = Set<AnyCancellable>()
     var dockObserver: AnyCancellable?
-    var settingsWindow: NSWindow?
-    var settingsWindowCloseObserver: AnyCancellable?
     var hasConfiguredCapabilityObservers = false
     var lastRecordingUIRenderState: RecordingUIRenderState?
     var lastAppCommandState = AppCommandState()
