@@ -1227,8 +1227,21 @@
 "onboarding.download.model.transcription" = "Modelo de Transcrição";
 "onboarding.download.model.diarization" = "Modelo de Identificação de Locutor";
 
+"onboarding.meeting_recording.title" = "Gravação de Reunião";
+"onboarding.meeting_recording.subtitle" = "Ative a gravação de reuniões quando as permissões e o modelo local de transcrição estiverem prontos.";
+"onboarding.meeting_recording.microphone" = "Permissão de microfone para capturar sua voz";
+"onboarding.meeting_recording.screen_recording" = "Permissão de Gravação de Tela para capturar áudio do sistema";
+"onboarding.meeting_recording.local_model" = "Modelo local de transcrição baixado";
+"onboarding.meeting_recording.status.ready" = "Pronto";
+"onboarding.meeting_recording.status.needs_setup" = "Configuração pendente";
+"onboarding.meeting_recording.open_permissions" = "Revisar Permissões";
+"onboarding.meeting_recording.open_models" = "Revisar Modelos";
+"onboarding.meeting_recording.resource_note" = "A Gravação de Reunião usa transcrição local e pode consumir mais memória enquanto os modelos estão ativos.";
+"onboarding.meeting_recording.enable" = "Ativar Gravação de Reunião";
+
 "onboarding.completion.title" = "Tudo Pronto!";
-"onboarding.completion.subtitle" = "O Prisma está pronto para ajudá-lo a capturar e transcrever suas reuniões.";
+"onboarding.completion.subtitle.meetings_ready" = "O Prisma está pronto para Ditado e Gravação de Reunião.";
+"onboarding.completion.subtitle.dictation_ready" = "O Prisma está pronto para Ditado. A Gravação de Reunião pode ser ativada depois nas Configurações.";
 "onboarding.completion.button" = "Começar a Usar o Prisma";
 "onboarding.back" = "Voltar";
 "onboarding.continue" = "Continuar";

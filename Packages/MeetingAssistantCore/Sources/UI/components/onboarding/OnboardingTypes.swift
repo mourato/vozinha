@@ -7,6 +7,7 @@ public enum OnboardingStep: Int, CaseIterable, Identifiable, Hashable, Sendable 
     case permissions
     case shortcuts
     case downloadModels
+    case meetingRecording
     case completion
 
     public var id: Int {
@@ -21,9 +22,47 @@ public enum OnboardingStep: Int, CaseIterable, Identifiable, Hashable, Sendable 
     /// Whether this step can be skipped.
     public var isSkippable: Bool {
         switch self {
-        case .permissions, .shortcuts, .downloadModels: true
+        case .permissions, .shortcuts, .downloadModels, .meetingRecording: true
         case .welcome, .completion: false
         }
+    }
+}
+
+// MARK: - Onboarding Meeting Recording Readiness
+
+public struct OnboardingMeetingRecordingReadiness: Equatable, Sendable {
+    public let microphoneGranted: Bool
+    public let screenRecordingGranted: Bool
+    public let transcriptionModelReady: Bool
+    public let isMeetingRecordingEnabled: Bool
+    public let wasSkipped: Bool
+
+    public init(
+        microphoneGranted: Bool,
+        screenRecordingGranted: Bool,
+        transcriptionModelReady: Bool,
+        isMeetingRecordingEnabled: Bool,
+        wasSkipped: Bool
+    ) {
+        self.microphoneGranted = microphoneGranted
+        self.screenRecordingGranted = screenRecordingGranted
+        self.transcriptionModelReady = transcriptionModelReady
+        self.isMeetingRecordingEnabled = isMeetingRecordingEnabled
+        self.wasSkipped = wasSkipped
+    }
+
+    public var prerequisitesSatisfied: Bool {
+        microphoneGranted && screenRecordingGranted && transcriptionModelReady
+    }
+
+    public var isReadyForMeetings: Bool {
+        prerequisitesSatisfied && isMeetingRecordingEnabled && !wasSkipped
+    }
+
+    public var completionSubtitleKey: String {
+        isReadyForMeetings
+            ? "onboarding.completion.subtitle.meetings_ready"
+            : "onboarding.completion.subtitle.dictation_ready"
     }
 }
 

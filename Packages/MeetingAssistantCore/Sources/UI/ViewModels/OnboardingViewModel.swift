@@ -83,6 +83,11 @@ public class OnboardingViewModel: ObservableObject {
         settings.hasCompletedOnboarding = true
     }
 
+    /// Enables Meeting Recording during onboarding.
+    public func enableMeetingRecording() {
+        settings.isMeetingTranscriptionEnabled = true
+    }
+
     /// Resets the onboarding state (for testing/debug purposes).
     public func resetOnboarding() {
         currentStep = .welcome

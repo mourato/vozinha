@@ -86,6 +86,8 @@ private struct StepCircle: View {
         OnboardingStepIndicator(currentStep: .welcome)
         OnboardingStepIndicator(currentStep: .permissions)
         OnboardingStepIndicator(currentStep: .shortcuts)
+        OnboardingStepIndicator(currentStep: .downloadModels)
+        OnboardingStepIndicator(currentStep: .meetingRecording)
         OnboardingStepIndicator(currentStep: .completion)
     }
     .padding()

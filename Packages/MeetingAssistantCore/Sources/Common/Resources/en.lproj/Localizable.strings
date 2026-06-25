@@ -1236,8 +1236,20 @@
 "onboarding.download.status.failed" = "Download failed. Please try again or skip for now.";
 "onboarding.download.model.transcription" = "Transcription Model";
 "onboarding.download.model.diarization" = "Speaker Identification Model";
+"onboarding.meeting_recording.title" = "Meeting Recording";
+"onboarding.meeting_recording.subtitle" = "Enable meeting recording when permissions and the local transcription model are ready.";
+"onboarding.meeting_recording.microphone" = "Microphone permission for your voice";
+"onboarding.meeting_recording.screen_recording" = "Screen Recording permission for system audio";
+"onboarding.meeting_recording.local_model" = "Local transcription model downloaded";
+"onboarding.meeting_recording.status.ready" = "Ready";
+"onboarding.meeting_recording.status.needs_setup" = "Needs setup";
+"onboarding.meeting_recording.open_permissions" = "Review Permissions";
+"onboarding.meeting_recording.open_models" = "Review Models";
+"onboarding.meeting_recording.resource_note" = "Meeting Recording runs local transcription and can use more memory while models are active.";
+"onboarding.meeting_recording.enable" = "Enable Meeting Recording";
 "onboarding.completion.title" = "You're All Set!";
-"onboarding.completion.subtitle" = "Prisma is ready to help you capture and transcribe your meetings.";
+"onboarding.completion.subtitle.meetings_ready" = "Prisma is ready for Dictation and Meeting Recording.";
+"onboarding.completion.subtitle.dictation_ready" = "Prisma is ready for Dictation. Meeting Recording can be enabled later in Settings.";
 "onboarding.completion.button" = "Start Using Prisma";
 
 "onboarding.back" = "Back";

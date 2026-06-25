@@ -1,6 +1,8 @@
 import AppKit
 import Combine
 import MeetingAssistantCoreAI
+import MeetingAssistantCoreDomain
+import MeetingAssistantCoreInfrastructure
 import SwiftUI
 
 // MARK: - Onboarding View
@@ -83,12 +85,40 @@ public struct OnboardingView: View {
                 onSkip: viewModel.currentStep.isSkippable ? { viewModel.skipCurrentStep() } : nil
             )
 
+        case .meetingRecording:
+            OnboardingMeetingRecordingView(
+                readiness: meetingRecordingReadiness,
+                onEnable: enableMeetingRecording,
+                onOpenPermissions: { viewModel.currentStep = .permissions },
+                onOpenModels: { viewModel.currentStep = .downloadModels },
+                onContinue: viewModel.goToNextStep,
+                onSkip: viewModel.currentStep.isSkippable ? { viewModel.skipCurrentStep() } : nil
+            )
+
         case .completion:
-            OnboardingCompletionView(onStartUsing: {
-                viewModel.completeOnboarding()
-                onComplete()
-            })
+            OnboardingCompletionView(
+                readiness: meetingRecordingReadiness,
+                onStartUsing: {
+                    viewModel.completeOnboarding()
+                    onComplete()
+                }
+            )
         }
+    }
+
+    private var meetingRecordingReadiness: OnboardingMeetingRecordingReadiness {
+        OnboardingMeetingRecordingReadiness(
+            microphoneGranted: permissionViewModel.microphoneState.isAuthorized,
+            screenRecordingGranted: permissionViewModel.screenState.isAuthorized,
+            transcriptionModelReady: modelManager.isASRInstalled,
+            isMeetingRecordingEnabled: AppSettingsStore.shared.isMeetingTranscriptionEnabled,
+            wasSkipped: viewModel.wasSkipped(.meetingRecording)
+        )
+    }
+
+    private func enableMeetingRecording() {
+        viewModel.enableMeetingRecording()
+        viewModel.goToNextStep()
     }
 }
 
@@ -141,6 +171,19 @@ private func makePermissionViewModel() -> PermissionViewModel {
 #Preview("Onboarding - Shortcuts") {
     OnboardingView(
         viewModel: makeOnboardingViewModel(step: .shortcuts),
+        permissionViewModel: makePermissionViewModel(),
+        shortcutViewModel: ShortcutSettingsViewModel(),
+        assistantShortcutViewModel: AssistantShortcutSettingsViewModel(),
+        modelManager: FluidAIModelManager.shared,
+        refreshPermissions: {},
+        onComplete: {}
+    )
+    .frame(width: 650, height: 550)
+}
+
+#Preview("Onboarding - Meeting Recording") {
+    OnboardingView(
+        viewModel: makeOnboardingViewModel(step: .meetingRecording),
         permissionViewModel: makePermissionViewModel(),
         shortcutViewModel: ShortcutSettingsViewModel(),
         assistantShortcutViewModel: AssistantShortcutSettingsViewModel(),

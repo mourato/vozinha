@@ -4,9 +4,14 @@ import SwiftUI
 
 /// The final step of the onboarding flow, congratulating the user.
 public struct OnboardingCompletionView: View {
+    let readiness: OnboardingMeetingRecordingReadiness
     let onStartUsing: () -> Void
 
-    public init(onStartUsing: @escaping () -> Void) {
+    public init(
+        readiness: OnboardingMeetingRecordingReadiness,
+        onStartUsing: @escaping () -> Void
+    ) {
+        self.readiness = readiness
         self.onStartUsing = onStartUsing
     }
 
@@ -34,7 +39,7 @@ public struct OnboardingCompletionView: View {
                 .multilineTextAlignment(.center)
 
             // Subtitle
-            Text("onboarding.completion.subtitle".localized)
+            Text(readiness.completionSubtitleKey.localized)
                 .font(.body)
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
@@ -56,6 +61,15 @@ public struct OnboardingCompletionView: View {
 // MARK: - Preview
 
 #Preview {
-    OnboardingCompletionView(onStartUsing: {})
-        .frame(width: 600, height: 500)
+    OnboardingCompletionView(
+        readiness: OnboardingMeetingRecordingReadiness(
+            microphoneGranted: true,
+            screenRecordingGranted: true,
+            transcriptionModelReady: true,
+            isMeetingRecordingEnabled: true,
+            wasSkipped: false
+        ),
+        onStartUsing: {}
+    )
+    .frame(width: 600, height: 500)
 }
