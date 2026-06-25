@@ -92,7 +92,7 @@ extension AudioRecorder {
         micDiagnosticsTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
             Task { @MainActor [weak self] in
                 guard let self else { return }
-                let peakBits = micDiagnosticsPeakBits.exchange(0, ordering: .relaxed)
+                let peakBits = self.micDiagnosticsPeakBits.exchange(0, ordering: .relaxed)
                 let peak = Float(bitPattern: peakBits)
                 let db = 20.0 * log10(max(peak, 1e-6))
 
@@ -102,7 +102,7 @@ extension AudioRecorder {
                 ]
 
                 // Include device identity for diagnosing wrong-device scenarios
-                if let inputUnit = audioEngine?.inputNode.audioUnit {
+                if let inputUnit = self.audioEngine?.inputNode.audioUnit {
                     var deviceID: AudioObjectID = 0
                     var size = UInt32(MemoryLayout<AudioObjectID>.size)
                     let status = AudioUnitGetProperty(
@@ -115,9 +115,9 @@ extension AudioRecorder {
                     )
                     if status == noErr {
                         extra["deviceID"] = deviceID
-                        extra["deviceName"] = deviceManager.getDeviceName(for: deviceID) ?? "Unknown"
-                        if let vol = deviceManager.getInputVolume(for: deviceID) { extra["volume"] = vol }
-                        if let muted = deviceManager.getInputMute(for: deviceID) { extra["muted"] = muted }
+                        extra["deviceName"] = self.deviceManager.getDeviceName(for: deviceID) ?? "Unknown"
+                        if let vol = self.deviceManager.getInputVolume(for: deviceID) { extra["volume"] = vol }
+                        if let muted = self.deviceManager.getInputMute(for: deviceID) { extra["muted"] = muted }
                     }
                 }
 
