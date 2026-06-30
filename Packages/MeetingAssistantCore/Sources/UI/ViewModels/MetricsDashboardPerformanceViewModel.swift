@@ -9,29 +9,6 @@ final class MetricsDashboardPerformanceViewModel: ObservableObject {
         let displayName: String
     }
 
-    enum LeaderboardSort: String, CaseIterable {
-        case bestBalance
-        case successRate
-        case throughput
-        case medianLatency
-        case attempts
-
-        var displayName: String {
-            switch self {
-            case .bestBalance:
-                "metrics.performance.sort.best_balance".localized
-            case .successRate:
-                "metrics.performance.sort.success_rate".localized
-            case .throughput:
-                "metrics.performance.sort.throughput".localized
-            case .medianLatency:
-                "metrics.performance.sort.median_latency".localized
-            case .attempts:
-                "metrics.performance.sort.attempts".localized
-            }
-        }
-    }
-
     @Published var stage: ModelPerformanceStage = .transcription {
         didSet {
             guard oldValue != stage else { return }
@@ -88,50 +65,7 @@ final class MetricsDashboardPerformanceViewModel: ObservableObject {
     }
 
     var sortedLeaderboard: [ModelPerformanceLeaderboardEntry] {
-        let entries = analysis.leaderboard
-        switch leaderboardSort {
-        case .bestBalance:
-            return entries.sorted { lhs, rhs in
-                if lhs.isBestBalance != rhs.isBestBalance {
-                    return lhs.isBestBalance && !rhs.isBestBalance
-                }
-                if lhs.successRate != rhs.successRate {
-                    return lhs.successRate > rhs.successRate
-                }
-                if lhs.normalizedThroughput != rhs.normalizedThroughput {
-                    return lhs.normalizedThroughput > rhs.normalizedThroughput
-                }
-                return lhs.medianWallClockSeconds < rhs.medianWallClockSeconds
-            }
-        case .successRate:
-            return entries.sorted { lhs, rhs in
-                if lhs.successRate != rhs.successRate {
-                    return lhs.successRate > rhs.successRate
-                }
-                return lhs.attemptCount > rhs.attemptCount
-            }
-        case .throughput:
-            return entries.sorted { lhs, rhs in
-                if lhs.normalizedThroughput != rhs.normalizedThroughput {
-                    return lhs.normalizedThroughput > rhs.normalizedThroughput
-                }
-                return lhs.successRate > rhs.successRate
-            }
-        case .medianLatency:
-            return entries.sorted { lhs, rhs in
-                if lhs.medianWallClockSeconds != rhs.medianWallClockSeconds {
-                    return lhs.medianWallClockSeconds < rhs.medianWallClockSeconds
-                }
-                return lhs.successRate > rhs.successRate
-            }
-        case .attempts:
-            return entries.sorted { lhs, rhs in
-                if lhs.attemptCount != rhs.attemptCount {
-                    return lhs.attemptCount > rhs.attemptCount
-                }
-                return lhs.successRate > rhs.successRate
-            }
-        }
+        analysis.sortedByLeaderboard(leaderboardSort)
     }
 
     var history: [ModelPerformanceAttempt] {

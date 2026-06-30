@@ -131,6 +131,105 @@ enum ActivityHeatmap {
         return rangeStartWeek == weekStart
     }
 
+    static func makeWeekColumns(
+        from dailyBuckets: [MetricsDailyBucket],
+        calendar: Calendar = .current
+    ) -> [ActivityHeatmapWeekColumn] {
+        let buckets = dailyBuckets.sorted { $0.date < $1.date }
+        guard let firstDate = buckets.first?.date, let lastDate = buckets.last?.date else {
+            return []
+        }
+
+        let rangeStart = calendar.startOfDay(for: firstDate)
+        let rangeEnd = calendar.startOfDay(for: lastDate)
+        let firstWeekStart = calendar.dateInterval(of: .weekOfYear, for: rangeStart)?.start ?? rangeStart
+        let lastWeekStart = calendar.dateInterval(of: .weekOfYear, for: rangeEnd)?.start ?? rangeEnd
+
+        let bucketsByDate = Dictionary(uniqueKeysWithValues: buckets.map {
+            (calendar.startOfDay(for: $0.date), $0)
+        })
+
+        var columns: [ActivityHeatmapWeekColumn] = []
+        var weekStart = firstWeekStart
+        var index = 0
+
+        while weekStart <= lastWeekStart {
+            let days: [MetricsDailyBucket?] = (0..<7).map { offset in
+                guard let day = calendar.date(byAdding: .day, value: offset, to: weekStart) else {
+                    return nil
+                }
+                guard day >= rangeStart, day <= rangeEnd else {
+                    return nil
+                }
+                return bucketsByDate[day] ?? MetricsDailyBucket(date: day, words: 0)
+            }
+
+            columns.append(
+                ActivityHeatmapWeekColumn(
+                    id: index,
+                    monthLabel: monthLabelForWeek(startingAt: weekStart, rangeStart: rangeStart, rangeEnd: rangeEnd, calendar: calendar),
+                    days: days
+                )
+            )
+
+            guard let nextWeek = calendar.date(byAdding: .weekOfYear, value: 1, to: weekStart) else {
+                break
+            }
+            weekStart = nextWeek
+            index += 1
+        }
+
+        return columns
+    }
+
+    static func makeMonthMarkers(
+        from columns: [ActivityHeatmapWeekColumn]
+    ) -> [ActivityHeatmapMonthMarker] {
+        let rawMarkers: [ActivityHeatmapMonthMarker] = columns.compactMap { column in
+            guard let monthLabel = column.monthLabel else { return nil }
+            let xOffset = CGFloat(column.id) * (squareSize + spacing)
+            return ActivityHeatmapMonthMarker(id: column.id, label: monthLabel, xOffset: xOffset)
+        }
+        return resolveVisibleMonthMarkers(rawMarkers)
+    }
+
+    static func gridWidth(columnCount: Int) -> CGFloat {
+        guard columnCount > 0 else { return 0 }
+        let columns = CGFloat(columnCount)
+        return columns * squareSize + (columns - 1) * spacing
+    }
+
+    private static func monthLabelForWeek(startingAt weekStart: Date, rangeStart: Date, rangeEnd: Date, calendar: Calendar) -> String? {
+        for offset in 0..<7 {
+            guard let date = calendar.date(byAdding: .day, value: offset, to: weekStart) else {
+                continue
+            }
+            guard date >= rangeStart, date <= rangeEnd else {
+                continue
+            }
+            if calendar.component(.day, from: date) == 1 {
+                return localizedMonthLabel(for: date)
+            }
+        }
+
+        if shouldShowRangeStartMonthLabel(for: weekStart, rangeStart: rangeStart, calendar: calendar) {
+            return localizedMonthLabel(for: rangeStart)
+        }
+
+        return nil
+    }
+
+    private static func localizedMonthLabel(for date: Date) -> String {
+        let monthName = monthNameFormatter.string(from: date)
+        return String(monthName.prefix(3))
+    }
+
+    private static let monthNameFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.setLocalizedDateFormatFromTemplate("MMMM")
+        return formatter
+    }()
+
     static let legendSpacing: CGFloat = 12
     static let legendSwatchSize: CGFloat = 10
     static let legendSwatchCornerRadius: CGFloat = 2

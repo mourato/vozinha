@@ -318,3 +318,77 @@ public enum PerformanceFilter: String, CaseIterable, Sendable {
         }
     }
 }
+
+public enum LeaderboardSort: String, CaseIterable, Sendable {
+    case bestBalance
+    case successRate
+    case throughput
+    case medianLatency
+    case attempts
+
+    public var displayName: String {
+        switch self {
+        case .bestBalance:
+            "metrics.performance.sort.best_balance".localized
+        case .successRate:
+            "metrics.performance.sort.success_rate".localized
+        case .throughput:
+            "metrics.performance.sort.throughput".localized
+        case .medianLatency:
+            "metrics.performance.sort.median_latency".localized
+        case .attempts:
+            "metrics.performance.sort.attempts".localized
+        }
+    }
+}
+
+public extension ModelPerformanceAnalysis {
+    func sortedByLeaderboard(_ sort: LeaderboardSort) -> [ModelPerformanceLeaderboardEntry] {
+        switch sort {
+        case .bestBalance:
+            leaderboard.sorted { lhs, rhs in
+                if lhs.isBestBalance != rhs.isBestBalance {
+                    lhs.isBestBalance && !rhs.isBestBalance
+                } else if lhs.successRate != rhs.successRate {
+                    lhs.successRate > rhs.successRate
+                } else if lhs.normalizedThroughput != rhs.normalizedThroughput {
+                    lhs.normalizedThroughput > rhs.normalizedThroughput
+                } else {
+                    lhs.medianWallClockSeconds < rhs.medianWallClockSeconds
+                }
+            }
+        case .successRate:
+            leaderboard.sorted { lhs, rhs in
+                if lhs.successRate != rhs.successRate {
+                    lhs.successRate > rhs.successRate
+                } else {
+                    lhs.attemptCount > rhs.attemptCount
+                }
+            }
+        case .throughput:
+            leaderboard.sorted { lhs, rhs in
+                if lhs.normalizedThroughput != rhs.normalizedThroughput {
+                    lhs.normalizedThroughput > rhs.normalizedThroughput
+                } else {
+                    lhs.successRate > rhs.successRate
+                }
+            }
+        case .medianLatency:
+            leaderboard.sorted { lhs, rhs in
+                if lhs.medianWallClockSeconds != rhs.medianWallClockSeconds {
+                    lhs.medianWallClockSeconds < rhs.medianWallClockSeconds
+                } else {
+                    lhs.successRate > rhs.successRate
+                }
+            }
+        case .attempts:
+            leaderboard.sorted { lhs, rhs in
+                if lhs.attemptCount != rhs.attemptCount {
+                    lhs.attemptCount > rhs.attemptCount
+                } else {
+                    lhs.successRate > rhs.successRate
+                }
+            }
+        }
+    }
+}

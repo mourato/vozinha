@@ -159,68 +159,18 @@ struct MetricsDashboardActivitySection: View {
         })
     }
 
-    private var activityCalendar: Calendar {
-        Calendar.current
-    }
-
     private var heatmapWeekColumns: [ActivityHeatmapWeekColumn] {
-        let buckets = viewModel.dailyBuckets.sorted { $0.date < $1.date }
-        guard let firstDate = buckets.first?.date, let lastDate = buckets.last?.date else {
-            return []
-        }
-
-        let rangeStart = activityCalendar.startOfDay(for: firstDate)
-        let rangeEnd = activityCalendar.startOfDay(for: lastDate)
-        let firstWeekStart = activityCalendar.dateInterval(of: .weekOfYear, for: rangeStart)?.start ?? rangeStart
-        let lastWeekStart = activityCalendar.dateInterval(of: .weekOfYear, for: rangeEnd)?.start ?? rangeEnd
-
-        let bucketsByDate = Dictionary(uniqueKeysWithValues: buckets.map {
-            (activityCalendar.startOfDay(for: $0.date), $0)
-        })
-
-        var columns: [ActivityHeatmapWeekColumn] = []
-        var weekStart = firstWeekStart
-        var index = 0
-
-        while weekStart <= lastWeekStart {
-            let days: [MetricsDailyBucket?] = (0..<7).map { offset in
-                guard let day = activityCalendar.date(byAdding: .day, value: offset, to: weekStart) else {
-                    return nil
-                }
-
-                guard day >= rangeStart, day <= rangeEnd else {
-                    return nil
-                }
-
-                return bucketsByDate[day] ?? MetricsDailyBucket(date: day, words: 0)
-            }
-
-            columns.append(
-                ActivityHeatmapWeekColumn(
-                    id: index,
-                    monthLabel: monthLabelForWeek(startingAt: weekStart, rangeStart: rangeStart, rangeEnd: rangeEnd),
-                    days: days
-                )
-            )
-
-            guard let nextWeek = activityCalendar.date(byAdding: .weekOfYear, value: 1, to: weekStart) else {
-                break
-            }
-
-            weekStart = nextWeek
-            index += 1
-        }
-
-        return columns
+        ActivityHeatmap.makeWeekColumns(from: viewModel.dailyBuckets)
     }
 
     private var orderedWeekdayNumbers: [Int] {
-        guard (1...7).contains(activityCalendar.firstWeekday) else {
+        let firstWeekday = Calendar.current.firstWeekday
+        guard (1...7).contains(firstWeekday) else {
             return Array(1...7)
         }
 
         return (0..<7).map { offset in
-            ((activityCalendar.firstWeekday - 1 + offset) % 7) + 1
+            ((firstWeekday - 1 + offset) % 7) + 1
         }
     }
 
@@ -271,56 +221,11 @@ struct MetricsDashboardActivitySection: View {
     }
 
     private var monthMarkers: [ActivityHeatmapMonthMarker] {
-        let rawMarkers: [ActivityHeatmapMonthMarker] = heatmapWeekColumns.compactMap { column in
-            guard let monthLabel = column.monthLabel else {
-                return nil
-            }
-
-            let xOffset = CGFloat(column.id) * (ActivityHeatmap.squareSize + ActivityHeatmap.spacing)
-            return ActivityHeatmapMonthMarker(id: column.id, label: monthLabel, xOffset: xOffset)
-        }
-
-        return ActivityHeatmap.resolveVisibleMonthMarkers(rawMarkers)
+        ActivityHeatmap.makeMonthMarkers(from: heatmapWeekColumns)
     }
 
     private var heatmapGridWidth: CGFloat {
-        guard !heatmapWeekColumns.isEmpty else {
-            return 0
-        }
-
-        let columns = CGFloat(heatmapWeekColumns.count)
-        return columns * ActivityHeatmap.squareSize + (columns - 1) * ActivityHeatmap.spacing
-    }
-
-    private func monthLabelForWeek(startingAt weekStart: Date, rangeStart: Date, rangeEnd: Date) -> String? {
-        for offset in 0..<7 {
-            guard let date = activityCalendar.date(byAdding: .day, value: offset, to: weekStart) else {
-                continue
-            }
-
-            guard date >= rangeStart, date <= rangeEnd else {
-                continue
-            }
-
-            if activityCalendar.component(.day, from: date) == 1 {
-                return localizedMonthLabel(for: date)
-            }
-        }
-
-        if ActivityHeatmap.shouldShowRangeStartMonthLabel(
-            for: weekStart,
-            rangeStart: rangeStart,
-            calendar: activityCalendar
-        ) {
-            return localizedMonthLabel(for: rangeStart)
-        }
-
-        return nil
-    }
-
-    private func localizedMonthLabel(for date: Date) -> String {
-        let monthName = Self.activityMonthNameFormatter.string(from: date)
-        return String(monthName.prefix(3))
+        ActivityHeatmap.gridWidth(columnCount: heatmapWeekColumns.count)
     }
 
     private var maxDailyWords: Int {
@@ -422,12 +327,6 @@ struct MetricsDashboardActivitySection: View {
     private static let activityDateFormatter: DateFormatter = {
         let formatter = DateFormatter()
         formatter.dateStyle = .long
-        return formatter
-    }()
-
-    private static let activityMonthNameFormatter: DateFormatter = {
-        let formatter = DateFormatter()
-        formatter.setLocalizedDateFormatFromTemplate("MMMM")
         return formatter
     }()
 }

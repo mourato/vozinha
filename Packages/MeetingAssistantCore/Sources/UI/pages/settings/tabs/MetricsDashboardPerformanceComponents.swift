@@ -204,7 +204,7 @@ private struct MetricsDashboardPerformanceStatCard: View {
 
 private struct MetricsDashboardPerformanceLeaderboardSection: View {
     let stage: ModelPerformanceStage
-    @Binding var sort: MetricsDashboardPerformanceViewModel.LeaderboardSort
+    @Binding var sort: LeaderboardSort
     let entries: [ModelPerformanceLeaderboardEntry]
 
     var body: some View {
@@ -218,7 +218,7 @@ private struct MetricsDashboardPerformanceLeaderboardSection: View {
                     Spacer()
 
                     Picker("metrics.performance.sort.title".localized, selection: $sort) {
-                        ForEach(MetricsDashboardPerformanceViewModel.LeaderboardSort.allCases, id: \.self) { option in
+                        ForEach(LeaderboardSort.allCases, id: \.self) { option in
                             Text(option.displayName).tag(option)
                         }
                     }
@@ -256,14 +256,15 @@ private struct MetricsDashboardPerformanceLeaderboardSection: View {
         HStack(alignment: .center, spacing: 12) {
             Text("metrics.performance.leaderboard.header.model".localized)
                 .frame(maxWidth: .infinity, alignment: .leading)
+                .layoutPriority(1)
             Text("metrics.performance.leaderboard.header.speed".localized)
-                .frame(width: 120, alignment: .trailing)
+                .frame(minWidth: 90, idealWidth: 120, alignment: .trailing)
             Text("metrics.performance.leaderboard.header.latency".localized)
-                .frame(width: 96, alignment: .trailing)
+                .frame(minWidth: 75, idealWidth: 96, alignment: .trailing)
             Text("metrics.performance.leaderboard.header.attempts".localized)
-                .frame(width: 80, alignment: .trailing)
+                .frame(minWidth: 60, idealWidth: 80, alignment: .trailing)
             Text("metrics.performance.leaderboard.header.success".localized)
-                .frame(width: 96, alignment: .trailing)
+                .frame(minWidth: 75, idealWidth: 96, alignment: .trailing)
         }
         .font(.caption.weight(.semibold))
         .foregroundStyle(.secondary)
@@ -310,6 +311,7 @@ private struct MetricsDashboardPerformanceLeaderboardRow: View {
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
+            .layoutPriority(1)
 
             VStack(alignment: .trailing, spacing: 2) {
                 Text(ModelPerformanceFormatting.throughput(entry.normalizedThroughput, stage: stage))
@@ -318,15 +320,15 @@ private struct MetricsDashboardPerformanceLeaderboardRow: View {
                     .font(.caption2)
                     .foregroundStyle(.secondary)
             }
-            .frame(width: 120, alignment: .trailing)
+            .frame(minWidth: 90, idealWidth: 120, alignment: .trailing)
 
             Text(ModelPerformanceFormatting.duration(entry.medianWallClockSeconds))
                 .font(.system(.body, design: .monospaced, weight: .semibold))
-                .frame(width: 96, alignment: .trailing)
+                .frame(minWidth: 75, idealWidth: 96, alignment: .trailing)
 
             Text("\(entry.attemptCount)")
                 .font(.system(.body, design: .monospaced, weight: .semibold))
-                .frame(width: 80, alignment: .trailing)
+                .frame(minWidth: 60, idealWidth: 80, alignment: .trailing)
 
             VStack(alignment: .trailing, spacing: 2) {
                 Text(ModelPerformanceFormatting.percent(entry.successRate))
@@ -335,7 +337,7 @@ private struct MetricsDashboardPerformanceLeaderboardRow: View {
                     .font(.caption2)
                     .foregroundStyle(.secondary)
             }
-            .frame(width: 96, alignment: .trailing)
+            .frame(minWidth: 75, idealWidth: 96, alignment: .trailing)
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 12)
