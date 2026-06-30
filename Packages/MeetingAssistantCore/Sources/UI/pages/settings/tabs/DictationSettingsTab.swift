@@ -7,7 +7,8 @@ import MeetingAssistantCoreInfrastructure
 import SwiftUI
 
 public enum DictationSettingsRoute: Hashable {
-    case styles
+    case modes
+    case userPrompts
 }
 
 // MARK: - Dictation Settings Tab
@@ -17,7 +18,6 @@ public struct DictationSettingsTab: View {
     @Binding private var navigationState: SettingsSubpageNavigationState<DictationSettingsRoute>
     @StateObject private var viewModel: GeneralSettingsViewModel
     @StateObject private var shortcutsViewModel = ShortcutSettingsViewModel()
-    @StateObject private var promptViewModel: DictationPromptSettingsViewModel
     @StateObject private var serviceViewModel: ServiceSettingsViewModel
     @StateObject private var aiSettingsViewModel: AISettingsViewModel
     private let settings: AppSettingsStore
@@ -28,7 +28,6 @@ public struct DictationSettingsTab: View {
     ) {
         _navigationState = navigationState
         _viewModel = StateObject(wrappedValue: GeneralSettingsViewModel(settingsStore: settings))
-        _promptViewModel = StateObject(wrappedValue: DictationPromptSettingsViewModel(settings: settings))
         _serviceViewModel = StateObject(wrappedValue: ServiceSettingsViewModel(settings: settings))
         _aiSettingsViewModel = StateObject(wrappedValue: AISettingsViewModel(settings: settings))
         self.settings = settings
@@ -39,25 +38,10 @@ public struct DictationSettingsTab: View {
             switch navigationState.currentRoute {
             case nil:
                 rootPage
-            case .some(.styles):
+            case .some(.modes):
                 StylesSettingsTab()
-            }
-        }
-        .sheet(isPresented: $promptViewModel.showPromptEditor) {
-            PromptEditorSheet(
-                prompt: promptViewModel.editingPrompt,
-                onSave: promptViewModel.handleSavePrompt,
-                onCancel: { promptViewModel.showPromptEditor = false }
-            )
-        }
-        .alert("settings.post_processing.delete_confirm_title".localized, isPresented: $promptViewModel.showDeleteConfirmation) {
-            Button("common.cancel".localized, role: .cancel) {}
-            Button("common.delete".localized, role: .destructive) {
-                promptViewModel.executeDelete()
-            }
-        } message: {
-            if let prompt = promptViewModel.promptToDelete {
-                Text("settings.post_processing.delete_confirm_message".localized(with: prompt.title))
+            case .some(.userPrompts):
+                UserPromptsSettingsTab()
             }
         }
     }
@@ -88,14 +72,27 @@ public struct DictationSettingsTab: View {
                 }
             )
 
-            ServiceTranscriptionProviderSection(viewModel: serviceViewModel)
+            DSGroup("settings.dictation.modes_and_prompts.title".localized, icon: "paintpalette") {
+                VStack(alignment: .leading, spacing: 0) {
+                    SettingsDrillDownButtonRow(
+                        title: "settings.dictation.modes.title".localized,
+                        subtitle: "settings.dictation.modes.description".localized,
+                        accessibilityHint: "settings.dictation.modes.accessibility_hint".localized
+                    ) {
+                        navigationState.open(.modes)
+                    }
 
-            DSGroup("settings.dictation.post_processing_model".localized, icon: "sparkles") {
-                EnhancementsModelSelectionControl(
-                    target: .dictation,
-                    viewModel: aiSettingsViewModel,
-                    settings: settings
-                )
+                    Divider()
+                        .padding(.leading, 0)
+
+                    SettingsDrillDownButtonRow(
+                        title: "settings.dictation.user_prompts.title".localized,
+                        subtitle: "settings.dictation.user_prompts.description".localized,
+                        accessibilityHint: "settings.dictation.user_prompts.accessibility_hint".localized
+                    ) {
+                        navigationState.open(.userPrompts)
+                    }
+                }
             }
 
             DSGroup("settings.dictation.text_handling".localized, icon: "cpu") {
@@ -128,127 +125,19 @@ public struct DictationSettingsTab: View {
                         description: "settings.dictation.smart_paragraphs_desc".localized,
                         isOn: $viewModel.smartParagraphsEnabled
                     )
-
-                    Divider()
-
-                    SettingsDrillDownButtonRow(
-                        title: "settings.styles.title".localized,
-                        subtitle: "settings.styles.description".localized,
-                        accessibilityHint: "settings.dictation.styles.accessibility_hint".localized
-                    ) {
-                        navigationState.open(.styles)
-                    }
                 }
             }
 
-            DSGroup("settings.dictation.prompts".localized, icon: "sparkles") {
-                VStack(alignment: .leading, spacing: AppDesignSystem.Layout.cardPadding) {
-                    HStack {
-                        Text("settings.post_processing.choose_active".localized)
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
+            ServiceTranscriptionProviderSection(viewModel: serviceViewModel)
 
-                        Spacer()
-
-                        Button {
-                            promptViewModel.editingPrompt = nil
-                            promptViewModel.showPromptEditor = true
-                        } label: {
-                            Label(
-                                "settings.post_processing.new_prompt".localized,
-                                systemImage: "plus"
-                            )
-                        }
-                        .buttonStyle(.bordered)
-                        .controlSize(.regular)
-                    }
-
-                    VStack(spacing: 8) {
-                        noPostProcessingRow()
-                        ForEach(promptViewModel.availablePrompts) { prompt in
-                            promptRow(prompt: prompt)
-                        }
-                    }
-                }
+            DSGroup("settings.dictation.post_processing_model".localized, icon: "sparkles") {
+                EnhancementsModelSelectionControl(
+                    target: .dictation,
+                    viewModel: aiSettingsViewModel,
+                    settings: settings
+                )
             }
         }
-    }
-
-    // MARK: - Prompts
-
-    private func promptRow(prompt: PostProcessingPrompt) -> some View {
-        let isSelected = promptViewModel.effectiveSelectedPromptId == prompt.id
-
-        return PromptSelectionRow(
-            iconSystemName: prompt.icon,
-            title: prompt.title,
-            description: prompt.description,
-            isSelected: isSelected,
-            onSelect: {
-                promptViewModel.selectPrompt(prompt.id, forceSelect: true)
-            },
-            onDoubleClick: {
-                openPromptEditor(for: prompt)
-            },
-            menuAccessibilityLabel: "transcription.ai_actions".localized
-        ) {
-            promptMenuContent(prompt: prompt, isSelected: isSelected)
-        }
-    }
-
-    @ViewBuilder
-    private func promptMenuContent(prompt: PostProcessingPrompt, isSelected: Bool) -> some View {
-        Button {
-            promptViewModel.selectPrompt(prompt.id, forceSelect: true)
-        } label: {
-            Label("settings.post_processing.select".localized, systemImage: isSelected ? "checkmark.circle.fill" : "circle")
-        }
-
-        Divider()
-
-        Button {
-            openPromptEditor(for: prompt)
-        } label: {
-            Label("settings.post_processing.edit".localized, systemImage: "pencil")
-        }
-
-        Button {
-            promptViewModel.prepareCopy(of: prompt, asDuplicate: true)
-        } label: {
-            Label("settings.post_processing.duplicate".localized, systemImage: "plus.square.on.square")
-        }
-
-        Divider()
-
-        Button(role: .destructive) {
-            promptViewModel.confirmDeletePrompt(prompt)
-        } label: {
-            Label("settings.post_processing.delete".localized, systemImage: "trash")
-        }
-    }
-
-    private func noPostProcessingRow() -> some View {
-        let isSelected = promptViewModel.effectiveSelectedPromptId == AppSettingsStore.noPostProcessingPromptId
-
-        return PromptSelectionRow(
-            iconSystemName: "nosign",
-            title: "recording_indicator.prompt.none".localized,
-            description: "recording_indicator.prompt.none_desc".localized,
-            isSelected: isSelected,
-            onSelect: {
-                promptViewModel.selectPrompt(AppSettingsStore.noPostProcessingPromptId, forceSelect: true)
-            },
-            showMenu: false,
-            preserveMenuSpacing: true,
-            menuAccessibilityLabel: "transcription.ai_actions".localized
-        ) {
-            EmptyView()
-        }
-    }
-
-    private func openPromptEditor(for prompt: PostProcessingPrompt) {
-        promptViewModel.editingPrompt = prompt
-        promptViewModel.showPromptEditor = true
     }
 }
 

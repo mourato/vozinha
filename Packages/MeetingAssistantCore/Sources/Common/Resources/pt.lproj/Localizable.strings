@@ -9,7 +9,7 @@
 "settings.section.history" = "Histórico";
 "settings.section.assistant" = "Assistant";
 "settings.section.integrations" = "Integrações";
-"settings.section.rules_per_app" = "Estilos";
+"settings.section.rules_per_app" = "Modos";
 "settings.section.vocabulary" = "Vocabulário";
 "settings.section.ai" = "Aprimoramentos";
 "settings.section.models" = "IA";
@@ -126,7 +126,7 @@
 "settings.meetings.workflow" = "Fluxo de Trabalho";
 "settings.dictation.workflow" = "Fluxo de Trabalho";
 "settings.dictation.text_handling" = "Tratamento de texto";
-"settings.dictation.styles.accessibility_hint" = "Abre estilos reutilizaveis de ditado para apps e sites.";
+"settings.dictation.styles.accessibility_hint" = "Abre modos reutilizáveis de ditado para apps e sites.";
 
 /* Exportação de Reuniões */
 "settings.meetings.export" = "Exportação";
@@ -173,7 +173,14 @@
 "settings.meetings.web_targets.url_desc" = "Um padrao por linha (ou separado por virgula). Exemplo: meet.google.com";
 "settings.meetings.web_targets.delete_confirm_title" = "Excluir alvo web?";
 "settings.meetings.web_targets.delete_confirm_message" = "Tem certeza que deseja excluir \"%@\"?";
-"settings.dictation.prompts" = "Prompts de ditado";
+"settings.dictation.prompts" = "Prompts do usuário";
+"settings.dictation.modes_and_prompts.title" = "Modos e Prompts do usuário";
+"settings.dictation.modes.title" = "Modos";
+"settings.dictation.modes.description" = "Defina modos reutilizáveis e associe-os a múltiplos apps e sites.";
+"settings.dictation.modes.accessibility_hint" = "Abre modos reutilizáveis de ditado para apps e sites.";
+"settings.dictation.user_prompts.title" = "Prompts do usuário";
+"settings.dictation.user_prompts.description" = "Crie e gerencie prompts personalizados para o pós-processamento de ditados.";
+"settings.dictation.user_prompts.accessibility_hint" = "Abre as configurações de prompts do usuário.";
 "settings.general.days" = "Dias";
 "settings.general.keep_for" = "Manter por";
 "settings.general.theme_color" = "Cor do Tema";
@@ -390,23 +397,23 @@
 "settings.rules_per_app.language.option.italian" = "Italiano";
 "settings.rules_per_app.language.option.hindi" = "Hindi";
 "settings.rules_per_app.language.option.arabic" = "Árabe";
-"settings.styles.title" = "Estilos";
-"settings.styles.description" = "Defina estilos reutilizáveis de ditado e associe-os a múltiplos apps e sites.";
-"settings.styles.empty" = "Nenhum estilo configurado ainda.";
-"settings.styles.add" = "Adicionar Estilo";
-"settings.styles.edit" = "Editar Estilo";
-"settings.styles.remove" = "Remover Estilo";
-"settings.styles.actions" = "Ações do Estilo";
-"settings.styles.untitled" = "Estilo sem nome";
+"settings.styles.title" = "Modos";
+"settings.styles.description" = "Defina modos reutilizáveis e associe-os a múltiplos apps e sites.";
+"settings.styles.empty" = "Nenhum modo configurado ainda.";
+"settings.styles.add" = "Adicionar Modo";
+"settings.styles.edit" = "Editar Modo";
+"settings.styles.remove" = "Remover Modo";
+"settings.styles.actions" = "Ações do Modo";
+"settings.styles.untitled" = "Modo sem nome";
 "settings.styles.summary.replace" = "Substitui";
 "settings.styles.summary.append" = "Anexa";
 "settings.styles.summary.markdown" = "MD";
 "settings.styles.target.website" = "Alvo de site";
 "settings.styles.targets.count.one" = "1 alvo selecionado";
 "settings.styles.targets.count.many" = "%d alvos selecionados";
-"settings.styles.editor.new_title" = "Novo Estilo";
-"settings.styles.editor.edit_title" = "Editar Estilo";
-"settings.styles.editor.name" = "Nome do estilo";
+"settings.styles.editor.new_title" = "Novo Modo";
+"settings.styles.editor.edit_title" = "Editar Modo";
+"settings.styles.editor.name" = "Nome do modo";
 "settings.styles.editor.icon" = "SF Symbol";
 "settings.styles.editor.prompt" = "Instruções";
 "settings.styles.editor.prompt_hint" = "Opcional. Essas instruções são aplicadas quando este estilo combina com o app ou site em foco.";
@@ -424,10 +431,10 @@
 "settings.styles.editor.selected_targets" = "Alvos selecionados";
 "settings.styles.editor.no_targets" = "Nenhum alvo selecionado ainda.";
 "settings.styles.editor.remove_target" = "Remover alvo";
-"settings.styles.editor.validation.name_required" = "O nome do estilo é obrigatório.";
+"settings.styles.editor.validation.name_required" = "O nome do modo é obrigatório.";
 "settings.styles.editor.validation.targets_required" = "Selecione pelo menos um app ou site.";
-"settings.styles.editor.validation.target_conflict" = "Este alvo já pertence a outro estilo.";
-"settings.styles.editor.validation.target_conflict_named" = "Este alvo já pertence ao estilo \"%@\".";
+"settings.styles.editor.validation.target_conflict" = "Este alvo já pertence a outro modo.";
+"settings.styles.editor.validation.target_conflict_named" = "Este alvo já pertence ao modo \"%@\".";
 "settings.vocabulary.description" = "Defina regras instantâneas de buscar e substituir aplicadas após a transcrição e antes do pós-processamento por IA. Separe múltiplas variantes originais com vírgulas.";
 "settings.vocabulary.applied_order_note" = "As regras são aplicadas na ordem da lista. A correspondência é por palavra inteira e sem diferenciar maiúsculas/minúsculas.";
 "settings.vocabulary.empty" = "Nenhuma regra de vocabulário configurada ainda.";
@@ -456,8 +463,8 @@
 /* Service Settings */
 "settings.service.title" = "Serviço";
 "settings.models.description" = "Escolha como Ditado, Assistant e Transcrição de Reuniões usam modelos locais e em nuvem.";
-"settings.models.routing.title" = "Ditado e Assistant";
-"settings.models.routing.description" = "Escolha qual origem de modelo fica ativa para Ditado e Assistant. Configure os modelos locais e em nuvem abaixo.";
+"settings.models.routing.title" = "Modelo de transcrição";
+"settings.models.routing.description" = "Escolha qual origem de modelo fica ativa para transcrição. Configure os modelos locais e em nuvem abaixo.";
 "settings.models.routing.active_model" = "Ativo:";
 "settings.models.local_models.title" = "Modelos Locais";
 "settings.models.local_models.description" = "Gerencie runtimes de transcrição on-device disponíveis offline neste Mac.";

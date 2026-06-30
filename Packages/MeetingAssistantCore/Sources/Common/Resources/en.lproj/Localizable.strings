@@ -9,7 +9,7 @@
 "settings.section.history" = "History";
 "settings.section.assistant" = "Assistant";
 "settings.section.integrations" = "Integrations";
-"settings.section.rules_per_app" = "Styles";
+"settings.section.rules_per_app" = "Modes";
 "settings.section.vocabulary" = "Vocabulary";
 "settings.section.ai" = "Enhancements";
 "settings.section.models" = "AI";
@@ -125,7 +125,7 @@
 "settings.meetings.workflow" = "Workflow";
 "settings.dictation.workflow" = "Workflow";
 "settings.dictation.text_handling" = "Text handling";
-"settings.dictation.styles.accessibility_hint" = "Opens reusable dictation styles for apps and websites.";
+"settings.dictation.styles.accessibility_hint" = "Opens reusable dictation modes for apps and websites.";
 
 /* Meetings Export */
 "settings.meetings.export" = "Export";
@@ -172,7 +172,14 @@
 "settings.meetings.web_targets.url_desc" = "One pattern per line (or comma-separated). Example: meet.google.com";
 "settings.meetings.web_targets.delete_confirm_title" = "Delete web target?";
 "settings.meetings.web_targets.delete_confirm_message" = "Are you sure you want to delete \"%@\"?";
-"settings.dictation.prompts" = "Dictation prompts";
+"settings.dictation.prompts" = "User prompts";
+"settings.dictation.modes_and_prompts.title" = "Modes e User prompts";
+"settings.dictation.modes.title" = "Modes";
+"settings.dictation.modes.description" = "Define reusable modes and bind them to multiple apps and websites.";
+"settings.dictation.modes.accessibility_hint" = "Opens reusable dictation modes for apps and websites.";
+"settings.dictation.user_prompts.title" = "User prompts";
+"settings.dictation.user_prompts.description" = "Create and manage custom prompts for dictation post-processing.";
+"settings.dictation.user_prompts.accessibility_hint" = "Opens user prompts settings.";
 "settings.general.days" = "Days";
 "settings.general.keep_for" = "Keep for";
 "settings.general.theme_color" = "Theme Color";
@@ -389,23 +396,23 @@
 "settings.rules_per_app.language.option.italian" = "Italian";
 "settings.rules_per_app.language.option.hindi" = "Hindi";
 "settings.rules_per_app.language.option.arabic" = "Arabic";
-"settings.styles.title" = "Styles";
-"settings.styles.description" = "Define reusable dictation styles and bind them to multiple apps and websites.";
-"settings.styles.empty" = "No styles configured yet.";
-"settings.styles.add" = "Add Style";
-"settings.styles.edit" = "Edit Style";
-"settings.styles.remove" = "Remove Style";
-"settings.styles.actions" = "Style Actions";
-"settings.styles.untitled" = "Untitled Style";
+"settings.styles.title" = "Modes";
+"settings.styles.description" = "Define reusable modes and bind them to multiple apps and websites.";
+"settings.styles.empty" = "No modes configured yet.";
+"settings.styles.add" = "Add Mode";
+"settings.styles.edit" = "Edit Mode";
+"settings.styles.remove" = "Remove Mode";
+"settings.styles.actions" = "Mode Actions";
+"settings.styles.untitled" = "Untitled Mode";
 "settings.styles.summary.replace" = "Replace";
 "settings.styles.summary.append" = "Append";
 "settings.styles.summary.markdown" = "MD";
 "settings.styles.target.website" = "Website target";
 "settings.styles.targets.count.one" = "1 target selected";
 "settings.styles.targets.count.many" = "%d targets selected";
-"settings.styles.editor.new_title" = "New Style";
-"settings.styles.editor.edit_title" = "Edit Style";
-"settings.styles.editor.name" = "Style name";
+"settings.styles.editor.new_title" = "New Mode";
+"settings.styles.editor.edit_title" = "Edit Mode";
+"settings.styles.editor.name" = "Mode name";
 "settings.styles.editor.icon" = "SF Symbol";
 "settings.styles.editor.prompt" = "Instructions";
 "settings.styles.editor.prompt_hint" = "Optional. These instructions are applied when this style matches the focused app or website.";
@@ -455,8 +462,8 @@
 /* Service Settings */
 "settings.service.title" = "Service";
 "settings.models.description" = "Choose how Dictation, Assistant, and Meeting transcription use local and cloud models.";
-"settings.models.routing.title" = "Dictation and Assistant";
-"settings.models.routing.description" = "Choose which model source is active for Dictation and Assistant. Configure local and cloud models below.";
+"settings.models.routing.title" = "Transcription model";
+"settings.models.routing.description" = "Choose which model source is active for transcription. Configure local and cloud models below.";
 "settings.models.routing.active_model" = "Active:";
 "settings.models.local_models.title" = "Local Models";
 "settings.models.local_models.description" = "Manage on-device transcription runtimes available offline on this Mac.";
