@@ -65,4 +65,19 @@ public struct VocabularyReplacementRule: Identifiable, Codable, Hashable, Sendab
 
         return output
     }
+
+    public static func apply<Segment: VocabularyReplaceableSegment>(
+        rules: [VocabularyReplacementRule],
+        to segments: [Segment]
+    ) -> [Segment] {
+        segments.map { segment in
+            Segment(
+                id: segment.id,
+                speaker: segment.speaker,
+                text: apply(rules: rules, to: segment.text),
+                startTime: segment.startTime,
+                endTime: segment.endTime
+            )
+        }
+    }
 }

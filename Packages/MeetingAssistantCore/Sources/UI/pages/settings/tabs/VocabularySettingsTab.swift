@@ -69,76 +69,13 @@ public struct VocabularySettingsTab: View {
     }
 
     private func row(for rule: VocabularyReplacementRule) -> some View {
-        let isSelected = selectedRuleID == rule.id
-
-        return HStack(spacing: 12) {
-            SettingsRowClickSurface(
-                onSingleClick: {
-                    selectRule(rule)
-                },
-                onDoubleClick: {
-                    editRule(rule)
-                },
-                content: {
-                    HStack(spacing: 12) {
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text(rule.find)
-                                .font(.subheadline)
-                                .fontWeight(.medium)
-                                .foregroundStyle(AppDesignSystem.Colors.primaryTextStyle(isSelected: isSelected))
-                            Text(rule.replace.isEmpty ? "settings.vocabulary.empty_replace".localized : rule.replace)
-                                .font(.caption)
-                                .foregroundStyle(AppDesignSystem.Colors.secondaryTextStyle(isSelected: isSelected))
-                        }
-
-                        Spacer()
-
-                        Image(systemName: "arrow.right")
-                            .font(.caption)
-                            .foregroundStyle(AppDesignSystem.Colors.secondaryTextStyle(isSelected: isSelected))
-                    }
-                }
-            )
-
-            SettingsContextMenuButton(
-                accessibilityLabel: "settings.vocabulary.actions".localized,
-                symbolColor: isSelected
-                    ? AppDesignSystem.Colors.selectedContentSecondaryForeground
-                    : .secondary
-            ) {
-                Button {
-                    editRule(rule)
-                } label: {
-                    Label("settings.vocabulary.edit_rule".localized, systemImage: "pencil")
-                }
-
-                Button(role: .destructive) {
-                    confirmDelete(rule)
-                } label: {
-                    Label("settings.vocabulary.delete_rule".localized, systemImage: "trash")
-                }
-            }
-        }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 8)
-        .background(rowBackground(isSelected: isSelected))
-        .clipShape(RoundedRectangle(cornerRadius: AppDesignSystem.Layout.smallCornerRadius))
-        .contextMenu {
-            Button {
-                editRule(rule)
-            } label: {
-                Label("settings.vocabulary.edit_rule".localized, systemImage: "pencil")
-            }
-
-            Button(role: .destructive) {
-                confirmDelete(rule)
-            } label: {
-                Label("settings.vocabulary.delete_rule".localized, systemImage: "trash")
-            }
-        }
-        .accessibilityElement(children: .ignore)
-        .accessibilityLabel(vocabularyRowAccessibilityLabel(for: rule))
-        .accessibilityHint("settings.vocabulary.actions".localized)
+        VocabularyRuleRowView(
+            rule: rule,
+            isSelected: selectedRuleID == rule.id,
+            onSelect: { selectRule(rule) },
+            onEdit: { editRule(rule) },
+            onDelete: { confirmDelete(rule) }
+        )
     }
 
     private var editorSheet: some View {
@@ -219,11 +156,6 @@ public struct VocabularySettingsTab: View {
         }
     }
 
-    private func vocabularyRowAccessibilityLabel(for rule: VocabularyReplacementRule) -> String {
-        [rule.find, rule.replace.isEmpty ? "settings.vocabulary.empty_replace".localized : rule.replace]
-            .joined(separator: ", ")
-    }
-
     private func selectRule(_ rule: VocabularyReplacementRule) {
         selectedRuleID = rule.id
     }
@@ -244,8 +176,73 @@ public struct VocabularySettingsTab: View {
         viewModel.startEditingRule(rule)
     }
 
+    private func deleteSelectedRule() {
+        guard let selectedRuleID,
+              let rule = viewModel.rules.first(where: { $0.id == selectedRuleID })
+        else {
+            return
+        }
+        viewModel.confirmDelete(rule)
+    }
+}
+
+private struct VocabularyRuleRowView: View {
+    let rule: VocabularyReplacementRule
+    let isSelected: Bool
+    let onSelect: () -> Void
+    let onEdit: () -> Void
+    let onDelete: () -> Void
+
+    var body: some View {
+        HStack(spacing: 12) {
+            SettingsRowClickSurface(
+                onSingleClick: onSelect,
+                onDoubleClick: onEdit,
+                content: {
+                    HStack(spacing: 12) {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(rule.find)
+                                .font(.subheadline)
+                                .fontWeight(.medium)
+                                .foregroundStyle(AppDesignSystem.Colors.primaryTextStyle(isSelected: isSelected))
+                            Text(rule.replace.isEmpty ? "settings.vocabulary.empty_replace".localized : rule.replace)
+                                .font(.caption)
+                                .foregroundStyle(AppDesignSystem.Colors.secondaryTextStyle(isSelected: isSelected))
+                        }
+
+                        Spacer()
+
+                        Image(systemName: "arrow.right")
+                            .font(.caption)
+                            .foregroundStyle(AppDesignSystem.Colors.secondaryTextStyle(isSelected: isSelected))
+                    }
+                }
+            )
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 8)
+        .background(rowBackground)
+        .clipShape(RoundedRectangle(cornerRadius: AppDesignSystem.Layout.smallCornerRadius))
+        .contextMenu {
+            Button {
+                onEdit()
+            } label: {
+                Label("settings.vocabulary.edit_rule".localized, systemImage: "pencil")
+            }
+
+            Button(role: .destructive) {
+                onDelete()
+            } label: {
+                Label("settings.vocabulary.delete_rule".localized, systemImage: "trash")
+            }
+        }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(accessibilityLabel)
+        .accessibilityHint("settings.vocabulary.actions".localized)
+    }
+
     @ViewBuilder
-    private func rowBackground(isSelected: Bool) -> some View {
+    private var rowBackground: some View {
         if isSelected {
             RoundedRectangle(cornerRadius: AppDesignSystem.Layout.smallCornerRadius)
                 .fill(AppDesignSystem.Colors.selectionFill)
@@ -258,13 +255,9 @@ public struct VocabularySettingsTab: View {
         }
     }
 
-    private func deleteSelectedRule() {
-        guard let selectedRuleID,
-              let rule = viewModel.rules.first(where: { $0.id == selectedRuleID })
-        else {
-            return
-        }
-        viewModel.confirmDelete(rule)
+    private var accessibilityLabel: String {
+        [rule.find, rule.replace.isEmpty ? "settings.vocabulary.empty_replace".localized : rule.replace]
+            .joined(separator: ", ")
     }
 }
 

@@ -132,18 +132,6 @@ public enum AppDesignSystem {
             windowBackground
         }
 
-        public static var settingsTitleBarHighlight: Color {
-            .clear
-        }
-
-        public static var settingsTitleBarShadow: Color {
-            .clear
-        }
-
-        public static var settingsTitleBarNoise: Color {
-            .clear
-        }
-
         public static var settingsTitleBarDivider: Color {
             separator
         }
@@ -194,10 +182,6 @@ public enum AppDesignSystem {
 
         public static var settingsCardStroke: Color {
             separator
-        }
-
-        public static var settingsCardShadow: Color {
-            .clear
         }
 
         public static var subtleFill: Color {

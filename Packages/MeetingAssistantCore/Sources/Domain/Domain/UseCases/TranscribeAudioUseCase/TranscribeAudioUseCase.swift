@@ -278,18 +278,17 @@ public final class TranscribeAudioUseCase: Sendable {
 
     // MARK: - Private Helpers
 
-    /// Processa o resultado da transcrição aplicando substituições de vocabulário
     private func processTranscriptionResult(
         response: DomainTranscriptionResponse,
         vocabularyReplacementRules: [VocabularyReplacementRule]
     ) -> (String, [DomainTranscriptionSegment], TranscriptionQualityProfile) {
-        let replacedTranscriptionText = applyVocabularyReplacements(
-            to: response.text,
-            with: vocabularyReplacementRules
+        let replacedTranscriptionText = VocabularyReplacementRule.apply(
+            rules: vocabularyReplacementRules,
+            to: response.text
         )
-        let replacedSegments = applyVocabularyReplacements(
-            to: response.segments,
-            with: vocabularyReplacementRules
+        let replacedSegments = VocabularyReplacementRule.apply(
+            rules: vocabularyReplacementRules,
+            to: response.segments
         )
         let qualityProfile = transcriptPreprocessor.preprocess(
             transcriptionText: replacedTranscriptionText,
@@ -326,27 +325,7 @@ public final class TranscribeAudioUseCase: Sendable {
         )
     }
 
-    private func applyVocabularyReplacements(
-        to text: String,
-        with rules: [VocabularyReplacementRule]
-    ) -> String {
-        VocabularyReplacementRule.apply(rules: rules, to: text)
-    }
 
-    private func applyVocabularyReplacements(
-        to segments: [DomainTranscriptionSegment],
-        with rules: [VocabularyReplacementRule]
-    ) -> [DomainTranscriptionSegment] {
-        segments.map { segment in
-            DomainTranscriptionSegment(
-                id: segment.id,
-                speaker: segment.speaker,
-                text: applyVocabularyReplacements(to: segment.text, with: rules),
-                startTime: segment.startTime,
-                endTime: segment.endTime
-            )
-        }
-    }
 
     private struct ConfigurationBuildInput {
         let transcriptionID: UUID?

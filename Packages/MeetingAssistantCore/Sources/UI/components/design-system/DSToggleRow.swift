@@ -16,19 +16,22 @@ public struct DSToggleRow: View {
     public var body: some View {
         HStack {
             VStack(alignment: .leading, spacing: 4) {
-                if let tooltip, !tooltip.isEmpty {
-                    SettingsTitleWithPopover(
-                        title: title,
-                        helperMessage: description
-                    )
-                    .help(tooltip)
-                } else {
-                    SettingsTitleWithPopover(
-                        title: title,
-                        helperMessage: description
-                    )
+                HStack(alignment: .top, spacing: 6) {
+                    Text(title)
+                        .font(.body)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .layoutPriority(1)
+
+                    if let description, !description.isEmpty {
+                        DSInfoPopoverButton(
+                            title: title,
+                            message: description,
+                            accessibilityLabel: title
+                        )
+                    }
                 }
             }
+            .help(tooltip ?? "")
 
             Spacer()
 

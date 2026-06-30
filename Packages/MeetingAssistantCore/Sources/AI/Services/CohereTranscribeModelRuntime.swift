@@ -74,7 +74,7 @@ enum CohereTranscribeModelRuntime {
 
     private static let requiredModelArtifactCandidates = ModelComponent.allCases.flatMap(\.artifactCandidates)
 
-    private static let vocabularyCandidates = [
+    private static let tokenVocabularyCandidates = [
         ModelNames.ASR.vocabularyFile,
         "vocab.json",
         "cohere_vocab.json",
@@ -83,16 +83,16 @@ enum CohereTranscribeModelRuntime {
 
     enum RuntimeError: LocalizedError {
         case missingRequiredArtifacts([String])
-        case vocabularyNotFound
-        case vocabularyUnreadable(String)
+        case tokenVocabularyNotFound
+        case tokenVocabularyUnreadable(String)
 
         var errorDescription: String? {
             switch self {
             case let .missingRequiredArtifacts(missing):
                 "Missing required Cohere model artifacts: \(missing.joined(separator: ", "))."
-            case .vocabularyNotFound:
+            case .tokenVocabularyNotFound:
                 "Could not find a vocabulary file for the Cohere local model."
-            case let .vocabularyUnreadable(reason):
+            case let .tokenVocabularyUnreadable(reason):
                 "Unable to parse Cohere vocabulary: \(reason)"
             }
         }
@@ -145,7 +145,7 @@ enum CohereTranscribeModelRuntime {
                 let filteredFiles = files.filter { shouldDownload(path: $0.path) }
 
                 if filteredFiles.isEmpty {
-                    throw RuntimeError.missingRequiredArtifacts(requiredModelArtifactCandidates + vocabularyCandidates)
+                    throw RuntimeError.missingRequiredArtifacts(requiredModelArtifactCandidates + tokenVocabularyCandidates)
                 }
 
                 try await HuggingFaceRepositoryDownloader.downloadFiles(
@@ -160,7 +160,7 @@ enum CohereTranscribeModelRuntime {
                 }
 
                 if (try? findVocabularyFile(under: targetDirectory)) == nil {
-                    throw RuntimeError.vocabularyNotFound
+                    throw RuntimeError.tokenVocabularyNotFound
                 }
 
                 logger.info("Finished Cohere local model download from repo: \(repoPath, privacy: .public)")
@@ -175,7 +175,7 @@ enum CohereTranscribeModelRuntime {
             try? fileManager.removeItem(at: targetDirectory)
         }
 
-        throw lastError ?? RuntimeError.missingRequiredArtifacts(requiredModelArtifactCandidates + vocabularyCandidates)
+        throw lastError ?? RuntimeError.missingRequiredArtifacts(requiredModelArtifactCandidates + tokenVocabularyCandidates)
     }
 
     static func downloadAndLoad(configuration: MLModelConfiguration? = nil) async throws -> AsrModels {
@@ -212,7 +212,7 @@ enum CohereTranscribeModelRuntime {
             matchingAnyOf: ModelComponent.joint.artifactCandidates,
             under: directory
         )
-        let vocabularyURL = try findVocabularyFile(under: directory)
+        let tokenVocabularyURL = try findVocabularyFile(under: directory)
 
         let preprocessorConfig = MLModelConfiguration()
         preprocessorConfig.allowLowPrecisionAccumulationOnGPU = true
@@ -243,7 +243,7 @@ enum CohereTranscribeModelRuntime {
             configuration: config
         )
 
-        let vocabulary = try loadVocabulary(from: vocabularyURL)
+        let modelVocabulary = try loadTokenVocabulary(from: tokenVocabularyURL)
 
         return AsrModels(
             encoder: encoderModel,
@@ -251,7 +251,7 @@ enum CohereTranscribeModelRuntime {
             decoder: decoderModel,
             joint: jointModel,
             configuration: config,
-            vocabulary: vocabulary,
+            vocabulary: modelVocabulary,
             version: .v3
         )
     }
@@ -371,7 +371,7 @@ enum CohereTranscribeModelRuntime {
 
     private static func shouldDownload(path: String) -> Bool {
         let fileName = URL(fileURLWithPath: path).lastPathComponent
-        if vocabularyCandidates.contains(fileName) {
+        if tokenVocabularyCandidates.contains(fileName) {
             return true
         }
 
@@ -429,24 +429,24 @@ enum CohereTranscribeModelRuntime {
                 options: [.skipsHiddenFiles]
             )
         else {
-            throw RuntimeError.vocabularyNotFound
+            throw RuntimeError.tokenVocabularyNotFound
         }
 
         for case let candidateURL as URL in enumerator {
             let fileName = candidateURL.lastPathComponent
-            guard vocabularyCandidates.contains(fileName) else { continue }
+            guard tokenVocabularyCandidates.contains(fileName) else { continue }
             let values = try candidateURL.resourceValues(forKeys: Set(keys))
             if values.isDirectory != true {
                 return candidateURL
             }
         }
 
-        throw RuntimeError.vocabularyNotFound
+        throw RuntimeError.tokenVocabularyNotFound
     }
 
-    private static func loadVocabulary(from vocabularyURL: URL) throws -> [Int: String] {
-        let data = try Data(contentsOf: vocabularyURL)
-        return try parseVocabularyData(data, sourceName: vocabularyURL.lastPathComponent)
+    private static func loadTokenVocabulary(from tokenVocabularyURL: URL) throws -> [Int: String] {
+        let data = try Data(contentsOf: tokenVocabularyURL)
+        return try parseVocabularyData(data, sourceName: tokenVocabularyURL.lastPathComponent)
     }
 
     private static func resolveCompiledModelURL(
@@ -621,6 +621,6 @@ enum CohereTranscribeModelRuntime {
             return vocabulary
         }
 
-        throw RuntimeError.vocabularyUnreadable(sourceName)
+        throw RuntimeError.tokenVocabularyUnreadable(sourceName)
     }
 }

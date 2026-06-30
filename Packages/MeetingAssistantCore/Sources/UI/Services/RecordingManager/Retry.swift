@@ -145,9 +145,9 @@ extension RecordingManager {
         )
         let transcriptionProcessingDuration = Date().timeIntervalSince(transcriptionStart)
         let settings = AppSettingsStore.shared
-        let replacedText = applyVocabularyReplacements(
-            to: response.text,
-            with: settings.vocabularyReplacementRules
+        let replacedText = VocabularyReplacementRule.apply(
+            rules: settings.vocabularyReplacementRules,
+            to: response.text
         )
         guard !replacedText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
             throw TranscriptionError.transcriptionFailed(
@@ -165,9 +165,9 @@ extension RecordingManager {
                 "durationSeconds": String(response.durationSeconds),
             ]
         )
-        let replacedSegments = applyVocabularyReplacements(
-            to: response.segments,
-            with: settings.vocabularyReplacementRules
+        let replacedSegments = VocabularyReplacementRule.apply(
+            rules: settings.vocabularyReplacementRules,
+            to: response.segments
         )
         let qualityProfile = transcriptPreprocessor.preprocess(
             transcriptionText: replacedText,
@@ -230,34 +230,10 @@ extension RecordingManager {
         )
     }
 
-    // MARK: - Vocabulary Replacements
-
-    func applyVocabularyReplacements(
-        to text: String,
-        with rules: [VocabularyReplacementRule]
-    ) -> String {
-        VocabularyReplacementRule.apply(rules: rules, to: text)
-    }
-
     func shouldRemoveSilenceBeforeRetryTranscription(
         effectiveSelection: TranscriptionProviderSelection
     ) -> Bool {
         !effectiveSelection.provider.usesRemoteInference
-    }
-
-    func applyVocabularyReplacements(
-        to segments: [Transcription.Segment],
-        with rules: [VocabularyReplacementRule]
-    ) -> [Transcription.Segment] {
-        segments.map { segment in
-            Transcription.Segment(
-                id: segment.id,
-                speaker: segment.speaker,
-                text: applyVocabularyReplacements(to: segment.text, with: rules),
-                startTime: segment.startTime,
-                endTime: segment.endTime
-            )
-        }
     }
 
     private func persistRetryPerformanceAttempts(
