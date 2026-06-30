@@ -84,16 +84,6 @@ final class AppSettingsStoreAISelectionTests: XCTestCase {
         XCTAssertTrue(settings.smartParagraphsEnabled)
     }
 
-    func testContextAwarenessExplicitActionOnlyCannotBeDisabled() {
-        settings.contextAwarenessExplicitActionOnly = false
-
-        XCTAssertTrue(settings.contextAwarenessExplicitActionOnly)
-        XCTAssertEqual(
-            UserDefaults.standard.object(forKey: "contextAwarenessExplicitActionOnly") as? Bool,
-            true
-        )
-    }
-
     func testResetDefaultsRestoresMeetingNotesTypographySettings() {
         settings.meetingNotesFontFamilyKey = "Helvetica"
         settings.meetingNotesFontSize = 24

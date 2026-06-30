@@ -13,8 +13,6 @@ public final class InstalledAppsSelectionViewModel: ObservableObject {
     private let saveBundleIdentifiers: ([String]) -> Void
     private let workspace: NSWorkspace
     private let openPanelProvider: @MainActor () -> NSOpenPanel
-    private let includeProtectedBundleIdentifiersWhenConfigured: Bool
-    private let persistsResolvedInstalledApps: Bool
 
     public init(
         defaultBundleIdentifiers: [String],
@@ -23,9 +21,7 @@ public final class InstalledAppsSelectionViewModel: ObservableObject {
         loadBundleIdentifiers: @escaping () -> [String],
         saveBundleIdentifiers: @escaping ([String]) -> Void,
         workspace: NSWorkspace = .shared,
-        openPanelProvider: @escaping @MainActor () -> NSOpenPanel = { NSOpenPanel() },
-        includeProtectedBundleIdentifiersWhenConfigured: Bool = false,
-        persistsResolvedInstalledApps: Bool = true
+        openPanelProvider: @escaping @MainActor () -> NSOpenPanel = { NSOpenPanel() }
     ) {
         self.defaultBundleIdentifiers = defaultBundleIdentifiers
         self.protectedBundleIdentifiers = protectedBundleIdentifiers
@@ -34,8 +30,6 @@ public final class InstalledAppsSelectionViewModel: ObservableObject {
         self.saveBundleIdentifiers = saveBundleIdentifiers
         self.workspace = workspace
         self.openPanelProvider = openPanelProvider
-        self.includeProtectedBundleIdentifiersWhenConfigured = includeProtectedBundleIdentifiersWhenConfigured
-        self.persistsResolvedInstalledApps = persistsResolvedInstalledApps
     }
 
     public func refreshTargets() {
@@ -45,7 +39,7 @@ public final class InstalledAppsSelectionViewModel: ObservableObject {
             .filter(\.isRemovable)
             .map(\.bundleIdentifier)
 
-        if persistsResolvedInstalledApps, hasConfigured(), resolvedIdentifiers != loadBundleIdentifiers() {
+        if hasConfigured(), resolvedIdentifiers != loadBundleIdentifiers() {
             saveBundleIdentifiers(resolvedIdentifiers)
         }
 
@@ -73,14 +67,13 @@ public final class InstalledAppsSelectionViewModel: ObservableObject {
     }
 
     private func resolveCandidateBundleIdentifiers() -> [String] {
-        let configuredIdentifiers = loadBundleIdentifiers()
+        let candidates: [String]
         if hasConfigured() {
-            guard includeProtectedBundleIdentifiersWhenConfigured else {
-                return configuredIdentifiers
-            }
-            return protectedBundleIdentifiers + configuredIdentifiers
+            candidates = loadBundleIdentifiers()
+        } else {
+            candidates = defaultBundleIdentifiers
         }
-        return protectedBundleIdentifiers + defaultBundleIdentifiers
+        return protectedBundleIdentifiers + candidates
     }
 
     private func addApp(from url: URL) {

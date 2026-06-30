@@ -432,7 +432,6 @@ extension AppSettingsStore {
     /// Struct for context awareness settings to avoid large tuple.
     struct ContextAwarenessSettingsValues {
         let contextAwarenessEnabled: Bool
-        let contextAwarenessExplicitActionOnly: Bool
         let contextAwarenessIncludeClipboard: Bool
         let contextAwarenessIncludeWindowOCR: Bool
         let contextAwarenessIncludeAccessibilityText: Bool
@@ -445,7 +444,6 @@ extension AppSettingsStore {
     static func loadContextAwarenessSettings(from context: InitializationContext) -> ContextAwarenessSettingsValues {
         ContextAwarenessSettingsValues(
             contextAwarenessEnabled: context.loadedContextAwarenessEnabled,
-            contextAwarenessExplicitActionOnly: true,
             contextAwarenessIncludeClipboard: UserDefaults.standard.bool(forKey: Keys.contextAwarenessIncludeClipboard),
             contextAwarenessIncludeWindowOCR: UserDefaults.standard.bool(forKey: Keys.contextAwarenessIncludeWindowOCR),
             contextAwarenessIncludeAccessibilityText: loadBoolDefaultIfUnset(forKey: Keys.contextAwarenessIncludeAccessibilityText, defaultValue: true),

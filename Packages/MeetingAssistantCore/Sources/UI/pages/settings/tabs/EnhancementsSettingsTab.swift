@@ -35,9 +35,7 @@ public struct EnhancementsSettingsTab: View {
                 protectedBundleIdentifiers: TextContextExclusionPolicy.defaultBundleIDs,
                 hasConfigured: { true },
                 loadBundleIdentifiers: { settings.contextAwarenessExcludedBundleIDs },
-                saveBundleIdentifiers: { settings.contextAwarenessExcludedBundleIDs = $0 },
-                includeProtectedBundleIdentifiersWhenConfigured: true,
-                persistsResolvedInstalledApps: false
+                saveBundleIdentifiers: { settings.contextAwarenessExcludedBundleIDs = $0 }
             )
         )
         _navigationState = navigationState

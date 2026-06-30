@@ -96,7 +96,6 @@ extension AppSettingsStore {
         static let ignoredCalendarEventIdentifiers = "ignoredCalendarEventIdentifiers"
         static let meetingQnAEnabled = "meetingQnAEnabled"
         static let contextAwarenessEnabled = "contextAwarenessEnabled"
-        static let contextAwarenessExplicitActionOnly = "contextAwarenessExplicitActionOnly"
         static let contextAwarenessIncludeClipboard = "contextAwarenessIncludeClipboard"
         static let contextAwarenessIncludeWindowOCR = "contextAwarenessIncludeWindowOCR"
         static let contextAwarenessIncludeAccessibilityText = "contextAwarenessIncludeAccessibilityText"

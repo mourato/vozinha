@@ -544,17 +544,6 @@ public class AppSettingsStore: ObservableObject {
         }
     }
 
-    /// Restricts context capture to explicit user actions (dictation/commands).
-    @Published public var contextAwarenessExplicitActionOnly: Bool {
-        didSet {
-            if !contextAwarenessExplicitActionOnly {
-                contextAwarenessExplicitActionOnly = true
-                return
-            }
-            UserDefaults.standard.set(true, forKey: Keys.contextAwarenessExplicitActionOnly)
-        }
-    }
-
     /// Includes clipboard text in context metadata.
     @Published public var contextAwarenessIncludeClipboard: Bool {
         didSet { UserDefaults.standard.set(contextAwarenessIncludeClipboard, forKey: Keys.contextAwarenessIncludeClipboard) }
@@ -832,7 +821,6 @@ public class AppSettingsStore: ObservableObject {
 
         let ctx = Self.loadContextAwarenessSettings(from: context)
         contextAwarenessEnabled = ctx.contextAwarenessEnabled
-        contextAwarenessExplicitActionOnly = ctx.contextAwarenessExplicitActionOnly
         (contextAwarenessIncludeClipboard, contextAwarenessIncludeWindowOCR) = (
             ctx.contextAwarenessIncludeClipboard,
             ctx.contextAwarenessIncludeWindowOCR

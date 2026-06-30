@@ -90,13 +90,13 @@ public struct DictationSettingsTab: View {
 
             ServiceTranscriptionProviderSection(viewModel: serviceViewModel)
 
-            EnhancementsModelSelectionSection(
-                titleKey: "settings.dictation.post_processing_model",
-                icon: "sparkles",
-                target: .dictation,
-                viewModel: aiSettingsViewModel,
-                settings: settings
-            )
+            DSGroup("settings.dictation.post_processing_model".localized, icon: "sparkles") {
+                EnhancementsModelSelectionControl(
+                    target: .dictation,
+                    viewModel: aiSettingsViewModel,
+                    settings: settings
+                )
+            }
 
             DSGroup("settings.dictation.text_handling".localized, icon: "cpu") {
                 VStack(alignment: .leading, spacing: 16) {

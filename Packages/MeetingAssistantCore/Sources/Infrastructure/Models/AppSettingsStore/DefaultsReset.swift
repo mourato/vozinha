@@ -86,7 +86,6 @@ public extension AppSettingsStore {
         meetingNotesFontFamilyKey = MeetingNotesTypographyDefaults.systemFontFamilyKey
         meetingNotesFontSize = MeetingNotesTypographyDefaults.defaultFontSize
         meetingQnAEnabled = true
-        contextAwarenessExplicitActionOnly = true
         markdownTargetBundleIdentifiers = Self.defaultMarkdownTargetBundleIdentifiers
         dictationAppRules = Self.defaultDictationAppRules
         dictationStyles = Self.defaultDictationStyles

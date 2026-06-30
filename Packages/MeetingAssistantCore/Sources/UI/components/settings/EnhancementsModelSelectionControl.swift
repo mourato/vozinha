@@ -33,38 +33,6 @@ public enum EnhancementsModelSelectionTarget: String, Identifiable {
     }
 }
 
-public struct EnhancementsModelSelectionSection: View {
-    private let titleKey: String
-    private let icon: String
-    private let target: EnhancementsModelSelectionTarget
-    @ObservedObject private var viewModel: AISettingsViewModel
-    private let settings: AppSettingsStore
-
-    public init(
-        titleKey: String,
-        icon: String,
-        target: EnhancementsModelSelectionTarget,
-        viewModel: AISettingsViewModel,
-        settings: AppSettingsStore
-    ) {
-        self.titleKey = titleKey
-        self.icon = icon
-        self.target = target
-        self.viewModel = viewModel
-        self.settings = settings
-    }
-
-    public var body: some View {
-        DSGroup(titleKey.localized, icon: icon) {
-            EnhancementsModelSelectionControl(
-                target: target,
-                viewModel: viewModel,
-                settings: settings
-            )
-        }
-    }
-}
-
 public struct EnhancementsModelSelectionControl: View {
     private let target: EnhancementsModelSelectionTarget
     @ObservedObject private var viewModel: AISettingsViewModel
