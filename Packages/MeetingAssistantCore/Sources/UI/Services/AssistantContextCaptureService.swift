@@ -73,7 +73,7 @@ public final class AssistantContextCaptureService {
                 includeClipboard: settings.contextAwarenessIncludeClipboard,
                 includeWindowOCR: shouldIncludeWindowOCR,
                 includeAccessibilityText: settings.contextAwarenessIncludeAccessibilityText,
-                protectSensitiveApps: settings.contextAwarenessProtectSensitiveApps,
+                protectSensitiveApps: true,
                 redactSensitiveData: settings.contextAwarenessRedactSensitiveData,
                 excludedBundleIDs: settings.contextAwarenessExcludedBundleIDs
             )

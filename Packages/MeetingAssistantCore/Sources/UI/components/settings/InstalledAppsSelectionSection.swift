@@ -62,6 +62,7 @@ public struct InstalledAppsSelectionList: View {
     private let addButtonKey: String
     private let removeButtonKey: String
     private let protectedBadgeKey: String?
+    private let onAddApp: (() -> Void)?
     @ObservedObject private var viewModel: InstalledAppsSelectionViewModel
 
     public init(
@@ -69,12 +70,14 @@ public struct InstalledAppsSelectionList: View {
         addButtonKey: String,
         removeButtonKey: String = "settings.markdown_targets.remove",
         protectedBadgeKey: String? = nil,
+        onAddApp: (() -> Void)? = nil,
         viewModel: InstalledAppsSelectionViewModel
     ) {
         self.emptyKey = emptyKey
         self.addButtonKey = addButtonKey
         self.removeButtonKey = removeButtonKey
         self.protectedBadgeKey = protectedBadgeKey
+        self.onAddApp = onAddApp
         self.viewModel = viewModel
     }
 
@@ -101,7 +104,11 @@ public struct InstalledAppsSelectionList: View {
             HStack {
                 Spacer()
                 Button {
-                    viewModel.addApp()
+                    if let onAddApp {
+                        onAddApp()
+                    } else {
+                        viewModel.addApp()
+                    }
                 } label: {
                     Label(addButtonKey.localized, systemImage: "plus")
                 }

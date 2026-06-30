@@ -58,6 +58,16 @@ public final class InstalledAppsSelectionViewModel: ObservableObject {
         }
     }
 
+    public func addApp(bundleIdentifier: String) {
+        let normalized = normalizeBundleIdentifier(bundleIdentifier)
+        var identifiers = loadBundleIdentifiers()
+        if !identifiers.contains(where: { normalizeBundleIdentifier($0) == normalized }) {
+            identifiers.append(bundleIdentifier)
+        }
+        saveBundleIdentifiers(identifiers)
+        refreshTargets()
+    }
+
     public func removeApp(bundleIdentifier: String) {
         let normalized = normalizeBundleIdentifier(bundleIdentifier)
         var identifiers = loadBundleIdentifiers()
@@ -67,12 +77,7 @@ public final class InstalledAppsSelectionViewModel: ObservableObject {
     }
 
     private func resolveCandidateBundleIdentifiers() -> [String] {
-        let candidates: [String]
-        if hasConfigured() {
-            candidates = loadBundleIdentifiers()
-        } else {
-            candidates = defaultBundleIdentifiers
-        }
+        let candidates = hasConfigured() ? loadBundleIdentifiers() : defaultBundleIdentifiers
         return protectedBundleIdentifiers + candidates
     }
 

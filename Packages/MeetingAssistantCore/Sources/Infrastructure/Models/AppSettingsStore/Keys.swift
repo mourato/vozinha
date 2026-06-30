@@ -99,7 +99,6 @@ extension AppSettingsStore {
         static let contextAwarenessIncludeClipboard = "contextAwarenessIncludeClipboard"
         static let contextAwarenessIncludeWindowOCR = "contextAwarenessIncludeWindowOCR"
         static let contextAwarenessIncludeAccessibilityText = "contextAwarenessIncludeAccessibilityText"
-        static let contextAwarenessProtectSensitiveApps = "contextAwarenessProtectSensitiveApps"
         static let contextAwarenessRedactSensitiveData = "contextAwarenessRedactSensitiveData"
         static let contextAwarenessExcludedBundleIDs = "contextAwarenessExcludedBundleIDs"
         static let markdownTargetBundleIdentifiers = "markdownTargetBundleIdentifiers"

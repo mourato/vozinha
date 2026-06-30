@@ -559,11 +559,6 @@ public class AppSettingsStore: ObservableObject {
         didSet { UserDefaults.standard.set(contextAwarenessIncludeAccessibilityText, forKey: Keys.contextAwarenessIncludeAccessibilityText) }
     }
 
-    /// Enables blocking context capture when the frontmost app is in a sensitive-app list.
-    @Published public var contextAwarenessProtectSensitiveApps: Bool {
-        didSet { UserDefaults.standard.set(contextAwarenessProtectSensitiveApps, forKey: Keys.contextAwarenessProtectSensitiveApps) }
-    }
-
     /// Redacts sensitive patterns (email, URLs, tokens, long numeric sequences) before sending context to AI.
     @Published public var contextAwarenessRedactSensitiveData: Bool {
         didSet { UserDefaults.standard.set(contextAwarenessRedactSensitiveData, forKey: Keys.contextAwarenessRedactSensitiveData) }
@@ -826,10 +821,7 @@ public class AppSettingsStore: ObservableObject {
             ctx.contextAwarenessIncludeWindowOCR
         )
         contextAwarenessIncludeAccessibilityText = ctx.contextAwarenessIncludeAccessibilityText
-        (contextAwarenessProtectSensitiveApps, contextAwarenessRedactSensitiveData) = (
-            ctx.contextAwarenessProtectSensitiveApps,
-            ctx.contextAwarenessRedactSensitiveData
-        )
+        contextAwarenessRedactSensitiveData = ctx.contextAwarenessRedactSensitiveData
         contextAwarenessExcludedBundleIDs = ctx.contextAwarenessExcludedBundleIDs
 
         let dict = Self.loadDictationRulesAndWebTargets()

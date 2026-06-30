@@ -22,6 +22,7 @@ public struct EnhancementsSettingsTab: View {
     @State private var supportStatus: TextContextSupportStatus = .unknown
     @State private var hasScreenRecordingPermission = CGPreflightScreenCaptureAccess()
     @State private var systemGuidelinesDraft = ""
+    @State private var showAppSearchSheet = false
     private let supportChecker = TextContextSupportChecker()
 
     public init(
@@ -62,6 +63,7 @@ public struct EnhancementsSettingsTab: View {
             )
 
             mainSection
+            protectSensitiveAppsSection
             contextAwarenessSection
         }
     }
@@ -136,26 +138,33 @@ public struct EnhancementsSettingsTab: View {
                         isOn: $postProcessingViewModel.settings.contextAwarenessRedactSensitiveData
                     )
 
-                    Divider()
-
-                    DSToggleRow(
-                        "settings.context_awareness.protect_sensitive_apps".localized,
-                        description: "settings.context_awareness.protect_sensitive_apps_desc".localized,
-                        isOn: $postProcessingViewModel.settings.contextAwarenessProtectSensitiveApps
-                    )
-
-                    if postProcessingViewModel.settings.contextAwarenessProtectSensitiveApps {
-                        InstalledAppsSelectionList(
-                            emptyKey: "settings.context_awareness.excluded_apps_empty",
-                            addButtonKey: "settings.context_awareness.excluded_apps_add",
-                            removeButtonKey: "settings.context_awareness.excluded_apps_remove",
-                            protectedBadgeKey: "settings.context_awareness.always_excluded_badge",
-                            viewModel: sensitiveAppsViewModel
-                        )
-                        .padding(.top, 4)
-                    }
                 }
             }
+        }
+    }
+
+    private var protectSensitiveAppsSection: some View {
+        DSGroup("settings.context_awareness.protect_sensitive_apps".localized, icon: "lock.shield") {
+            VStack(alignment: .leading, spacing: AppDesignSystem.Layout.itemSpacing) {
+                Text("settings.context_awareness.protect_sensitive_apps_desc".localized)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+
+                InstalledAppsSelectionList(
+                    emptyKey: "settings.context_awareness.excluded_apps_empty",
+                    addButtonKey: "settings.context_awareness.excluded_apps_add",
+                    removeButtonKey: "settings.context_awareness.excluded_apps_remove",
+                    protectedBadgeKey: "settings.context_awareness.always_excluded_badge",
+                    onAddApp: { showAppSearchSheet = true },
+                    viewModel: sensitiveAppsViewModel
+                )
+            }
+        }
+        .sheet(isPresented: $showAppSearchSheet) {
+            SensitiveAppSearchSheet(
+                viewModel: sensitiveAppsViewModel,
+                isPresented: $showAppSearchSheet
+            )
         }
     }
 

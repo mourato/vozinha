@@ -11,7 +11,6 @@ final class ExtractedWorkflowServicesTests: XCTestCase {
     private var originalIncludeAccessibilityText = false
     private var originalIncludeClipboard = false
     private var originalIncludeWindowOCR = false
-    private var originalProtectSensitiveApps = false
     private var originalRedactSensitiveData = false
     private var originalExcludedBundleIDs: [String] = []
 
@@ -23,7 +22,6 @@ final class ExtractedWorkflowServicesTests: XCTestCase {
         originalIncludeAccessibilityText = settings.contextAwarenessIncludeAccessibilityText
         originalIncludeClipboard = settings.contextAwarenessIncludeClipboard
         originalIncludeWindowOCR = settings.contextAwarenessIncludeWindowOCR
-        originalProtectSensitiveApps = settings.contextAwarenessProtectSensitiveApps
         originalRedactSensitiveData = settings.contextAwarenessRedactSensitiveData
         originalExcludedBundleIDs = settings.contextAwarenessExcludedBundleIDs
     }
@@ -33,7 +31,6 @@ final class ExtractedWorkflowServicesTests: XCTestCase {
         settings.contextAwarenessIncludeAccessibilityText = originalIncludeAccessibilityText
         settings.contextAwarenessIncludeClipboard = originalIncludeClipboard
         settings.contextAwarenessIncludeWindowOCR = originalIncludeWindowOCR
-        settings.contextAwarenessProtectSensitiveApps = originalProtectSensitiveApps
         settings.contextAwarenessRedactSensitiveData = originalRedactSensitiveData
         settings.contextAwarenessExcludedBundleIDs = originalExcludedBundleIDs
         settings = nil
@@ -94,7 +91,6 @@ final class ExtractedWorkflowServicesTests: XCTestCase {
         settings.contextAwarenessIncludeAccessibilityText = true
         settings.contextAwarenessIncludeClipboard = false
         settings.contextAwarenessIncludeWindowOCR = false
-        settings.contextAwarenessProtectSensitiveApps = false
         settings.contextAwarenessRedactSensitiveData = false
         settings.contextAwarenessExcludedBundleIDs = []
 

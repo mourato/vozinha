@@ -169,16 +169,10 @@ public class RecordingManager: ObservableObject, RecordingServiceProtocol {
     private static func defaultTextContextProvider() -> any TextContextProvider {
         AXTextContextProvider(
             exclusionPolicyProvider: {
-                let settings = AppSettingsStore.shared
-                return settings.contextAwarenessProtectSensitiveApps
-                    ? TextContextExclusionPolicy()
-                    : TextContextExclusionPolicy(baseExcludedBundleIDs: [])
+                TextContextExclusionPolicy()
             },
             customExcludedBundleIDsProvider: {
-                let settings = AppSettingsStore.shared
-                return settings.contextAwarenessProtectSensitiveApps
-                    ? settings.contextAwarenessExcludedBundleIDs
-                    : []
+                AppSettingsStore.shared.contextAwarenessExcludedBundleIDs
             }
         )
     }

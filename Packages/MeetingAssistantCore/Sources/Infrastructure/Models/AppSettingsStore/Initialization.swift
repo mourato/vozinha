@@ -435,7 +435,6 @@ extension AppSettingsStore {
         let contextAwarenessIncludeClipboard: Bool
         let contextAwarenessIncludeWindowOCR: Bool
         let contextAwarenessIncludeAccessibilityText: Bool
-        let contextAwarenessProtectSensitiveApps: Bool
         let contextAwarenessRedactSensitiveData: Bool
         let contextAwarenessExcludedBundleIDs: [String]
     }
@@ -447,7 +446,6 @@ extension AppSettingsStore {
             contextAwarenessIncludeClipboard: UserDefaults.standard.bool(forKey: Keys.contextAwarenessIncludeClipboard),
             contextAwarenessIncludeWindowOCR: UserDefaults.standard.bool(forKey: Keys.contextAwarenessIncludeWindowOCR),
             contextAwarenessIncludeAccessibilityText: loadBoolDefaultIfUnset(forKey: Keys.contextAwarenessIncludeAccessibilityText, defaultValue: true),
-            contextAwarenessProtectSensitiveApps: loadBoolDefaultIfUnset(forKey: Keys.contextAwarenessProtectSensitiveApps, defaultValue: true),
             contextAwarenessRedactSensitiveData: loadBoolDefaultIfUnset(forKey: Keys.contextAwarenessRedactSensitiveData, defaultValue: true),
             contextAwarenessExcludedBundleIDs: loadDecoded([String].self, forKey: Keys.contextAwarenessExcludedBundleIDs) ?? []
         )
