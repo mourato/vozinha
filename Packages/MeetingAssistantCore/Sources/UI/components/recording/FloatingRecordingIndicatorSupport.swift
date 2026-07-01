@@ -119,7 +119,7 @@ struct RecordingIndicatorPostProcessingWarningDescriptor: Equatable {
     let mode: IntelligenceKernelMode
 
     var settingsSection: String {
-        SettingsSection.enhancements.rawValue
+        SettingsSection.intelligence.rawValue
     }
 
     var localizedMessage: String {

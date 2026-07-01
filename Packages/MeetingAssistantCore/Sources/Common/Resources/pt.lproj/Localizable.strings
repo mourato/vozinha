@@ -16,6 +16,7 @@
 "settings.section.permissions" = "Permissões";
 "settings.section.activity" = "Atividade";
 "settings.section.intelligence" = "Inteligência";
+"settings.intelligence.description" = "Configure modelos, limpeza por IA, fontes de contexto e regras de substituição do dicionário.";
 "settings.section.system" = "Sistema";
 
 /* Metrics Dashboard */
@@ -1081,7 +1082,7 @@
 "recording_indicator.post_processing_warning.missing_model" = "Pós-processamento de %@ desativado: nenhum modelo selecionado.";
 "recording_indicator.post_processing_warning.missing_api_key" = "Pós-processamento de %@ desativado: falta chave de API.";
 "recording_indicator.post_processing_warning.invalid_base_url" = "Pós-processamento de %@ desativado: URL base inválida.";
-"recording_indicator.post_processing_warning.open_settings" = "Abrir Enhancements";
+"recording_indicator.post_processing_warning.open_settings" = "Abrir Inteligência";
 "recording_indicator.silence_warning.confirmation.title" = "Nenhum áudio do microfone detectado";
 "recording_indicator.silence_warning.action.continue" = "Continuar ouvindo";
 "recording_indicator.silence_warning.action.stop" = "Parar e transcrever";

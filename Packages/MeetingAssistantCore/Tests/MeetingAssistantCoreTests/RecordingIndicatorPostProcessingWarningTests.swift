@@ -11,7 +11,7 @@ final class RecordingIndicatorPPWarningTests: XCTestCase {
         )
 
         XCTAssertEqual(descriptor.messageKey, "recording_indicator.post_processing_warning.missing_model")
-        XCTAssertEqual(descriptor.settingsSection, SettingsSection.enhancements.rawValue)
+        XCTAssertEqual(descriptor.settingsSection, SettingsSection.intelligence.rawValue)
     }
 
     func testMessageKey_ForMissingAPIKey() {
@@ -32,7 +32,7 @@ final class RecordingIndicatorPPWarningTests: XCTestCase {
         XCTAssertEqual(descriptor.messageKey, "recording_indicator.post_processing_warning.invalid_base_url")
     }
 
-    func testOpenSettings_UsesEnhancementsSection() {
+    func testOpenSettings_UsesIntelligenceSection() {
         let descriptor = RecordingIndicatorPostProcessingWarningDescriptor(
             issue: .missingModel,
             mode: .meeting
@@ -43,6 +43,6 @@ final class RecordingIndicatorPPWarningTests: XCTestCase {
             capturedSection = section
         }
 
-        XCTAssertEqual(capturedSection, SettingsSection.enhancements.rawValue)
+        XCTAssertEqual(capturedSection, SettingsSection.intelligence.rawValue)
     }
 }

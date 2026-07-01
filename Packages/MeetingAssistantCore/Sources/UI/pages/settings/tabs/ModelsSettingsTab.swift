@@ -13,20 +13,24 @@ public struct ModelsSettingsTab: View {
     @StateObject private var viewModel: ServiceSettingsViewModel
     @StateObject private var aiSettingsViewModel: AISettingsViewModel
     @StateObject private var postProcessingViewModel: PostProcessingSettingsViewModel
+    private let showsHeader: Bool
 
     @MainActor
-    public init(settings: AppSettingsStore = .shared) {
+    public init(settings: AppSettingsStore = .shared, showsHeader: Bool = true) {
         _viewModel = StateObject(wrappedValue: ServiceSettingsViewModel(settings: settings))
         _aiSettingsViewModel = StateObject(wrappedValue: AISettingsViewModel(settings: settings))
         _postProcessingViewModel = StateObject(wrappedValue: PostProcessingSettingsViewModel(settings: settings))
+        self.showsHeader = showsHeader
     }
 
     public var body: some View {
         SettingsScrollableContent {
-            SettingsSectionHeader(
-                title: "settings.section.models".localized,
-                description: "settings.models.description".localized
-            )
+            if showsHeader {
+                SettingsSectionHeader(
+                    title: "settings.section.models".localized,
+                    description: "settings.models.description".localized
+                )
+            }
 
             modelHubSectionIntro(
                 title: "settings.models.ai_provider_models".localized,

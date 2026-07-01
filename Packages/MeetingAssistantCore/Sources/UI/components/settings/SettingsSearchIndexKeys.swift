@@ -176,6 +176,7 @@ extension SettingsSearchIndex {
         "settings.general.storage",
         "settings.general.title",
         "settings.integrations.header_desc",
+        "settings.intelligence.description",
         "settings.meetings.auto_export",
         "settings.meetings.auto_export_desc",
         "settings.meetings.autodetect_type",

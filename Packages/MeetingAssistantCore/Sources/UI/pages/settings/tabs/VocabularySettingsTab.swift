@@ -8,17 +8,21 @@ public struct VocabularySettingsTab: View {
     @State private var ruleFindInput = ""
     @State private var ruleReplaceInput = ""
     @State private var selectedRuleID: UUID?
+    private let showsHeader: Bool
 
-    public init(settings: AppSettingsStore = .shared) {
+    public init(settings: AppSettingsStore = .shared, showsHeader: Bool = true) {
         _viewModel = StateObject(wrappedValue: VocabularySettingsViewModel(settings: settings))
+        self.showsHeader = showsHeader
     }
 
     public var body: some View {
         SettingsScrollableContent {
-            SettingsSectionHeader(
-                title: "settings.section.vocabulary".localized,
-                description: "settings.vocabulary.description".localized
-            )
+            if showsHeader {
+                SettingsSectionHeader(
+                    title: "settings.section.vocabulary".localized,
+                    description: "settings.vocabulary.description".localized
+                )
+            }
             DSGroup("settings.vocabulary.replacement_rules".localized, icon: "arrow.2.squarepath") {
                 VStack(alignment: .leading, spacing: 12) {
                     Text("settings.vocabulary.applied_order_note".localized)

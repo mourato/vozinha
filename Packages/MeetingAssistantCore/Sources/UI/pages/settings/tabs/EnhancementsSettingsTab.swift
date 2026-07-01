@@ -24,10 +24,12 @@ public struct EnhancementsSettingsTab: View {
     @State private var systemGuidelinesDraft = ""
     @State private var showAppSearchSheet = false
     private let supportChecker = TextContextSupportChecker()
+    private let showsHeader: Bool
 
     public init(
         settings: AppSettingsStore = .shared,
-        navigationState: Binding<SettingsSubpageNavigationState<EnhancementsSettingsRoute>> = .constant(SettingsSubpageNavigationState())
+        navigationState: Binding<SettingsSubpageNavigationState<EnhancementsSettingsRoute>> = .constant(SettingsSubpageNavigationState()),
+        showsHeader: Bool = true
     ) {
         _postProcessingViewModel = StateObject(wrappedValue: PostProcessingSettingsViewModel(settings: settings))
         _sensitiveAppsViewModel = StateObject(
@@ -40,6 +42,7 @@ public struct EnhancementsSettingsTab: View {
             )
         )
         _navigationState = navigationState
+        self.showsHeader = showsHeader
     }
 
     public var body: some View {
@@ -57,10 +60,12 @@ public struct EnhancementsSettingsTab: View {
 
     private var rootPage: some View {
         SettingsScrollableContent {
-            SettingsSectionHeader(
-                title: "settings.section.ai".localized,
-                description: "settings.text_context.description".localized
-            )
+            if showsHeader {
+                SettingsSectionHeader(
+                    title: "settings.section.ai".localized,
+                    description: "settings.text_context.description".localized
+                )
+            }
 
             protectSensitiveAppsSection
             contextAwarenessSection

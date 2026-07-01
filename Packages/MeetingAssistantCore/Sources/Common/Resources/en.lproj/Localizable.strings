@@ -16,6 +16,7 @@
 "settings.section.permissions" = "Permissions";
 "settings.section.activity" = "Activity";
 "settings.section.intelligence" = "Intelligence";
+"settings.intelligence.description" = "Configure model setup, AI cleanup, context sources, and dictionary replacement rules.";
 "settings.section.system" = "System";
 
 /* Metrics Dashboard */
@@ -1090,7 +1091,7 @@
 "recording_indicator.post_processing_warning.missing_model" = "Post-processing for %@ is disabled: no model selected.";
 "recording_indicator.post_processing_warning.missing_api_key" = "Post-processing for %@ is disabled: missing API key.";
 "recording_indicator.post_processing_warning.invalid_base_url" = "Post-processing for %@ is disabled: invalid base URL.";
-"recording_indicator.post_processing_warning.open_settings" = "Open Enhancements";
+"recording_indicator.post_processing_warning.open_settings" = "Open Intelligence";
 "recording_indicator.silence_warning.confirmation.title" = "No microphone audio detected";
 "recording_indicator.silence_warning.action.continue" = "Continue listening";
 "recording_indicator.silence_warning.action.stop" = "Stop and transcribe";

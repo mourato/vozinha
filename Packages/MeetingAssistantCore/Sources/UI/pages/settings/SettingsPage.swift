@@ -41,6 +41,8 @@ public struct SettingsView: View {
     @State private var meetingNavigationState = MeetingSettingsNavigationState()
     @State private var dictationNavigationState = SettingsSubpageNavigationState<DictationSettingsRoute>()
     @State private var enhancementsNavigationState = SettingsSubpageNavigationState<EnhancementsSettingsRoute>()
+    @State private var intelligenceRoute: IntelligenceSettingsRoute = .models
+    @State private var intelligenceTextContextNavigationState = SettingsSubpageNavigationState<EnhancementsSettingsRoute>()
     @State private var columnVisibility: NavigationSplitViewVisibility
     @StateObject private var navigationService = NavigationService.shared
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -374,46 +376,36 @@ private extension SettingsView {
     }
 
     private func navigateBack() {
-        if selectedSection == .activity {
+        switch selectedSection {
+        case .activity:
             activityNavigationState.goBack()
-            return
-        }
-
-        if selectedSection == .meetings, meetingNavigationState.canGoBack {
+        case .meetings where meetingNavigationState.canGoBack:
             _ = meetingNavigationState.goBack()
-            return
-        }
-
-        if selectedSection == .dictation, dictationNavigationState.canGoBack {
+        case .dictation where dictationNavigationState.canGoBack:
             _ = dictationNavigationState.goBack()
-            return
-        }
-
-        if selectedSection == .enhancements, enhancementsNavigationState.canGoBack {
+        case .enhancements where enhancementsNavigationState.canGoBack:
             _ = enhancementsNavigationState.goBack()
-            return
+        case .intelligence where canNavigateIntelligenceTextContextBack:
+            _ = intelligenceTextContextNavigationState.goBack()
+        default:
+            break
         }
     }
 
     private func navigateForward() {
-        if selectedSection == .activity {
+        switch selectedSection {
+        case .activity:
             activityNavigationState.goForward()
-            return
-        }
-
-        if selectedSection == .meetings, meetingNavigationState.canGoForward {
+        case .meetings where meetingNavigationState.canGoForward:
             _ = meetingNavigationState.goForward()
-            return
-        }
-
-        if selectedSection == .dictation, dictationNavigationState.canGoForward {
+        case .dictation where dictationNavigationState.canGoForward:
             _ = dictationNavigationState.goForward()
-            return
-        }
-
-        if selectedSection == .enhancements, enhancementsNavigationState.canGoForward {
+        case .enhancements where enhancementsNavigationState.canGoForward:
             _ = enhancementsNavigationState.goForward()
-            return
+        case .intelligence where canNavigateIntelligenceTextContextForward:
+            _ = intelligenceTextContextNavigationState.goForward()
+        default:
+            break
         }
     }
 
@@ -455,43 +447,45 @@ private extension SettingsView {
     }
 
     private var canNavigateBack: Bool {
-        if selectedSection == .activity {
-            return activityNavigationState.canGoBack
+        switch selectedSection {
+        case .activity:
+            activityNavigationState.canGoBack
+        case .meetings:
+            meetingNavigationState.canGoBack
+        case .dictation:
+            dictationNavigationState.canGoBack
+        case .enhancements:
+            enhancementsNavigationState.canGoBack
+        case .intelligence:
+            canNavigateIntelligenceTextContextBack
+        default:
+            false
         }
-
-        if selectedSection == .meetings {
-            return meetingNavigationState.canGoBack
-        }
-
-        if selectedSection == .dictation {
-            return dictationNavigationState.canGoBack
-        }
-
-        if selectedSection == .enhancements {
-            return enhancementsNavigationState.canGoBack
-        }
-
-        return false
     }
 
     private var canNavigateForward: Bool {
-        if selectedSection == .activity {
-            return activityNavigationState.canGoForward
+        switch selectedSection {
+        case .activity:
+            activityNavigationState.canGoForward
+        case .meetings:
+            meetingNavigationState.canGoForward
+        case .dictation:
+            dictationNavigationState.canGoForward
+        case .enhancements:
+            enhancementsNavigationState.canGoForward
+        case .intelligence:
+            canNavigateIntelligenceTextContextForward
+        default:
+            false
         }
+    }
 
-        if selectedSection == .meetings {
-            return meetingNavigationState.canGoForward
-        }
+    private var canNavigateIntelligenceTextContextBack: Bool {
+        intelligenceRoute == .textContext && intelligenceTextContextNavigationState.canGoBack
+    }
 
-        if selectedSection == .dictation {
-            return dictationNavigationState.canGoForward
-        }
-
-        if selectedSection == .enhancements {
-            return enhancementsNavigationState.canGoForward
-        }
-
-        return false
+    private var canNavigateIntelligenceTextContextForward: Bool {
+        intelligenceRoute == .textContext && intelligenceTextContextNavigationState.canGoForward
     }
 
     @MainActor
@@ -531,7 +525,10 @@ private extension SettingsView {
                 transcriptionsSearchText: $transcriptionsSearchText
             )
         case .intelligence:
-            ModelsSettingsTab()
+            IntelligenceSettingsTab(
+                route: $intelligenceRoute,
+                textContextNavigationState: $intelligenceTextContextNavigationState
+            )
         case .system:
             GeneralSettingsTab()
         }

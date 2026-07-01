@@ -154,6 +154,7 @@ enum SettingsSearchIndex {
         .init(prefix: "settings.service.diarization_model_name", section: .meetings),
         .init(prefix: "settings.service.", section: .intelligence),
         .init(prefix: "transcription.qa.", section: .transcriptions),
+        .init(prefix: "settings.intelligence.", section: .intelligence),
         .init(prefix: "settings.section.models", section: .intelligence),
         .init(prefix: "settings.models.", section: .intelligence),
         .init(prefix: "settings.section.vocabulary", section: .intelligence),
