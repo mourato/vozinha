@@ -148,7 +148,8 @@ final class AppCommandRouter: ObservableObject {
         if let openHistoryHandler {
             openHistoryHandler()
         } else {
-            NavigationService.shared.openSettings(section: SettingsSection.transcriptions.rawValue)
+            NavigationService.shared.requestedActivitySubroute = "history"
+            NavigationService.shared.openSettings(section: SettingsSection.activity.rawValue)
         }
     }
 

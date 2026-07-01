@@ -34,8 +34,9 @@ public struct SettingsView: View {
 
     private let chromeMode: ChromeMode
     private let settingsStore = AppSettingsStore.shared
-    @State private var selectedSection: SettingsSection = .metrics
+    @State private var selectedSection: SettingsSection = .activity
     @State private var settingsSearchText = ""
+    @State private var activityRoute: ActivitySettingsRoute = .dashboard
     @State private var metricsNavigationState = SettingsSubpageNavigationState<MetricsDashboardRoute>()
     @State private var transcriptionsNavigationHistory = TranscriptionsNavigationHistory()
     @State private var transcriptionsSearchText = ""
@@ -93,6 +94,7 @@ public struct SettingsView: View {
                 selectSection(section)
                 navigationService.requestedSettingsSection = nil
             }
+            consumePendingActivitySubroute()
         }
         .onChange(of: columnVisibility) { _, newValue in
             persistSidebarVisibility(newValue)
@@ -102,6 +104,7 @@ public struct SettingsView: View {
                 selectSection(section)
             }
             navigationService.requestedSettingsSection = nil
+            consumePendingActivitySubroute()
         }
         .onReceive(navigationService.$settingsSidebarToggleRequestID.dropFirst()) { _ in
             toggleSidebar()
@@ -203,7 +206,7 @@ private extension SettingsView {
     }
 
     private var shouldShowTranscriptionsSearch: Bool {
-        selectedSection == .transcriptions && transcriptionsNavigationHistory.currentRoute == .list
+        selectedSection == .activity && activityRoute == .history && transcriptionsNavigationHistory.currentRoute == .list
     }
 
     @available(macOS 26.0, *)
@@ -373,13 +376,17 @@ private extension SettingsView {
     }
 
     private func navigateBack() {
-        if selectedSection == .metrics, metricsNavigationState.canGoBack {
-            _ = metricsNavigationState.goBack()
-            return
-        }
-
-        if selectedSection == .transcriptions, transcriptionsNavigationHistory.canGoBack {
-            _ = transcriptionsNavigationHistory.goBack()
+        if selectedSection == .activity {
+            switch activityRoute {
+            case .dashboard:
+                if metricsNavigationState.canGoBack {
+                    _ = metricsNavigationState.goBack()
+                }
+            case .history:
+                if transcriptionsNavigationHistory.canGoBack {
+                    _ = transcriptionsNavigationHistory.goBack()
+                }
+            }
             return
         }
 
@@ -400,13 +407,17 @@ private extension SettingsView {
     }
 
     private func navigateForward() {
-        if selectedSection == .metrics, metricsNavigationState.canGoForward {
-            _ = metricsNavigationState.goForward()
-            return
-        }
-
-        if selectedSection == .transcriptions, transcriptionsNavigationHistory.canGoForward {
-            _ = transcriptionsNavigationHistory.goForward()
+        if selectedSection == .activity {
+            switch activityRoute {
+            case .dashboard:
+                if metricsNavigationState.canGoForward {
+                    _ = metricsNavigationState.goForward()
+                }
+            case .history:
+                if transcriptionsNavigationHistory.canGoForward {
+                    _ = transcriptionsNavigationHistory.goForward()
+                }
+            }
             return
         }
 
@@ -427,10 +438,21 @@ private extension SettingsView {
     }
 
     private func selectSection(_ section: SettingsSection) {
-        if selectedSection == .transcriptions, section != .transcriptions {
+        if selectedSection == .activity, section != .activity {
             transcriptionsSearchText = ""
         }
         selectedSection = section
+        consumePendingActivitySubroute()
+    }
+
+    private func consumePendingActivitySubroute() {
+        guard selectedSection == .activity,
+              let subroute = navigationService.requestedActivitySubroute
+        else { return }
+        navigationService.requestedActivitySubroute = nil
+        if subroute == "history" {
+            activityRoute = .history
+        }
     }
 
     private func toggleSidebar() {
@@ -451,12 +473,11 @@ private extension SettingsView {
     }
 
     private var canNavigateBack: Bool {
-        if selectedSection == .metrics {
-            return metricsNavigationState.canGoBack
-        }
-
-        if selectedSection == .transcriptions {
-            return transcriptionsNavigationHistory.canGoBack
+        if selectedSection == .activity {
+            switch activityRoute {
+            case .dashboard: return metricsNavigationState.canGoBack
+            case .history: return transcriptionsNavigationHistory.canGoBack
+            }
         }
 
         if selectedSection == .meetings {
@@ -475,12 +496,11 @@ private extension SettingsView {
     }
 
     private var canNavigateForward: Bool {
-        if selectedSection == .metrics {
-            return metricsNavigationState.canGoForward
-        }
-
-        if selectedSection == .transcriptions {
-            return transcriptionsNavigationHistory.canGoForward
+        if selectedSection == .activity {
+            switch activityRoute {
+            case .dashboard: return metricsNavigationState.canGoForward
+            case .history: return transcriptionsNavigationHistory.canGoForward
+            }
         }
 
         if selectedSection == .meetings {
@@ -530,7 +550,12 @@ private extension SettingsView {
         case .permissions:
             PermissionsSettingsTab()
         case .activity:
-            MetricsDashboardSettingsTab(navigationState: $metricsNavigationState)
+            ActivitySettingsTab(
+                activeRoute: $activityRoute,
+                metricsNavigationState: $metricsNavigationState,
+                transcriptionsNavigationHistory: $transcriptionsNavigationHistory,
+                transcriptionsSearchText: $transcriptionsSearchText
+            )
         case .intelligence:
             ModelsSettingsTab()
         case .system:

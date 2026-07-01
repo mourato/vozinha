@@ -24,21 +24,16 @@ public enum SettingsSection: String, CaseIterable, Identifiable, Sendable {
     }
 
     public static let primarySections: [SettingsSection] = [
+        .activity,
         .dictation,
         .meetings,
         .assistant,
         .integrations,
-        .transcriptions,
-        .metrics,
     ]
 
     public static let settingsSections: [SettingsSection] = [
-        .models,
-        .enhancements,
-        .vocabulary,
-        .audio,
-        .permissions,
-        .general,
+        .intelligence,
+        .system,
     ]
 
     public static var visibleSections: [SettingsSection] {

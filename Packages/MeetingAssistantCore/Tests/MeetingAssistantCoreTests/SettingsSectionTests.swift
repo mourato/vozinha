@@ -5,14 +5,14 @@ final class SettingsSectionTests: XCTestCase {
     func testPrimarySections_OrderStartsWithCaptureWorkflows() {
         XCTAssertEqual(
             SettingsSection.primarySections,
-            [.dictation, .meetings, .assistant, .integrations, .transcriptions, .metrics]
+            [.activity, .dictation, .meetings, .assistant, .integrations]
         )
     }
 
-    func testSettingsSections_OrderStartsWithModelAndTextConfiguration() {
+    func testSettingsSections_OrderStartsWithConsolidatedSections() {
         XCTAssertEqual(
             SettingsSection.settingsSections,
-            [.models, .enhancements, .vocabulary, .audio, .permissions, .general]
+            [.intelligence, .system]
         )
     }
 

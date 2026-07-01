@@ -8,6 +8,7 @@ public class NavigationService: ObservableObject {
     public static let shared = NavigationService()
 
     @Published public var requestedSettingsSection: String?
+    @Published public var requestedActivitySubroute: String?
     @Published public private(set) var settingsSidebarToggleRequestID: UInt64 = 0
     @Published public private(set) var isSettingsSidebarVisible = true
     private var openSettingsHandler: (@MainActor () -> Void)?

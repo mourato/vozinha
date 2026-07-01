@@ -118,6 +118,7 @@ enum SettingsSearchIndex {
 
     private static let prefixMappings: [PrefixSectionMapping] = [
         .init(prefix: "metrics.", section: .activity),
+        .init(prefix: "settings.section.activity", section: .activity),
         .init(prefix: "settings.section.dictation", section: .dictation),
         .init(prefix: "settings.dictation.", section: .dictation),
         .init(prefix: "settings.shortcuts.header_desc", section: .dictation),

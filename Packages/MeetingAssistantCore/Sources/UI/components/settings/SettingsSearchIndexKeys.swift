@@ -254,6 +254,7 @@ extension SettingsSearchIndex {
         "settings.post_processing.warning_desc",
         "settings.post_processing.warning_title",
         "settings.rules_per_app.actions",
+        "settings.section.activity",
         "settings.section.ai",
         "settings.section.assistant",
         "settings.section.audio",
