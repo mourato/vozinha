@@ -188,30 +188,35 @@ extension PostProcessingService {
         systemPromptOverride: String?,
         mode: IntelligenceKernelMode
     ) throws {
-        let extracted = AIPromptTemplates.extractSiteOrAppPriorityInstructions(from: prompt.promptText)
-        let baseSystemMessage = systemPromptOverride ?? settings.systemPrompt
-        let promptWithLanguage = shouldApplyMeetingLanguagePreference(mode: mode, prompt: prompt)
-            ? applyMeetingLanguagePreferenceIfNeeded(
-                to: extracted.cleanPrompt,
-                mode: mode
-            )
-            : extracted.cleanPrompt
-        let systemMessage = AIPromptTemplates.systemPrompt(
-            basePrompt: baseSystemMessage,
-            priorityInstructions: extracted.priorityInstructions
-        )
-        let userContent = AIPromptTemplates.userMessage(
+        let requestPrompts = AIPromptTemplates.requestPrompts(
             transcription: transcription,
-            prompt: promptWithLanguage,
-            priorityInstructions: extracted.priorityInstructions
+            prompt: prompt,
+            mode: mode,
+            selectedModel: config.selectedModel,
+            baseSystemPrompt: baseSystemPromptOverride(systemPromptOverride, mode: mode),
+            promptContentTransformer: { cleanPrompt in
+                guard self.shouldApplyMeetingLanguagePreference(mode: mode, prompt: prompt) else {
+                    return cleanPrompt
+                }
+                return self.applyMeetingLanguagePreferenceIfNeeded(to: cleanPrompt, mode: mode)
+            }
         )
 
         try setCustomRequestBody(
             for: &request,
             config: config,
-            systemMessage: systemMessage,
-            userContent: userContent
+            systemMessage: requestPrompts.systemPrompt,
+            userContent: requestPrompts.userPrompt
         )
+    }
+
+    private func baseSystemPromptOverride(_ systemPromptOverride: String?, mode: IntelligenceKernelMode) -> String? {
+        switch mode {
+        case .dictation:
+            systemPromptOverride
+        case .meeting, .assistant:
+            systemPromptOverride ?? settings.systemPrompt
+        }
     }
 
     private func shouldApplyMeetingLanguagePreference(

@@ -203,7 +203,8 @@ public final class TranscribeAudioUseCase: Sendable {
                 availablePrompts: availablePrompts,
                 kernelMode: kernelMode,
                 dictationStructuredPostProcessingEnabled: dictationStructuredPostProcessingEnabled,
-                postProcessingContext: resolvedPostProcessingContext
+                postProcessingContext: resolvedPostProcessingContext,
+                postProcessingModelID: postProcessingIdentity?.modelID
             )
             let shouldAttemptPostProcessing = postProcessingConfig.shouldRunPostProcessing(postProcessingRepository: postProcessingRepository)
 
@@ -324,8 +325,6 @@ public final class TranscribeAudioUseCase: Sendable {
             ]
         )
     }
-
-
 
     private struct ConfigurationBuildInput {
         let transcriptionID: UUID?

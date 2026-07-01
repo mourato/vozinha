@@ -2,17 +2,17 @@
 import XCTest
 
 final class SettingsSectionTests: XCTestCase {
-    func testPrimarySections_IncludeIntegrationsBetweenAssistantAndMeetings() {
+    func testPrimarySections_OrderStartsWithCaptureWorkflows() {
         XCTAssertEqual(
             SettingsSection.primarySections,
-            [.metrics, .dictation, .assistant, .integrations, .meetings, .transcriptions]
+            [.dictation, .meetings, .assistant, .integrations, .transcriptions, .metrics]
         )
     }
 
-    func testSettingsSections_OrderPlacesEnhancementsBeforeVocabulary() {
+    func testSettingsSections_OrderStartsWithModelAndTextConfiguration() {
         XCTAssertEqual(
             SettingsSection.settingsSections,
-            [.general, .models, .enhancements, .vocabulary, .audio, .permissions]
+            [.models, .enhancements, .vocabulary, .audio, .permissions, .general]
         )
     }
 }

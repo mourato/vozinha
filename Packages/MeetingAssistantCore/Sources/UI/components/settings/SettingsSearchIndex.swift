@@ -152,6 +152,7 @@ enum SettingsSearchIndex {
         .init(prefix: "settings.vocabulary.", section: .vocabulary),
         .init(prefix: "settings.section.ai", section: .enhancements),
         .init(prefix: "settings.context_awareness.", section: .enhancements),
+        .init(prefix: "settings.text_context.", section: .enhancements),
         .init(prefix: "settings.post_processing.", section: .enhancements),
         .init(prefix: "settings.enhancements.meeting_intelligence_model", section: .meetings),
         .init(prefix: "settings.enhancements.qa_enabled_desc", section: .meetings),
@@ -230,5 +231,12 @@ enum SettingsSearchIndex {
         "settings.general.sound_feedback.preview",
         "settings.general.sound_feedback.start_sound",
         "settings.general.sound_feedback.stop_sound",
+        "settings.general.recording_indicator",
+        "settings.general.recording_indicator.animation_speed",
+        "settings.general.recording_indicator.animation_speed_desc",
+        "settings.general.recording_indicator.enabled",
+        "settings.general.recording_indicator.enabled_desc",
+        "settings.general.recording_indicator.position",
+        "settings.general.recording_indicator.style",
     ]
 }

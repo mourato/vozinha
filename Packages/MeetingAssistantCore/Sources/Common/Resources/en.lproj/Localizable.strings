@@ -10,9 +10,9 @@
 "settings.section.assistant" = "Assistant";
 "settings.section.integrations" = "Integrations";
 "settings.section.rules_per_app" = "Modes";
-"settings.section.vocabulary" = "Vocabulary";
-"settings.section.ai" = "Enhancements";
-"settings.section.models" = "AI";
+"settings.section.vocabulary" = "Dictionary";
+"settings.section.ai" = "Text & Context";
+"settings.section.models" = "Models";
 "settings.section.permissions" = "Permissions";
 
 /* Metrics Dashboard */
@@ -357,9 +357,10 @@
 "settings.post_processing.duplicate" = "Duplicate";
 "settings.post_processing.select" = "Activate";
 "settings.post_processing.is_active" = "Active";
-"settings.context_awareness.title" = "Context Awareness";
-"settings.context_awareness.enabled" = "Use Context Awareness";
-"settings.context_awareness.enabled_desc" = "Capture contextual metadata at recording start and include it in AI post-processing.";
+"settings.text_context.description" = "Control AI cleanup, context sources, and sensitive-app protection for dictation and meetings.";
+"settings.context_awareness.title" = "Context Sources";
+"settings.context_awareness.enabled" = "Use context when improving text";
+"settings.context_awareness.enabled_desc" = "Capture allowed local context at recording start and include it in AI cleanup.";
 "settings.context_awareness.clipboard" = "Include Clipboard";
 "settings.context_awareness.clipboard_desc" = "Capture the latest plain-text clipboard content.";
 "settings.context_awareness.window_ocr" = "Include Active Window OCR";
@@ -370,8 +371,8 @@
 "settings.context_awareness.accessibility_text_desc" = "Capture selected or focused text from the active app via Accessibility APIs (requires Accessibility permission).";
 "settings.context_awareness.permission_title" = "Accessibility permission required";
 "settings.context_awareness.permission_desc" = "Enable Accessibility to read focused text from the active app.";
-"settings.context_awareness.protect_sensitive_apps" = "Protect Sensitive Apps";
-"settings.context_awareness.protect_sensitive_apps_desc" = "Skip context capture when the active app is on the sensitive-app blocklist.";
+"settings.context_awareness.protect_sensitive_apps" = "Protected Apps";
+"settings.context_awareness.protect_sensitive_apps_desc" = "Never capture context from these apps. Built-in sensitive apps stay protected by default.";
 "settings.context_awareness.redact_sensitive_data" = "Redact Sensitive Data";
 "settings.context_awareness.redact_sensitive_data_desc" = "Redact emails, URLs, secrets, and long numeric sequences before sending context to AI.";
 "settings.context_awareness.excluded_apps_empty" = "No installed sensitive apps found. Add apps that should never provide context.";
@@ -434,7 +435,8 @@
 "settings.styles.editor.validation.targets_required" = "Select at least one app or website.";
 "settings.styles.editor.validation.target_conflict" = "This target already belongs to another style.";
 "settings.styles.editor.validation.target_conflict_named" = "This target already belongs to style \"%@\".";
-"settings.vocabulary.description" = "Define instant find-and-replace rules applied after transcription and before AI post-processing. Separate multiple original variants with commas.";
+"settings.vocabulary.description" = "Create dictionary rules that replace terms after transcription and before AI cleanup. Use commas to match multiple spoken variants.";
+"settings.vocabulary.replacement_rules" = "Replacement Rules";
 "settings.vocabulary.applied_order_note" = "Rules are applied in list order. Matching is whole-word and case-insensitive.";
 "settings.vocabulary.empty" = "No vocabulary rules configured yet.";
 "settings.vocabulary.add_rule" = "Add Rule";
@@ -461,7 +463,11 @@
 
 /* Service Settings */
 "settings.service.title" = "Service";
-"settings.models.description" = "Choose how Dictation, Assistant, and Meeting transcription use local and cloud models.";
+"settings.models.description" = "Manage transcription models and AI provider models used by Dictation, Meetings, Assistant, and Text & Context.";
+"settings.models.ai_provider_models" = "AI Provider Models";
+"settings.models.ai_provider_models_desc" = "Connect and choose models used for cleanup, meeting intelligence, and assistant responses.";
+"settings.models.transcription_models" = "Transcription Models";
+"settings.models.transcription_models_desc" = "Manage local and cloud resources used to convert audio into text.";
 "settings.models.routing.title" = "Transcription model";
 "settings.models.routing.description" = "Choose which model source is active for transcription. Configure local and cloud models below.";
 "settings.models.routing.active_model" = "Active:";

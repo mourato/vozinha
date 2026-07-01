@@ -19,7 +19,7 @@ public struct VocabularySettingsTab: View {
                 title: "settings.section.vocabulary".localized,
                 description: "settings.vocabulary.description".localized
             )
-            DSGroup {
+            DSGroup("settings.vocabulary.replacement_rules".localized, icon: "arrow.2.squarepath") {
                 VStack(alignment: .leading, spacing: 12) {
                     Text("settings.vocabulary.applied_order_note".localized)
                         .font(.caption2)

@@ -15,6 +15,7 @@ extension TranscribeAudioUseCase {
         let kernelMode: IntelligenceKernelMode
         let dictationStructuredPostProcessingEnabled: Bool
         let postProcessingContext: String?
+        let postProcessingModelID: String?
 
         init(
             applyPostProcessing: Bool,
@@ -24,7 +25,8 @@ extension TranscribeAudioUseCase {
             availablePrompts: [DomainPostProcessingPrompt] = [],
             kernelMode: IntelligenceKernelMode = .meeting,
             dictationStructuredPostProcessingEnabled: Bool = false,
-            postProcessingContext: String? = nil
+            postProcessingContext: String? = nil,
+            postProcessingModelID: String? = nil
         ) {
             self.applyPostProcessing = applyPostProcessing
             self.postProcessingPrompt = postProcessingPrompt
@@ -34,6 +36,7 @@ extension TranscribeAudioUseCase {
             self.kernelMode = kernelMode
             self.dictationStructuredPostProcessingEnabled = dictationStructuredPostProcessingEnabled
             self.postProcessingContext = postProcessingContext
+            self.postProcessingModelID = postProcessingModelID
         }
 
         func shouldRunPostProcessing(postProcessingRepository: PostProcessingRepository?) -> Bool {
@@ -143,6 +146,7 @@ extension TranscribeAudioUseCase {
         let kernelMode: IntelligenceKernelMode
         let useStructuredPipeline: Bool
         let qualityProfile: TranscriptionQualityProfile
+        let selectedModel: String?
     }
 
     private struct PromptSelection {
@@ -164,7 +168,8 @@ extension TranscribeAudioUseCase {
             repository: postProcessingRepository,
             kernelMode: config.kernelMode,
             useStructuredPipeline: useStructuredPipeline,
-            qualityProfile: qualityProfile
+            qualityProfile: qualityProfile,
+            selectedModel: config.postProcessingModelID
         )
     }
 
@@ -186,9 +191,12 @@ extension TranscribeAudioUseCase {
         postProcessingContext: String?
     ) async throws -> PostProcessingResult {
         let (systemPrompt, userPrompt) = buildRequestPrompts(
+            promptID: prompt.id,
+            promptTitle: prompt.title,
             from: prompt.content,
             transcription: input,
             mode: context.kernelMode,
+            selectedModel: context.selectedModel,
             contextMetadata: postProcessingContext
         )
 
@@ -413,36 +421,26 @@ extension TranscribeAudioUseCase {
     }
 
     private func buildRequestPrompts(
+        promptID: UUID,
+        promptTitle: String,
         from promptContent: String,
         transcription: String,
         mode: IntelligenceKernelMode,
-        contextMetadata _: String?
+        selectedModel: String?,
+        contextMetadata: String?
     ) -> (systemPrompt: String, userPrompt: String) {
-        let extracted = AIPromptTemplates.extractSiteOrAppPriorityInstructions(from: promptContent)
-        let baseSystemMessage = AIPromptTemplates.defaultSystemPrompt
-        let promptWithLanguage = applyMeetingLanguagePreferenceIfNeeded(
-            to: extracted.cleanPrompt,
-            mode: mode
+        let prompt = PostProcessingPrompt(
+            id: promptID,
+            title: promptTitle,
+            promptText: promptContent
         )
-        let systemMessage = AIPromptTemplates.systemPrompt(
-            basePrompt: baseSystemMessage,
-            priorityInstructions: extracted.priorityInstructions
-        )
-        // Note: Priority instructions are now in system message only (no longer duplicated in user message)
-        let userContent = AIPromptTemplates.userMessage(
+        let requestPrompts = AIPromptTemplates.requestPrompts(
             transcription: transcription,
-            prompt: promptWithLanguage,
-            priorityInstructions: nil,
-            contextMetadata: nil
+            prompt: prompt,
+            mode: mode,
+            selectedModel: selectedModel,
+            contextMetadata: contextMetadata
         )
-        return (systemMessage, userContent)
-    }
-
-    private func applyMeetingLanguagePreferenceIfNeeded(
-        to prompt: String,
-        mode: IntelligenceKernelMode
-    ) -> String {
-        guard mode == .meeting else { return prompt }
-        return prompt
+        return (requestPrompts.systemPrompt, requestPrompts.userPrompt)
     }
 }

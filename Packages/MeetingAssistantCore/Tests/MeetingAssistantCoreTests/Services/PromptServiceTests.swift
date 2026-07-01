@@ -96,6 +96,131 @@ final class PromptServiceTests: XCTestCase {
         XCTAssertLessThan(contextRange.lowerBound, transcriptionRange.lowerBound)
     }
 
+    func testDictationHasExplicitNonMeetingSystemPrompt() {
+        let dictationPrompt = AIPromptTemplates.dictationSystemPrompt
+        XCTAssertFalse(dictationPrompt.contains("meeting"))
+        XCTAssertTrue(dictationPrompt.contains("text formatter"))
+        XCTAssertTrue(dictationPrompt.contains("Return only the final cleaned text"))
+    }
+
+    func testSimpleModelDictationHasShortSystemPrompt() {
+        let simplePrompt = AIPromptTemplates.simpleModelDictationSystemPrompt
+        XCTAssertTrue(simplePrompt.contains("You are not a chatbot"))
+        XCTAssertTrue(simplePrompt.contains("Return only the cleaned text"))
+        XCTAssertFalse(simplePrompt.contains("meeting"))
+    }
+
+    func testSimpleDictationUserMessageHasOnlyTranscriptAndOptionalContext() {
+        let userMessage = AIPromptTemplates.simpleDictationUserMessage(transcription: "hello world")
+        XCTAssertTrue(userMessage.contains("<TRANSCRIPT>"))
+        XCTAssertFalse(userMessage.contains("<INSTRUCTIONS>"))
+        XCTAssertFalse(userMessage.contains("Process the transcription"))
+    }
+
+    func testSimpleDictationUserMessageIncludesContextWhenProvided() {
+        let userMessage = AIPromptTemplates.simpleDictationUserMessage(
+            transcription: "hello world",
+            contextMetadata: "Active app: VSCode"
+        )
+        XCTAssertTrue(userMessage.contains("<CONTEXT_METADATA>"))
+        XCTAssertTrue(userMessage.contains("Active app: VSCode"))
+        XCTAssertTrue(userMessage.contains("<TRANSCRIPT>"))
+    }
+
+    func testSimpleDictationUserMessageDoesNotDuplicateExistingContext() {
+        let userMessage = AIPromptTemplates.simpleDictationUserMessage(
+            transcription: "hello world\n\n<CONTEXT_METADATA>\nExisting context\n</CONTEXT_METADATA>",
+            contextMetadata: "Active app: VSCode"
+        )
+        let contextTagCount = userMessage.components(separatedBy: "<CONTEXT_METADATA>").count - 1
+        XCTAssertEqual(contextTagCount, 1)
+    }
+
+    func testIsSimpleModelDetectsGptOss120b() {
+        XCTAssertTrue(AIPromptTemplates.isSimpleModel("gpt-oss-120b"))
+        XCTAssertTrue(AIPromptTemplates.isSimpleModel("GPT-OSS-120B"))
+        XCTAssertFalse(AIPromptTemplates.isSimpleModel("prefix-gpt-oss-120b"))
+        XCTAssertFalse(AIPromptTemplates.isSimpleModel("gpt-4o"))
+        XCTAssertFalse(AIPromptTemplates.isSimpleModel("claude-3-5-sonnet"))
+        XCTAssertFalse(AIPromptTemplates.isSimpleModel(""))
+    }
+
+    func testRequestPrompts_DictationSimpleModelWithDefaultPromptUsesSimpleStrategy() {
+        let requestPrompts = AIPromptTemplates.requestPrompts(
+            transcription: "hello world",
+            prompt: .defaultPrompt,
+            mode: .dictation,
+            selectedModel: "gpt-oss-120b",
+            contextMetadata: "Active app: VSCode"
+        )
+
+        XCTAssertEqual(requestPrompts.systemPrompt, AIPromptTemplates.simpleModelDictationSystemPrompt)
+        XCTAssertTrue(requestPrompts.userPrompt.contains("<TRANSCRIPT>"))
+        XCTAssertTrue(requestPrompts.userPrompt.contains("<CONTEXT_METADATA>"))
+        XCTAssertFalse(requestPrompts.userPrompt.contains("<INSTRUCTIONS>"))
+    }
+
+    func testRequestPrompts_DictationSimpleModelWithFlexKeepsAdvancedPrompt() {
+        let requestPrompts = AIPromptTemplates.requestPrompts(
+            transcription: "hello world",
+            prompt: .flex,
+            mode: .dictation,
+            selectedModel: "gpt-oss-120b"
+        )
+
+        XCTAssertEqual(requestPrompts.systemPrompt, AIPromptTemplates.dictationSystemPrompt)
+        XCTAssertTrue(requestPrompts.userPrompt.contains("<INSTRUCTIONS>"))
+        XCTAssertTrue(requestPrompts.userPrompt.contains("TWO-PASS ARTIFACT HANDLING"))
+        XCTAssertFalse(requestPrompts.userPrompt.contains("<TRANSCRIPT>"))
+    }
+
+    func testRequestPrompts_DictationSimpleModelWithCustomPromptKeepsCustomPrompt() {
+        let customPrompt = PostProcessingPrompt(
+            title: "Custom",
+            promptText: "Keep every comma."
+        )
+
+        let requestPrompts = AIPromptTemplates.requestPrompts(
+            transcription: "hello world",
+            prompt: customPrompt,
+            mode: .dictation,
+            selectedModel: "gpt-oss-120b"
+        )
+
+        XCTAssertEqual(requestPrompts.systemPrompt, AIPromptTemplates.dictationSystemPrompt)
+        XCTAssertTrue(requestPrompts.userPrompt.contains("Keep every comma."))
+        XCTAssertTrue(requestPrompts.userPrompt.contains("<INSTRUCTIONS>"))
+    }
+
+    func testRequestPrompts_MeetingUsesMeetingSystemPrompt() {
+        let requestPrompts = AIPromptTemplates.requestPrompts(
+            transcription: "decision logged",
+            prompt: PromptService.shared.strategy(for: .general).promptObject(),
+            mode: .meeting,
+            selectedModel: "gpt-oss-120b"
+        )
+
+        XCTAssertTrue(requestPrompts.systemPrompt.contains("meeting"))
+        XCTAssertTrue(requestPrompts.userPrompt.contains("<TRANSCRIPTION>"))
+        XCTAssertFalse(requestPrompts.userPrompt.contains("<TRANSCRIPT>"))
+    }
+
+    func testDefaultPromptIsShorterAfterRefactor() {
+        let defaultPrompt = PostProcessingPrompt.defaultPrompt
+        let wordCount = defaultPrompt.promptText.components(separatedBy: .whitespacesAndNewlines)
+            .filter { !$0.isEmpty }.count
+        XCTAssertLessThan(wordCount, 200)
+        XCTAssertTrue(defaultPrompt.promptText.contains("text formatter"))
+        XCTAssertTrue(defaultPrompt.promptText.contains("not a conversational assistant"))
+    }
+
+    func testFlexPromptRemainsAdvanced() {
+        let flexPrompt = PostProcessingPrompt.flex
+        XCTAssertTrue(flexPrompt.promptText.contains("TWO-PASS ARTIFACT HANDLING"))
+        XCTAssertTrue(flexPrompt.promptText.contains("ZERO-GENERATION RULE"))
+        XCTAssertTrue(flexPrompt.promptText.contains("commands-vs-content"))
+    }
+
     func testUserMessage_WhenTranscriptionAlreadyContainsContextMetadata_DoesNotInjectSecondContextBlock() throws {
         let userMessage = AIPromptTemplates.userMessage(
             transcription: """

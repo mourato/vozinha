@@ -10,9 +10,9 @@
 "settings.section.assistant" = "Assistant";
 "settings.section.integrations" = "Integrações";
 "settings.section.rules_per_app" = "Modos";
-"settings.section.vocabulary" = "Vocabulário";
-"settings.section.ai" = "Aprimoramentos";
-"settings.section.models" = "IA";
+"settings.section.vocabulary" = "Dicionário";
+"settings.section.ai" = "Texto e Contexto";
+"settings.section.models" = "Modelos";
 "settings.section.permissions" = "Permissões";
 
 /* Metrics Dashboard */
@@ -358,9 +358,10 @@
 "settings.post_processing.duplicate" = "Duplicar";
 "settings.post_processing.select" = "Ativar";
 "settings.post_processing.is_active" = "Ativo";
-"settings.context_awareness.title" = "Context Awareness";
-"settings.context_awareness.enabled" = "Usar Context Awareness";
-"settings.context_awareness.enabled_desc" = "Captura metadados de contexto no início da gravação e os inclui no pós-processamento com IA.";
+"settings.text_context.description" = "Controle limpeza por IA, fontes de contexto e proteção de apps sensíveis para ditado e reuniões.";
+"settings.context_awareness.title" = "Fontes de Contexto";
+"settings.context_awareness.enabled" = "Usar contexto ao melhorar texto";
+"settings.context_awareness.enabled_desc" = "Captura contexto local permitido no início da gravação e inclui na limpeza por IA.";
 "settings.context_awareness.clipboard" = "Incluir Clipboard";
 "settings.context_awareness.clipboard_desc" = "Captura o conteúdo de texto mais recente do clipboard.";
 "settings.context_awareness.window_ocr" = "Incluir OCR da Janela Ativa";
@@ -371,8 +372,8 @@
 "settings.context_awareness.accessibility_text_desc" = "Captura texto selecionado ou em foco no app ativo via APIs de Acessibilidade (requer permissão de Acessibilidade).";
 "settings.context_awareness.permission_title" = "Permissão de Acessibilidade necessária";
 "settings.context_awareness.permission_desc" = "Ative Acessibilidade para ler o texto em foco no app ativo.";
-"settings.context_awareness.protect_sensitive_apps" = "Proteger Apps Sensíveis";
-"settings.context_awareness.protect_sensitive_apps_desc" = "Ignora a captura de contexto quando o app ativo está na lista de apps sensíveis.";
+"settings.context_awareness.protect_sensitive_apps" = "Apps Protegidos";
+"settings.context_awareness.protect_sensitive_apps_desc" = "Nunca capture contexto destes apps. Apps sensíveis nativos continuam protegidos por padrão.";
 "settings.context_awareness.redact_sensitive_data" = "Redigir Dados Sensíveis";
 "settings.context_awareness.redact_sensitive_data_desc" = "Redige e-mails, URLs, segredos e sequências numéricas longas antes de enviar contexto para IA.";
 "settings.context_awareness.excluded_apps_empty" = "Nenhum app sensível instalado foi encontrado. Adicione apps que nunca devem fornecer contexto.";
@@ -435,7 +436,8 @@
 "settings.styles.editor.validation.targets_required" = "Selecione pelo menos um app ou site.";
 "settings.styles.editor.validation.target_conflict" = "Este alvo já pertence a outro modo.";
 "settings.styles.editor.validation.target_conflict_named" = "Este alvo já pertence ao modo \"%@\".";
-"settings.vocabulary.description" = "Defina regras instantâneas de buscar e substituir aplicadas após a transcrição e antes do pós-processamento por IA. Separe múltiplas variantes originais com vírgulas.";
+"settings.vocabulary.description" = "Crie regras de dicionário que substituem termos após a transcrição e antes da limpeza por IA. Use vírgulas para corresponder a múltiplas variantes faladas.";
+"settings.vocabulary.replacement_rules" = "Regras de Substituição";
 "settings.vocabulary.applied_order_note" = "As regras são aplicadas na ordem da lista. A correspondência é por palavra inteira e sem diferenciar maiúsculas/minúsculas.";
 "settings.vocabulary.empty" = "Nenhuma regra de vocabulário configurada ainda.";
 "settings.vocabulary.add_rule" = "Adicionar Regra";
@@ -462,7 +464,11 @@
 
 /* Service Settings */
 "settings.service.title" = "Serviço";
-"settings.models.description" = "Escolha como Ditado, Assistant e Transcrição de Reuniões usam modelos locais e em nuvem.";
+"settings.models.description" = "Gerencie modelos de transcrição e modelos de provedores de IA usados por Ditado, Reuniões, Assistant e Texto e Contexto.";
+"settings.models.ai_provider_models" = "Modelos de Provedores de IA";
+"settings.models.ai_provider_models_desc" = "Conecte e escolha modelos usados para limpeza, inteligência de reuniões e respostas do Assistant.";
+"settings.models.transcription_models" = "Modelos de Transcrição";
+"settings.models.transcription_models_desc" = "Gerencie recursos locais e em nuvem usados para converter áudio em texto.";
 "settings.models.routing.title" = "Modelo de transcrição";
 "settings.models.routing.description" = "Escolha qual origem de modelo fica ativa para transcrição. Configure os modelos locais e em nuvem abaixo.";
 "settings.models.routing.active_model" = "Ativo:";

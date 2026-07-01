@@ -59,12 +59,12 @@ public struct EnhancementsSettingsTab: View {
         SettingsScrollableContent {
             SettingsSectionHeader(
                 title: "settings.section.ai".localized,
-                description: "settings.post_processing.description".localized
+                description: "settings.text_context.description".localized
             )
 
-            mainSection
             protectSensitiveAppsSection
             contextAwarenessSection
+            mainSection
         }
     }
 

@@ -46,12 +46,12 @@ honor its STOP conditions, and update your row when done.
 | 001 | Push transcription-history filtering and limits into persistence | P1 | M | - | TODO |
 | 002 | Benchmark-gate the Rust audio kernel pilot | P1 | M | - | TODO |
 | 003 | Decide imported-recording meeting behavior | P2 | M | 001 optional | TODO |
-| 004 | Reframe the settings sidebar around user workflows | P1 | S | - | TODO |
-| 005 | Make Text & Context a privacy-first cross-cutting settings page | P1 | M | 004 | TODO |
-| 006 | Clarify the Models page as the model hub | P1 | M | 004 | TODO |
-| 007 | Rename Vocabulary to Dictionary and clarify replacement rules | P2 | M | 004 | TODO |
-| 008 | Move Recording Indicator settings out of General | P2 | M | 004 | TODO |
-| 009 | Add a simple-model dictation prompt strategy | P1 | M | - | TODO |
+| 004 | Reframe the settings sidebar around user workflows | P1 | S | - | DONE |
+| 005 | Make Text & Context a privacy-first cross-cutting settings page | P1 | M | 004 | DONE |
+| 006 | Clarify the Models page as the model hub | P1 | M | 004 | DONE |
+| 007 | Rename Vocabulary to Dictionary and clarify replacement rules | P2 | M | 004 | DONE |
+| 008 | Move Recording Indicator settings out of General | P2 | M | 004 | DONE |
+| 009 | Add a simple-model dictation prompt strategy | P1 | M | - | DONE |
 
 Status values: TODO | IN PROGRESS | DONE | BLOCKED (with one-line reason) | REJECTED (with one-line rationale)
 

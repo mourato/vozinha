@@ -151,9 +151,11 @@ extension RecordingManager {
         contextMetadata: String
     ) async -> PostProcessingResult {
         let (requestSystemPrompt, requestUserPrompt) = buildRequestPrompts(
+            prompt: prompt,
             from: prompt.promptText,
             transcription: postProcessingInput,
             mode: kernelMode,
+            selectedModel: settings.resolvedEnhancementsAIConfiguration(for: kernelMode).selectedModel,
             contextMetadata: contextMetadata
         )
 
@@ -333,35 +335,29 @@ extension RecordingManager {
     }
 
     private func buildRequestPrompts(
+        prompt: PostProcessingPrompt,
         from promptContent: String,
         transcription: String,
         mode: IntelligenceKernelMode,
-        contextMetadata _: String
+        selectedModel: String?,
+        contextMetadata: String
     ) -> (systemPrompt: String, userPrompt: String) {
-        let extracted = AIPromptTemplates.extractSiteOrAppPriorityInstructions(from: promptContent)
-        let baseSystemMessage = AIPromptTemplates.defaultSystemPrompt
-        let promptWithLanguage = applyMeetingLanguagePreferenceIfNeeded(
-            to: extracted.cleanPrompt,
-            mode: mode
+        let snapshotPrompt = PostProcessingPrompt(
+            id: prompt.id,
+            title: prompt.title,
+            promptText: promptContent,
+            isActive: prompt.isActive,
+            icon: prompt.icon,
+            description: prompt.description,
+            isPredefined: prompt.isPredefined
         )
-        let systemMessage = AIPromptTemplates.systemPrompt(
-            basePrompt: baseSystemMessage,
-            priorityInstructions: extracted.priorityInstructions
-        )
-        let userContent = AIPromptTemplates.userMessage(
+        let requestPrompts = AIPromptTemplates.requestPrompts(
             transcription: transcription,
-            prompt: promptWithLanguage,
-            priorityInstructions: extracted.priorityInstructions,
-            contextMetadata: nil
+            prompt: snapshotPrompt,
+            mode: mode,
+            selectedModel: selectedModel,
+            contextMetadata: contextMetadata
         )
-        return (systemMessage, userContent)
-    }
-
-    private func applyMeetingLanguagePreferenceIfNeeded(
-        to prompt: String,
-        mode: IntelligenceKernelMode
-    ) -> String {
-        guard mode == .meeting else { return prompt }
-        return prompt
+        return (requestPrompts.systemPrompt, requestPrompts.userPrompt)
     }
 }

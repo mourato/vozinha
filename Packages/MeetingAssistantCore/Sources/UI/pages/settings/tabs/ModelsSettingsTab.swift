@@ -28,9 +28,21 @@ public struct ModelsSettingsTab: View {
                 description: "settings.models.description".localized
             )
 
+            modelHubSectionIntro(
+                title: "settings.models.ai_provider_models".localized,
+                description: "settings.models.ai_provider_models_desc".localized,
+                icon: "sparkles"
+            )
+
             EnhancementsProviderModelsPage(
                 viewModel: aiSettingsViewModel,
                 postProcessingViewModel: postProcessingViewModel
+            )
+
+            modelHubSectionIntro(
+                title: "settings.models.transcription_models".localized,
+                description: "settings.models.transcription_models_desc".localized,
+                icon: "waveform"
             )
 
             ServiceSettingsContent(
@@ -39,6 +51,20 @@ public struct ModelsSettingsTab: View {
                 includeMeetingTranscriptionSection: false
             )
         }
+    }
+
+    private func modelHubSectionIntro(title: String, description: String, icon: String) -> some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Label(title, systemImage: icon)
+                .font(.headline)
+                .foregroundStyle(.primary)
+
+            Text(description)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+        }
+        .padding(.top, 4)
+        .padding(.horizontal, 4)
     }
 }
 

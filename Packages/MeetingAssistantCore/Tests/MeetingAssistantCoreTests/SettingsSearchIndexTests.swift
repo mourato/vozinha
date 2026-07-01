@@ -88,7 +88,91 @@ final class SettingsSearchIndexTests: XCTestCase {
         }
     }
 
+    func testTextContextDescriptionKeyRoutesToEnhancementsSection() {
+        let section = SettingsSearchIndex.section(forLocalizationKey: "settings.text_context.description")
+        XCTAssertEqual(section, .enhancements)
+    }
+
+    func testProtectedAppsQueryRoutesToEnhancementsSection() {
+        assertLocalizedQuery("settings.context_awareness.protect_sensitive_apps", routesTo: .enhancements)
+    }
+
+    func testQueryModelsRoutesToModelsSection() {
+        assertLocalizedQuery("settings.section.models", routesTo: .models)
+    }
+
+    func testQueryTextRoutesToEnhancementsSection() {
+        assertLocalizedQuery("settings.section.ai", routesTo: .enhancements)
+    }
+
+    func testQueryContextRoutesToEnhancementsSection() {
+        assertLocalizedQuery("settings.context_awareness.title", routesTo: .enhancements)
+    }
+
+    func testQueryDictionaryRoutesToVocabularySection() {
+        assertLocalizedQuery("settings.section.vocabulary", routesTo: .vocabulary)
+    }
+
+    func testReplacementRulesKeyRoutesToVocabularySection() {
+        let section = SettingsSearchIndex.section(forLocalizationKey: "settings.vocabulary.replacement_rules")
+        XCTAssertEqual(section, .vocabulary)
+    }
+
+    func testQueryReplacementRulesRoutesToVocabularySection() {
+        assertLocalizedQuery("settings.vocabulary.replacement_rules", routesTo: .vocabulary)
+    }
+
+    func testSectionForKeyModelsLabelRoutesToModels() {
+        let section = SettingsSearchIndex.section(forLocalizationKey: "settings.section.models")
+        XCTAssertEqual(section, .models)
+    }
+
+    func testSectionForKeyAILabelRoutesToEnhancements() {
+        let section = SettingsSearchIndex.section(forLocalizationKey: "settings.section.ai")
+        XCTAssertEqual(section, .enhancements)
+    }
+
+    func testSectionForKeyVocabularyLabelRoutesToVocabulary() {
+        let section = SettingsSearchIndex.section(forLocalizationKey: "settings.section.vocabulary")
+        XCTAssertEqual(section, .vocabulary)
+    }
+
+    func testRecordingIndicatorSectionRoutesToAudio() {
+        let section = SettingsSearchIndex.section(forLocalizationKey: "settings.general.recording_indicator")
+        XCTAssertEqual(section, .audio)
+    }
+
+    func testRecordingIndicatorAnimationSpeedRoutesToAudio() {
+        let section = SettingsSearchIndex.section(forLocalizationKey: "settings.general.recording_indicator.animation_speed")
+        XCTAssertEqual(section, .audio)
+    }
+
+    func testModelHubKeysRouteToModelsSection() {
+        let aiSection = SettingsSearchIndex.section(forLocalizationKey: "settings.models.ai_provider_models")
+        XCTAssertEqual(aiSection, .models)
+        let transcriptionSection = SettingsSearchIndex.section(forLocalizationKey: "settings.models.transcription_models")
+        XCTAssertEqual(transcriptionSection, .models)
+    }
+
+    func testQueryTranscriptionModelsReturnsModelsSection() {
+        assertLocalizedQuery("settings.models.transcription_models", routesTo: .models)
+    }
+
     func testEmptyQueryReturnsNoResults() {
         XCTAssertTrue(SettingsSearchIndex.results(for: "   ").isEmpty)
+    }
+
+    private func assertLocalizedQuery(
+        _ localizationKey: String,
+        routesTo expectedSection: SettingsSection,
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) {
+        let localized = localizationKey.localized
+        guard localized != localizationKey else { return }
+
+        let results = SettingsSearchIndex.results(for: localized)
+        XCTAssertFalse(results.isEmpty, file: file, line: line)
+        XCTAssertTrue(results.contains(where: { $0.section == expectedSection }), file: file, line: line)
     }
 }
