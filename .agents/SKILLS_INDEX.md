@@ -9,17 +9,14 @@ Comprehensive index of all available agent skills for Prisma. For routing logic 
 | `accessibility-audit` | `.agents/skills/accessibility-audit/` | Audit VoiceOver, keyboard navigation, focus order, reduced motion, overlays, and other accessibility-sensitive UI behavior |
 | `architecture` | `.agents/skills/architecture/` | Design module boundaries, apply Clean Architecture, refactor architecture, define dependency injection |
 | `audio-realtime` | `.agents/skills/audio-realtime/` | AVAudioSourceNode, AudioRecorder, ProcessTap, audio glitches, underruns, low-latency optimization |
-| `build-macos-apps` | `.agents/skills/build-macos-apps/` | Request intake and workflow routing for macOS app tasks (select Fast vs Full lane quickly) |
 | `code-quality` | `.agents/skills/code-quality/` | Improve code readability, rename for clarity, refactor duplicated logic, apply clean code conventions |
 | `code-review` | `.agents/skills/code-review/` | Review changes, do semáforo review (🔴/🟡/🟢), audit PRs, find risks before merge; always includes thermo-nuclear structural analysis |
-| `concurrency` | `.agents/skills/concurrency/` | Conceptual guidance on async/await, actors, thread-safety patterns (NOT Swift 6.2 compiler fixes) |
 | `data-persistence` | `.agents/skills/data-persistence/` | Store/load data, design repositories, plan migrations, implement synchronization |
 | `debugging-strategies` | `.agents/skills/debugging-strategies/` | Debug bugs, investigate crashes, analyze flaky behavior, trace unknown root causes |
 | `documentation` | `.agents/skills/documentation/` | Write/update documentation, add DocC comments, improve MARK organization, research API docs |
 | `error-handling` | `.agents/skills/error-handling/` | Design error types, improve error propagation, add recovery paths, standardize error logging |
 | `git-advanced-workflows` | `.agents/skills/git-advanced-workflows/` | Rebase, cherry-pick, run git bisect, use reflog, recover complex git history |
 | `git-workflow` | `.agents/skills/git-workflow/` | Standard Git flow: create branch, commit changes, prepare PR, merge safely |
-| `git-worktree` | `.agents/skills/git-worktree/` | Use git worktree, migrate away from worktrees, handle legacy worktree setup |
 | `grill-me` | `.agents/skills/grill-me/` | Stress-test a plan or design by interrogating assumptions and tradeoffs one question at a time |
 | `improve` | `.agents/skills/improve/` | Audit a codebase, find improvement opportunities, suggest roadmap direction, or write implementation plans for another agent |
 | `intelligence-kernel` | `.agents/skills/intelligence-kernel/` | Canonical summary schema, intelligence kernel modes, trust flags, summary benchmark gates |
@@ -36,8 +33,6 @@ Comprehensive index of all available agent skills for Prisma. For routing logic 
 | `project-standards` | `.agents/skills/project-standards/` | Update AGENTS.md, document project policy, track known limitations, align repository standards |
 | `quality-assurance` | `.agents/skills/quality-assurance/` | Define verification gates, select validation commands, and run quality checks before merge |
 | `security` | `.agents/skills/security/` | Improve security posture, validate untrusted input, protect sensitive data, apply platform security controls |
-| `skill-development` | `.agents/skills/skill-development/` | Create a skill, refactor SKILL.md, improve skill trigger descriptions, modularize skill resources |
-| `skills-discovery` | `.agents/skills/skills-discovery/` | Find skills, search the skills registry, install/manage installed skills |
 | `swift-concurrency-expert` | `.agents/skills/swift-concurrency-expert/` | Primary for concurrency issues: fix Swift concurrency errors, resolve actor isolation, remediate Sendable diagnostics, upgrade Swift 6.2 |
 | `swift-conventions` | `.agents/skills/swift-conventions/` | Apply Swift style conventions, improve type safety, refactor API naming, organize Swift modules |
 | `swift-package-manager` | `.agents/skills/swift-package-manager/` | Edit Package.swift, manage SPM dependencies, fix package resolution, troubleshoot SwiftPM |
@@ -67,7 +62,6 @@ Comprehensive index of all available agent skills for Prisma. For routing logic 
 
 **Concurrency and Safety**
 - Swift 6.2 compiler errors: `swift-concurrency-expert`
-- Conceptual guidance: `concurrency`
 
 **Code Quality**
 - Readability/refactoring: `code-quality`
@@ -104,12 +98,9 @@ Comprehensive index of all available agent skills for Prisma. For routing logic 
 
 **Dependencies and Build**
 - SPM/Package.swift: `swift-package-manager`
-- Build workflow/routing: `build-macos-apps`
 
 **Project Maintenance**
 - Repository standards: `project-standards`
-- Skill development: `skill-development`
-- External skill discovery: `skills-discovery`
 - Read-only improvement planning: `improve`
 - Adversarial plan review: `grill-me`
 - Strict maintainability review: `thermo-nuclear-code-quality-review`
@@ -120,19 +111,15 @@ Comprehensive index of all available agent skills for Prisma. For routing logic 
 - `quality-assurance`: validation strategy, command mapping, escalation to full gates
 - `git-workflow`: branch, commit, PR, and cleanup mechanics
 - `code-review`: findings format, severity framing, semáforo review output; always includes `thermo-nuclear-code-quality-review` for structural code analysis
-- `build-macos-apps`: macOS request intake and routing only
 
 ---
 
 ## Skill Dependencies
 
 - `accessibility-audit` → `localization` (copy and keys stay localizable)
-- `build-macos-apps` → `macos-development` (router → canonical implementation)
-- `build-macos-apps` → `task-lifecycle` (router → lifecycle policy)
 - `swiftui-patterns` → `native-app-designer` (UX direction first)
 - `swiftui-animation` → `swiftui-patterns` (composition before animation)
 - `swiftui-performance-audit` → `swiftui-patterns` (diagnose then refactor)
-- `swift-concurrency-expert` → `concurrency` (fixes build on concepts)
 - `security` → `keychain-security` (general → specific for secrets)
 - `data-persistence` → `security` (if sensitive data involved)
 - `quality-assurance` → `testing-xctest` (general QA → XCTest specifics)
