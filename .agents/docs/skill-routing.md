@@ -6,14 +6,11 @@ When working on Prisma, multiple skills may be relevant to a task. This guide pr
 
 When uncertain which skill to use, apply this priority order:
 
-1. **`build-macos-apps`** — request intake and workflow routing for macOS app tasks
-2. **`macos-development`** — canonical macOS and Swift implementation guidance
-3. **`task-lifecycle`** — source of truth for risk lane and lifecycle phases
-4. **`native-app-designer`** — primary UI and UX direction
-5. **`swift-concurrency-expert`** — Swift 6.2 concurrency remediation
-6. **`swiftui-performance-audit`** — SwiftUI runtime performance diagnosis
-
-`build-macos-apps` is an orchestrator, not a deep implementation reference.
+1. **`macos-development`** — canonical macOS and Swift implementation guidance
+2. **`task-lifecycle`** — source of truth for risk lane and lifecycle phases
+3. **`native-app-designer`** — primary UI and UX direction
+4. **`swift-concurrency-expert`** — Swift 6.2 concurrency remediation
+5. **`swiftui-performance-audit`** — SwiftUI runtime performance diagnosis
 
 ## External Project Code Lookup Priority
 
@@ -67,17 +64,6 @@ When inspecting code outside this repository, use this source order:
 
 ---
 
-### System-Level Performance
-
-**Primary:** `performance`
-- CPU, memory, startup, and energy profiling outside SwiftUI rendering
-
-**Complementary:** `observability-diagnostics`
-
-**Example:** "Meeting app drains battery quickly" → `performance`
-
----
-
 ### Audio Capture and Processing
 
 **Primary:** `audio-realtime`
@@ -91,9 +77,7 @@ When inspecting code outside this repository, use this source order:
 
 ### Concurrency and Actor Isolation
 
-**Compiler errors or Sendable diagnostics:** `swift-concurrency-expert`
-
-**Conceptual guidance only:** `concurrency`
+**Primary:** `swift-concurrency-expert`
 
 **Example:** "Actor-isolated property accessed from non-isolated context" → `swift-concurrency-expert`
 
@@ -113,17 +97,6 @@ Use `code-review` for review output; it always includes `thermo-nuclear-code-qua
 
 ---
 
-### Error Modeling and Recovery
-
-**Primary:** `error-handling`
-- Error types and recovery paths
-- Logging expectations for failures
-
-**Complementary:** `observability-diagnostics`
-
-**Example:** "Standardize export errors and recovery messaging" → `error-handling`
-
----
 
 ### Debugging, Crashes, and Flaky Behavior
 
@@ -157,8 +130,6 @@ Use `code-review` for review output; it always includes `thermo-nuclear-code-qua
 - Storage strategy
 - Migrations and synchronization
 
-**Complementary:** `security`
-
 **Example:** "Design storage strategy for meeting transcripts" → `data-persistence`
 
 ---
@@ -178,29 +149,12 @@ Use `code-review` for review output; it always includes `thermo-nuclear-code-qua
 
 ### Security and Secret Management
 
-**Primary:** `security`
-- Threat model baseline
-- Input validation
-- Sensitive data controls
-
-**Credentials specifically:** `keychain-security`
+**Primary:** `keychain-security`
 
 **Example:** "Safely store API key for transcription service" → `keychain-security`
 
 ---
 
-### Networking and API Integration
-
-**Primary:** `networking`
-- API client design
-- Request and response modeling
-- URLSession configuration
-
-**Complementary:** `security`
-
-**Example:** "Integrate with transcription API" → `networking`
-
----
 
 ### Testing and Quality Assurance
 
@@ -238,16 +192,6 @@ Use `code-review` for review output; it always includes `thermo-nuclear-code-qua
 
 ---
 
-### Swift Package Manager and Dependencies
-
-**Primary:** `swift-package-manager`
-- Edit `Package.swift`
-- Manage SPM dependencies
-- Fix package resolution
-
-**Example:** "Add new dependency on audio processing library" → `swift-package-manager`
-
----
 
 ### Repository Standards and Project Maintenance
 
@@ -260,26 +204,7 @@ Use `code-review` for review output; it always includes `thermo-nuclear-code-qua
 
 ---
 
-### Plan Stress Testing
 
-**Primary:** `grill-me`
-- Interrogate assumptions
-- Walk decision trees one branch at a time
-- Pressure-test plans before implementation
-
-**Example:** "Grill this migration plan" → `grill-me`
-
----
-
-### Skill Discovery and Authoring
-
-**External skill search or installation:** `skills-discovery`
-
-**Create or refactor a local skill:** `skill-development`
-
-**Example:** "Find a skill for OpenAI docs" → `skills-discovery`
-
----
 
 ## Skill Files and Direct Access
 
@@ -288,14 +213,11 @@ Use `code-review` for review output; it always includes `thermo-nuclear-code-qua
 | `accessibility-audit` | `.agents/skills/accessibility-audit/SKILL.md` | VoiceOver, focus order, keyboard navigation, reduced motion |
 | `architecture` | `.agents/skills/architecture/SKILL.md` | Module boundaries, Clean Architecture, DI |
 | `audio-realtime` | `.agents/skills/audio-realtime/SKILL.md` | AVAudioSourceNode, ProcessTap, underruns |
-| `build-macos-apps` | `.agents/skills/build-macos-apps/SKILL.md` | Quick workflow routing |
 | `code-quality` | `.agents/skills/code-quality/SKILL.md` | Readability, refactoring |
 | `code-review` | `.agents/skills/code-review/SKILL.md` | Semáforo review with mandatory thermo-nuclear structural pass |
-| `concurrency` | `.agents/skills/concurrency/SKILL.md` | Conceptual async/await guidance |
 | `data-persistence` | `.agents/skills/data-persistence/SKILL.md` | Storage design, migrations |
 | `debugging-strategies` | `.agents/skills/debugging-strategies/SKILL.md` | Crash and flaky investigation |
 | `documentation` | `.agents/skills/documentation/SKILL.md` | DocC and API docs |
-| `error-handling` | `.agents/skills/error-handling/SKILL.md` | Error modeling, recovery, logging |
 | `intelligence-kernel` | `.agents/skills/intelligence-kernel/SKILL.md` | Kernel modes and summary benchmark gates |
 | `macos-design-guidelines` | `.agents/skills/macos-design-guidelines/SKILL.md` | Human Interface Guidelines for Mac |
 | `macos-development` | `.agents/skills/macos-development/SKILL.md` | Canonical macOS and Swift guidance |
