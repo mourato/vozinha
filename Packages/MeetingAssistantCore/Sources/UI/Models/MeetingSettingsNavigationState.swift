@@ -3,6 +3,8 @@ import Foundation
 public enum MeetingSettingsNavigationRoute: Hashable, Equatable {
     case root
     case monitoringTargets
+    case meetingPrompts
+    case export
 }
 
 public struct MeetingSettingsNavigationState: Equatable {
@@ -23,6 +25,12 @@ public struct MeetingSettingsNavigationState: Equatable {
 
     public var canGoForward: Bool {
         forwardRoute != nil
+    }
+
+    public mutating func open(_ route: MeetingSettingsNavigationRoute) {
+        guard currentRoute != route else { return }
+        currentRoute = route
+        forwardRoute = nil
     }
 
     @discardableResult

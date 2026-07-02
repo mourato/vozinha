@@ -11,27 +11,47 @@ final class MeetingSettingsNavigationStateTests: XCTestCase {
     }
 
     func testBackMovesToRootAndPreservesForwardRoute() {
-        var state = MeetingSettingsNavigationState(currentRoute: .monitoringTargets)
+        for route in drillDownRoutes {
+            var state = MeetingSettingsNavigationState(currentRoute: route)
 
-        _ = state.goBack()
+            _ = state.goBack()
 
-        XCTAssertEqual(state.currentRoute, .root)
-        XCTAssertFalse(state.canGoBack)
-        XCTAssertTrue(state.canGoForward)
-        XCTAssertEqual(state.forwardRoute, .monitoringTargets)
+            XCTAssertEqual(state.currentRoute, .root)
+            XCTAssertFalse(state.canGoBack)
+            XCTAssertTrue(state.canGoForward)
+            XCTAssertEqual(state.forwardRoute, route)
+        }
     }
 
-    func testForwardRestoresMonitoringRouteAndClearsForwardRoute() {
+    func testForwardRestoresDrillDownRouteAndClearsForwardRoute() {
+        for route in drillDownRoutes {
+            var state = MeetingSettingsNavigationState(
+                currentRoute: .root,
+                forwardRoute: route
+            )
+
+            _ = state.goForward()
+
+            XCTAssertEqual(state.currentRoute, route)
+            XCTAssertTrue(state.canGoBack)
+            XCTAssertFalse(state.canGoForward)
+            XCTAssertNil(state.forwardRoute)
+        }
+    }
+
+    func testOpenMovesToRouteAndClearsForwardRoute() {
         var state = MeetingSettingsNavigationState(
             currentRoute: .root,
-            forwardRoute: .monitoringTargets
+            forwardRoute: .export
         )
 
-        _ = state.goForward()
+        state.open(.meetingPrompts)
 
-        XCTAssertEqual(state.currentRoute, .monitoringTargets)
-        XCTAssertTrue(state.canGoBack)
-        XCTAssertFalse(state.canGoForward)
+        XCTAssertEqual(state.currentRoute, .meetingPrompts)
         XCTAssertNil(state.forwardRoute)
+    }
+
+    private var drillDownRoutes: [MeetingSettingsNavigationRoute] {
+        [.monitoringTargets, .meetingPrompts, .export]
     }
 }

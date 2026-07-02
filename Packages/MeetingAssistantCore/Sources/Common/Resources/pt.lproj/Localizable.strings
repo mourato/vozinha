@@ -145,6 +145,8 @@
 
 /* Exportação de Reuniões */
 "settings.meetings.export" = "Exportação";
+"settings.meetings.export_drilldown_desc" = "Configure exportação automática de notas, pasta de destino, template e política de segurança.";
+"settings.meetings.export_drilldown_accessibility_hint" = "Abre as configurações de exportação de reuniões.";
 "settings.meetings.auto_export" = "Exportar resumos automaticamente";
 "settings.meetings.auto_export_desc" = "Salva automaticamente o resumo da reunião (Markdown) na pasta selecionada.";
 "settings.meetings.export_location" = "Pasta para salvar";
@@ -165,6 +167,10 @@
 "settings.meetings.template.editor_hint" = "Placeholders disponiveis: {{meeting_title}}, {{meeting_date}}, {{duration}}, {{summary}}.";
 "settings.meetings.speaker_identification" = "Identificação de oradores";
 "settings.meetings.prompts" = "Prompts de reunião";
+"settings.meetings.prompts_drilldown_desc" = "Gerencie idioma do resumo, detecção de tipo e escolhas de prompts.";
+"settings.meetings.prompts_drilldown_accessibility_hint" = "Abre as configurações de prompts de reunião.";
+"settings.meetings.post_processing_enabled" = "Pós-processamento de reuniões";
+"settings.meetings.post_processing_enabled_desc" = "Gera resumos e itens de ação depois da transcrição.";
 "settings.meetings.autodetect_type" = "Autodetectar tipo de reunião";
 "settings.meetings.autodetect_type_desc" = "Classifica o tipo de reunião a partir da transcrição e escolhe automaticamente o melhor prompt para o resumo.";
 "settings.meetings.no_prompts" = "Nenhum prompt ainda";

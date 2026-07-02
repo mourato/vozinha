@@ -40,6 +40,21 @@ public class MeetingSettingsViewModel: ObservableObject {
         settings.selectedPromptId
     }
 
+    public var isMeetingPostProcessingEnabled: Bool {
+        !settings.isMeetingPostProcessingDisabled
+    }
+
+    public func setMeetingPostProcessingEnabled(_ isEnabled: Bool) {
+        if isEnabled {
+            if settings.selectedPromptId == AppSettingsStore.noPostProcessingPromptId {
+                settings.selectedPromptId = nil
+            }
+        } else {
+            settings.meetingTypeAutoDetectEnabled = false
+            settings.selectedPromptId = AppSettingsStore.noPostProcessingPromptId
+        }
+    }
+
     public func selectPrompt(_ id: UUID, forceSelect: Bool = false) {
         let animation: Animation? = NSWorkspace.shared.accessibilityDisplayShouldReduceMotion
             ? nil

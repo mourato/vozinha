@@ -73,6 +73,40 @@ final class AppSettingsStorePromptManagementTests: XCTestCase {
         XCTAssertNil(settings.selectedPrompt)
     }
 
+    func testMeetingPostProcessingViewModelToggleUsesExistingSentinel() {
+        let viewModel = MeetingSettingsViewModel(settings: settings)
+        settings.meetingTypeAutoDetectEnabled = true
+
+        viewModel.setMeetingPostProcessingEnabled(false)
+
+        XCTAssertFalse(viewModel.isMeetingPostProcessingEnabled)
+        XCTAssertFalse(settings.meetingTypeAutoDetectEnabled)
+        XCTAssertEqual(settings.selectedPromptId, AppSettingsStore.noPostProcessingPromptId)
+
+        viewModel.setMeetingPostProcessingEnabled(true)
+
+        XCTAssertTrue(viewModel.isMeetingPostProcessingEnabled)
+        XCTAssertNil(settings.selectedPromptId)
+    }
+
+    func testMeetingPostProcessingTogglePreservesExistingPrompts() {
+        let customPrompt = PostProcessingPrompt(
+            id: UUID(),
+            title: "Custom Meeting Prompt",
+            promptText: "Summarize this meeting.",
+            icon: "doc.text",
+            description: "Custom description",
+            isPredefined: false
+        )
+        settings.upsertMeetingPrompt(customPrompt)
+        let viewModel = MeetingSettingsViewModel(settings: settings)
+
+        viewModel.setMeetingPostProcessingEnabled(false)
+        viewModel.setMeetingPostProcessingEnabled(true)
+
+        XCTAssertTrue(settings.meetingAvailablePrompts.contains { $0.id == customPrompt.id })
+    }
+
     func testDictationNoPostProcessingSelection_DisablesPromptResolution() {
         settings.dictationSelectedPromptId = AppSettingsStore.noPostProcessingPromptId
 
