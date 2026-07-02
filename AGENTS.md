@@ -133,6 +133,25 @@ Before implementation, classify your task using these thresholds. They are the *
 
 **Rule:** When uncertain, choose higher risk. Any High trigger overrides a Medium classification, even if the change otherwise looks like ordinary feature work.
 
+### Agent Model / Reasoning Policy
+
+Use the lowest model/reasoning level that safely satisfies the task. Escalate when output quality, risk level, or task complexity requires it.
+
+| Task class                                                                 | Recommended reasoning | Notes                                 |
+| -------------------------------------------------------------------------- | --------------------- | ------------------------------------- |
+| File search, code inventory, simple explanations                           | Low                   | Prefer speed and low cost.            |
+| Focused bug fixes, tests, small refactors                                  | Medium                | Default for normal implementation.    |
+| Architecture, planning, persistence, concurrency, security, broad refactors, code review | High                  | Prioritize correctness and maintainability. |
+
+Rules:
+
+- These are defaults, not limits.
+- Cost is only a tie-breaker after correctness, safety, and maintainability.
+- If the current model/reasoning level is too weak for the task, state the recommended switch before continuing.
+- For Codex, use `/model` in an active session, `codex --model ...`, or `codex --profile ...` where appropriate.
+- For OpenCode or other terminal agents, use the equivalent model/reasoning selector when available.
+- Do not encode provider-specific model rankings in this file; keep exact model names in user/tool config where they can change without editing project policy.
+
 ### Execution Lanes
 
 **Fast Lane (Low Risk):**
