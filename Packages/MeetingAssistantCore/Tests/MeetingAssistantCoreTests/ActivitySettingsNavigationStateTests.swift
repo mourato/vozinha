@@ -1,4 +1,5 @@
 @testable import MeetingAssistantCoreUI
+import MeetingAssistantCoreDomain
 import XCTest
 
 final class ActivitySettingsNavigationStateTests: XCTestCase {
@@ -91,5 +92,28 @@ final class ActivitySettingsNavigationStateTests: XCTestCase {
         state.goBack()
 
         XCTAssertEqual(state.activeRoute, .root)
+    }
+
+    func testCalendarEventDetailBackReturnsToRoot() {
+        let event = MeetingCalendarEventSnapshot(
+            eventIdentifier: "event-1",
+            title: "Planning",
+            startDate: Date(),
+            endDate: Date().addingTimeInterval(1_800),
+            location: nil,
+            notes: nil,
+            attendees: []
+        )
+        var state = ActivitySettingsNavigationState()
+
+        state.open(.eventDetail(event))
+
+        XCTAssertEqual(state.activeRoute, .eventDetail(event))
+        XCTAssertEqual(state.metricsNavigationState.currentRoute, .eventDetail(event))
+
+        state.goBack()
+
+        XCTAssertEqual(state.activeRoute, .root)
+        XCTAssertTrue(state.canGoForward)
     }
 }

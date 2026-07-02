@@ -1,8 +1,11 @@
+import MeetingAssistantCoreDomain
+
 public enum ActivitySettingsRoute: Hashable, Sendable {
     case root
     case history
     case modelPerformance
     case moreInsights
+    case eventDetail(MeetingCalendarEventSnapshot)
 }
 
 public struct ActivitySettingsNavigationState: Equatable {
@@ -33,7 +36,7 @@ public struct ActivitySettingsNavigationState: Equatable {
             false
         case .history:
             true
-        case .modelPerformance, .moreInsights:
+        case .modelPerformance, .moreInsights, .eventDetail:
             true
         }
     }
@@ -44,7 +47,7 @@ public struct ActivitySettingsNavigationState: Equatable {
             forwardRoute != nil
         case .history:
             transcriptionsNavigationHistory.canGoForward
-        case .modelPerformance, .moreInsights:
+        case .modelPerformance, .moreInsights, .eventDetail:
             metricsNavigationState.canGoForward
         }
     }
@@ -74,7 +77,7 @@ public struct ActivitySettingsNavigationState: Equatable {
                 forwardRoute = activeRoute
                 activeRoute = .root
             }
-        case .modelPerformance, .moreInsights:
+        case .modelPerformance, .moreInsights, .eventDetail:
             if metricsNavigationState.canGoBack, metricsNavigationState.currentRoute != topLevelMetricsRoute {
                 _ = metricsNavigationState.goBack()
             } else {
@@ -91,7 +94,7 @@ public struct ActivitySettingsNavigationState: Equatable {
             open(forwardRoute)
         case .history:
             _ = transcriptionsNavigationHistory.goForward()
-        case .modelPerformance, .moreInsights:
+        case .modelPerformance, .moreInsights, .eventDetail:
             _ = metricsNavigationState.goForward()
         }
     }
@@ -106,6 +109,8 @@ public struct ActivitySettingsNavigationState: Equatable {
             .performance
         case .moreInsights:
             .moreInsights
+        case let .eventDetail(event):
+            .eventDetail(event)
         case .root, .history:
             nil
         }
