@@ -10,15 +10,14 @@ description: This skill should be used when the user asks to "build SwiftUI view
 Use this skill as the canonical owner for SwiftUI composition, state handling, and layout patterns in Prisma.
 
 - Own view composition, navigation, state wrappers, and reusable UI-block guidance.
-- Keep SwiftUI implementation advice aligned with design-system reuse and preview expectations.
-- Delegate UX direction, advanced motion, and runtime performance to their specialist owners.
+- Keep SwiftUI implementation advice aligned with design-system reuse, preview expectations, motion restraint, and performance hygiene.
+- Delegate UX direction to `native-app-designer` and unknown-root-cause runtime investigation to `debugging-strategies`.
 
 ## Scope Boundary
 
 - Use this skill for building SwiftUI views, managing SwiftUI state, and structuring layouts.
 - Use `../native-app-designer/SKILL.md` for UI/UX direction.
-- Use `../swiftui-animation/SKILL.md` for advanced motion systems.
-- Use `../swiftui-performance-audit/SKILL.md` for render/update performance issues.
+- Use `../debugging-strategies/SKILL.md` when jank, layout thrash, or excessive updates require investigation before refactoring.
 
 ## Overview
 
@@ -36,8 +35,10 @@ Activate this skill when working with:
 - Navigation (`NavigationStack`, `NavigationView`)
 - SwiftUI views and modifiers
 - View lifecycle and composition
+- Motion implementation and reduced-motion fallbacks
+- Render/update performance hygiene when changing view structure
 
-Route to `swiftui-animation` when the task is primarily about advanced transitions, motion choreography, matched geometry, or shader-based effects.
+Keep motion implementation local, purposeful, and easy to disable. Do not introduce matched-geometry or shader machinery unless the product surface clearly earns it.
 
 ## Reusable Components First
 
@@ -153,6 +154,21 @@ struct ContentView: View {
     }
 }
 ```
+
+Performance hygiene:
+
+- Keep computed view state cheap and deterministic.
+- Avoid re-running expensive formatting, filtering, sorting, or localization lookups in `body`.
+- For lists, dashboards, and settings pages, keep row identity stable and avoid rebuilding large derived arrays during every render.
+- Extract complex row bodies into focused subviews when repeated or hard to scan.
+- When a UI performance symptom is not obviously structural, capture a repro and route through `../debugging-strategies/SKILL.md` before broad refactoring.
+
+### Motion
+
+- Use animation to clarify state transitions, not as decoration.
+- Honor reduced-motion settings on motion-heavy surfaces.
+- Prefer built-in SwiftUI transitions and simple springs over custom shader or matched-geometry machinery.
+- Keep recording, status, and permission-state motion deterministic so tests and previews remain stable.
 
 ## Settings UI Patterns
 
@@ -324,9 +340,8 @@ HStack(spacing: 0) {
 ## Related Skills
 
 - `../native-app-designer/SKILL.md`
-- `../swiftui-animation/SKILL.md`
-- `../swiftui-performance-audit/SKILL.md`
-- `.agents/skills/preview-coverage/SKILL.md`
+- `../debugging-strategies/SKILL.md`
+- `../preview-coverage/SKILL.md`
 
 ## References
 

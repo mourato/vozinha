@@ -16,8 +16,8 @@ Use this skill as the canonical implementation reference for macOS Swift/SwiftUI
   - `native-app-designer` for primary UI/UX direction and experience analysis
   - `quality-assurance` for verification lanes and merge gates
   - `swift-concurrency-expert` for Swift 6.2 diagnostics/remediation
-  - `swiftui-performance-audit` for SwiftUI runtime bottlenecks
-  - `swiftui-animation` for advanced animation systems
+  - `swiftui-patterns` for SwiftUI composition, motion implementation, and performance hygiene
+  - `debugging-strategies` for runtime bottleneck investigation
 
 ## When to Use
 

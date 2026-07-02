@@ -22,9 +22,8 @@ For this repository (macOS app), consult this skill whenever the task includes:
 - This skill owns visual/interaction direction and UX quality criteria.
 - This skill complements implementation-oriented skills:
   - `../swiftui-patterns/SKILL.md` for SwiftUI composition/state/layout
-  - `../swiftui-animation/SKILL.md` for advanced motion mechanics
-  - `../swiftui-performance-audit/SKILL.md` for runtime render/update performance
   - `../macos-development/SKILL.md` for platform integration and lifecycle
+  - `../debugging-strategies/SKILL.md` for runtime diagnosis when UX symptoms need investigation
 
 ## When to Use
 
@@ -38,7 +37,7 @@ Use this sequence:
 
 1. `native-app-designer` -> define UX/UI direction and acceptance criteria.
 2. `swiftui-patterns` or `macos-development` -> implement structure and platform behavior.
-3. `swiftui-animation` / `swiftui-performance-audit` -> refine motion and runtime quality when needed.
+3. `debugging-strategies` -> investigate jank, layout thrash, or runtime symptoms when the cause is unclear.
 
 ## UX/UI Review Checklist
 
@@ -59,6 +58,7 @@ Use this sequence:
 - Treat popovers/help affordances as escalation, not baseline content. If two or more nearby popovers explain the same concept or add little beyond visible copy, consolidate or remove them.
 - Use motion to guide attention and communicate state changes.
 - Keep reduced-motion behavior available for motion-heavy transitions.
+- Keep motion local and purposeful; do not introduce shader/matched-geometry machinery unless a Prisma surface clearly earns it and the reduced-motion fallback is clear.
 - For macOS surfaces, use AppKit bridging only when SwiftUI behavior is insufficient.
 - Keep one canonical primary window per workflow surface. Introduce auxiliary windows only when detached context materially improves the flow.
 - Prefer in-window navigation, split view, sheet, or popover before creating another primary workflow surface.
@@ -67,8 +67,7 @@ Use this sequence:
 ## Routing
 
 - Need concrete SwiftUI state/layout patterns -> `../swiftui-patterns/SKILL.md`
-- Need advanced transition/shader choreography -> `../swiftui-animation/SKILL.md`
-- Need runtime performance diagnosis for jank/layout thrash -> `../swiftui-performance-audit/SKILL.md`
+- Need runtime diagnosis for jank/layout thrash -> `../debugging-strategies/SKILL.md`
 - Need broader platform lifecycle/integration decisions -> `../macos-development/SKILL.md`
 
 ## 2026-06-30 Progression Drill

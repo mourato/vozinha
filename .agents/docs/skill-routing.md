@@ -10,7 +10,7 @@ When uncertain which skill to use, apply this priority order:
 2. **`task-lifecycle`** — source of truth for risk lane and lifecycle phases
 3. **`native-app-designer`** — primary UI and UX direction
 4. **`swift-concurrency-expert`** — Swift 6.2 concurrency remediation
-5. **`swiftui-performance-audit`** — SwiftUI runtime performance diagnosis
+5. **`debugging-strategies`** — cross-cutting investigation when the failing subsystem is not yet proven
 
 ## External Project Code Lookup Priority
 
@@ -45,7 +45,7 @@ When inspecting code outside this repository, use this source order:
 - Set UX acceptance criteria
 - Analyze interface quality
 
-**Then (if needed):** `macos-design-guidelines` → `swiftui-patterns` → `swiftui-animation` → `swiftui-performance-audit`
+**Then (if needed):** `swiftui-patterns` → `macos-development` → `menubar`
 
 **Example:** "Design the meeting recording UI" → `native-app-designer`
 
@@ -53,14 +53,14 @@ When inspecting code outside this repository, use this source order:
 
 ### SwiftUI Performance Issues
 
-**Primary:** `swiftui-performance-audit`
+**Primary:** `swiftui-patterns`
 - Janky scrolling
 - Layout thrash
 - Excessive view updates
 
-**Complementary:** `swiftui-patterns`
+**Complementary:** `debugging-strategies` when the root cause is unclear
 
-**Example:** "Scrolling in recording list is janky" → `swiftui-performance-audit`
+**Example:** "Scrolling in recording list is janky" → `swiftui-patterns` plus `debugging-strategies` if reproduction/diagnosis is needed
 
 ---
 
@@ -186,7 +186,7 @@ Use `code-review` for review output; it always includes `thermo-nuclear-code-qua
 - NSMenu and NSPopover behavior
 - Non-activating overlays
 
-**Complementary:** `macos-design-guidelines`, `macos-development`
+**Complementary:** `native-app-designer`, `macos-development`
 
 **Example:** "Implement menu-bar popover for recording controls" → `menubar`
 
@@ -218,15 +218,14 @@ Use `code-review` for review output; it always includes `thermo-nuclear-code-qua
 | `data-persistence` | `.agents/skills/data-persistence/SKILL.md` | Storage design, migrations |
 | `debugging-strategies` | `.agents/skills/debugging-strategies/SKILL.md` | Crash and flaky investigation |
 | `documentation` | `.agents/skills/documentation/SKILL.md` | DocC and API docs |
+| `git-workflow` | `.agents/skills/git-workflow/SKILL.md` | Prisma branch, commit, PR, merge, cleanup, and gh body-file mechanics |
 | `intelligence-kernel` | `.agents/skills/intelligence-kernel/SKILL.md` | Kernel modes and summary benchmark gates |
-| `macos-design-guidelines` | `.agents/skills/macos-design-guidelines/SKILL.md` | Human Interface Guidelines for Mac |
 | `macos-development` | `.agents/skills/macos-development/SKILL.md` | Canonical macOS and Swift guidance |
+| `menubar` | `.agents/skills/menubar/SKILL.md` | Menu bar, popover, and floating-panel behavior |
 | `native-app-designer` | `.agents/skills/native-app-designer/SKILL.md` | UI and UX direction |
 | `observability-diagnostics` | `.agents/skills/observability-diagnostics/SKILL.md` | Logs, telemetry, redaction, diagnostic signatures |
 | `quality-assurance` | `.agents/skills/quality-assurance/SKILL.md` | Verification gates and command policy |
 | `task-lifecycle` | `.agents/skills/task-lifecycle/SKILL.md` | Risk classification and lifecycle policy |
 | `testing-xctest` | `.agents/skills/testing-xctest/SKILL.md` | XCTest code structure, mocks, async tests |
 | `swift-concurrency-expert` | `.agents/skills/swift-concurrency-expert/SKILL.md` | Swift 6.2 actor isolation and Sendable fixes |
-| `swiftui-animation` | `.agents/skills/swiftui-animation/SKILL.md` | Advanced animations and shaders |
-| `swiftui-patterns` | `.agents/skills/swiftui-patterns/SKILL.md` | View composition and state management |
-| `swiftui-performance-audit` | `.agents/skills/swiftui-performance-audit/SKILL.md` | UI rendering performance |
+| `swiftui-patterns` | `.agents/skills/swiftui-patterns/SKILL.md` | View composition, state management, motion implementation, and SwiftUI performance hygiene |

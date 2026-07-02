@@ -17,8 +17,7 @@ Use this skill as the canonical owner for menu-bar-specific UI patterns in Prism
 
 - Use this skill for status-item behavior, menu-bar menus, popovers, and floating-panel interaction patterns.
 - Use `../macos-development/SKILL.md` for general platform lifecycle and integration concerns.
-- Use `../macos-design-guidelines/SKILL.md` for HIG alignment and native interaction quality.
-- Use `../native-app-designer/SKILL.md` for broader experience design decisions.
+- Use `../native-app-designer/SKILL.md` for native interaction quality and broader experience design decisions.
 
 ## Overview
 
@@ -273,7 +272,6 @@ init() {
 ## Related Skills
 
 - `../macos-development/SKILL.md`
-- `../macos-design-guidelines/SKILL.md`
 - `../native-app-designer/SKILL.md`
 
 ## References

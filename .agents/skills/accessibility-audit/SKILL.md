@@ -74,5 +74,5 @@ Review these areas first when the task touches accessibility-sensitive UI:
 
 - `../localization/SKILL.md`
 - `../native-app-designer/SKILL.md`
-- `../macos-design-guidelines/SKILL.md`
+- `../menubar/SKILL.md`
 - `../menubar/SKILL.md`

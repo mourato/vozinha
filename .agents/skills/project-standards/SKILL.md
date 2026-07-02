@@ -36,7 +36,7 @@ Guidelines for maintaining consistent project documentation and visibility into 
 
 - **Living Guidance**: Ensure `AGENTS.md` reflects the current state of tools, scripts, and skills.
 - **Skill Template Standard**: Prefer a consistent section order in `SKILL.md`: `Role`, `Scope Boundary`, `When to Use`, domain-specific workflow/guidance, `Verification` when relevant, `Related Skills`, and `References`.
-- **Workflow Ownership Split**: Keep workflow ownership explicit and non-overlapping: `task-lifecycle` owns macro flow and risk lanes, `quality-assurance` owns command mapping and validation strategy, `git-workflow` owns Git operations, `code-review` owns findings format and review output, and `thermo-nuclear-code-quality-review` owns the mandatory structural maintainability pass inside code review.
+- **Workflow Ownership Split**: Keep workflow ownership explicit and non-overlapping: `task-lifecycle` owns macro flow and risk lanes, `quality-assurance` owns command mapping and validation strategy, `git-workflow` owns Prisma Git mechanics, `code-review` owns findings format and review output, and `thermo-nuclear-code-quality-review` owns the mandatory structural maintainability pass inside code review.
 - **Router Boundaries**: Router skills should route quickly and delegate; they should not duplicate deep implementation rules, merge-gate policy, or review format already owned elsewhere.
 - **Reusable Blocks Policy**: Keep the `reuse -> extend -> create` rule synchronized between `AGENTS.md` and affected implementation skills.
 - **Compact Execution Mode**: When script execution modes change (for example `*-agent` targets), update `AGENTS.md` and relevant skills with command usage, log locations, and output contracts.
