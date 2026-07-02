@@ -2,6 +2,13 @@
 import XCTest
 
 final class ActivitySettingsNavigationStateTests: XCTestCase {
+    func testDefaultStateStartsAtRoot() {
+        let state = ActivitySettingsNavigationState()
+
+        XCTAssertEqual(state.activeRoute, .root)
+        XCTAssertFalse(state.canGoBack)
+    }
+
     func testHistoryListControlsSearchVisibility() {
         var state = ActivitySettingsNavigationState(activeRoute: .history)
         XCTAssertTrue(state.isShowingHistoryList)
@@ -9,6 +16,15 @@ final class ActivitySettingsNavigationStateTests: XCTestCase {
         state.transcriptionsNavigationHistory.push(.conversation(UUID()))
 
         XCTAssertFalse(state.isShowingHistoryList)
+    }
+
+    func testApplyHistoryOpensHistoryList() {
+        var state = ActivitySettingsNavigationState()
+
+        state.apply(.history)
+
+        XCTAssertEqual(state.activeRoute, .history)
+        XCTAssertTrue(state.isShowingHistoryList)
     }
 
     func testBackForwardDelegatesToActiveHistoryRoute() {
@@ -28,11 +44,11 @@ final class ActivitySettingsNavigationStateTests: XCTestCase {
         XCTAssertTrue(state.canGoForward)
     }
 
-    func testBackForwardDelegatesToActiveDashboardRoute() {
+    func testModelPerformanceBackReturnsToRoot() {
         var metricsState = SettingsSubpageNavigationState<MetricsDashboardRoute>()
         metricsState.open(.performance)
         var state = ActivitySettingsNavigationState(
-            activeRoute: .dashboard,
+            activeRoute: .modelPerformance,
             metricsNavigationState: metricsState
         )
 
@@ -40,7 +56,40 @@ final class ActivitySettingsNavigationStateTests: XCTestCase {
 
         state.goBack()
 
-        XCTAssertNil(state.metricsNavigationState.currentRoute)
+        XCTAssertEqual(state.activeRoute, .root)
         XCTAssertTrue(state.canGoForward)
+    }
+
+    func testMoreInsightsBackReturnsToRoot() {
+        var metricsState = SettingsSubpageNavigationState<MetricsDashboardRoute>()
+        metricsState.open(.moreInsights)
+        var state = ActivitySettingsNavigationState(
+            activeRoute: .moreInsights,
+            metricsNavigationState: metricsState
+        )
+
+        state.goBack()
+
+        XCTAssertEqual(state.activeRoute, .root)
+        XCTAssertTrue(state.canGoForward)
+    }
+
+    func testNestedPerformanceRecordingBackDelegatesBeforeReturningToRoot() {
+        let recordingID = UUID()
+        var metricsState = SettingsSubpageNavigationState<MetricsDashboardRoute>()
+        metricsState.open(.performanceRecording(recordingID))
+        var state = ActivitySettingsNavigationState(
+            activeRoute: .modelPerformance,
+            metricsNavigationState: metricsState
+        )
+
+        state.goBack()
+
+        XCTAssertEqual(state.activeRoute, .modelPerformance)
+        XCTAssertNil(state.metricsNavigationState.currentRoute)
+
+        state.goBack()
+
+        XCTAssertEqual(state.activeRoute, .root)
     }
 }

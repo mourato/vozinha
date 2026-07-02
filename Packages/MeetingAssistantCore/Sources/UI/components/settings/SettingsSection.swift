@@ -74,7 +74,7 @@ public enum SettingsSection: String, CaseIterable, Identifiable, Sendable {
     public var destination: SettingsDestination {
         switch self {
         case .metrics:
-            SettingsDestination(section: .activity, activityRoute: .dashboard)
+            SettingsDestination(section: .activity, activityRoute: .modelPerformance)
         case .transcriptions:
             SettingsDestination(section: .activity, activityRoute: .history)
         case .models, .enhancements, .vocabulary:

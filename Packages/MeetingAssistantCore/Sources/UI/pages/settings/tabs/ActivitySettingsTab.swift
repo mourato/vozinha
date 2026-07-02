@@ -17,45 +17,63 @@ public struct ActivitySettingsTab: View {
     }
 
     public var body: some View {
-        VStack(spacing: 0) {
-            header
-
-            Divider()
-
-            content
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-    }
-
-    private var header: some View {
-        HStack {
-            Picker("", selection: $navigationState.activeRoute) {
-                Text("settings.section.metrics".localized)
-                    .tag(ActivitySettingsRoute.dashboard)
-                Text("settings.section.history".localized)
-                    .tag(ActivitySettingsRoute.history)
-            }
-            .pickerStyle(.segmented)
-            .labelsHidden()
-            .frame(width: 260)
-            .padding(.leading, 24)
-
-            Spacer()
-        }
-        .padding(.vertical, 12)
+        content
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
     }
 
     @ViewBuilder
     private var content: some View {
         switch navigationState.activeRoute {
-        case .dashboard:
-            MetricsDashboardSettingsTab(navigationState: $navigationState.metricsNavigationState)
+        case .root:
+            rootPage
         case .history:
             TranscriptionsSettingsTab(
                 searchText: $transcriptionsSearchText,
                 navigationHistory: $navigationState.transcriptionsNavigationHistory
             )
+        case .modelPerformance, .moreInsights:
+            MetricsDashboardSettingsTab(navigationState: $navigationState.metricsNavigationState)
+        }
+    }
+
+    private var rootPage: some View {
+        SettingsScrollableContent {
+            SettingsSectionHeader(
+                title: "settings.section.activity".localized,
+                description: "settings.activity.description".localized
+            )
+
+            DSGroup("settings.section.activity".localized, icon: "chart.line.uptrend.xyaxis") {
+                VStack(alignment: .leading, spacing: 0) {
+                    SettingsDrillDownButtonRow(
+                        title: "settings.activity.recording_history.title".localized,
+                        subtitle: "settings.activity.recording_history.subtitle".localized,
+                        accessibilityHint: "settings.activity.recording_history.accessibility_hint".localized
+                    ) {
+                        navigationState.open(.history)
+                    }
+
+                    Divider()
+
+                    SettingsDrillDownButtonRow(
+                        title: "metrics.performance.link.title".localized,
+                        subtitle: "settings.activity.model_performance.subtitle".localized,
+                        accessibilityHint: "metrics.performance.link.accessibility_hint".localized
+                    ) {
+                        navigationState.open(.modelPerformance)
+                    }
+
+                    Divider()
+
+                    SettingsDrillDownButtonRow(
+                        title: "metrics.more_insights.title".localized,
+                        subtitle: "settings.activity.more_insights.subtitle".localized,
+                        accessibilityHint: "metrics.more_insights.accessibility_hint".localized
+                    ) {
+                        navigationState.open(.moreInsights)
+                    }
+                }
+            }
         }
     }
 }

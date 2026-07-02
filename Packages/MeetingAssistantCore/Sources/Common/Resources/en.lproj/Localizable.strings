@@ -15,6 +15,12 @@
 "settings.section.models" = "Models";
 "settings.section.permissions" = "Permissions";
 "settings.section.activity" = "Activity";
+"settings.activity.description" = "Review recording history and model-level performance insights.";
+"settings.activity.recording_history.title" = "Recording History";
+"settings.activity.recording_history.subtitle" = "Browse saved dictation and meeting transcripts.";
+"settings.activity.recording_history.accessibility_hint" = "Opens the recording history page.";
+"settings.activity.model_performance.subtitle" = "Compare transcription and post-processing model attempts.";
+"settings.activity.more_insights.subtitle" = "Explore calendar, app, and activity analytics.";
 "settings.section.intelligence" = "Intelligence";
 "settings.intelligence.description" = "Configure model setup, AI cleanup, context sources, and dictionary replacement rules.";
 "settings.section.system" = "System";

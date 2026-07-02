@@ -160,10 +160,10 @@ final class SettingsSearchIndexTests: XCTestCase {
         XCTAssertEqual(destination, SettingsDestination(section: .activity, activityRoute: .history))
     }
 
-    func testMetricsKeysPreserveActivityDashboardDestination() {
+    func testMetricsKeysPreserveActivityModelPerformanceDestination() {
         let destination = SettingsSearchIndex.destination(forLocalizationKey: "settings.section.metrics")
 
-        XCTAssertEqual(destination, SettingsDestination(section: .activity, activityRoute: .dashboard))
+        XCTAssertEqual(destination, SettingsDestination(section: .activity, activityRoute: .modelPerformance))
     }
 
     func testQueryTranscriptionModelsReturnsIntelligenceSection() {

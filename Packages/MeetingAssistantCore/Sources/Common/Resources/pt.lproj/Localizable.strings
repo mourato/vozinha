@@ -15,6 +15,12 @@
 "settings.section.models" = "Modelos";
 "settings.section.permissions" = "Permissões";
 "settings.section.activity" = "Atividade";
+"settings.activity.description" = "Revise o histórico de gravações e insights de performance dos modelos.";
+"settings.activity.recording_history.title" = "Histórico de gravações";
+"settings.activity.recording_history.subtitle" = "Navegue por transcrições salvas de ditados e reuniões.";
+"settings.activity.recording_history.accessibility_hint" = "Abre a página de histórico de gravações.";
+"settings.activity.model_performance.subtitle" = "Compare tentativas de transcrição e pós-processamento dos modelos.";
+"settings.activity.more_insights.subtitle" = "Explore análises de calendário, apps e atividade.";
 "settings.section.intelligence" = "Inteligência";
 "settings.intelligence.description" = "Configure modelos, limpeza por IA, fontes de contexto e regras de substituição do dicionário.";
 "settings.section.system" = "Sistema";

@@ -68,7 +68,7 @@ final class SettingsSectionTests: XCTestCase {
     func testResolvedDestination_PreservesLegacyActivitySubroutes() {
         XCTAssertEqual(
             SettingsSection.resolvedDestination(for: "metrics"),
-            SettingsDestination(section: .activity, activityRoute: .dashboard)
+            SettingsDestination(section: .activity, activityRoute: .modelPerformance)
         )
         XCTAssertEqual(
             SettingsSection.resolvedDestination(for: "transcriptions"),

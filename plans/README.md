@@ -32,6 +32,20 @@ honor its STOP conditions, and update your row when done.
 - Not audited: runtime screenshot QA, full accessibility pass, every non-settings app surface, release/build infra, provider credential internals, and audio/runtime behavior beyond settings presentation.
 - Reuse decision: extend `SettingsSection`, `SettingsSearchIndex`, `SettingsSubpageNavigationState`, `SettingsScrollableContent`, `DSGroup`, existing tab views, `InstalledAppsSelection*`, and existing tests. Do not create a parallel navigation framework or copy existing tab bodies into new container pages.
 
+## Settings Visual Correction Scope
+
+- Effort: plan-focused follow-up, based on user-reported visual regressions after the 2026-07-01 settings organization changes.
+- Audited: Activity segmented root, Activity navigation state, Metrics dashboard routes, Dictation drill-down grouping exemplar, Meetings root layout, Meetings navigation state, meeting prompt disable sentinel, export settings, monitored apps/sites page, localization keys, and focused navigation tests.
+- Not audited: runtime screenshot QA, full accessibility pass, post-processing runtime internals, export file generation internals, full localization style review, release/build infra.
+- Reuse decision: extend `SettingsDrillDownButtonRow`, `DSGroup`, `SettingsScrollableContent`, `ActivitySettingsNavigationState`, `MeetingSettingsNavigationState`, `MeetingSettingsViewModel`, and the existing `AppSettingsStore.noPostProcessingPromptId` sentinel. Do not create a new navigation framework or a second persisted meeting post-processing flag.
+
+## Assistant/System Correction Scope
+
+- Effort: plan-focused follow-up for Assistant capability gating and System/Sound navigation corrections.
+- Audited: Assistant settings UI, Integrations capability pattern, Settings toolbar capability toggles, AppSettingsStore capability defaults, AppCommandState, Assistant shortcut/resource wiring, System segmented root, Sound/General/Permissions tabs, SettingsSection routing, SettingsSearchIndex mappings, and focused tests.
+- Not audited: runtime screenshot QA, full accessibility pass, Assistant AI prompt behavior, permission request internals, audio processing internals, release/build infra.
+- Reuse decision: extend existing capability-toggle patterns, `AppCommandState.assistantCapabilityEnabled`, `SettingsDrillDownButtonRow`, `SettingsSection`, `SettingsSearchIndex`, `GeneralSettingsViewModel`, and existing localized keys. Do not create a parallel settings router or duplicate Assistant/Audio state.
+
 ## Findings
 
 | # | Finding | Category | Impact | Effort | Risk | Evidence |
@@ -74,6 +88,10 @@ honor its STOP conditions, and update your row when done.
 | 012 | Merge Models, Text & Context, and Dictionary into Intelligence | P1 | M | 010 | DONE |
 | 013 | Merge General, Sound, and Permissions into System | P1 | M | 010 | DONE |
 | 014 | Polish consolidated settings layout patterns | P2 | M | 011, 012, 013 | DONE |
+| 015 | Rework Activity into drill-down navigation | P1 | S | - | TODO |
+| 016 | Rework Meetings workflow and post-processing pages | P1 | M | - | TODO |
+| 017 | Add an Assistant capability toggle | P1 | M | - | TODO |
+| 018 | Rework System and Sound navigation | P1 | M | - | TODO |
 
 Status values: TODO | IN PROGRESS | DONE | BLOCKED (with one-line reason) | REJECTED (with one-line rationale)
 
@@ -87,6 +105,8 @@ Status values: TODO | IN PROGRESS | DONE | BLOCKED (with one-line reason) | REJE
 - 010 should land before 011-013 because it preserves old section raw values and avoids one-off redirect logic during consolidation.
 - 011, 012, and 013 can run in parallel after 010 if merge order is coordinated around `SettingsSection`, `SettingsPage`, `SettingsSearchIndex`, and localization files.
 - 014 should run after 011-013 because it reviews the reduced interface as a whole and fixes layout/redundancy introduced by the consolidation.
+- 015 and 016 are corrective follow-ups to the completed settings consolidation and can run independently, but coordinate merge order around localization files and `SettingsPage` navigation behavior.
+- 017 and 018 can run independently, but both may touch `SettingsPage`, `SettingsSection`, search/localization, and should coordinate merge order with 015/016.
 
 ## Findings considered and rejected
 
@@ -101,3 +121,7 @@ Status values: TODO | IN PROGRESS | DONE | BLOCKED (with one-line reason) | REJE
 - Create a separate root-level `Interface` page now: rejected because after moving Sound/Permissions/General into System, the remaining interface polish is better handled as layout normalization rather than another sidebar destination.
 - Move Activity out of Settings into a new main window now: rejected as too large for this sequence; the current app already treats the settings window as the main shell, so first reduce and clarify the existing shell.
 - Merge Assistant and Integrations now: rejected because they are distinct workflows with different capability toggles and editor surfaces; reducing them would hide real product functionality rather than just grouping configuration.
+- Add a new persisted `meetingPostProcessingEnabled` flag for the Meetings toggle: rejected because `selectedPromptId == AppSettingsStore.noPostProcessingPromptId` already represents disabled meeting post-processing, and adding another flag would create divergent state.
+- Keep Activity's segmented control and merely restyle it: rejected because the requested visual correction is drill-down navigation matching Dictation, not different tab chrome.
+- Reuse `isAssistantIntegrationsEnabled` as the Assistant-wide toggle: rejected because Assistant can exist without third-party integrations; the two capabilities need separate state.
+- Keep Sound hidden inside System: rejected because the requested correction restores Sound as a sidebar destination and removes System's segmented control.
