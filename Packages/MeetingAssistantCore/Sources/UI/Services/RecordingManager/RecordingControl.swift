@@ -13,20 +13,6 @@ import UserNotifications
 // MARK: - Recording Control
 
 public extension RecordingManager {
-    func setMeetingDetectionEnabled(_ isEnabled: Bool) {
-        guard let bundleId = Bundle.main.bundleIdentifier,
-              !bundleId.lowercased().contains("xctest")
-        else {
-            return
-        }
-
-        if isEnabled {
-            meetingDetector.startMonitoring()
-        } else {
-            meetingDetector.stopMonitoring()
-        }
-    }
-
     func startCapture(purpose: CapturePurpose) async {
         let triggerLabel = purpose == .dictation ? "recording.start.dictation" : "recording.start.meeting"
         await startCapture(purpose: purpose, requestedAt: Date(), triggerLabel: triggerLabel)
@@ -639,26 +625,6 @@ public extension RecordingManager {
         )
     }
 
-    /// Enable automatic recording when meetings are detected.
-    internal func enableAutoRecording() {
-        meetingDetector.startMonitoring()
-
-        // Watch for detected meetings
-        meetingDetector.$detectedMeeting
-            .dropFirst()
-            .removeDuplicates()
-            .sink { @Sendable [weak self] detected in
-                Task { @MainActor in
-                    let isCurrentlyRecording = self?.isRecording ?? false
-                    if detected != nil, !isCurrentlyRecording {
-                        await self?.startCapture(purpose: .meeting)
-                    } else if detected == nil, isCurrentlyRecording {
-                        await self?.stopRecording()
-                    }
-                }
-            }
-            .store(in: &cancellables)
-    }
 }
 
 // MARK: - Dictation Language

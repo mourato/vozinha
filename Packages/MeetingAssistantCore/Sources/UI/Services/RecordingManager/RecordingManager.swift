@@ -110,6 +110,7 @@ public class RecordingManager: ObservableObject, RecordingServiceProtocol {
     var browserProviders: [String: BrowserActiveTabURLProviding] = BrowserProviderRegistry.defaultProviders()
 
     var cancellables = Set<AnyCancellable>()
+    var automaticMeetingRecordingCancellable: AnyCancellable?
     var statusCheckTask: Task<Void, Never>?
     var isStartOperationInFlight = false
     var postStartContextCaptureTask: Task<Void, Never>?
@@ -324,8 +325,9 @@ public class RecordingManager: ObservableObject, RecordingServiceProtocol {
 
         setupBindings()
         setupRecorderErrorForwarding()
-        if isRunningAsAppBundle, AppSettingsStore.shared.isMeetingTranscriptionEnabled {
-            meetingDetector.startMonitoring()
+        if isRunningAsAppBundle {
+            let settings = AppSettingsStore.shared
+            setAutomaticMeetingRecordingEnabled(settings.isMeetingTranscriptionEnabled && settings.autoStartRecording)
         }
         notificationService.requestAuthorization()
         Task { @Sendable [weak self] in

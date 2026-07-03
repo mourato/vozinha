@@ -497,6 +497,15 @@ extension AppDelegate {
             }
             .store(in: &cancellables)
 
+        NotificationCenter.default.publisher(for: UserDefaults.didChangeNotification)
+            .map { [settingsStore] _ in settingsStore.autoStartRecording }
+            .removeDuplicates()
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                self?.applyAutomaticMeetingRecordingState()
+            }
+            .store(in: &cancellables)
+
         settingsStore.$isAssistantIntegrationsEnabled
             .dropFirst()
             .removeDuplicates()
@@ -531,7 +540,7 @@ extension AppDelegate {
     }
 
     private func applyMeetingTranscriptionCapabilityState(isEnabled: Bool) {
-        recordingManager.setMeetingDetectionEnabled(isEnabled)
+        applyAutomaticMeetingRecordingState()
 
         guard !isEnabled else {
             maybeWarmupMeetingTranscriptionModel()
@@ -560,6 +569,12 @@ extension AppDelegate {
                 await assistantVoiceCommandService.cancelRecording()
             }
         }
+    }
+
+    private func applyAutomaticMeetingRecordingState() {
+        recordingManager.setAutomaticMeetingRecordingEnabled(
+            settingsStore.isMeetingTranscriptionEnabled && settingsStore.autoStartRecording
+        )
     }
 
 }
