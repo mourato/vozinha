@@ -259,12 +259,6 @@ public struct ServiceSettingsContent: View {
             }
         }
         .padding(14)
-        .background(AppDesignSystem.Colors.settingsCardBackground)
-        .clipShape(RoundedRectangle(cornerRadius: AppDesignSystem.Layout.smallCornerRadius))
-        .overlay(
-            RoundedRectangle(cornerRadius: AppDesignSystem.Layout.smallCornerRadius)
-                .stroke(AppDesignSystem.Colors.settingsCardStroke, lineWidth: 1)
-        )
     }
     private var runtimeSection: some View {
         DSGroup("settings.models.runtime.title".localized, icon: "cpu") {

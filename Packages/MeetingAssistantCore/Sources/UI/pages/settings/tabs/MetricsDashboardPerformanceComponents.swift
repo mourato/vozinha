@@ -243,10 +243,6 @@ private struct MetricsDashboardPerformanceLeaderboardSection: View {
                             )
                         }
                     }
-                    .background(
-                        AppDesignSystem.Colors.settingsCardBackground(intensity: .regular),
-                        in: RoundedRectangle(cornerRadius: 12)
-                    )
                 }
             }
         }
@@ -374,10 +370,6 @@ private struct MetricsDashboardPerformanceHistorySection: View {
                             }
                         }
                     }
-                    .background(
-                        AppDesignSystem.Colors.settingsCardBackground(intensity: .regular),
-                        in: RoundedRectangle(cornerRadius: 12)
-                    )
                 }
             }
         }

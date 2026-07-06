@@ -101,7 +101,6 @@ public struct InstalledAppsSelectionList: View {
                         }
                     }
                 }
-                .background(AppDesignSystem.Colors.subtleFill2)
                 .clipShape(RoundedRectangle(cornerRadius: AppDesignSystem.Layout.smallCornerRadius))
             }
 
