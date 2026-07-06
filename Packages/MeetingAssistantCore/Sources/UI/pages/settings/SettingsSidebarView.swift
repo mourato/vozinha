@@ -34,8 +34,6 @@ struct SettingsSidebarView: View {
 
             Spacer(minLength: 0)
 
-            Divider()
-
             Button {
                 onSelectDestination(SettingsSection.system.destination)
             } label: {
@@ -112,7 +110,7 @@ struct SettingsSidebarView: View {
         HStack(spacing: 8) {
             Image(systemName: section.icon)
                 .symbolRenderingMode(.monochrome)
-                .font(.system(size: 13, weight: .regular))
+                .font(.system(size: 15, weight: .regular))
                 .foregroundStyle(.secondary)
                 .frame(width: 20, height: 20)
 
