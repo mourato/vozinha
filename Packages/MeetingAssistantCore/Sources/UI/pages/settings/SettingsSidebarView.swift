@@ -110,7 +110,7 @@ struct SettingsSidebarView: View {
         HStack(spacing: 8) {
             Image(systemName: section.icon)
                 .symbolRenderingMode(.monochrome)
-                .font(.system(size: 15, weight: .regular))
+                .font(.system(size: 15, weight: .medium))
                 .foregroundStyle(.secondary)
                 .frame(width: 20, height: 20)
 
