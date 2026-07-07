@@ -202,6 +202,9 @@
 "settings.dictation.user_prompts.accessibility_hint" = "Abre as configurações de prompts do usuário.";
 "settings.general.theme_color" = "Cor do Tema";
 "settings.general.appearance" = "Aparência";
+"settings.general.appearance.light" = "Claro";
+"settings.general.appearance.system" = "Sistema";
+"settings.general.appearance.dark" = "Escuro";
 "settings.general.app_behavior" = "Comportamento do App";
 "settings.storage.cleanup_now" = "Limpar áudios com mais de %d dias";
 "settings.storage.cleanup_now_disabled" = "Limpeza desativada";
@@ -1070,6 +1073,16 @@
 "prompt.default.description" = "Instruções padrão de limpeza de ditado";
 "prompt.flex.title" = "Flex";
 "prompt.flex.description" = "Regras estritas de formatação para limpeza avançada do ditado";
+"prompt.standup.title" = "Standup";
+"prompt.standup.description" = "Foca em progresso, bloqueios e próximos passos";
+"prompt.presentation.title" = "Apresentação";
+"prompt.presentation.description" = "Destaca principais conclusões, decisões e perguntas";
+"prompt.design_review.title" = "Revisão de Design";
+"prompt.design_review.description" = "Foca em feedback de design, decisões e críticas";
+"prompt.one_on_one.title" = "1:1";
+"prompt.one_on_one.description" = "Foca em feedback, alinhamento e itens de ação";
+"prompt.planning.title" = "Planejamento";
+"prompt.planning.description" = "Foca em tarefas, responsáveis, prazos e marcos";
 
 /* Recording Indicator Settings */
 "settings.general.recording_indicator" = "Indicador de Gravação";
@@ -1215,6 +1228,7 @@
 
 /* App Visibility Settings */
 "settings.general.show_in_dock" = "Mostrar no Dock";
+"settings.general.show_in_dock_desc" = "Mostra o ícone do app no Dock e permite alternância com Cmd+Tab.";
 /* Export */
 "export.header.meeting_title" = "Reunião no %1$@ - %2$@";
 "export.section.metadata" = "Metadados";

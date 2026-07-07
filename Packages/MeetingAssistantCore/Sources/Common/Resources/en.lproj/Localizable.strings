@@ -201,6 +201,9 @@
 "settings.dictation.user_prompts.accessibility_hint" = "Opens user prompts settings.";
 "settings.general.theme_color" = "Theme Color";
 "settings.general.appearance" = "Appearance";
+"settings.general.appearance.light" = "Light";
+"settings.general.appearance.system" = "System";
+"settings.general.appearance.dark" = "Dark";
 "settings.general.app_behavior" = "App Behavior";
 "settings.storage.cleanup_now" = "Clean up audio older than %d days";
 "settings.storage.cleanup_now_disabled" = "Cleanup disabled";
