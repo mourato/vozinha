@@ -7,6 +7,7 @@ Comprehensive index of all available agent skills for Prisma. For routing logic 
 | Skill | Location | Triggers / When to Use |
 |-------|----------|------------------------|
 | `accessibility-audit` | `.agents/skills/accessibility-audit/` | Audit VoiceOver, keyboard navigation, focus order, reduced motion, overlays, and other accessibility-sensitive UI behavior |
+| `benchmarking` | `.agents/skills/benchmarking/` | Triggered by mentions of VoiceInk, FluidVoice, TypeWhisper, or "referência/inspiração". Provides canonical paths and clone policy for reference projects |
 | `architecture` | `.agents/skills/architecture/` | Design module boundaries, apply Clean Architecture, refactor architecture, define dependency injection |
 | `audio-realtime` | `.agents/skills/audio-realtime/` | AVAudioSourceNode, AudioRecorder, ProcessTap, audio glitches, underruns, low-latency optimization |
 | `code-quality` | `.agents/skills/code-quality/` | Improve code readability, rename for clarity, refactor duplicated logic, apply clean code conventions |
@@ -89,6 +90,7 @@ Comprehensive index of all available agent skills for Prisma. For routing logic 
 - Repository standards: `project-standards`
 - Read-only improvement planning: `improve`
 - Strict maintainability review: `thermo-nuclear-code-quality-review`
+- Reference project registry and clone policy: `benchmarking`
 
 ### Engineering Workflow Ownership
 

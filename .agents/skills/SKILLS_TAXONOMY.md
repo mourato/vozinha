@@ -3,8 +3,9 @@
 This matrix defines ownership, overlap, and action for all skills under `.agents/skills`.
 
 | Skill | Theme | Owner | Scope | Overlap With | Action |
-|---|---|---|---|---|---|
+|---|---|---|---|---|---|---|
 | accessibility-audit | SwiftUI/UI/UX | Canonical | Accessibility audit, keyboard navigation, focus order, reduced motion, overlay and panel accessibility | localization, native-app-designer, menubar | Keep; accessibility interaction owner |
+| benchmarking | Meta-skills | Canonical | Reference project registry, clone policy, and inspiration-driven problem-solving for Prisma | architecture, swiftui-patterns, audio-realtime | Keep; reference project owner |
 | architecture | macOS/Swift Core | Canonical | Clean Architecture, module boundaries, DI | macos-development | Keep; clarify architecture-only scope |
 | audio-realtime | Runtime/Performance | Canonical | Low-latency audio pipeline and callback constraints | debugging-strategies | Keep; specialized runtime owner |
 | code-quality | Quality/Engineering Flow | Canonical (generic) | Readability and maintainability principles | swift-conventions | Keep; non-language-specific quality owner |
