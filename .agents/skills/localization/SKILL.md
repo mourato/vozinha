@@ -69,6 +69,17 @@ Text("recording.start".localized)
 
 When adding or removing UI text, ensure it is handled correctly: either by proper localization or by removing/sanitizing it safely.
 
+### Mandatory Registration on New Key Introduction
+
+Whenever a new localization key is introduced in source code via `"key".localized`, **register it in all supported locale files** in the same PR/task:
+
+1. Add the key to `en.lproj/Localizable.strings` with the English value.
+2. Add the key to `pt.lproj/Localizable.strings` with the Portuguese translation.
+3. Keep locale files symmetric — no key should exist in only one language.
+4. Verify symmetry before merge — grep both locale files for the new key to confirm.
+
+This requirement applies regardless of risk level (Fast or Full lane). A missing registration is a defect, not a deferrable item.
+
 ### Mandatory Sanitization on UI Text Removal
 
 If any user-facing text is removed from the interface, localization cleanup is required in the same task:
@@ -150,3 +161,9 @@ Follow this pattern for consistent naming:
 2. Keep old localization keys only when legacy routes or search terms still need them; otherwise remove orphaned keys symmetrically across locales.
 3. Add search tests for both new parent labels and old child terms so renamed pages remain discoverable.
 4. When consolidating pages, re-check nearby descriptions for duplicated copy introduced by parent and child labels saying the same thing.
+
+### 2026-07-07 Process Gap Closure
+
+**Gap:** New `.localized` keys could be added in source code without corresponding entries in `Localizable.strings`, causing raw keys to appear in the UI. Neither the Standard Task SOP nor this skill explicitly required registration in all locale files.
+
+**Fix:** Added "Mandatory Registration on New Key Introduction" section above to make locale-file registration a hard requirement in the same PR/task.
