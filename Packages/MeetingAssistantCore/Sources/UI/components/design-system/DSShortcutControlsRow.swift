@@ -50,22 +50,20 @@ public struct DSShortcutControlsRow: View {
             Spacer()
 
             if let activationMode {
-                DSMenuPicker(selection: activationMode, width: activationPickerWidth) {
-                    ForEach(ShortcutActivationMode.allCases, id: \.self) { mode in
-                        Text(mode.localizedName).tag(mode)
-                    }
-                }
+                DSMenuSelect(
+                    selection: activationMode,
+                    options: ShortcutActivationMode.allCases,
+                    width: activationPickerWidth,
+                    displayName: \.localizedName
+                )
             }
 
-            DSMenuPicker(selection: selectedPresetKey, width: presetPickerWidth) {
-                ForEach(PresetShortcutKey.allCases, id: \.self) { key in
-                    if let icon = key.icon {
-                        Label(key.displayName, systemImage: icon).tag(key)
-                    } else {
-                        Text(key.displayName).tag(key)
-                    }
-                }
-            }
+            DSMenuSelect(
+                selection: selectedPresetKey,
+                options: PresetShortcutKey.allCases,
+                width: presetPickerWidth,
+                displayName: \.displayName
+            )
         }
     }
 }

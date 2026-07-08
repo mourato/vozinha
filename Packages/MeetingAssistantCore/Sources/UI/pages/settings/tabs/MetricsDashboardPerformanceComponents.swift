@@ -50,48 +50,45 @@ struct MetricsDashboardPerformanceWorkspace: View {
                 HStack(spacing: 12) {
                     MetricsDashboardFilterPicker(
                         title: "metrics.performance.filters.capture".localized,
-                        selection: $viewModel.captureFilter
-                    ) {
-                        ForEach(PerformanceFilter.allCases, id: \.self) { filter in
-                            Text(filter.displayName).tag(filter)
-                        }
-                    }
+                        selection: $viewModel.captureFilter,
+                        options: PerformanceFilter.allCases,
+                        displayName: \.displayName
+                    )
 
                     MetricsDashboardFilterPicker(
                         title: "metrics.performance.filters.date".localized,
-                        selection: $viewModel.dateFilter
-                    ) {
-                        ForEach(DateFilter.allCases, id: \.self) { filter in
-                            Text(filter.displayName).tag(filter)
-                        }
-                    }
+                        selection: $viewModel.dateFilter,
+                        options: DateFilter.allCases,
+                        displayName: \.displayName
+                    )
                 }
 
                 HStack(spacing: 12) {
                     MetricsDashboardFilterPicker(
                         title: "metrics.performance.filters.provider".localized,
-                        selection: $viewModel.providerID
-                    ) {
-                        Text("metrics.performance.filters.provider.all".localized)
-                            .tag(String?.none)
-
-                        ForEach(viewModel.providerOptions) { option in
-                            Text(option.displayName).tag(Optional(option.id))
-                        }
-                    }
+                        selection: $viewModel.providerID,
+                        options: [String?.none] + viewModel.providerOptions.map { Optional($0.id) },
+                        displayName: providerDisplayName
+                    )
 
                     MetricsDashboardFilterPicker(
                         title: "metrics.performance.filters.status".localized,
-                        selection: $viewModel.statusFilter
-                    ) {
-                        ForEach(ModelPerformanceStatusFilter.allCases, id: \.self) { filter in
-                            Text(filter.displayName).tag(filter)
-                        }
-                    }
+                        selection: $viewModel.statusFilter,
+                        options: ModelPerformanceStatusFilter.allCases,
+                        displayName: \.displayName
+                    )
                 }
 
             }
         }
+    }
+
+    private func providerDisplayName(_ providerID: String?) -> String {
+        guard let providerID else {
+            return "metrics.performance.filters.provider.all".localized
+        }
+
+        return viewModel.providerOptions.first { $0.id == providerID }?.displayName ?? providerID
     }
 }
 
@@ -217,11 +214,11 @@ private struct MetricsDashboardPerformanceLeaderboardSection: View {
 
                     Spacer()
 
-                    DSMenuPicker("metrics.performance.sort.title".localized, selection: $sort) {
-                        ForEach(LeaderboardSort.allCases, id: \.self) { option in
-                            Text(option.displayName).tag(option)
-                        }
-                    }
+                    DSMenuSelect(
+                        selection: $sort,
+                        options: LeaderboardSort.allCases,
+                        displayName: \.displayName
+                    )
                 }
 
                 if entries.isEmpty {
@@ -437,10 +434,11 @@ private struct MetricsDashboardPerformanceHistoryRow: View {
     }
 }
 
-private struct MetricsDashboardFilterPicker<SelectionValue: Hashable, Content: View>: View {
+private struct MetricsDashboardFilterPicker<SelectionValue: Hashable>: View {
     let title: String
     @Binding var selection: SelectionValue
-    @ViewBuilder let content: () -> Content
+    let options: [SelectionValue]
+    let displayName: (SelectionValue) -> String
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
@@ -448,7 +446,13 @@ private struct MetricsDashboardFilterPicker<SelectionValue: Hashable, Content: V
                 .font(.caption)
                 .foregroundStyle(.secondary)
 
-            DSMenuPicker(selection: $selection, maxWidth: .infinity, alignment: .leading, content: content)
+            DSMenuSelect(
+                selection: $selection,
+                options: options,
+                maxWidth: .infinity,
+                alignment: .leading,
+                displayName: displayName
+            )
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }

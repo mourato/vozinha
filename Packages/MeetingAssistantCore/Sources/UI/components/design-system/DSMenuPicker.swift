@@ -33,7 +33,6 @@ public struct DSMenuPicker<SelectionValue: Hashable, Content: View>: View {
         }
         .labelsHidden()
         .pickerStyle(.menu)
-        .tint(.secondary)
         .frame(width: width, alignment: alignment)
         .frame(minWidth: minWidth, maxWidth: maxWidth, alignment: alignment)
     }
