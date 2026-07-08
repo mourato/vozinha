@@ -202,6 +202,7 @@
 "settings.dictation.user_prompts.accessibility_hint" = "Abre as configurações de prompts do usuário.";
 "settings.general.theme_color" = "Cor do Tema";
 "settings.general.appearance" = "Aparência";
+"settings.general.appearance.theme" = "Tema";
 "settings.general.appearance.light" = "Claro";
 "settings.general.appearance.system" = "Sistema";
 "settings.general.appearance.dark" = "Escuro";

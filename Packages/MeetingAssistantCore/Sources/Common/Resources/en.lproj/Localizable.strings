@@ -201,6 +201,7 @@
 "settings.dictation.user_prompts.accessibility_hint" = "Opens user prompts settings.";
 "settings.general.theme_color" = "Theme Color";
 "settings.general.appearance" = "Appearance";
+"settings.general.appearance.theme" = "Theme";
 "settings.general.appearance.light" = "Light";
 "settings.general.appearance.system" = "System";
 "settings.general.appearance.dark" = "Dark";
