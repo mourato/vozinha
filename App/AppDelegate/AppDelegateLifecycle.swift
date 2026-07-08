@@ -44,27 +44,7 @@ extension AppDelegate {
 
         localModelResidencyCoordinator.startMonitoring()
 
-        // Set initial appearance and dock visibility based on user settings
-        applyAppearance(settingsStore.appearanceMode)
-        applyDockVisibility(settingsStore.showInDock)
-
-        // Observe appearance changes
-        settingsStore.$appearanceMode
-            .dropFirst()
-            .removeDuplicates()
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] mode in
-                self?.applyAppearance(mode)
-            }
-            .store(in: &cancellables)
-
-        // Observe changes to dock visibility setting
-        dockObserver = settingsStore.$showInDock
-            .dropFirst() // Skip initial value (already applied above)
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] showInDock in
-                self?.applyDockVisibility(showInDock)
-            }
+        configureUserInterfacePreferences()
 
         openSettingsOnLaunchIfEnabled()
         scheduleLaunchVisibilityRecovery()
@@ -166,27 +146,7 @@ extension AppDelegate {
 
         localModelResidencyCoordinator.startMonitoring()
 
-        // Set initial appearance and dock visibility based on user settings
-        applyAppearance(settingsStore.appearanceMode)
-        applyDockVisibility(settingsStore.showInDock)
-
-        // Observe appearance changes
-        settingsStore.$appearanceMode
-            .dropFirst()
-            .removeDuplicates()
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] mode in
-                self?.applyAppearance(mode)
-            }
-            .store(in: &cancellables)
-
-        // Observe changes to dock visibility setting
-        dockObserver = settingsStore.$showInDock
-            .dropFirst()
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] showInDock in
-                self?.applyDockVisibility(showInDock)
-            }
+        configureUserInterfacePreferences()
 
         openSettingsOnLaunchIfEnabled()
         scheduleLaunchVisibilityRecovery()

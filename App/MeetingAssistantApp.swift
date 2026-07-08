@@ -535,6 +535,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     )
     lazy var onboardingController = OnboardingWindowController()
     var cancellables = Set<AnyCancellable>()
+    var appearanceObserver: AnyCancellable?
     var dockObserver: AnyCancellable?
     var hasConfiguredCapabilityObservers = false
     var lastRecordingUIRenderState: RecordingUIRenderState?
