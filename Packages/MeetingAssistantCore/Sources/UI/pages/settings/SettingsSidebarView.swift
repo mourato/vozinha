@@ -20,28 +20,16 @@ struct SettingsSidebarView: View {
 
     private var sectionsList: some View {
         VStack(spacing: 0) {
-            ScrollView {
-                LazyVStack(spacing: 6) {
+            List(selection: sectionSelectionBinding) {
+                Section("settings.sidebar.workflows".localized) {
                     ForEach(SettingsSection.primarySections) { section in
-                        Button {
-                            onSelectDestination(section.destination)
-                        } label: {
+                        NavigationLink(value: section) {
                             sidebarLabel(for: section)
-                                .frame(maxWidth: .infinity, alignment: .leading)
                         }
-                        .buttonStyle(.plain)
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 6)
-                        .background(
-                            selectedSection == section
-                                ? AnyShapeStyle(AppDesignSystem.Colors.subtleFill)
-                                : AnyShapeStyle(Color.clear)
-                        )
-                        .clipShape(RoundedRectangle(cornerRadius: AppDesignSystem.Layout.smallCornerRadius))
                     }
                 }
-                .padding(.horizontal, 4)
             }
+            .listStyle(.sidebar)
             .settingsScrollEdgeEffect()
 
             Spacer(minLength: 0)
@@ -59,6 +47,7 @@ struct SettingsSidebarView: View {
             .clipShape(RoundedRectangle(cornerRadius: AppDesignSystem.Layout.smallCornerRadius))
             .padding(.horizontal, 8)
             .padding(.bottom, 8)
+            .accessibilityAddTraits(selectedSection == .system ? .isSelected : [])
         }
         .searchable(
             text: $searchText,
@@ -161,6 +150,15 @@ struct SettingsSidebarView: View {
             }
         }
         .padding(.vertical, 3)
+    }
+
+    private var sectionSelectionBinding: Binding<SettingsSection> {
+        Binding(
+            get: { selectedSection },
+            set: { newSection in
+                onSelectDestination(newSection.destination)
+            }
+        )
     }
 
 }

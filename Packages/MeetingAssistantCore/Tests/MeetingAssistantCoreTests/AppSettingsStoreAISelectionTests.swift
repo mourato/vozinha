@@ -94,6 +94,16 @@ final class AppSettingsStoreAISelectionTests: XCTestCase {
         XCTAssertEqual(settings.meetingNotesFontSize, 16, accuracy: 0.0_001)
     }
 
+    func testAppearanceModeSettingIsPersistedAndReset() {
+        settings.appearanceMode = .dark
+        XCTAssertEqual(UserDefaults.standard.string(forKey: "appearanceMode"), "dark")
+
+        settings.resetToDefaults()
+
+        XCTAssertEqual(settings.appearanceMode, .system)
+        XCTAssertEqual(UserDefaults.standard.string(forKey: "appearanceMode"), "system")
+    }
+
     func testMeetingNotesTypographySettingsNormalizeAndPersist() {
         settings.meetingNotesFontFamilyKey = "   "
         settings.meetingNotesFontSize = 15
