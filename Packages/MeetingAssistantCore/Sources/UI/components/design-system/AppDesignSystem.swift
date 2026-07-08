@@ -120,6 +120,22 @@ public enum AppDesignSystem {
             Color(nsColor: settingsCanvasBackgroundNSColor())
         }
 
+        public static var settingsWindowMaterialOverlay: Color {
+            settingsCanvasBackground.opacity(0.50)
+        }
+
+        public static var settingsPanelOverlay: Color {
+            settingsCanvasBackground.opacity(0.42)
+        }
+
+        public static var settingsMaterialCard: Color {
+            Color(nsColor: .controlBackgroundColor).opacity(0.58)
+        }
+
+        public static var settingsMaterialStroke: Color {
+            separator.opacity(0.36)
+        }
+
         public static var glassBackground: Color {
             windowBackground
         }
@@ -181,7 +197,7 @@ public enum AppDesignSystem {
         }
 
         public static var settingsCardStroke: Color {
-            separator
+            settingsMaterialStroke
         }
 
         public static var subtleFill: Color {

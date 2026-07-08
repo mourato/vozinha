@@ -26,7 +26,7 @@ struct MeetingAssistantApp: App {
         .defaultLaunchBehavior(.suppressed)
         .windowResizability(.contentSize)
         .defaultSize(width: 900, height: 640)
-        .windowStyle(.titleBar)
+        .windowStyle(.hiddenTitleBar)
         .windowToolbarStyle(.unified)
         .commands {
             MeetingAssistantCommands()

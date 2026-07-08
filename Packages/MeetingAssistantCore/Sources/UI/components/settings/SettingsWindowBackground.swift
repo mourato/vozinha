@@ -21,9 +21,9 @@ public struct SettingsWindowBackground: View {
                 ZStack {
                     VisualEffectView(
                         material: .sidebar,
-                        blendingMode: .withinWindow
+                        blendingMode: .behindWindow
                     )
-                    AppDesignSystem.Colors.windowBackground.opacity(0.50)
+                    AppDesignSystem.Colors.settingsWindowMaterialOverlay
                 }
             }
         @unknown default:
@@ -54,9 +54,17 @@ public struct SettingsTitleBarMaterialBackground: View {
     private var nativeTitleBarBackground: some View {
         switch colorScheme {
         case .light, .dark:
-            Rectangle()
-                .fill(.bar)
-                .background(.bar)
+            if AppDesignSystem.Accessibility.reduceTransparency {
+                Rectangle()
+                    .fill(AppDesignSystem.Colors.settingsCanvasBackground)
+            } else {
+                ZStack {
+                    Rectangle()
+                        .fill(.bar)
+                        .background(.bar)
+                    AppDesignSystem.Colors.settingsPanelOverlay
+                }
+            }
         @unknown default:
             Rectangle()
                 .fill(AppDesignSystem.Colors.windowBackground)

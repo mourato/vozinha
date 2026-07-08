@@ -33,39 +33,42 @@ public struct DSCard<Content: View>: View {
             content
         }
         .padding(padding)
-        .background(
-            RoundedRectangle(cornerRadius: cornerRadius)
-                .fill(backgroundStyle)
-                .overlay {
-                    RoundedRectangle(cornerRadius: cornerRadius)
-                        .stroke(strokeColor, lineWidth: 0.5)
-                }
-        )
+        .background(cardBackground)
         .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
-    private var backgroundStyle: AnyShapeStyle {
+    @ViewBuilder
+    private var cardBackground: some View {
+        let shape = RoundedRectangle(cornerRadius: cornerRadius)
+
         switch style {
         case .standard:
-            AnyShapeStyle(AppDesignSystem.Colors.cardBackground)
+            shape
+                .fill(AppDesignSystem.Colors.cardBackground)
+                .overlay {
+                    shape.stroke(AppDesignSystem.Colors.cardStroke, lineWidth: 0.5)
+                }
         case .settings:
             if reduceTransparency {
-                AnyShapeStyle(AppDesignSystem.Colors.settingsCardBackground(intensity: settingsSurfaceIntensity))
+                shape
+                    .fill(AppDesignSystem.Colors.settingsCardBackground(intensity: settingsSurfaceIntensity))
+                    .overlay {
+                        shape.stroke(AppDesignSystem.Colors.settingsCardStroke, lineWidth: 0.5)
+                    }
             } else {
-                AnyShapeStyle(.regularMaterial)
+                shape
+                    .fill(.regularMaterial)
+                    .overlay {
+                        shape.fill(AppDesignSystem.Colors.settingsMaterialCard)
+                    }
+                    .overlay {
+                        shape.stroke(AppDesignSystem.Colors.settingsCardStroke, lineWidth: 0.5)
+                    }
             }
         }
     }
 
-    private var strokeColor: Color {
-        switch style {
-        case .standard:
-            AppDesignSystem.Colors.cardStroke
-        case .settings:
-            AppDesignSystem.Colors.settingsCardStroke
-        }
-    }
 }
 
 #Preview("DSCard") {

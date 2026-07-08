@@ -83,6 +83,7 @@ public struct SettingsView: View {
             }
         }
         .modifier(SettingsToolbarBackgroundModifier(usesToolbarChrome: usesToolbarChrome))
+        .background(SettingsWindowConfigurator())
         .frame(minWidth: LayoutConstants.windowWidth, minHeight: LayoutConstants.windowHeight)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .onAppear {
