@@ -29,6 +29,7 @@ Use this skill when creating/switching branches, committing, preparing PRs, merg
 - Preserve unrelated worktree changes.
 - Use Conventional Commits: `<type>(<optional-scope>): <summary>`.
 - Keep commits atomic by intent: feature, fix, refactor, tests, docs, cleanup, review fix.
+- Keep version/build bumps out of functional commits. The pre-commit hook may run `scripts/hooks/first-commit-version-bump.sh`; use `SKIP_DAILY_VERSION_BUMP=1 git commit ...` for normal atomic commits, then make a separate `chore(release): bump version` commit when a release/version bump is actually intended.
 - Do not commit knowingly broken code.
 - Before push/merge, run the lane gate selected by `task-lifecycle` and mapped by `quality-assurance`.
 - Use PRs for non-trivial work unless the user explicitly chooses the direct local merge path.
