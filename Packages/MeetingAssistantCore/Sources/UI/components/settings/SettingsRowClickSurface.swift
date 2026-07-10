@@ -4,7 +4,10 @@ import SwiftUI
 public struct SettingsRowClickSurface<Content: View>: View {
     private let onSingleClick: (() -> Void)?
     private let onDoubleClick: (() -> Void)?
-    private let content: () -> Content
+    private let content: (Bool) -> Content
+
+    @State private var isPressed = false
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     public init(
         onSingleClick: (() -> Void)? = nil,
@@ -13,16 +16,33 @@ public struct SettingsRowClickSurface<Content: View>: View {
     ) {
         self.onSingleClick = onSingleClick
         self.onDoubleClick = onDoubleClick
+        self.content = { _ in content() }
+    }
+
+    public init(
+        onSingleClick: (() -> Void)? = nil,
+        onDoubleClick: (() -> Void)? = nil,
+        @ViewBuilder content: @escaping (Bool) -> Content
+    ) {
+        self.onSingleClick = onSingleClick
+        self.onDoubleClick = onDoubleClick
         self.content = content
     }
 
     public var body: some View {
-        content()
+        content(isPressed)
             .contentShape(Rectangle())
+            .scaleEffect(reduceMotion || !isPressed ? 1 : 0.99)
+            .opacity(isPressed ? 0.9 : 1)
+            .animation(
+                AppleMotion.animation(reduceMotion: reduceMotion, kind: .press),
+                value: isPressed
+            )
             .overlay {
                 SettingsRowClickCaptureRepresentable(
                     onSingleClick: onSingleClick,
-                    onDoubleClick: onDoubleClick
+                    onDoubleClick: onDoubleClick,
+                    isPressed: $isPressed
                 )
             }
     }
@@ -31,9 +51,10 @@ public struct SettingsRowClickSurface<Content: View>: View {
 private struct SettingsRowClickCaptureRepresentable: NSViewRepresentable {
     let onSingleClick: (() -> Void)?
     let onDoubleClick: (() -> Void)?
+    @Binding var isPressed: Bool
 
     func makeCoordinator() -> Coordinator {
-        Coordinator(onSingleClick: onSingleClick, onDoubleClick: onDoubleClick)
+        Coordinator(onSingleClick: onSingleClick, onDoubleClick: onDoubleClick, isPressed: $isPressed)
     }
 
     func makeNSView(context: Context) -> SettingsRowClickCaptureView {
@@ -45,16 +66,19 @@ private struct SettingsRowClickCaptureRepresentable: NSViewRepresentable {
     func updateNSView(_ nsView: SettingsRowClickCaptureView, context: Context) {
         context.coordinator.onSingleClick = onSingleClick
         context.coordinator.onDoubleClick = onDoubleClick
+        context.coordinator.isPressed = $isPressed
         nsView.coordinator = context.coordinator
     }
 
     final class Coordinator: NSObject {
         var onSingleClick: (() -> Void)?
         var onDoubleClick: (() -> Void)?
+        var isPressed: Binding<Bool>
 
-        init(onSingleClick: (() -> Void)?, onDoubleClick: (() -> Void)?) {
+        init(onSingleClick: (() -> Void)?, onDoubleClick: (() -> Void)?, isPressed: Binding<Bool>) {
             self.onSingleClick = onSingleClick
             self.onDoubleClick = onDoubleClick
+            self.isPressed = isPressed
         }
 
         @objc func handleSingleClick() {
@@ -63,6 +87,10 @@ private struct SettingsRowClickCaptureRepresentable: NSViewRepresentable {
 
         @objc func handleDoubleClick() {
             onDoubleClick?()
+        }
+
+        func updatePressed(_ pressed: Bool) {
+            isPressed.wrappedValue = pressed
         }
     }
 }
@@ -94,12 +122,17 @@ private final class SettingsRowClickCaptureView: NSView {
     override func mouseDown(with event: NSEvent) {
         guard let coordinator else { return }
 
+        coordinator.updatePressed(true)
         if event.clickCount >= 2 {
             coordinator.handleDoubleClick()
             return
         }
 
         coordinator.handleSingleClick()
+    }
+
+    override func mouseUp(with event: NSEvent) {
+        coordinator?.updatePressed(false)
     }
 }
 

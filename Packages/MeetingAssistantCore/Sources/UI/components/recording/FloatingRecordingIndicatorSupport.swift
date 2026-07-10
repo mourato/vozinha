@@ -73,7 +73,7 @@ struct ActionIconButton: View {
                 .background(controlBackground)
                 .clipShape(Circle())
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.pressable)
         .help(helpKey.localized)
         .onHover { hovering in
             isHovered = hovering
