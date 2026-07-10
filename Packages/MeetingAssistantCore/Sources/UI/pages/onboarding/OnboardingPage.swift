@@ -59,22 +59,19 @@ public struct OnboardingView: View {
                 Spacer(minLength: 0)
             }
         }
-        .onChange(of: viewModel.currentStep) { oldValue, newValue in
-            stepDirection = newValue.rawValue >= oldValue.rawValue ? .forward : .backward
-        }
     }
 
     @ViewBuilder
     private var contentView: some View {
         switch viewModel.currentStep {
         case .welcome:
-            OnboardingWelcomeView(onGetStarted: viewModel.goToNextStep)
+            OnboardingWelcomeView(onGetStarted: { goToNextStep() })
 
         case .permissions:
             OnboardingPermissionsView(
                 viewModel: permissionViewModel,
-                onContinue: viewModel.goToNextStep,
-                onSkip: viewModel.currentStep.isSkippable ? { viewModel.skipCurrentStep() } : nil,
+                onContinue: { goToNextStep() },
+                onSkip: viewModel.currentStep.isSkippable ? { skipCurrentStep() } : nil,
                 refreshAction: refreshPermissions
             )
 
@@ -82,25 +79,25 @@ public struct OnboardingView: View {
             OnboardingShortcutsView(
                 viewModel: shortcutViewModel,
                 assistantViewModel: assistantShortcutViewModel,
-                onContinue: viewModel.goToNextStep,
-                onSkip: viewModel.currentStep.isSkippable ? { viewModel.skipCurrentStep() } : nil
+                onContinue: { goToNextStep() },
+                onSkip: viewModel.currentStep.isSkippable ? { skipCurrentStep() } : nil
             )
 
         case .downloadModels:
             OnboardingDownloadModelsView(
                 modelManager: modelManager,
-                onContinue: viewModel.goToNextStep,
-                onSkip: viewModel.currentStep.isSkippable ? { viewModel.skipCurrentStep() } : nil
+                onContinue: { goToNextStep() },
+                onSkip: viewModel.currentStep.isSkippable ? { skipCurrentStep() } : nil
             )
 
         case .meetingRecording:
             OnboardingMeetingRecordingView(
                 readiness: meetingRecordingReadiness,
                 onEnable: enableMeetingRecording,
-                onOpenPermissions: { viewModel.currentStep = .permissions },
-                onOpenModels: { viewModel.currentStep = .downloadModels },
-                onContinue: viewModel.goToNextStep,
-                onSkip: viewModel.currentStep.isSkippable ? { viewModel.skipCurrentStep() } : nil
+                onOpenPermissions: { navigate(to: .permissions) },
+                onOpenModels: { navigate(to: .downloadModels) },
+                onContinue: { goToNextStep() },
+                onSkip: viewModel.currentStep.isSkippable ? { skipCurrentStep() } : nil
             )
 
         case .completion:
@@ -124,9 +121,24 @@ public struct OnboardingView: View {
         )
     }
 
+    private func goToNextStep() {
+        stepDirection = .forward
+        viewModel.goToNextStep()
+    }
+
+    private func skipCurrentStep() {
+        stepDirection = .forward
+        viewModel.skipCurrentStep()
+    }
+
+    private func navigate(to step: OnboardingStep) {
+        stepDirection = step.rawValue >= viewModel.currentStep.rawValue ? .forward : .backward
+        viewModel.currentStep = step
+    }
+
     private func enableMeetingRecording() {
         viewModel.enableMeetingRecording()
-        viewModel.goToNextStep()
+        goToNextStep()
     }
 
     private var stepTransition: AnyTransition {
