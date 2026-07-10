@@ -102,6 +102,13 @@ honor its STOP conditions, and update your row when done.
 - Not audited: Swift source behavior, CI workflow runtime, actual wall-clock benchmark runs, GitHub Actions logs, release signing internals, full test-suite health, and non-delivery product skills.
 - Reuse decision: optimize the existing `scope-check`, `*-agent`, hook, and lint surfaces instead of introducing a second validation framework. Keep tests out of pre-commit by default, use staged lint/format as the cheap commit gate, and use compact scoped validation for push/agent workflows.
 
+## 2026-07-10 Apple Design Motion Polish Scope
+
+- Effort: standard, focused on applying the new `apple-design` skill to Prisma's highest-impact macOS UI surfaces.
+- Audited: `apple-design`, `AppDesignSystem`, `SettingsMotion`, `SettingsWindowBackground`, `SettingsSidebarView`, `DSToggleRow`, `SettingsRowClickSurface`, `FloatingRecordingIndicatorController`, `FloatingRecordingIndicatorView`, `FloatingRecordingIndicatorSupport`, `TranscriptionCardView`, `TranscriptionAudioPlayerView`, onboarding views, and focused indicator/onboarding/settings tests.
+- Not audited: full runtime screenshot QA, every SwiftUI view, full VoiceOver pass, menu bar visual redesign, audio/transcription runtime behavior, release/build infra, and full security/dependency posture.
+- Reuse decision: extend `AppDesignSystem`, `SettingsMotion`, the existing floating recording indicator pipeline, existing onboarding/readiness contracts, and focused XCTest/preview gates. Do not create a second design system, a second overlay controller, or a marketing-style onboarding flow.
+
 ## Findings
 
 | # | Finding | Category | Impact | Effort | Risk | Evidence |
@@ -162,6 +169,11 @@ honor its STOP conditions, and update your row when done.
 | 030 | Consolidate delivery workflow guidance into one skill | P1 | M | - | DONE |
 | 031 | Consolidate debugging and diagnostic signal guidance | P2 | S | - | DONE |
 | 032 | Optimize agent delivery gates for compact staged validation | P1 | M | - | TODO |
+| 033 | Establish Apple-style motion and material foundation | P1 | M | - | TODO |
+| 034 | Make the floating recording indicator structurally ready for fluid interaction | P1 | L | 033 | TODO |
+| 035 | Add immediate press feedback and direct-manipulation controls | P1 | M | 033 | TODO |
+| 036 | Normalize typography and scaled layout in core UI surfaces | P2 | M | 033 | TODO |
+| 037 | Refresh onboarding with scalable Apple-style layout and transitions | P2 | M | 033, 036 | TODO |
 
 Status values: TODO | IN PROGRESS | DONE | BLOCKED (with one-line reason) | REJECTED (with one-line rationale)
 
@@ -190,6 +202,11 @@ Status values: TODO | IN PROGRESS | DONE | BLOCKED (with one-line reason) | REJE
 - 030 can run independently after 029. It is documentation/guidance-only and should merge the delivery mechanics currently split across `task-lifecycle`, `quality-assurance`, and `git-workflow` while keeping `testing-xctest` and `thermo-nuclear-code-quality-review` separate.
 - 031 can run independently after 029, but if queued with 030, run 030 first to reduce reference churn in routing/index files. It is documentation/guidance-only and should merge investigation method and diagnostic-signal guidance while preserving privacy-safe logging/redaction rules.
 - 032 can run independently after 030 because it relies on `delivery-workflow` as the single owner of lane, hook, validation, and evidence guidance. It should not move tests to pre-commit; it should make staged lint/format cheap and push validation compact for agents.
+- 033 should run before 034-037 because it creates the shared spring, Reduce Motion, and material vocabulary that prevents each UI surface from inventing local constants.
+- 034 should run after 033 and before any new floating-indicator behavior. It is the highest-risk Apple-design plan because it touches the live recording overlay and AppKit panel geometry.
+- 035 can run after 033 and independently of 034. It should stay focused on custom press feedback and direct controls, not broad settings redesign.
+- 036 can run after 033. It should migrate the highest-impact fixed typography and leave exact-width indicator timing/status fonts deterministic and tested.
+- 037 should run after 033 and preferably after 036 so onboarding can reuse the shared motion and typography/scaled-metric policy while preserving existing readiness behavior.
 
 ## Committee review notes
 
@@ -228,3 +245,8 @@ Status values: TODO | IN PROGRESS | DONE | BLOCKED (with one-line reason) | REJE
 - Merge `keychain-security`, `data-persistence`, `audio-realtime`, `swift-concurrency-expert`, or `intelligence-kernel` into broader skills: rejected because these are specialist high-risk domains where extra routing cost is lower than the cost of diluted guidance.
 - Run tests before every commit by default: rejected because Prisma already has scoped push gates and agent-mode validation; default per-commit tests would increase latency/token cost. Keep pre-commit to staged lint/format and run tests before push/merge or when targeted proof is needed.
 - Add a second validation framework for agents: rejected because `scope-check`, `*-agent` targets, and `AGENT_*` output already exist; the gap is default routing and hook/guidance alignment, not missing infrastructure.
+- Create a second Prisma design system for Apple motion: rejected because `AppDesignSystem`, `SettingsMotion`, `SettingsWindowBackground`, and `DSCard` already centralize the relevant UI vocabulary.
+- Build a new floating recording overlay controller: rejected because the current AppDelegate -> `FloatingRecordingIndicatorController` -> `FloatingRecordingIndicatorView` path already owns recording presentation, and prior recording plans explicitly kept presentation on that pipeline.
+- Add drag-to-reposition to the indicator in the first polish pass: rejected because the current risk is structural concentration and noncentralized motion; direct manipulation can follow after the indicator is decomposed and geometry helpers are stable.
+- Redesign transcription history cards wholesale: rejected because the immediate Apple-design gap is press/direct feedback and scrubber affordance, not a full history IA rewrite.
+- Replace onboarding with a marketing/landing page: rejected because onboarding is a setup workflow with permission/model/meeting readiness obligations; polish should preserve honest readiness and concise setup steps.
