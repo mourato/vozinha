@@ -15,6 +15,16 @@ public struct PostProcessingContextCaptureResult: Sendable {
     }
 }
 
+struct PostProcessingContextCaptureRequest {
+    let meeting: Meeting
+    let settings: AppSettingsStore
+    let activeTabURL: String?
+    let calendarContext: String?
+    let isDictationMode: Bool
+    let contextSourcePolicy: DictationContextSourcePolicy?
+    let includeWindowOCR: Bool?
+}
+
 @MainActor
 public final class AssistantContextCaptureService {
     private let contextAwarenessService: any ContextAwarenessServiceProtocol
@@ -49,14 +59,17 @@ public final class AssistantContextCaptureService {
         contextSourcePolicy: DictationContextSourcePolicy? = nil,
         includeWindowOCR: Bool? = nil
     ) async -> (context: String?, items: [TranscriptionContextItem]) {
-        let contextAwarenessEnabled = contextSourcePolicy?.isEnabled ?? settings.contextAwarenessEnabled
-        let shouldIncludeWindowOCR = includeWindowOCR ?? contextSourcePolicy?.includeWindowOCR ?? settings.contextAwarenessIncludeWindowOCR
+        let options = effectiveCaptureOptions(
+            settings: settings,
+            contextSourcePolicy: contextSourcePolicy,
+            includeWindowOCR: includeWindowOCR
+        )
 
-        guard contextAwarenessEnabled else {
+        guard options.hasEnabledContextSources else {
             AppLogger.debug(
-                "Context awareness disabled, skipping context capture",
+                "Context sources disabled, skipping context capture",
                 category: .recordingManager,
-                extra: ["reasonCode": "context.disabled"]
+                extra: ["reasonCode": "context.sources_disabled"]
             )
 
             guard let activeTabURL else {
@@ -72,11 +85,11 @@ public final class AssistantContextCaptureService {
         let snapshot = await contextAwarenessService.captureSnapshot(
             options: .init(
                 includeActiveApp: true,
-                includeClipboard: contextSourcePolicy?.includeClipboard ?? settings.contextAwarenessIncludeClipboard,
-                includeWindowOCR: shouldIncludeWindowOCR,
-                includeAccessibilityText: contextSourcePolicy?.includeAccessibilityText ?? settings.contextAwarenessIncludeAccessibilityText,
+                includeClipboard: options.includeClipboard,
+                includeWindowOCR: options.includeWindowOCR,
+                includeAccessibilityText: options.includeAccessibilityText,
                 protectSensitiveApps: true,
-                redactSensitiveData: contextSourcePolicy?.redactSensitiveData ?? settings.contextAwarenessRedactSensitiveData,
+                redactSensitiveData: options.redactSensitiveData,
                 excludedBundleIDs: settings.contextAwarenessExcludedBundleIDs
             )
         )
@@ -95,7 +108,7 @@ public final class AssistantContextCaptureService {
         await appendFocusedTextContextIfNeeded(
             snapshot: snapshot,
             isDictationMode: isDictationMode,
-            settings: settings,
+            options: options,
             context: &context,
             items: &items
         )
@@ -104,14 +117,8 @@ public final class AssistantContextCaptureService {
         return (context, items)
     }
 
-    public func capturePostProcessingContextWithTimeout(
-        for meeting: Meeting,
-        settings: AppSettingsStore,
-        activeTabURL: String?,
-        calendarContext: String?,
-        isDictationMode: Bool,
-        contextSourcePolicy: DictationContextSourcePolicy? = nil,
-        includeWindowOCR: Bool? = nil,
+    func capturePostProcessingContextWithTimeout(
+        _ request: PostProcessingContextCaptureRequest,
         timeoutNanoseconds: UInt64
     ) async -> PostProcessingContextCaptureResult {
         await withTaskGroup(
@@ -120,13 +127,13 @@ public final class AssistantContextCaptureService {
         ) { group in
             group.addTask {
                 let capture = await self.capturePostProcessingContext(
-                    for: meeting,
-                    settings: settings,
-                    activeTabURL: activeTabURL,
-                    calendarContext: calendarContext,
-                    isDictationMode: isDictationMode,
-                    contextSourcePolicy: contextSourcePolicy,
-                    includeWindowOCR: includeWindowOCR
+                    for: request.meeting,
+                    settings: request.settings,
+                    activeTabURL: request.activeTabURL,
+                    calendarContext: request.calendarContext,
+                    isDictationMode: request.isDictationMode,
+                    contextSourcePolicy: request.contextSourcePolicy,
+                    includeWindowOCR: request.includeWindowOCR
                 )
                 return PostProcessingContextCaptureResult(
                     context: capture.context,
@@ -176,9 +183,7 @@ public final class AssistantContextCaptureService {
         return items
     }
 
-    private func captureFocusedTextContext(settings: AppSettingsStore) async -> String? {
-        guard settings.contextAwarenessIncludeAccessibilityText else { return nil }
-
+    private func captureFocusedTextContext(redactSensitiveData: Bool) async -> String? {
         guard isAccessibilityTrusted() else {
             AppLogger.warning(
                 "Focused text capture skipped: accessibility permission not granted",
@@ -194,7 +199,7 @@ public final class AssistantContextCaptureService {
             let guarded = textContextGuardrails.apply(to: snapshot.text, policy: textContextPolicy)
             var normalized = guarded.trimmingCharacters(in: .whitespacesAndNewlines)
 
-            if settings.contextAwarenessRedactSensitiveData {
+            if redactSensitiveData {
                 normalized = ContextAwarenessPrivacy.redactSensitiveText(normalized) ?? ""
             }
 
@@ -215,14 +220,14 @@ public final class AssistantContextCaptureService {
     private func appendFocusedTextContextIfNeeded(
         snapshot: ContextAwarenessSnapshot,
         isDictationMode: Bool,
-        settings: AppSettingsStore,
+        options: EffectiveContextCaptureOptions,
         context: inout String?,
         items: inout [TranscriptionContextItem]
     ) async {
         guard isDictationMode else { return }
-        guard settings.contextAwarenessIncludeAccessibilityText else { return }
+        guard options.includeAccessibilityText else { return }
         guard snapshot.activeAccessibilityText == nil else { return }
-        guard let focusedText = await captureFocusedTextContext(settings: settings) else { return }
+        guard let focusedText = await captureFocusedTextContext(redactSensitiveData: options.redactSensitiveData) else { return }
         guard !items.contains(where: { $0.source == .focusedText && $0.text == focusedText }) else { return }
 
         items.append(TranscriptionContextItem(source: .focusedText, text: focusedText))
@@ -232,6 +237,35 @@ public final class AssistantContextCaptureService {
             \(focusedText)
             """,
             to: &context
+        )
+    }
+
+    private struct EffectiveContextCaptureOptions {
+        let includeClipboard: Bool
+        let includeWindowOCR: Bool
+        let includeAccessibilityText: Bool
+        let redactSensitiveData: Bool
+
+        var hasEnabledContextSources: Bool {
+            includeClipboard || includeWindowOCR || includeAccessibilityText
+        }
+    }
+
+    private func effectiveCaptureOptions(
+        settings: AppSettingsStore,
+        contextSourcePolicy: DictationContextSourcePolicy?,
+        includeWindowOCR: Bool?
+    ) -> EffectiveContextCaptureOptions {
+        let globalContextFallbackEnabled = contextSourcePolicy == nil ? settings.contextAwarenessEnabled : true
+        return EffectiveContextCaptureOptions(
+            includeClipboard: contextSourcePolicy?.includeClipboard
+                ?? (globalContextFallbackEnabled && settings.contextAwarenessIncludeClipboard),
+            includeWindowOCR: includeWindowOCR
+                ?? contextSourcePolicy?.includeWindowOCR
+                ?? (globalContextFallbackEnabled && settings.contextAwarenessIncludeWindowOCR),
+            includeAccessibilityText: contextSourcePolicy?.includeAccessibilityText
+                ?? (globalContextFallbackEnabled && settings.contextAwarenessIncludeAccessibilityText),
+            redactSensitiveData: contextSourcePolicy?.redactSensitiveData ?? settings.contextAwarenessRedactSensitiveData
         )
     }
 

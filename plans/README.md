@@ -67,6 +67,13 @@ honor its STOP conditions, and update your row when done.
 - Not audited: full audio recorder internals, meeting detection heuristics, transcription/post-processing internals, calendar enrichment, Assistant/dictation recording behavior beyond ensuring they stay out of scope, runtime screenshot QA, and release/build infra.
 - Reuse decision: extend the existing `RecordingManager` auto-recording policy and existing floating indicator controller/pill. Do not add countdown timers to `MeetingDetector`, do not create a second overlay window, and do not duplicate indicator width constants outside `FloatingRecordingIndicatorViewUtilities`.
 
+## 2026-07-10 Deferred-Save Boolean Controls Scope
+
+- Effort: plan-focused follow-up for settings forms that mix switch controls with explicit Save/Create actions, starting with Dictation mode Context Resources.
+- Audited: `native-app-designer` guidance, `DictationStyleEditorSheet`, `DictationContextSourcePolicy`, context capture gating in `AssistantContextCaptureService` and `RecordingManagerContextCapture`, context-awareness localization/search keys, and focused settings/context tests.
+- Not audited: full accessibility pass, runtime screenshot QA, non-settings app surfaces, settings sidebar/navigation taxonomy, provider/model selection, protected-app exclusion behavior, and prompt assembly internals.
+- Reuse decision: extend existing SwiftUI checkbox style or a minimal local row for deferred-save booleans, extend `DictationContextSourcePolicy` with backward-compatible source-derived gating, and reuse existing context capture services/tests. Do not create a new settings framework or preserve a second global context toggle.
+
 ## Findings
 
 | # | Finding | Category | Impact | Effort | Risk | Evidence |
@@ -121,6 +128,7 @@ honor its STOP conditions, and update your row when done.
 | 024 | Align Settings controls with native VoiceInk beta patterns | P1 | M | - | DONE |
 | 025 | Add automatic meeting recording confirmation countdown | P1 | M | - | DONE |
 | 026 | Fix recording duration width for long meetings | P1 | S | 025 for merge-order stability only | DONE |
+| 027 | Replace deferred-save switches and remove the Context Resources gate | P1 | M | - | DONE |
 
 Status values: TODO | IN PROGRESS | DONE | BLOCKED (with one-line reason) | REJECTED (with one-line rationale)
 
@@ -143,6 +151,7 @@ Status values: TODO | IN PROGRESS | DONE | BLOCKED (with one-line reason) | REJE
 - 024 can run independently after the menu-picker visual correction work because it is scoped to control anatomy and component policy. It must not modify sidebar files.
 - 025 should keep `MeetingDetector` as a detector and put countdown ownership in `RecordingManager`; this avoids splitting automatic-recording state across detector, app lifecycle, and UI.
 - 026 is functionally independent but should run after 025 if both are queued together because both may touch recording-indicator sizing utilities and tests.
+- 027 can run independently. It must preserve legacy context-source behavior during decoding while removing the user-facing global context gate from save-backed mode editing.
 
 ## Committee review notes
 
@@ -152,6 +161,7 @@ Status values: TODO | IN PROGRESS | DONE | BLOCKED (with one-line reason) | REJE
 - 022: Removed the visible Intelligence host, redirected legacy Models/Dictionary/Sound destinations into the renamed Settings section, moved post-processing under Dictation, moved Protected Apps under Settings, pinned Settings at the bottom of the sidebar, and deleted the unused Intelligence tab. Verification: `swift test --package-path Packages/MeetingAssistantCore --filter 'SettingsSectionTests|SettingsSearchIndexTests'` passed.
 - 023: Replaced storage retention's toggle/free-form days field with a fixed picker for 1 week, 2 weeks, 1 month, 3 months, 6 months, or disabled, and made cleanup-now follow the selected retention state. Cold review removed stale free-form storage keys and normalizes unsupported persisted day values to 1 month. Verification: `swift test --package-path Packages/MeetingAssistantCore --filter 'SettingsSearchIndexTests|SettingsSectionTests'` passed.
 - 024: Removed `DSMenuSelect` from the generic design system, returned shortcut settings controls to native `DSMenuPicker`, and kept the custom field-like menu only as `MetricsDashboardFilterMenu` for dense dashboard filters. Thermo review simplified the dashboard menu API and naming before final validation. Verification: `make preview-check`, `make guidance-check`, `make build-agent`, `git diff --check`, focused `swiftformat --lint`, and focused `swiftlint lint` passed for touched files. `make scope-check`/`make build-test` still fail on the known unrelated `MetricsDashboardViewModelTests` baseline; isolated rerun confirms the same four tests fail.
+- 027: Replaced save-backed dictation mode booleans with checkbox rows, removed the visible "Use context when improving text" gate, and made context capture derive from selected sources while preserving legacy disabled-gate decoding. Guidance now distinguishes immediate switches from deferred-save checkboxes. Verification: focused `swift test --package-path Packages/MeetingAssistantCore --filter 'AppSettingsDictationStylesTests|ExtractedWorkflowServicesTests|SettingsSearchIndexTests'`, `make preview-check`, `make guidance-check`, `make build-agent`, focused `swiftformat --lint`, and focused `swiftlint lint` passed. `make build-test` still fails on the known unrelated `MetricsDashboardViewModelTests` CoreData/XPC baseline cluster.
 
 ## Findings considered and rejected
 

@@ -22,7 +22,6 @@ public struct DictationStyleEditorSheet: View {
     @State private var replaceBasePrompt: Bool
     @State private var outputLanguage: DictationOutputLanguage
     @State private var targets: [DictationStyleTarget]
-    @State private var contextAwarenessEnabled: Bool
     @State private var includeClipboard: Bool
     @State private var includeWindowOCR: Bool
     @State private var includeAccessibilityText: Bool
@@ -65,7 +64,6 @@ public struct DictationStyleEditorSheet: View {
         _outputLanguage = State(initialValue: draft.outputLanguage)
         _targets = State(initialValue: draft.targets)
         let contextPolicy = draft.contextSourcePolicy
-        _contextAwarenessEnabled = State(initialValue: contextPolicy?.isEnabled ?? false)
         _includeClipboard = State(initialValue: contextPolicy?.includeClipboard ?? false)
         _includeWindowOCR = State(initialValue: contextPolicy?.includeWindowOCR ?? false)
         _includeAccessibilityText = State(initialValue: contextPolicy?.includeAccessibilityText ?? true)
@@ -122,8 +120,8 @@ public struct DictationStyleEditorSheet: View {
                         .clipShape(RoundedRectangle(cornerRadius: AppDesignSystem.Layout.smallCornerRadius))
                 }
 
-                DSToggleRow("settings.styles.editor.markdown_output".localized, isOn: $forceMarkdownOutput)
-                DSToggleRow("settings.styles.editor.replace_base_prompt".localized, isOn: $replaceBasePrompt)
+                DSCheckboxRow("settings.styles.editor.markdown_output".localized, isOn: $forceMarkdownOutput)
+                DSCheckboxRow("settings.styles.editor.replace_base_prompt".localized, isOn: $replaceBasePrompt)
 
                 HStack(spacing: 12) {
                     Text("settings.styles.editor.output_language".localized)
@@ -139,33 +137,7 @@ public struct DictationStyleEditorSheet: View {
                     }
                 }
 
-                DSGroup("settings.styles.editor.context_sources".localized, icon: "text.viewfinder") {
-                    VStack(alignment: .leading, spacing: 10) {
-                        DSToggleRow(
-                            "settings.context_awareness.enabled".localized,
-                            isOn: $contextAwarenessEnabled
-                        )
-
-                        if contextAwarenessEnabled {
-                            DSToggleRow(
-                                "settings.context_awareness.accessibility_text".localized,
-                                isOn: $includeAccessibilityText
-                            )
-                            DSToggleRow(
-                                "settings.context_awareness.clipboard".localized,
-                                isOn: $includeClipboard
-                            )
-                            DSToggleRow(
-                                "settings.context_awareness.window_ocr".localized,
-                                isOn: $includeWindowOCR
-                            )
-                            DSToggleRow(
-                                "settings.context_awareness.redact_sensitive_data".localized,
-                                isOn: $redactSensitiveData
-                            )
-                        }
-                    }
-                }
+                contextResourcesSection
 
                 DSGroup("settings.enhancements.selector.dictation.title".localized, icon: "cpu") {
                     EnhancementsModelPicker(
@@ -267,6 +239,17 @@ public struct DictationStyleEditorSheet: View {
 
     private var primaryActionTitle: String {
         styleID == nil ? "common.create".localized : "common.save".localized
+    }
+
+    private var contextResourcesSection: some View {
+        DSGroup("settings.styles.editor.context_sources".localized, icon: "text.viewfinder") {
+            VStack(alignment: .leading, spacing: 10) {
+                DSCheckboxRow("settings.context_awareness.accessibility_text".localized, isOn: $includeAccessibilityText)
+                DSCheckboxRow("settings.context_awareness.clipboard".localized, isOn: $includeClipboard)
+                DSCheckboxRow("settings.context_awareness.window_ocr".localized, isOn: $includeWindowOCR)
+                DSCheckboxRow("settings.context_awareness.redact_sensitive_data".localized, isOn: $redactSensitiveData)
+            }
+        }
     }
 
     private var normalizedIconSymbol: String {
@@ -400,7 +383,6 @@ public struct DictationStyleEditorSheet: View {
                 outputLanguage: outputLanguage,
                 targets: normalizedTargets,
                 contextSourcePolicy: DictationContextSourcePolicy(
-                    isEnabled: contextAwarenessEnabled,
                     includeClipboard: includeClipboard,
                     includeWindowOCR: includeWindowOCR,
                     includeAccessibilityText: includeAccessibilityText,
@@ -477,6 +459,26 @@ public struct DictationStyleEditorSheet: View {
 
     private func normalizeBundleIdentifier(_ value: String) -> String {
         value.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+    }
+}
+
+private struct DSCheckboxRow: View {
+    private let title: String
+    @Binding private var isOn: Bool
+
+    init(_ title: String, isOn: Binding<Bool>) {
+        self.title = title
+        _isOn = isOn
+    }
+
+    var body: some View {
+        Toggle(isOn: $isOn) {
+            Text(title)
+                .font(.body)
+                .fontWeight(.regular)
+        }
+        .toggleStyle(.checkbox)
+        .accessibilityLabel(title)
     }
 }
 

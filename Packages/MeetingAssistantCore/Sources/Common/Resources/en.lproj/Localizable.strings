@@ -391,8 +391,6 @@
 "settings.post_processing.is_active" = "Active";
 "settings.text_context.description" = "Control AI cleanup, context sources, and sensitive-app protection for dictation and meetings.";
 "settings.context_awareness.title" = "Context Sources";
-"settings.context_awareness.enabled" = "Use context when improving text";
-"settings.context_awareness.enabled_desc" = "Capture allowed local context at recording start and include it in AI cleanup.";
 "settings.context_awareness.clipboard" = "Include Clipboard";
 "settings.context_awareness.clipboard_desc" = "Capture the latest plain-text clipboard content.";
 "settings.context_awareness.window_ocr" = "Include Active Window OCR";

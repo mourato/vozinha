@@ -202,8 +202,6 @@ enum SettingsSearchIndex {
         "settings.context_awareness.accessibility_text_desc",
         "settings.context_awareness.clipboard",
         "settings.context_awareness.clipboard_desc",
-        "settings.context_awareness.enabled",
-        "settings.context_awareness.enabled_desc",
         "settings.context_awareness.redact_sensitive_data",
         "settings.context_awareness.redact_sensitive_data_desc",
         "settings.context_awareness.window_ocr",

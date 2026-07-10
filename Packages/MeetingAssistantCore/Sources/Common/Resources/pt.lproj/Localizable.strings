@@ -392,8 +392,6 @@
 "settings.post_processing.is_active" = "Ativo";
 "settings.text_context.description" = "Controle limpeza por IA, fontes de contexto e proteção de apps sensíveis para ditado e reuniões.";
 "settings.context_awareness.title" = "Fontes de Contexto";
-"settings.context_awareness.enabled" = "Usar contexto ao melhorar texto";
-"settings.context_awareness.enabled_desc" = "Captura contexto local permitido no início da gravação e inclui na limpeza por IA.";
 "settings.context_awareness.clipboard" = "Incluir Clipboard";
 "settings.context_awareness.clipboard_desc" = "Captura o conteúdo de texto mais recente do clipboard.";
 "settings.context_awareness.window_ocr" = "Incluir OCR da Janela Ativa";

@@ -90,13 +90,15 @@ extension RecordingManager {
             : nil
 
         return await contextCaptureService.capturePostProcessingContextWithTimeout(
-            for: meeting,
-            settings: settings,
-            activeTabURL: activeTabURL,
-            calendarContext: calendarContext,
-            isDictationMode: isDictationMode(for: meeting),
-            contextSourcePolicy: contextSourcePolicy,
-            includeWindowOCR: includeWindowOCR,
+            PostProcessingContextCaptureRequest(
+                meeting: meeting,
+                settings: settings,
+                activeTabURL: activeTabURL,
+                calendarContext: calendarContext,
+                isDictationMode: isDictationMode(for: meeting),
+                contextSourcePolicy: contextSourcePolicy,
+                includeWindowOCR: includeWindowOCR
+            ),
             timeoutNanoseconds: Constants.startContextCaptureTimeout
         )
     }
@@ -116,9 +118,8 @@ extension RecordingManager {
             settings: settings,
             activeTabURL: activeTabURL
         )
-        let contextAwarenessEnabled = contextSourcePolicy?.isEnabled ?? settings.contextAwarenessEnabled
-        let includeWindowOCR = contextSourcePolicy?.includeWindowOCR ?? settings.contextAwarenessIncludeWindowOCR
-        guard contextAwarenessEnabled, includeWindowOCR else {
+        let includeWindowOCR = contextSourcePolicy?.includeWindowOCR ?? (settings.contextAwarenessEnabled && settings.contextAwarenessIncludeWindowOCR)
+        guard includeWindowOCR else {
             postStartWindowOCRCaptureTask = nil
             return
         }

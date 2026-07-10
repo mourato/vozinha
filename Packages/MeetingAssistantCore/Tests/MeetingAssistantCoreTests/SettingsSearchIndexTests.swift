@@ -107,7 +107,8 @@ final class SettingsSearchIndexTests: XCTestCase {
 
     func testQueryContextSourcesRoutesToDictationSection() {
         assertLocalizedQuery("settings.styles.editor.context_sources", routesTo: .dictation)
-        assertLocalizedQuery("settings.context_awareness.enabled", routesTo: .dictation)
+        assertLocalizedQuery("settings.context_awareness.accessibility_text", routesTo: .dictation)
+        assertLocalizedQuery("settings.context_awareness.clipboard", routesTo: .dictation)
     }
 
     func testQueryDictionaryRoutesToSettingsSection() {

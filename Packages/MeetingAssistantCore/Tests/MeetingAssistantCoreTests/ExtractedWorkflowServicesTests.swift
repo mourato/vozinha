@@ -82,7 +82,7 @@ final class ExtractedWorkflowServicesTests: XCTestCase {
         )
 
         XCTAssertNil(result.context)
-        XCTAssertEqual(result.items.map { $0.source }, [TranscriptionContextItem.Source.activeTabURL])
+        XCTAssertEqual(result.items.map(\.source), [TranscriptionContextItem.Source.activeTabURL])
         XCTAssertEqual(result.items.first?.text, "https://example.com")
     }
 
@@ -128,14 +128,103 @@ final class ExtractedWorkflowServicesTests: XCTestCase {
         )
         XCTAssertTrue(result.context?.contains("Focused draft") == true)
     }
+
+    func testAssistantContextCaptureService_SourcePolicyWithNoSourcesSkipsContextCapture() async {
+        settings.contextAwarenessEnabled = true
+        settings.contextAwarenessIncludeAccessibilityText = true
+        settings.contextAwarenessIncludeClipboard = true
+        settings.contextAwarenessIncludeWindowOCR = true
+        settings.contextAwarenessRedactSensitiveData = true
+        settings.contextAwarenessExcludedBundleIDs = []
+
+        let contextService = MockContextAwarenessService()
+        contextService.snapshot = ContextAwarenessSnapshot(
+            activeAppName: "Safari",
+            activeWindowTitle: "Draft",
+            activeAccessibilityText: "Visible text",
+            clipboardText: "Clipboard",
+            activeWindowOCRText: "OCR"
+        )
+        contextService.context = "CONTEXT_METADATA\n- Active app: Safari"
+        let service = AssistantContextCaptureService(
+            contextAwarenessService: contextService,
+            textContextProvider: MockTextContextProvider(text: "Focused draft"),
+            textContextGuardrails: TextContextGuardrails(),
+            textContextPolicy: .default,
+            isAccessibilityTrusted: { true },
+            requestAccessibilityPermission: {}
+        )
+
+        let result = await service.capturePostProcessingContext(
+            for: Meeting(app: .unknown, capturePurpose: .dictation),
+            settings: settings,
+            activeTabURL: nil,
+            calendarContext: nil,
+            isDictationMode: true,
+            contextSourcePolicy: DictationContextSourcePolicy(
+                includeClipboard: false,
+                includeWindowOCR: false,
+                includeAccessibilityText: false,
+                redactSensitiveData: true
+            )
+        )
+
+        XCTAssertNil(result.context)
+        XCTAssertEqual(result.items, [])
+        XCTAssertNil(contextService.lastOptions)
+    }
+
+    func testAssistantContextCaptureService_SourcePolicyControlsCapturedSources() async {
+        settings.contextAwarenessEnabled = true
+        settings.contextAwarenessIncludeAccessibilityText = true
+        settings.contextAwarenessIncludeClipboard = true
+        settings.contextAwarenessIncludeWindowOCR = true
+        settings.contextAwarenessRedactSensitiveData = true
+        settings.contextAwarenessExcludedBundleIDs = []
+
+        let contextService = MockContextAwarenessService()
+        let service = AssistantContextCaptureService(
+            contextAwarenessService: contextService,
+            textContextProvider: MockTextContextProvider(text: nil),
+            textContextGuardrails: TextContextGuardrails(),
+            textContextPolicy: .default,
+            isAccessibilityTrusted: { true },
+            requestAccessibilityPermission: {}
+        )
+
+        _ = await service.capturePostProcessingContext(
+            for: Meeting(app: .unknown, capturePurpose: .dictation),
+            settings: settings,
+            activeTabURL: nil,
+            calendarContext: nil,
+            isDictationMode: true,
+            contextSourcePolicy: DictationContextSourcePolicy(
+                includeClipboard: true,
+                includeWindowOCR: false,
+                includeAccessibilityText: false,
+                redactSensitiveData: false
+            )
+        )
+
+        XCTAssertEqual(contextService.lastOptions?.includeClipboard, true)
+        XCTAssertEqual(contextService.lastOptions?.includeWindowOCR, false)
+        XCTAssertEqual(contextService.lastOptions?.includeAccessibilityText, false)
+        XCTAssertEqual(contextService.lastOptions?.redactSensitiveData, false)
+    }
 }
 
 @MainActor
 private final class MockCalendarEventServiceForExtraction: CalendarEventServiceProtocol, @unchecked Sendable {
     var eventsToReturn: [MeetingCalendarEventSnapshot] = []
 
-    func authorizationState() -> PermissionState { .granted }
-    func requestAccess() async -> PermissionState { .granted }
+    func authorizationState() -> PermissionState {
+        .granted
+    }
+
+    func requestAccess() async -> PermissionState {
+        .granted
+    }
+
     func openSystemSettings() {}
 
     func fetchUpcomingEvents(
@@ -165,9 +254,11 @@ private final class MockContextAwarenessService: ContextAwarenessServiceProtocol
         activeWindowOCRText: nil
     )
     var context: String?
+    var lastOptions: ContextAwarenessCaptureOptions?
 
-    func captureSnapshot(options _: ContextAwarenessCaptureOptions) async -> ContextAwarenessSnapshot {
-        snapshot
+    func captureSnapshot(options: ContextAwarenessCaptureOptions) async -> ContextAwarenessSnapshot {
+        lastOptions = options
+        return snapshot
     }
 
     func makePostProcessingContext(from _: ContextAwarenessSnapshot) -> String? {

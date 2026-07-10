@@ -1,5 +1,5 @@
-import XCTest
 @testable import MeetingAssistantCore
+import XCTest
 
 @MainActor
 final class AppSettingsDictationStylesTests: XCTestCase {
@@ -105,6 +105,7 @@ final class AppSettingsDictationStylesTests: XCTestCase {
 
         let defaultStyle = settings.dictationStyles[0]
         XCTAssertEqual(defaultStyle.contextSourcePolicy?.isEnabled, true)
+        XCTAssertEqual(defaultStyle.contextSourcePolicy?.hasEnabledContextSources, true)
         XCTAssertEqual(defaultStyle.contextSourcePolicy?.includeClipboard, true)
         XCTAssertEqual(defaultStyle.contextSourcePolicy?.includeWindowOCR, false)
         XCTAssertEqual(defaultStyle.contextSourcePolicy?.includeAccessibilityText, true)
@@ -157,5 +158,39 @@ final class AppSettingsDictationStylesTests: XCTestCase {
 
         XCTAssertEqual(effectiveStyle.id, AppSettingsStore.defaultDictationModeID)
         XCTAssertEqual(effectiveStyle.enhancementsSelection, selection)
+    }
+
+    func testDictationContextSourcePolicy_DecodesLegacyDisabledGateAsNoCaptureSources() throws {
+        let jsonString = """
+        {
+          "isEnabled": false,
+          "includeClipboard": true,
+          "includeWindowOCR": true,
+          "includeAccessibilityText": true,
+          "redactSensitiveData": true
+        }
+        """
+        let json = Data(jsonString.utf8)
+
+        let policy = try JSONDecoder().decode(DictationContextSourcePolicy.self, from: json)
+
+        XCTAssertEqual(policy.isEnabled, false)
+        XCTAssertEqual(policy.hasEnabledContextSources, false)
+        XCTAssertEqual(policy.includeClipboard, false)
+        XCTAssertEqual(policy.includeWindowOCR, false)
+        XCTAssertEqual(policy.includeAccessibilityText, false)
+        XCTAssertEqual(policy.redactSensitiveData, true)
+    }
+
+    func testDictationContextSourcePolicy_RedactionAloneDoesNotEnableContextCapture() {
+        let policy = DictationContextSourcePolicy(
+            includeClipboard: false,
+            includeWindowOCR: false,
+            includeAccessibilityText: false,
+            redactSensitiveData: true
+        )
+
+        XCTAssertEqual(policy.isEnabled, false)
+        XCTAssertEqual(policy.hasEnabledContextSources, false)
     }
 }

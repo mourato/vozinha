@@ -72,8 +72,6 @@ extension SettingsSearchIndex {
         "settings.context_awareness.always_excluded_badge",
         "settings.context_awareness.clipboard",
         "settings.context_awareness.clipboard_desc",
-        "settings.context_awareness.enabled",
-        "settings.context_awareness.enabled_desc",
         "settings.context_awareness.excluded_apps_add",
         "settings.context_awareness.excluded_apps_empty",
         "settings.context_awareness.excluded_apps_remove",

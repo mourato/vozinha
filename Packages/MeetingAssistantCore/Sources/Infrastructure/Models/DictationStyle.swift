@@ -1,11 +1,26 @@
 import Foundation
 
 public struct DictationContextSourcePolicy: Codable, Hashable, Sendable {
-    public var isEnabled: Bool
     public var includeClipboard: Bool
     public var includeWindowOCR: Bool
     public var includeAccessibilityText: Bool
     public var redactSensitiveData: Bool
+
+    private enum CodingKeys: String, CodingKey {
+        case isEnabled
+        case includeClipboard
+        case includeWindowOCR
+        case includeAccessibilityText
+        case redactSensitiveData
+    }
+
+    public var isEnabled: Bool {
+        hasEnabledContextSources
+    }
+
+    public var hasEnabledContextSources: Bool {
+        includeClipboard || includeWindowOCR || includeAccessibilityText
+    }
 
     public init(
         isEnabled: Bool,
@@ -14,11 +29,44 @@ public struct DictationContextSourcePolicy: Codable, Hashable, Sendable {
         includeAccessibilityText: Bool,
         redactSensitiveData: Bool
     ) {
-        self.isEnabled = isEnabled
+        self.includeClipboard = isEnabled && includeClipboard
+        self.includeWindowOCR = isEnabled && includeWindowOCR
+        self.includeAccessibilityText = isEnabled && includeAccessibilityText
+        self.redactSensitiveData = redactSensitiveData
+    }
+
+    public init(
+        includeClipboard: Bool,
+        includeWindowOCR: Bool,
+        includeAccessibilityText: Bool,
+        redactSensitiveData: Bool
+    ) {
         self.includeClipboard = includeClipboard
         self.includeWindowOCR = includeWindowOCR
         self.includeAccessibilityText = includeAccessibilityText
         self.redactSensitiveData = redactSensitiveData
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        let legacyIsEnabled = try container.decodeIfPresent(Bool.self, forKey: .isEnabled) ?? true
+        let decodedIncludeClipboard = try container.decodeIfPresent(Bool.self, forKey: .includeClipboard) ?? false
+        let decodedIncludeWindowOCR = try container.decodeIfPresent(Bool.self, forKey: .includeWindowOCR) ?? false
+        let decodedIncludeAccessibilityText = try container.decodeIfPresent(Bool.self, forKey: .includeAccessibilityText) ?? true
+
+        includeClipboard = legacyIsEnabled && decodedIncludeClipboard
+        includeWindowOCR = legacyIsEnabled && decodedIncludeWindowOCR
+        includeAccessibilityText = legacyIsEnabled && decodedIncludeAccessibilityText
+        redactSensitiveData = try container.decodeIfPresent(Bool.self, forKey: .redactSensitiveData) ?? true
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(hasEnabledContextSources, forKey: .isEnabled)
+        try container.encode(includeClipboard, forKey: .includeClipboard)
+        try container.encode(includeWindowOCR, forKey: .includeWindowOCR)
+        try container.encode(includeAccessibilityText, forKey: .includeAccessibilityText)
+        try container.encode(redactSensitiveData, forKey: .redactSensitiveData)
     }
 }
 

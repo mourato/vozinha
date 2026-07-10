@@ -273,21 +273,21 @@ If sub-grouping is genuinely needed, use a separate `DSGroup`; do not stack `set
 
 ### Toggle vs Checkbox
 
-**Always use toggles (switches) instead of checkboxes** when there is no separate "Save" button:
+Use switches for immediate-effect settings and checkbox-style controls for deferred-save forms or sheets.
 
 ```swift
 // ✅ CORRECT - Toggle for immediate-effect settings
 DSToggleRow("Enable feature", isOn: $viewModel.isEnabled)
 
-// ❌ WRONG - Checkbox for settings without explicit save
+// ✅ CORRECT - Checkbox for a draft value committed by Save/Create
 Toggle(isOn: $isEnabled) {
     Text("Enable feature")
 }
-.toggleStyle(.checkbox) // Misleading UX
+.toggleStyle(.checkbox)
 ```
 
 ##### Rationale
-Checkboxes imply form-based interaction where changes are batched and saved together. Toggles communicate immediate effect, matching SwiftUI's two-way binding behavior.
+Checkboxes imply form-based interaction where changes are batched and saved together. Switches communicate immediate effect, matching SwiftUI's two-way binding behavior in ordinary settings rows.
 
 ### Left-Aligned Layouts
 
@@ -358,7 +358,7 @@ HStack(spacing: 0) {
 3. **Deep nesting** - Extract subviews for clarity
 4. **Bindings in loops** - Use `ForEach($items) { $item in }`
 5. **Centered settings** - Use `.leading` alignment and `frame(maxWidth: .infinity, alignment: .leading)`
-6. **Checkboxes for settings** - Use `SettingsToggle` or `.toggleStyle(.switch)`
+6. **Checkboxes for immediate settings** - Use `DSToggleRow` or `.toggleStyle(.switch)` unless the boolean is a draft committed by Save/Create.
 
 ## Preview Requirements
 
