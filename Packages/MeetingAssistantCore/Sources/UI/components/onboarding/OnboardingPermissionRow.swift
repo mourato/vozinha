@@ -29,7 +29,7 @@ public struct OnboardingPermissionRow: View {
             // Icon
             Image(systemName: item.iconName)
                 .font(AppTypography.onboardingPermissionIcon(size: iconFontSize))
-                .foregroundColor(status == .granted ? .accentColor : .secondary)
+                .foregroundStyle(status == .granted ? AnyShapeStyle(.tint) : AnyShapeStyle(.secondary))
                 .frame(width: iconFrameSize, height: iconFrameSize)
                 .background(
                     Circle()
@@ -41,11 +41,11 @@ public struct OnboardingPermissionRow: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(item.titleKey.localized)
                     .font(.headline)
-                    .foregroundColor(.primary)
+                    .foregroundStyle(.primary)
 
                 Text(item.descriptionKey.localized)
                     .font(.subheadline)
-                    .foregroundColor(.secondary)
+                    .foregroundStyle(.secondary)
                     .lineLimit(2)
             }
 
@@ -56,12 +56,24 @@ public struct OnboardingPermissionRow: View {
         }
         .padding(.vertical, 12)
         .padding(.horizontal, 16)
-        .background(
+        .background(permissionRowBackground)
+        .overlay(
             RoundedRectangle(cornerRadius: 12)
-                .fill(Color.secondary.opacity(0.05))
+                .strokeBorder(Color.secondary.opacity(0.12), lineWidth: 1)
         )
         .accessibilityElement(children: .combine)
         .accessibilityLabel(accessibilityLabel)
+    }
+
+    @ViewBuilder
+    private var permissionRowBackground: some View {
+        let shape = RoundedRectangle(cornerRadius: 12)
+
+        if AppDesignSystem.Accessibility.reduceTransparency {
+            shape.fill(Color(NSColor.controlBackgroundColor))
+        } else {
+            shape.fill(.thinMaterial)
+        }
     }
 
     @ViewBuilder
@@ -77,11 +89,11 @@ public struct OnboardingPermissionRow: View {
         case .granted:
             HStack(spacing: 6) {
                 Image(systemName: "checkmark.circle.fill")
-                    .foregroundColor(.green)
+                    .foregroundStyle(.green)
                     .accessibilityHidden(true)
                 Text("onboarding.permissions.granted".localized)
                     .font(AppTypography.onboardingStatusLabel)
-                    .foregroundColor(.green)
+                    .foregroundStyle(.green)
             }
 
         case .denied:
@@ -99,7 +111,7 @@ public struct OnboardingPermissionRow: View {
         case .restricted:
             Text("permission.state.restricted".localized)
                 .font(AppTypography.onboardingStatusLabel)
-                .foregroundColor(.secondary)
+                .foregroundStyle(.secondary)
         }
     }
 

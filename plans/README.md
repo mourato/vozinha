@@ -173,7 +173,7 @@ honor its STOP conditions, and update your row when done.
 | 034 | Make the floating recording indicator structurally ready for fluid interaction | P1 | L | 033 | DONE |
 | 035 | Add immediate press feedback and direct-manipulation controls | P1 | M | 033 | DONE |
 | 036 | Normalize typography and scaled layout in core UI surfaces | P2 | M | 033 | DONE |
-| 037 | Refresh onboarding with scalable Apple-style layout and transitions | P2 | M | 033, 036 | TODO |
+| 037 | Refresh onboarding with scalable Apple-style layout and transitions | P2 | M | 033, 036 | DONE |
 
 Status values: TODO | IN PROGRESS | DONE | BLOCKED (with one-line reason) | REJECTED (with one-line rationale)
 

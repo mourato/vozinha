@@ -17,6 +17,8 @@ public struct OnboardingView: View {
 
     let onComplete: () -> Void
     let refreshPermissions: @MainActor () async -> Void
+    @State private var stepDirection: OnboardingStepDirection = .forward
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     public init(
         viewModel: OnboardingViewModel,
@@ -37,23 +39,29 @@ public struct OnboardingView: View {
     }
 
     public var body: some View {
-        VStack(spacing: 0) {
-            // Step Indicator
-            OnboardingStepIndicator(
-                currentStep: viewModel.currentStep,
-                totalSteps: OnboardingStep.allCases.count
-            )
-            .padding(.top, 16)
+        OnboardingContainer {
+            VStack(spacing: 0) {
+                OnboardingStepIndicator(
+                    currentStep: viewModel.currentStep,
+                    totalSteps: OnboardingStep.allCases.count
+                )
+                .padding(.top, 4)
 
-            // Content Area
-            contentView
-                .frame(maxHeight: .infinity)
-                .padding(.horizontal, 32)
+                contentView
+                    .id(viewModel.currentStep)
+                    .frame(maxHeight: .infinity)
+                    .transition(stepTransition)
+                    .animation(
+                        AppleMotion.animation(reduceMotion: reduceMotion, kind: .default),
+                        value: viewModel.currentStep
+                    )
 
-            Spacer()
+                Spacer(minLength: 0)
+            }
         }
-        .frame(width: 620, height: 520)
-        .background(Color(NSColor.windowBackgroundColor))
+        .onChange(of: viewModel.currentStep) { oldValue, newValue in
+            stepDirection = newValue.rawValue >= oldValue.rawValue ? .forward : .backward
+        }
     }
 
     @ViewBuilder
@@ -120,6 +128,24 @@ public struct OnboardingView: View {
         viewModel.enableMeetingRecording()
         viewModel.goToNextStep()
     }
+
+    private var stepTransition: AnyTransition {
+        guard !reduceMotion else {
+            return .opacity
+        }
+
+        let insertionEdge: Edge = stepDirection == .forward ? .trailing : .leading
+        let removalEdge: Edge = stepDirection == .forward ? .leading : .trailing
+        return .asymmetric(
+            insertion: .move(edge: insertionEdge).combined(with: .opacity),
+            removal: .move(edge: removalEdge).combined(with: .opacity)
+        )
+    }
+}
+
+private enum OnboardingStepDirection {
+    case forward
+    case backward
 }
 
 @MainActor

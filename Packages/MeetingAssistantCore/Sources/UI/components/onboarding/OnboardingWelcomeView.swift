@@ -5,39 +5,37 @@ import SwiftUI
 /// The first step of the onboarding flow, welcoming the user.
 public struct OnboardingWelcomeView: View {
     let onGetStarted: () -> Void
+    @ScaledMetric(relativeTo: .largeTitle) private var iconSize: CGFloat = 100
 
     public init(onGetStarted: @escaping () -> Void) {
         self.onGetStarted = onGetStarted
     }
 
     public var body: some View {
-        VStack(spacing: 24) {
+        VStack(spacing: AppDesignSystem.Layout.spacing24) {
             Spacer()
 
-            // App Icon
             Image(systemName: "waveform.circle.fill")
                 .resizable()
                 .aspectRatio(contentMode: .fit)
-                .frame(width: 100, height: 100)
-                .foregroundColor(.accentColor)
+                .frame(width: iconSize, height: iconSize)
+                .foregroundStyle(.tint)
                 .symbolRenderingMode(.hierarchical)
+                .accessibilityHidden(true)
 
-            // Title
             Text("onboarding.welcome.title".localized)
-                .font(.title)
-                .fontWeight(.bold)
+                .font(.largeTitle.weight(.bold))
                 .multilineTextAlignment(.center)
 
-            // Subtitle
             Text("onboarding.welcome.subtitle".localized)
                 .font(.body)
-                .foregroundColor(.secondary)
+                .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
                 .fixedSize(horizontal: false, vertical: true)
+                .frame(maxWidth: 460)
 
             Spacer()
 
-            // Get Started Button
             Button("onboarding.welcome.button".localized, action: onGetStarted)
                 .buttonStyle(.borderedProminent)
                 .controlSize(.large)
@@ -52,5 +50,5 @@ public struct OnboardingWelcomeView: View {
 
 #Preview {
     OnboardingWelcomeView(onGetStarted: {})
-        .frame(width: 600, height: 500)
+        .frame(width: 620, height: 520)
 }

@@ -45,20 +45,20 @@ private struct StepCircle: View {
             if isCompleted {
                 Image(systemName: "checkmark")
                     .font(AppTypography.onboardingStepCompletedIcon)
-                    .foregroundColor(.white)
+                    .foregroundStyle(.white)
                     .accessibilityHidden(true)
             } else {
                 Text("\(step.index)")
                     .font(AppTypography.onboardingStepLabel)
-                    .foregroundColor(foregroundColor)
+                    .foregroundStyle(foregroundColor)
             }
         }
         .overlay(
             Circle()
                 .strokeBorder(borderColor, lineWidth: 2)
         )
-        .animation(reduceMotion ? nil : .easeInOut(duration: 0.2), value: isCompleted)
-        .animation(reduceMotion ? nil : .easeInOut(duration: 0.2), value: isCurrent)
+        .animation(AppleMotion.animation(reduceMotion: reduceMotion, kind: .default), value: isCompleted)
+        .animation(AppleMotion.animation(reduceMotion: reduceMotion, kind: .default), value: isCurrent)
     }
 
     private var backgroundColor: Color {
