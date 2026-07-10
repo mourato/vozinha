@@ -13,6 +13,9 @@ public struct TranscriptionAudioPlayerView: View {
     }
 
     @StateObject private var viewModel = AudioPlayerViewModel()
+    @State private var isScrubbing = false
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
     let audioURL: URL?
 
     public init(audioURL: URL?) {
@@ -30,7 +33,7 @@ public struct TranscriptionAudioPlayerView: View {
                     .foregroundStyle(.primary)
                     .frame(width: 24, height: 24)
             }
-            .buttonStyle(.plain)
+            .buttonStyle(.pressable)
             .disabled(audioURL == nil)
 
             // Waveform and Progress Interaction
@@ -40,14 +43,24 @@ public struct TranscriptionAudioPlayerView: View {
                     AudioWaveformView(
                         samples: viewModel.samples,
                         progress: viewModel.currentTime / max(viewModel.duration, 1),
-                        color: .secondary
+                        color: isScrubbing ? .primary : .secondary
+                    )
+                    .scaleEffect(reduceMotion || !isScrubbing ? 1 : 1.03)
+                    .opacity(isScrubbing ? 1 : 0.82)
+                    .animation(
+                        AppleMotion.animation(reduceMotion: reduceMotion, kind: .press),
+                        value: isScrubbing
                     )
                     .contentShape(Rectangle())
                     .gesture(
                         DragGesture(minimumDistance: 0)
                             .onChanged { value in
-                                let progress = max(0, min(1, value.location.x / geometry.size.width))
-                                viewModel.seek(to: progress)
+                                isScrubbing = true
+                                viewModel.seek(to: clampedProgress(for: value.location.x, width: geometry.size.width))
+                            }
+                            .onEnded { value in
+                                viewModel.seek(to: clampedProgress(for: value.location.x, width: geometry.size.width))
+                                isScrubbing = false
                             }
                     )
                 }
@@ -76,6 +89,11 @@ public struct TranscriptionAudioPlayerView: View {
         let minutes = Int(time) / 60
         let seconds = Int(time) % 60
         return String(format: "%d:%02d", minutes, seconds)
+    }
+
+    private func clampedProgress(for locationX: CGFloat, width: CGFloat) -> Double {
+        guard width > 0 else { return 0 }
+        return Double(max(0, min(1, locationX / width)))
     }
 }
 
