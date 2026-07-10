@@ -153,7 +153,7 @@ honor its STOP conditions, and update your row when done.
 | 028 | Consolidate macOS UI guidance into one primary skill | P1 | M | - | DONE |
 | 029 | Make thermo-nuclear review the default code-review skill | P1 | M | - | DONE |
 | 030 | Consolidate delivery workflow guidance into one skill | P1 | M | - | DONE |
-| 031 | Consolidate debugging and diagnostic signal guidance | P2 | S | - | TODO |
+| 031 | Consolidate debugging and diagnostic signal guidance | P2 | S | - | DONE |
 
 Status values: TODO | IN PROGRESS | DONE | BLOCKED (with one-line reason) | REJECTED (with one-line rationale)
 

@@ -10,7 +10,7 @@ When uncertain which skill to use, apply this priority order:
 2. **`delivery-workflow`** — source of truth for risk lane, validation, Git, and delivery evidence
 3. **`accessibility-audit` / `localization` / `menubar`** — specialist UI escalation when their scope is primary
 4. **`swift-concurrency-expert`** — Swift 6.2 concurrency remediation
-5. **`debugging-strategies`** — cross-cutting investigation when the failing subsystem is not yet proven
+5. **`debugging-diagnostics`** — cross-cutting investigation and diagnostic signal design when the failing subsystem is not yet proven
 
 ## External Project Code Lookup Priority
 
@@ -46,7 +46,7 @@ When inspecting code outside this repository, use this source order:
 - Apply Settings/design-system patterns
 - Add or update previews
 
-**Then (if needed):** `accessibility-audit`, `localization`, `menubar`, `debugging-strategies`, or `swift-concurrency-expert`
+**Then (if needed):** `accessibility-audit`, `localization`, `menubar`, `debugging-diagnostics`, or `swift-concurrency-expert`
 
 **Example:** "Design the meeting recording UI" → `macos-app-engineering`
 
@@ -59,9 +59,9 @@ When inspecting code outside this repository, use this source order:
 - Layout thrash
 - Excessive view updates
 
-**Complementary:** `debugging-strategies` when the root cause is unclear
+**Complementary:** `debugging-diagnostics` when the root cause is unclear
 
-**Example:** "Scrolling in recording list is janky" → `macos-app-engineering` plus `debugging-strategies` if reproduction/diagnosis is needed
+**Example:** "Scrolling in recording list is janky" → `macos-app-engineering` plus `debugging-diagnostics` if reproduction/diagnosis is needed
 
 ---
 
@@ -99,28 +99,21 @@ Use `thermo-nuclear-code-quality-review` for review output, semaforo severity, a
 ---
 
 
-### Debugging, Crashes, and Flaky Behavior
+### Debugging, Crashes, Flaky Behavior, and Diagnostics
 
-**Primary:** `debugging-strategies`
+**Primary:** `debugging-diagnostics`
 - Unknown root cause investigation
 - Crash analysis
 - Flaky behavior
-
-**Complementary:** `observability-diagnostics`, plus any subsystem skill that matches the narrowed scope
-
-**Example:** "Crash on app quit when recording is active" → `debugging-strategies`
-
----
-
-### Logging, Telemetry, and Diagnostics
-
-**Primary:** `observability-diagnostics`
 - `AppLogger` and `Logger`
 - Structured event naming
 - Payload redaction
 - Failure signatures and metric correlation
 
-**Example:** "Add diagnostic logging around shortcut capture failures" → `observability-diagnostics`
+**Complementary:** any subsystem skill that matches the narrowed scope
+
+**Example:** "Crash on app quit when recording is active" → `debugging-diagnostics`
+**Example:** "Add diagnostic logging around shortcut capture failures" → `debugging-diagnostics`
 
 ---
 
@@ -216,13 +209,12 @@ Use `thermo-nuclear-code-quality-review` for review output, semaforo severity, a
 | `audio-realtime` | `.agents/skills/audio-realtime/SKILL.md` | AVAudioSourceNode, ProcessTap, underruns |
 | `code-quality` | `.agents/skills/code-quality/SKILL.md` | Readability, refactoring |
 | `data-persistence` | `.agents/skills/data-persistence/SKILL.md` | Storage design, migrations |
-| `debugging-strategies` | `.agents/skills/debugging-strategies/SKILL.md` | Crash and flaky investigation |
+| `debugging-diagnostics` | `.agents/skills/debugging-diagnostics/SKILL.md` | Crash/flaky investigation, logs, telemetry, redaction, diagnostic signatures |
 | `delivery-workflow` | `.agents/skills/delivery-workflow/SKILL.md` | Risk lanes, validation gates, Git workflow, PR/merge mechanics |
 | `documentation` | `.agents/skills/documentation/SKILL.md` | DocC and API docs |
 | `intelligence-kernel` | `.agents/skills/intelligence-kernel/SKILL.md` | Kernel modes and summary benchmark gates |
 | `macos-app-engineering` | `.agents/skills/macos-app-engineering/SKILL.md` | macOS UI/app implementation, SwiftUI, AppKit bridging, Settings UI, previews |
 | `menubar` | `.agents/skills/menubar/SKILL.md` | Menu bar, popover, and floating-panel behavior |
-| `observability-diagnostics` | `.agents/skills/observability-diagnostics/SKILL.md` | Logs, telemetry, redaction, diagnostic signatures |
 | `testing-xctest` | `.agents/skills/testing-xctest/SKILL.md` | XCTest code structure, mocks, async tests |
 | `swift-concurrency-expert` | `.agents/skills/swift-concurrency-expert/SKILL.md` | Swift 6.2 actor isolation and Sendable fixes |
 | `thermo-nuclear-code-quality-review` | `.agents/skills/thermo-nuclear-code-quality-review/SKILL.md` | Default code review, PR audits, semaforo output, and strict maintainability analysis |

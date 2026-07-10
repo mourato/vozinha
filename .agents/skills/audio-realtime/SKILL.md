@@ -16,7 +16,7 @@ Use this skill as the canonical owner for low-latency audio and render-callback 
 ## Scope Boundary
 
 - Use this skill for audio glitches, underruns, render callbacks, and low-latency capture/processing paths.
-- Use `../debugging-strategies/SKILL.md` for app-wide optimization or unknown bottlenecks outside audio hot paths.
+- Use `../debugging-diagnostics/SKILL.md` for app-wide optimization or unknown bottlenecks outside audio hot paths.
 - Use `../swift-concurrency-expert/SKILL.md` for compiler-driven concurrency remediation when the issue is not audio-specific.
 
 ## When to Use
@@ -62,7 +62,7 @@ Prioritize these components when debugging:
 
 ## References
 
-- `../debugging-strategies/SKILL.md`
+- `../debugging-diagnostics/SKILL.md`
 - `../swift-concurrency-expert/SKILL.md`
 
 ## 2026-03 Operational Update

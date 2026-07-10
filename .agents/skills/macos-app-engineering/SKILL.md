@@ -28,7 +28,7 @@ Use specialist skills when the task is primarily about:
 - `../accessibility-audit/SKILL.md` for VoiceOver, focus order, keyboard-only navigation, reduced-motion audits, non-color signals, overlays, and panel accessibility.
 - `../localization/SKILL.md` for `.localized` usage, locale-file symmetry, localized accessibility copy, and orphaned key cleanup.
 - `../menubar/SKILL.md` for `NSStatusItem`, `NSMenu`, `NSPopover`, status menus, and non-activating floating-panel behavior.
-- `../debugging-strategies/SKILL.md` when jank, layout thrash, crashes, or flaky runtime behavior have an unclear root cause.
+- `../debugging-diagnostics/SKILL.md` when jank, layout thrash, crashes, or flaky runtime behavior have an unclear root cause.
 - `../swift-concurrency-expert/SKILL.md` for actor-isolation and `Sendable` compiler diagnostics.
 - `../delivery-workflow/SKILL.md` for validation lane policy and merge gates.
 - `../code-quality/SKILL.md` for language-agnostic simplification/refactoring.
@@ -131,7 +131,7 @@ Switches imply immediate effect. Checkbox-style controls fit deferred-save forms
 - Use built-in SwiftUI transitions and simple springs before custom animation infrastructure.
 - Honor reduced-motion behavior for motion-heavy surfaces.
 - Keep recording, status, permission, and warning-state motion deterministic so previews and tests remain stable.
-- Capture a repro and route through `debugging-strategies` before broad refactors when a performance symptom is not obviously structural.
+- Capture a repro and route through `debugging-diagnostics` before broad refactors when a performance symptom is not obviously structural.
 - Prefer stable dimensions and row identity for fixed-format UI such as toolbars, counters, status pills, grids, and settings rows.
 
 ## macOS Platform Integration
@@ -187,7 +187,7 @@ For lifecycle-sensitive UI changes, include one manual or automated note that co
 - `../accessibility-audit/SKILL.md`
 - `../localization/SKILL.md`
 - `../menubar/SKILL.md`
-- `../debugging-strategies/SKILL.md`
+- `../debugging-diagnostics/SKILL.md`
 - `../swift-concurrency-expert/SKILL.md`
 - `../delivery-workflow/SKILL.md`
 - `../code-quality/SKILL.md`

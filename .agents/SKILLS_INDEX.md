@@ -12,7 +12,7 @@ Comprehensive index of all available agent skills for Prisma. For routing logic 
 | `audio-realtime` | `.agents/skills/audio-realtime/` | AVAudioSourceNode, AudioRecorder, ProcessTap, audio glitches, underruns, low-latency optimization |
 | `code-quality` | `.agents/skills/code-quality/` | Improve code readability, rename for clarity, refactor duplicated logic, apply clean code conventions |
 | `data-persistence` | `.agents/skills/data-persistence/` | Store/load data, design repositories, plan migrations, implement synchronization |
-| `debugging-strategies` | `.agents/skills/debugging-strategies/` | Debug bugs, investigate crashes, analyze flaky behavior, trace unknown root causes |
+| `debugging-diagnostics` | `.agents/skills/debugging-diagnostics/` | Debug bugs, investigate crashes, analyze flaky behavior, trace unknown root causes, standardize logging, telemetry, redaction, and diagnostic signatures |
 | `delivery-workflow` | `.agents/skills/delivery-workflow/` | Classify risk, select delivery lane, choose validation commands, run checks, commit, prepare PRs, merge, and enforce pre-merge workflow |
 | `documentation` | `.agents/skills/documentation/` | Write/update documentation, add DocC comments, improve MARK organization, research API docs |
 | `improve` | `.agents/skills/improve/` | Audit a codebase, find improvement opportunities, suggest roadmap direction, or write implementation plans for another agent |
@@ -21,7 +21,6 @@ Comprehensive index of all available agent skills for Prisma. For routing logic 
 | `localization` | `.agents/skills/localization/` | Localize UI text, update Localizable.strings, improve accessible copy, remove orphaned locale keys |
 | `macos-app-engineering` | `.agents/skills/macos-app-engineering/` | macOS UI/app implementation, SwiftUI views, AppKit bridging, Settings UI, design-system components, preview coverage, and platform lifecycle |
 | `menubar` | `.agents/skills/menubar/` | Build menu-bar behavior, configure NSStatusItem, implement popover, manage non-activating overlays |
-| `observability-diagnostics` | `.agents/skills/observability-diagnostics/` | Standardize logging, telemetry, redaction, diagnostic signatures, and metric correlation |
 | `project-standards` | `.agents/skills/project-standards/` | Update AGENTS.md, document project policy, track known limitations, align repository standards |
 | `swift-concurrency-expert` | `.agents/skills/swift-concurrency-expert/` | Primary for concurrency issues: fix Swift concurrency errors, resolve actor isolation, remediate Sendable diagnostics, upgrade Swift 6.2 |
 | `swift-conventions` | `.agents/skills/swift-conventions/` | Apply Swift style conventions, improve type safety, refactor API naming, organize Swift modules |
@@ -36,12 +35,12 @@ Comprehensive index of all available agent skills for Prisma. For routing logic 
 
 **UI/UX and Interfaces**
 - First: `macos-app-engineering`
-- Escalate to `accessibility-audit`, `localization`, `menubar`, `debugging-strategies`, or `swift-concurrency-expert` when the task is specifically in that specialist scope
+- Escalate to `accessibility-audit`, `localization`, `menubar`, `debugging-diagnostics`, or `swift-concurrency-expert` when the task is specifically in that specialist scope
 
 **Performance Issues**
-- SwiftUI rendering: `macos-app-engineering` for view structure, then `debugging-strategies` if root cause is unclear
+- SwiftUI rendering: `macos-app-engineering` for view structure, then `debugging-diagnostics` if root cause is unclear
 - Audio capture/processing: `audio-realtime`
-- Logging and telemetry quality: `observability-diagnostics`
+- Logging and telemetry quality: `debugging-diagnostics`
 
 **Concurrency and Safety**
 - Swift 6.2 compiler errors: `swift-concurrency-expert`
@@ -63,9 +62,8 @@ Comprehensive index of all available agent skills for Prisma. For routing logic 
 **Intelligence and Post-Processing**
 - Kernel mode routing, canonical summary, benchmark gates: `intelligence-kernel`
 
-**Debugging**
-- Crashes/flaky tests: `debugging-strategies`
-- Area-specific diagnostics: `observability-diagnostics`
+**Debugging and Diagnostics**
+- Crashes, flaky tests, unknown root causes, logging, telemetry, redaction, and failure signatures: `debugging-diagnostics`
 
 **Documentation and Localization**
 - API docs/DocC: `documentation`
@@ -96,5 +94,5 @@ Comprehensive index of all available agent skills for Prisma. For routing logic 
 - `accessibility-audit` → `localization` (copy and keys stay localizable)
 - `macos-app-engineering` → `accessibility-audit` / `localization` / `menubar` (specialist escalation only)
 - `delivery-workflow` → `testing-xctest` (delivery gates → XCTest specifics)
-- `observability-diagnostics` → `debugging-strategies` (diagnostic data supports investigation)
+- `debugging-diagnostics` → subsystem skills (route to the owner once the failing surface is proven)
 - `thermo-nuclear-code-quality-review` → `delivery-workflow` / other skills (review may escalate to lane, validation, or subsystem specialists)
