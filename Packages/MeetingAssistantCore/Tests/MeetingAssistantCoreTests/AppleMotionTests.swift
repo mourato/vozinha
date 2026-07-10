@@ -23,6 +23,15 @@ final class AppleMotionTests: XCTestCase {
         )
     }
 
+    func testReduceMotionAnimationCanDisableAnimationWhenRequested() {
+        XCTAssertNil(
+            AppleMotion.animation(
+                reduceMotion: true,
+                reduceMotionAnimation: .none
+            )
+        )
+    }
+
     func testRecordingIndicatorHoverConstantsStayStable() {
         XCTAssertEqual(AppDesignSystem.Layout.recordingIndicatorHoverEnterResponse, 0.22)
         XCTAssertEqual(AppDesignSystem.Layout.recordingIndicatorHoverEnterDamping, 0.86)

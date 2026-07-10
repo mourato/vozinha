@@ -1,4 +1,3 @@
-import AppKit
 import SwiftUI
 
 public struct DSCard<Content: View>: View {

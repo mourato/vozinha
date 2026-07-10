@@ -9,7 +9,7 @@ enum SettingsMotion {
         AppleMotion.transition(reduceMotion: reduceMotion, edge: .top)
     }
 
-    static func sectionAnimation(reduceMotion: Bool) -> Animation {
+    static func sectionAnimation(reduceMotion: Bool) -> Animation? {
         AppleMotion.animation(reduceMotion: reduceMotion, kind: .default)
     }
 }

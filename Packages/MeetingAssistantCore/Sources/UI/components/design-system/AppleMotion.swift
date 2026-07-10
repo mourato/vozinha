@@ -17,6 +17,11 @@ public enum AppleMotion {
         case moveAndOpacity(edge: Edge)
     }
 
+    public enum ReduceMotionAnimation: Equatable, Sendable {
+        case fade
+        case none
+    }
+
     public static let defaultSpringSpec = SpringSpec(response: 0.35, dampingFraction: 1.0)
     public static let interactiveSpringSpec = SpringSpec(response: 0.3, dampingFraction: 0.85)
     public static let pressSpringSpec = SpringSpec(response: 0.15, dampingFraction: 1.0)
@@ -48,8 +53,21 @@ public enum AppleMotion {
         }
     }
 
-    public static func animation(reduceMotion: Bool, kind: SpringKind = .default) -> Animation {
-        reduceMotion ? reduceMotionFade : animation(for: springSpec(for: kind))
+    public static func animation(
+        reduceMotion: Bool,
+        kind: SpringKind = .default,
+        reduceMotionAnimation: ReduceMotionAnimation = .fade
+    ) -> Animation? {
+        guard reduceMotion else {
+            return animation(for: springSpec(for: kind))
+        }
+
+        switch reduceMotionAnimation {
+        case .fade:
+            return reduceMotionFade
+        case .none:
+            return nil
+        }
     }
 
     public static func transitionStyle(
