@@ -9,6 +9,8 @@ public struct OnboardingPermissionRow: View {
     let status: PermissionState
     let onGrant: () -> Void
     let onOpenSettings: () -> Void
+    @ScaledMetric(relativeTo: .title3) private var iconFontSize: CGFloat = 24
+    @ScaledMetric(relativeTo: .title3) private var iconFrameSize: CGFloat = 40
 
     public init(
         item: OnboardingPermissionItem,
@@ -26,9 +28,9 @@ public struct OnboardingPermissionRow: View {
         HStack(spacing: 16) {
             // Icon
             Image(systemName: item.iconName)
-                .font(.system(size: 24))
+                .font(AppTypography.onboardingPermissionIcon(size: iconFontSize))
                 .foregroundColor(status == .granted ? .accentColor : .secondary)
-                .frame(width: 40, height: 40)
+                .frame(width: iconFrameSize, height: iconFrameSize)
                 .background(
                     Circle()
                         .fill(Color.secondary.opacity(0.1))
@@ -78,7 +80,7 @@ public struct OnboardingPermissionRow: View {
                     .foregroundColor(.green)
                     .accessibilityHidden(true)
                 Text("onboarding.permissions.granted".localized)
-                    .font(.system(size: 13, weight: .medium))
+                    .font(AppTypography.onboardingStatusLabel)
                     .foregroundColor(.green)
             }
 
@@ -96,7 +98,7 @@ public struct OnboardingPermissionRow: View {
 
         case .restricted:
             Text("permission.state.restricted".localized)
-                .font(.system(size: 13))
+                .font(AppTypography.onboardingStatusLabel)
                 .foregroundColor(.secondary)
         }
     }

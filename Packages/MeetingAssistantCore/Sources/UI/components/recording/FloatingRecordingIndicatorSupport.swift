@@ -67,7 +67,7 @@ struct ActionIconButton: View {
     var body: some View {
         Button(action: action) {
             Image(systemName: symbol)
-                .font(.system(size: 15, weight: .medium))
+                .font(AppTypography.indicatorControlIconFont())
                 .foregroundStyle(AppDesignSystem.Colors.overlayForeground)
                 .frame(width: 28, height: 28)
                 .background(controlBackground)
@@ -247,7 +247,7 @@ enum FloatingRecordingIndicatorViewUtilities {
     }
 
     static func timerFont(for size: FloatingRecordingIndicatorView.IndicatorSize) -> NSFont {
-        .monospacedDigitSystemFont(ofSize: 13, weight: .medium)
+        AppTypography.indicatorTimerNSFont()
     }
 
     static func processingProgressReservedWidth(for size: FloatingRecordingIndicatorView.IndicatorSize) -> CGFloat {

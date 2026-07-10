@@ -34,21 +34,22 @@ private struct StepCircle: View {
     let isCompleted: Bool
     let isCurrent: Bool
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @ScaledMetric(relativeTo: .caption) private var circleSize: CGFloat = 32
 
     var body: some View {
         ZStack {
             Circle()
                 .fill(backgroundColor)
-                .frame(width: 32, height: 32)
+                .frame(width: circleSize, height: circleSize)
 
             if isCompleted {
                 Image(systemName: "checkmark")
-                    .font(.system(size: 14, weight: .semibold))
+                    .font(AppTypography.onboardingStepCompletedIcon)
                     .foregroundColor(.white)
                     .accessibilityHidden(true)
             } else {
                 Text("\(step.index)")
-                    .font(.system(size: 14, weight: .medium))
+                    .font(AppTypography.onboardingStepLabel)
                     .foregroundColor(foregroundColor)
             }
         }
