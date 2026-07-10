@@ -5,6 +5,8 @@ struct SettingsSidebarView: View {
     @Binding var selectedSection: SettingsSection
     @Binding var searchText: String
     let onSelectDestination: (SettingsDestination) -> Void
+    @ScaledMetric(relativeTo: .body) private var sidebarIconSize: CGFloat = 20
+    @ScaledMetric(relativeTo: .caption) private var searchResultIconSize: CGFloat = 18
 
     var body: some View {
         Group {
@@ -109,12 +111,12 @@ struct SettingsSidebarView: View {
         HStack(spacing: 8) {
             Image(systemName: section.icon)
                 .symbolRenderingMode(.monochrome)
-                .font(.system(size: 15, weight: .medium))
+                .font(AppTypography.sidebarIcon)
                 .foregroundStyle(AppDesignSystem.Colors.accent)
-                .frame(width: 20, height: 20)
+                .frame(width: sidebarIconSize, height: sidebarIconSize)
 
             Text(section.title)
-                .font(.system(size: AppDesignSystem.Layout.sidebarLabelFontSize, weight: .medium))
+                .font(AppTypography.sidebarLabel)
                 .lineLimit(1)
         }
         .padding(.vertical, 2)
@@ -124,13 +126,13 @@ struct SettingsSidebarView: View {
         HStack(alignment: .top, spacing: 8) {
             Image(systemName: result.section.icon)
                 .symbolRenderingMode(.monochrome)
-                .font(.system(size: 13, weight: .regular))
+                .font(AppTypography.sidebarSearchResultIcon)
                 .foregroundStyle(.secondary)
-                .frame(width: 18, height: 18)
+                .frame(width: searchResultIconSize, height: searchResultIconSize)
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(result.title)
-                    .font(.system(size: AppDesignSystem.Layout.sidebarLabelFontSize, weight: .regular))
+                    .font(AppTypography.sidebarSearchResultLabel)
                     .lineLimit(2)
 
                 Text(result.detail)

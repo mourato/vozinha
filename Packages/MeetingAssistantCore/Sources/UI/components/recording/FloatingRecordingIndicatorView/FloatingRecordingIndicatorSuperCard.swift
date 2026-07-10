@@ -172,7 +172,7 @@ extension FloatingRecordingIndicatorView {
                         .frame(width: 14, height: 14)
 
                     Text(currentPromptTitle)
-                        .font(.system(size: 12, weight: .medium))
+                        .font(AppTypography.indicatorPromptFooterFont())
                         .foregroundStyle(AppDesignSystem.Colors.overlayForegroundMuted)
                         .lineLimit(1)
                         .truncationMode(.tail)
@@ -224,7 +224,7 @@ extension FloatingRecordingIndicatorView {
         Button(action: action) {
             superFooterChip {
                 Image(systemName: symbol)
-                    .font(.system(size: 12, weight: .semibold))
+                    .font(AppTypography.indicatorFooterIconFont())
                     .foregroundStyle(iconForegroundStyle(for: style))
                     .frame(width: FloatingRecordingIndicatorViewUtilities.superFooterIconWidth())
             }
@@ -252,11 +252,11 @@ extension FloatingRecordingIndicatorView {
         return Button(action: action) {
             Label {
                 Text(titleKey.localized)
-                    .font(.system(size: 11, weight: .semibold))
+                    .font(AppTypography.indicatorActionFont())
                     .lineLimit(1)
             } icon: {
                 Image(systemName: kind == .stop ? "arrow.up" : "trash")
-                    .font(.system(size: 11, weight: .semibold))
+                    .font(AppTypography.indicatorActionFont())
             }
             .foregroundStyle(superActionForegroundColor(for: kind))
             .padding(.horizontal, 12)

@@ -383,6 +383,5 @@ public enum AppDesignSystem {
         public static let smallPadding: CGFloat = 4
         public static let compactInset: CGFloat = spacing6
 
-        public static let sidebarLabelFontSize: CGFloat = 13
     }
 }
