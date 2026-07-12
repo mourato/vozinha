@@ -10,6 +10,8 @@ Choose commands by lane:
 - Full lane merge gate: `make lint` + `make build-test`
 - Optional comprehensive validation: `make preflight`
 
+Agent default loop: preview with `make scope-check-agent ARGS="--dry-run --base main"` when needed, run the smallest changed-path check, let the staged pre-commit hook enforce Swift lint/format, then let pre-push run compact scoped validation. Do not run tests before every commit by default; use targeted tests and the lane gates for behavioral confidence.
+
 ## Primary Build/Test Commands
 
 ### Quick start
@@ -81,10 +83,10 @@ make preflight-agent-fast # Fast validation (agent-optimized)
 build → test → lint → summary-benchmark
 ```
 
-**With strict linting:**
+**Strict lint baseline check (not currently a merge gate):**
 ```bash
 STRICT_LINT=1 make preflight
-# Order: build → lint(strict) → test → summary-benchmark
+# This currently fails on the repository-wide lint baseline; retire that baseline before making strict lint mandatory.
 ```
 
 **Fast mode (local feedback only):**
@@ -167,6 +169,12 @@ make build-agent
 # 3) Scope-specific checks (only when relevant)
 make preview-check
 make arch-check
+```
+
+For agent planning, preview the decision without running checks:
+
+```bash
+make scope-check-agent ARGS="--dry-run --base main"
 ```
 
 Escalate early to `make build-test` when touching build/test/release infrastructure, cross-module/public APIs, or high-risk paths (audio, persistence, concurrency, security), or when scoped checks are flaky/inconclusive.
@@ -270,7 +278,7 @@ On failure, scripts print compact excerpts to terminal while keeping full logs o
 | Goal | Command |
 |------|---------|
 | Local development loop | `make build && make run` |
-| Before committing | `make test-smoke && make lint` |
+| Before committing | Staged SwiftFormat/SwiftLint pre-commit hook; run `make lint-fix` when it fails |
 | Before push/release (recommended) | `make deliverable-gate` |
 | Pre-merge validation | `make preflight` |
 | Fast local feedback | `make preflight-fast` |

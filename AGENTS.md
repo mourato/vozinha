@@ -160,6 +160,7 @@ Rules:
 - Scan for reusable blocks (reuse → extend → create)
 - Implement in small slices
 - **Iteration gate (default):** lint/format + scoped checks for touched files/subsystem
+  - Agents should prefer `make scope-check-agent`; use `make scope-check-agent ARGS="--dry-run --base main"` when the required gate is unclear. Dry-run is a planning preview, not proof.
 - Prefer quick scoped commands first:
   - `make scope-check` (smart targeted checks + automatic escalation)
   - `./scripts/run-tests.sh --file <TestFile>` or `--test <testName>` when you need explicit manual targeting
@@ -173,6 +174,7 @@ Rules:
 - Use a new feature branch; keep commits atomic
 - Scan reusable blocks upfront
 - Small slices, frequent scoped verification (targeted tests + narrow build first)
+- Use compact `*-agent` commands during iteration to reduce terminal and token overhead.
 - Run `make build-test` at key milestones (before push/merge, after large rebases, or when an escalation trigger fires mid-task)
 - **Before push/merge (hard gates, no exceptions):**
   - `make lint` (mandatory for all Full-lane changes — fast-fail before build)
@@ -190,7 +192,18 @@ Use this decision order to keep feedback fast without sacrificing safety:
 
 `make scope-check` is the canonical command for steps 1-3 above during iteration.
 
-**`make preflight` (optional, not a lane gate):** comprehensive validation (lint + build + test + summary benchmark), recommended before release. It does not replace the lane merge gates above (Fast = `make scope-check`, Full = `make lint` + `make build-test`).
+### Compact Agent Delivery Sequence
+
+1. Preview the scoped decision when needed: `make scope-check-agent ARGS="--dry-run --base main"`.
+2. Run the smallest meaningful changed-path check (`make build-agent`, a targeted test, `make preview-check`, `make arch-check`, or `make guidance-check`).
+3. Before committing, rely on the staged SwiftFormat/SwiftLint pre-commit gate. Run `make lint-fix` when it fails; use `SKIP_LINT=1` only as an explicit emergency bypass.
+4. Before pushing, the pre-push hook runs `make scope-check-agent ARGS="--base <default-branch>"`; set `PUSH_CHECK_VERBOSE=1` for human-readable output. `SKIP_TESTS=1` remains an emergency bypass.
+5. Full-lane changes still require `make lint` and `make build-test`. `STRICT_LINT=1 make lint-agent` is currently a diagnostic baseline check and must not become a repo-wide merge gate until the baseline is green.
+6. Use `make preflight-agent` or `make deliverable-gate` explicitly for release or high-confidence validation.
+
+This intentionally does not run tests before every commit: staged lint/format is cheap and catches mechanical issues early, while tests remain scoped to changed behavior and lane/risk gates.
+
+**`make preflight` (optional, not a lane gate):** comprehensive validation (lint + build + test + summary benchmark), recommended before release. It does not replace the lane merge gates above (Fast = `make scope-check`, Full = `make lint` + `make build-test`). Strict lint is only a merge gate after the repository baseline is green.
 
 ### Definition of Done & Evidence
 

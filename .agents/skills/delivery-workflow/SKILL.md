@@ -72,6 +72,7 @@ Minimum expectation:
 Minimum expectation:
 
 - During development, run scoped checks continuously.
+- Prefer compact `*-agent` commands during iteration; use `make scope-check-agent ARGS="--dry-run --base main"` as a planning preview when the gate is unclear.
 - Reserve `make build-test` for milestone validation and mandatory merge gate.
 - Before push/merge, run:
   - `make lint` (fast-fail before build)
@@ -137,6 +138,17 @@ Compact-mode notes:
 - Scripts emit deterministic `AGENT_*` summary lines for pass/fail parsing.
 - Use compact mode for iteration; keep lane merge gates unchanged.
 
+Agent delivery sequence:
+
+1. Preview the scoped decision when needed with `make scope-check-agent ARGS="--dry-run --base main"`; this does not prove the change.
+2. Run the smallest meaningful changed-path check: targeted tests, `make build-agent`, `make preview-check`, `make arch-check`, or `make guidance-check`.
+3. Before commit, the staged pre-commit hook runs SwiftFormat and SwiftLint for staged Swift files. Run `make lint-fix` when it fails; `SKIP_LINT=1` is an explicit emergency bypass.
+4. Before push, the pre-push hook runs `make scope-check-agent ARGS="--base <default-branch>"`. Set `PUSH_CHECK_VERBOSE=1` for human-readable output; `SKIP_TESTS=1` remains an emergency bypass.
+5. Full-lane changes still require `make lint` and `make build-test`. `STRICT_LINT=1 make lint-agent` currently reports the repository baseline and is not a merge gate until it passes.
+6. Use `make preflight-agent` or `make deliverable-gate` for release or high-confidence validation.
+
+Tests are intentionally not run before every commit: staged lint/format is the cheap mechanical gate, while tests remain scoped to behavior and lane/risk requirements.
+
 ## Git Workflow
 
 - Preserve unrelated worktree changes.
@@ -188,8 +200,8 @@ Always report:
 ## Hook and Troubleshooting Notes
 
 - Install hooks with `git config core.hooksPath scripts/hooks`.
-- `pre-commit` is optimized for speed and can run lightweight staged checks.
-- `pre-push` enforces scoped validation unless explicitly bypassed.
+- `pre-commit` runs blocking lightweight staged checks for Swift files and does not run tests.
+- `pre-push` enforces compact scoped validation unless explicitly bypassed.
 - Emergency bypasses should be rare and followed by immediate remediation.
 - If tools are missing, install SwiftLint and SwiftFormat with `brew install swiftlint swiftformat`.
 

@@ -199,7 +199,7 @@ honor its STOP conditions, and update your row when done.
 | 029 | Make thermo-nuclear review the default code-review skill | P1 | M | - | DONE |
 | 030 | Consolidate delivery workflow guidance into one skill | P1 | M | - | DONE |
 | 031 | Consolidate debugging and diagnostic signal guidance | P2 | S | - | DONE |
-| 032 | Optimize agent delivery gates for compact staged validation | P1 | M | - | TODO |
+| 032 | Optimize agent delivery gates for compact staged validation | P1 | M | - | DONE |
 | 033 | Establish Apple-style motion and material foundation | P1 | M | - | DONE |
 | 034 | Make the floating recording indicator structurally ready for fluid interaction | P1 | L | 033 | DONE |
 | 035 | Add immediate press feedback and direct-manipulation controls | P1 | M | 033 | DONE |
@@ -221,6 +221,7 @@ honor its STOP conditions, and update your row when done.
 | 051 | Re-run modularization triage and resolve confirmed hygiene findings | P3 | M | 039 | TODO |
 | 052 | Design an Assistant automation-rule spike | P3 | M | 042 | TODO |
 | 053 | Decide whether optional CloudKit sync fits Prisma's privacy boundary | P3 | L | 049 | TODO |
+| 054 | Retire the repository-wide Swift lint baseline and enable strict gating | P2 | M | 032 | TODO |
 
 Status values: TODO | IN PROGRESS | DONE | BLOCKED (with one-line reason) | REJECTED (with one-line rationale)
 

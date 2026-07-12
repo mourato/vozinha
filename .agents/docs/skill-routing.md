@@ -8,7 +8,7 @@ When uncertain which skill to use, apply this priority order:
 
 1. **`macos-app-engineering`** — canonical macOS UI/app implementation guidance
 2. **`delivery-workflow`** — source of truth for risk lane, validation, Git, and delivery evidence
-3. **`accessibility-audit` / `localization` / `menubar`** — specialist UI escalation when their scope is primary
+3. **`swiftui-pro` / `apple-design` / `accessibility-audit` / `localization` / `menubar`** — specialist UI escalation when their scope is primary
 4. **`swift-concurrency-expert`** — Swift 6.2 concurrency remediation
 5. **`debugging-diagnostics`** — cross-cutting investigation and diagnostic signal design when the failing subsystem is not yet proven
 
@@ -46,7 +46,7 @@ When inspecting code outside this repository, use this source order:
 - Apply Settings/design-system patterns
 - Add or update previews
 
-**Then (if needed):** `accessibility-audit`, `localization`, `menubar`, `debugging-diagnostics`, or `swift-concurrency-expert`
+**Then (if needed):** `swiftui-pro`, `apple-design`, `accessibility-audit`, `localization`, `menubar`, `debugging-diagnostics`, or `swift-concurrency-expert`
 
 **Example:** "Design the meeting recording UI" → `macos-app-engineering`
 
@@ -205,6 +205,7 @@ Use `thermo-nuclear-code-quality-review` for review output, semaforo severity, a
 | Skill | File | When to use |
 |-------|------|-------------|
 | `accessibility-audit` | `.agents/skills/accessibility-audit/SKILL.md` | VoiceOver, focus order, keyboard navigation, reduced motion |
+| `apple-design` | `.agents/skills/apple-design/SKILL.md` | Apple-style interaction design, fluid motion, springs, materials, typography |
 | `architecture` | `.agents/skills/architecture/SKILL.md` | Module boundaries, Clean Architecture, DI |
 | `audio-realtime` | `.agents/skills/audio-realtime/SKILL.md` | AVAudioSourceNode, ProcessTap, underruns |
 | `code-quality` | `.agents/skills/code-quality/SKILL.md` | Readability, refactoring |
@@ -217,4 +218,5 @@ Use `thermo-nuclear-code-quality-review` for review output, semaforo severity, a
 | `menubar` | `.agents/skills/menubar/SKILL.md` | Menu bar, popover, and floating-panel behavior |
 | `testing-xctest` | `.agents/skills/testing-xctest/SKILL.md` | XCTest code structure, mocks, async tests |
 | `swift-concurrency-expert` | `.agents/skills/swift-concurrency-expert/SKILL.md` | Swift 6.2 actor isolation and Sendable fixes |
+| `swiftui-pro` | `.agents/skills/swiftui-pro/SKILL.md` | SwiftUI API, data flow, navigation, accessibility, performance, and maintainability review |
 | `thermo-nuclear-code-quality-review` | `.agents/skills/thermo-nuclear-code-quality-review/SKILL.md` | Default code review, PR audits, semaforo output, and strict maintainability analysis |

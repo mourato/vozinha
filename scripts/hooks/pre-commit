@@ -1,6 +1,6 @@
 #!/bin/bash
 # MARK: - Pre-commit Hook for MeetingAssistant (Optimized)
-# Fast checks on STAGED files only - non-blocking lint/format
+# Fast checks on STAGED files only - blocking lint/format
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
@@ -34,19 +34,21 @@ if [ "${SKIP_LINT}" = "1" ]; then
     exit 0
 fi
 
+# Required tools are part of the staged Swift gate.
+if ! command -v swiftformat &> /dev/null; then
+    echo "❌ SwiftFormat is required for staged Swift checks. Install with: brew install swiftformat"
+    exit 1
+fi
+
+if ! command -v swiftlint &> /dev/null; then
+    echo "❌ SwiftLint is required for staged Swift checks. Install with: brew install swiftlint"
+    exit 1
+fi
+
 # Count staged files
 FILE_COUNT=$(echo "$STAGED_FILES" | wc -l | xargs)
 echo "   Found $FILE_COUNT staged Swift file(s)"
 echo ""
-
-# Check for required tools (non-blocking)
-if ! command -v swiftformat &> /dev/null; then
-    echo "⚠️  SwiftFormat not installed. Install with: brew install swiftformat"
-fi
-
-if ! command -v swiftlint &> /dev/null; then
-    echo "⚠️  SwiftLint not installed. Install with: brew install swiftlint"
-fi
 
 # 1. SwiftFormat check (only staged files)
 echo "1️⃣  Checking code formatting..."
@@ -62,7 +64,8 @@ for file in $STAGED_FILES; do
 done
 
 if [ $FORMAT_FAILED -eq 1 ]; then
-    echo "⚠️  Code formatting issues found. Run 'make lint-fix' to fix."
+    echo "❌ Code formatting issues found. Run 'make lint-fix' to fix before committing."
+    exit 1
 else
     echo "   ✅ Formatting OK"
 fi
@@ -81,7 +84,8 @@ for file in $STAGED_FILES; do
 done
 
 if [ $LINT_FAILED -eq 1 ]; then
-    echo "⚠️  SwiftLint violations found. Run 'make lint' to see details."
+    echo "❌ SwiftLint violations found. Run 'make lint-fix' or 'make lint' to remediate."
+    exit 1
 else
     echo "   ✅ SwiftLint OK"
 fi

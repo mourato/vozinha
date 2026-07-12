@@ -7,6 +7,18 @@ metadata:
   version: "1.1"
 ---
 
+## Role
+
+Use this skill to review SwiftUI code for modern API usage, data flow, accessibility, navigation, performance, maintainability, and Swift 6.2 conventions.
+
+## Scope Boundary
+
+This skill provides review heuristics and findings. Use `macos-app-engineering` for project-specific implementation patterns, `accessibility-audit` for a dedicated accessibility pass, and `swift-concurrency-expert` for concurrency diagnostics.
+
+## When to Use
+
+Use when reading, writing, or reviewing SwiftUI views, modifiers, navigation, state ownership, animations, accessibility behavior, or view performance.
+
 Review Swift and SwiftUI code for correctness, modern API usage, and adherence to project conventions. Report only genuine problems - do not nitpick or invent issues.
 
 Review process:

@@ -7,6 +7,7 @@ Comprehensive index of all available agent skills for Prisma. For routing logic 
 | Skill | Location | Triggers / When to Use |
 |-------|----------|------------------------|
 | `accessibility-audit` | `.agents/skills/accessibility-audit/` | Audit VoiceOver, keyboard navigation, focus order, reduced motion, overlays, and other accessibility-sensitive UI behavior |
+| `apple-design` | `.agents/skills/apple-design/` | Apple-style interaction design, fluid motion, springs, materials, typography, and reduced-motion behavior |
 | `benchmarking` | `.agents/skills/benchmarking/` | Triggered by mentions of VoiceInk, FluidVoice, TypeWhisper, or "referência/inspiração". Provides canonical paths and clone policy for reference projects |
 | `architecture` | `.agents/skills/architecture/` | Design module boundaries, apply Clean Architecture, refactor architecture, define dependency injection |
 | `audio-realtime` | `.agents/skills/audio-realtime/` | AVAudioSourceNode, AudioRecorder, ProcessTap, audio glitches, underruns, low-latency optimization |
@@ -24,6 +25,7 @@ Comprehensive index of all available agent skills for Prisma. For routing logic 
 | `project-standards` | `.agents/skills/project-standards/` | Update AGENTS.md, document project policy, track known limitations, align repository standards |
 | `swift-concurrency-expert` | `.agents/skills/swift-concurrency-expert/` | Primary for concurrency issues: fix Swift concurrency errors, resolve actor isolation, remediate Sendable diagnostics, upgrade Swift 6.2 |
 | `swift-conventions` | `.agents/skills/swift-conventions/` | Apply Swift style conventions, improve type safety, refactor API naming, organize Swift modules |
+| `swiftui-pro` | `.agents/skills/swiftui-pro/` | Review SwiftUI APIs, data flow, navigation, accessibility, performance, and maintainability |
 | `testing-xctest` | `.agents/skills/testing-xctest/` | Write XCTest code, structure async and `@MainActor` tests, build mocks/fakes/spies, and keep test suites maintainable |
 | `thermo-nuclear-code-quality-review` | `.agents/skills/thermo-nuclear-code-quality-review/` | Default code review skill: review changes, audit PRs, find risks before merge, produce semaforo findings, and run strict maintainability analysis |
 
@@ -35,7 +37,7 @@ Comprehensive index of all available agent skills for Prisma. For routing logic 
 
 **UI/UX and Interfaces**
 - First: `macos-app-engineering`
-- Escalate to `accessibility-audit`, `localization`, `menubar`, `debugging-diagnostics`, or `swift-concurrency-expert` when the task is specifically in that specialist scope
+- Escalate to `swiftui-pro`, `apple-design`, `accessibility-audit`, `localization`, `menubar`, `debugging-diagnostics`, or `swift-concurrency-expert` when the task is specifically in that specialist scope
 
 **Performance Issues**
 - SwiftUI rendering: `macos-app-engineering` for view structure, then `debugging-diagnostics` if root cause is unclear

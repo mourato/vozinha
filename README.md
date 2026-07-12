@@ -43,6 +43,18 @@ make dmg
 
 Use `make help` to print the current target list from the `Makefile`.
 
+### Agent delivery loop
+
+For compact, auditable iteration:
+
+```bash
+make scope-check-agent ARGS="--dry-run --base main"  # preview when the gate is unclear
+make build-agent                                      # or the smallest relevant check
+make lint-fix                                         # when the staged pre-commit gate reports issues
+```
+
+The pre-commit hook runs SwiftFormat and SwiftLint on staged Swift files and does not run tests. The pre-push hook runs compact scoped validation; use `PUSH_CHECK_VERBOSE=1` for verbose output. `SKIP_LINT=1` and `SKIP_TESTS=1` are explicit emergency bypasses. Full-lane changes still require `make lint` and `make build-test`; strict lint is not a merge gate until the repository baseline is green.
+
 ### Make targets
 
 #### Build

@@ -3,6 +3,18 @@ name: apple-design
 description: Apple's approach to interface design, fluid movement and physics — translated to Swift, SwiftUI and UIKit. Use when building or reviewing gesture-oriented UI, spring animations, drag/swipe/sheet interactions, momentum and interruptible transitions, translucent materials and depth, typography (Dynamic Type, tracking, leading), reduce motion, or the design fundamentals (feedback, spatial consistency, containment) behind interfaces in Apple style.
 ---
 
+## Role
+
+Use this skill for Apple-style interaction design and implementation guidance: fluid gestures, interruptible motion, spring behavior, materials, depth, typography, and reduced-motion behavior.
+
+## Scope Boundary
+
+This skill owns interaction feel and design principles. Use `macos-app-engineering` for ordinary SwiftUI/AppKit implementation and `accessibility-audit` for dedicated accessibility audits.
+
+## When to Use
+
+Use when building or reviewing gesture-oriented UI, spring animations, drag/swipe/sheet interactions, momentum, interruptible transitions, translucent materials, typography, or motion accessibility.
+
 # Apple Design (Swift / SwiftUI / UIKit)
 
 How Apple builds interfaces that stop looking like a computer and start looking like an extension of you. This knowledge comes from WWDC design talks — mainly _Designing Fluid Interfaces_ (WWDC 2018) — distilled and translated into Apple's native platform (SwiftUI, UIKit, Core Animation, `CADisplayLink`, `UIViewPropertyAnimator`).

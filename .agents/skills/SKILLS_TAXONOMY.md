@@ -5,6 +5,7 @@ This matrix defines ownership, overlap, and action for all skills under `.agents
 | Skill | Theme | Owner | Scope | Overlap With | Action |
 |---|---|---|---|---|---|
 | accessibility-audit | SwiftUI/UI/UX | Canonical | Accessibility audit, keyboard navigation, focus order, reduced motion, overlay and panel accessibility | localization, macos-app-engineering, menubar | Keep; accessibility interaction owner |
+| apple-design | SwiftUI/UI/UX | Specialist | Apple-style interaction design, fluid motion, springs, materials, typography, and reduced-motion behavior | macos-app-engineering, accessibility-audit, swiftui-pro | Keep; interaction design owner |
 | benchmarking | Meta-skills | Canonical | Reference project registry, clone policy, and inspiration-driven problem-solving for Prisma | architecture, macos-app-engineering, audio-realtime | Keep; reference project owner |
 | architecture | macOS/Swift Core | Canonical | Clean Architecture, module boundaries, DI | macos-app-engineering | Keep; clarify architecture-only scope |
 | audio-realtime | Runtime/Performance | Canonical | Low-latency audio pipeline and callback constraints | debugging-diagnostics | Keep; specialized runtime owner |
@@ -22,13 +23,14 @@ This matrix defines ownership, overlap, and action for all skills under `.agents
 | project-standards | Quality/Engineering Flow | Canonical | AGENTS and project policy maintenance | documentation | Keep |
 | swift-concurrency-expert | Runtime/Performance | Canonical (Swift 6.2) | Concurrency diagnostics and remediation | — | Keep |
 | swift-conventions | macOS/Swift Core | Canonical (Swift language) | Swift-specific style, type safety, and module conventions | code-quality | Keep |
+| swiftui-pro | SwiftUI/UI/UX | Specialist | SwiftUI API, data flow, navigation, accessibility, performance, and maintainability review | macos-app-engineering, apple-design, accessibility-audit, swift-concurrency-expert | Keep; SwiftUI review owner |
 | testing-xctest | Quality/Engineering Flow | Canonical | XCTest implementation patterns, async tests, `@MainActor`, mocks, fakes, and spies | delivery-workflow | Keep; XCTest owner |
 | thermo-nuclear-code-quality-review | Quality/Engineering Flow | Canonical | Default code review owner; semaforo findings, severity framing, strict abstraction, large-file, and spaghetti-growth analysis | code-quality, delivery-workflow | Keep; default review mode |
 
 ## Grouping Summary
 
 1. macOS/Swift Core: `macos-app-engineering`, `architecture`, `swift-conventions`
-2. SwiftUI/UI/UX: `macos-app-engineering`, `menubar`, `accessibility-audit`
+2. SwiftUI/UI/UX: `macos-app-engineering`, `swiftui-pro`, `apple-design`, `menubar`, `accessibility-audit`
 3. Runtime/Performance: `swift-concurrency-expert`, `debugging-diagnostics`, `audio-realtime`, `intelligence-kernel`
 4. Quality/Engineering Flow: `delivery-workflow`, `testing-xctest`, `code-quality`, `project-standards`, `documentation`, `thermo-nuclear-code-quality-review`
 5. Security/Data: `keychain-security`, `data-persistence`, `localization`
