@@ -28,7 +28,7 @@ public struct OnboardingDownloadModelsView: View {
             VStack(spacing: 12) {
                 headerIcon
                     .font(.system(size: 48))
-                    .foregroundColor(headerColor)
+                    .foregroundStyle(headerColor)
 
                 Text("onboarding.download.title".localized)
                     .font(.title2)
@@ -36,7 +36,7 @@ public struct OnboardingDownloadModelsView: View {
 
                 Text("onboarding.download.subtitle".localized)
                     .font(.body)
-                    .foregroundColor(.secondary)
+                    .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
                     .fixedSize(horizontal: false, vertical: true)
             }
@@ -143,7 +143,7 @@ public struct OnboardingDownloadModelsView: View {
             // Status text
             Text(statusText)
                 .font(.body)
-                .foregroundColor(.secondary)
+                .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
 
             // Progress indicator
@@ -155,7 +155,7 @@ public struct OnboardingDownloadModelsView: View {
 
                     Text(modelManager.downloadPhase.localizedDescription)
                         .font(.caption)
-                        .foregroundColor(.secondary)
+                        .foregroundStyle(.secondary)
                 }
             }
 
@@ -163,7 +163,7 @@ public struct OnboardingDownloadModelsView: View {
             if let error = modelManager.lastError {
                 Text(error)
                     .font(.caption)
-                    .foregroundColor(.red)
+                        .foregroundStyle(.red)
                     .multilineTextAlignment(.center)
             }
 
@@ -221,18 +221,18 @@ public struct OnboardingDownloadModelsView: View {
         HStack(spacing: 12) {
             if isComplete {
                 Image(systemName: "checkmark.circle.fill")
-                    .foregroundColor(.green)
+                        .foregroundStyle(.green)
             } else if isDownloading {
                 ProgressView()
                     .scaleEffect(0.7)
             } else {
                 Image(systemName: "circle")
-                    .foregroundColor(.secondary)
+                        .foregroundStyle(.secondary)
             }
 
             Text(title)
                 .font(.subheadline)
-                .foregroundColor(isComplete ? .primary : .secondary)
+                .foregroundStyle(isComplete ? .primary : .secondary)
 
             Spacer()
         }

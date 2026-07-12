@@ -29,7 +29,7 @@ public struct OnboardingCompletionView: View {
                     .resizable()
                     .aspectRatio(contentMode: .fit)
                     .frame(width: 80, height: 80)
-                    .foregroundColor(.green)
+                    .foregroundStyle(.green)
             }
 
             // Title
@@ -41,7 +41,7 @@ public struct OnboardingCompletionView: View {
             // Subtitle
             Text(readiness.completionSubtitleKey.localized)
                 .font(.body)
-                .foregroundColor(.secondary)
+                .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
                 .fixedSize(horizontal: false, vertical: true)
 

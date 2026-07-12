@@ -70,7 +70,7 @@ public struct OnboardingMeetingRecordingView: View {
         VStack(spacing: 12) {
             Image(systemName: "video.badge.waveform")
                 .font(.system(size: 48))
-                .foregroundColor(.accentColor)
+                .foregroundStyle(Color.accentColor)
                 .accessibilityHidden(true)
 
             Text("onboarding.meeting_recording.title".localized)
@@ -79,7 +79,7 @@ public struct OnboardingMeetingRecordingView: View {
 
             Text("onboarding.meeting_recording.subtitle".localized)
                 .font(.body)
-                .foregroundColor(.secondary)
+                .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
                 .fixedSize(horizontal: false, vertical: true)
         }
@@ -103,7 +103,7 @@ public struct OnboardingMeetingRecordingView: View {
     private var resourceNote: some View {
         Text("onboarding.meeting_recording.resource_note".localized)
             .font(.caption)
-            .foregroundColor(.secondary)
+            .foregroundStyle(.secondary)
             .multilineTextAlignment(.center)
             .fixedSize(horizontal: false, vertical: true)
             .padding(.horizontal, 24)
@@ -150,13 +150,13 @@ public struct OnboardingMeetingRecordingView: View {
         HStack(spacing: 12) {
             Image(systemName: iconName)
                 .font(.system(size: 18, weight: .medium))
-                .foregroundColor(.accentColor)
+                .foregroundStyle(Color.accentColor)
                 .frame(width: 28)
                 .accessibilityHidden(true)
 
             Text(titleKey.localized)
                 .font(.subheadline)
-                .foregroundColor(.primary)
+                .foregroundStyle(.primary)
 
             Spacer()
 
@@ -165,7 +165,7 @@ public struct OnboardingMeetingRecordingView: View {
                 systemImage: isSatisfied ? "checkmark.circle.fill" : "exclamationmark.circle.fill"
             )
             .font(.caption)
-            .foregroundColor(isSatisfied ? .green : .orange)
+            .foregroundStyle(isSatisfied ? Color.green : Color.orange)
             .labelStyle(.titleAndIcon)
         }
         .padding(.horizontal, 16)

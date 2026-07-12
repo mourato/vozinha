@@ -28,7 +28,7 @@ public struct OnboardingPermissionsView: View {
             VStack(spacing: 12) {
                 Image(systemName: "shield.checkered")
                     .font(.system(size: 48))
-                    .foregroundColor(.accentColor)
+                    .foregroundStyle(Color.accentColor)
                     .accessibilityHidden(true)
 
                 Text("onboarding.permissions.title".localized)
@@ -37,7 +37,7 @@ public struct OnboardingPermissionsView: View {
 
                 Text("onboarding.permissions.subtitle".localized)
                     .font(.body)
-                    .foregroundColor(.secondary)
+                    .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
                     .fixedSize(horizontal: false, vertical: true)
             }

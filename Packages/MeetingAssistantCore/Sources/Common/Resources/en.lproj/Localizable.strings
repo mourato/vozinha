@@ -825,6 +825,9 @@
 /* Transcription Status */
 "transcription.time_remaining" = "~%@ remaining";
 "transcription.view.toggle_details" = "Toggle details";
+"transcription.audio.play.accessibility" = "Play transcription audio";
+"transcription.audio.pause.accessibility" = "Pause transcription audio";
+"metrics.calendar.event.open_detail.accessibility" = "Open calendar event details";
 "transcription.error.click_retry" = "Click to retry";
 "transcription.service" = "Service";
 "transcription.model" = "Model";

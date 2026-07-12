@@ -826,6 +826,9 @@
 /* Transcription Status */
 "transcription.time_remaining" = "~%@ restante";
 "transcription.view.toggle_details" = "Alternar detalhes";
+"transcription.audio.play.accessibility" = "Reproduzir áudio da transcrição";
+"transcription.audio.pause.accessibility" = "Pausar áudio da transcrição";
+"metrics.calendar.event.open_detail.accessibility" = "Abrir detalhes do evento do calendário";
 "transcription.error.click_retry" = "Clique para tentar novamente";
 "transcription.service" = "Serviço";
 "transcription.model" = "Modelo";

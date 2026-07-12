@@ -32,30 +32,30 @@ public struct TranscriptionStatusView: View {
     // MARK: - Main Status Row
 
     private var mainStatusRow: some View {
-        HStack(spacing: 10) {
-            statusIcon
+        Button(action: toggleExpanded) {
+            HStack(spacing: 10) {
+                statusIcon
 
-            VStack(alignment: .leading, spacing: 2) {
-                Text(viewModel.statusMessage)
-                    .font(.subheadline)
-                    .fontWeight(.medium)
-                    .foregroundStyle(statusTextColor)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(viewModel.statusMessage)
+                        .font(.subheadline)
+                        .fontWeight(.medium)
+                        .foregroundStyle(statusTextColor)
 
-                if viewModel.isProcessing {
-                    progressBar
+                    if viewModel.isProcessing {
+                        progressBar
+                    }
                 }
-            }
 
-            Spacer()
+                Spacer()
 
-            chevronButton
-        }
-        .contentShape(Rectangle())
-        .onTapGesture {
-            withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.2)) {
-                isExpanded.toggle()
+                chevronButton
             }
+            .contentShape(Rectangle())
         }
+        .buttonStyle(.plain)
+        .accessibilityElement(children: .combine)
+        .accessibilityHint("transcription.view.toggle_details".localized)
     }
 
     // MARK: - Status Icon
@@ -208,8 +208,13 @@ public struct TranscriptionStatusView: View {
             .font(.caption)
             .foregroundStyle(.secondary)
             .rotationEffect(.degrees(isExpanded ? 180 : 0))
-            .accessibilityLabel("transcription.view.toggle_details".localized)
-            .accessibilityAddTraits(.isButton)
+            .accessibilityHidden(true)
+    }
+
+    private func toggleExpanded() {
+        withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.2)) {
+            isExpanded.toggle()
+        }
     }
 
     // MARK: - Styling Computed Properties

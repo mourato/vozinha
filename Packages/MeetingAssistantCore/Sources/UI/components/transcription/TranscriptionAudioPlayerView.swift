@@ -34,6 +34,12 @@ public struct TranscriptionAudioPlayerView: View {
                     .frame(width: 24, height: 24)
             }
             .buttonStyle(.pressable)
+            .labelStyle(.iconOnly)
+            .accessibilityLabel(
+                (viewModel.isPlaying
+                    ? "transcription.audio.pause.accessibility"
+                    : "transcription.audio.play.accessibility").localized
+            )
             .disabled(audioURL == nil)
 
             // Waveform and Progress Interaction
@@ -88,7 +94,7 @@ public struct TranscriptionAudioPlayerView: View {
     private func formatTime(_ time: TimeInterval) -> String {
         let minutes = Int(time) / 60
         let seconds = Int(time) % 60
-        return String(format: "%d:%02d", minutes, seconds)
+        return "\(minutes):\(seconds.formatted(.number.precision(.integerLength(2))))"
     }
 
     private func clampedProgress(for locationX: CGFloat, width: CGFloat) -> Double {

@@ -399,7 +399,7 @@ private struct MetricsDashboardSummarySection: View {
         MetricStatCard(
             icon: "bolt.fill",
             title: "metrics.summary.wpm".localized,
-            value: String(format: "%.0f", viewModel.summary.wordsPerMinute),
+            value: viewModel.summary.wordsPerMinute.formatted(.number.precision(.fractionLength(0))),
             detail: "metrics.summary.wpm_detail".localized,
             tint: .blue
         )
@@ -539,7 +539,7 @@ private struct MetricsDashboardWeekdayPeaksSection: View {
                     y: .value("words", bucket.words)
                 )
                 .foregroundStyle(AppDesignSystem.Colors.accent.gradient)
-                .cornerRadius(AppDesignSystem.Layout.tinyCornerRadius)
+                .clipShape(.rect(cornerRadius: AppDesignSystem.Layout.tinyCornerRadius))
             }
             .chartYAxis {
                 AxisMarks(position: .leading)

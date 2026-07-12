@@ -28,7 +28,7 @@ public struct OnboardingShortcutsView: View {
             VStack(spacing: 12) {
                 Image(systemName: "keyboard")
                     .font(.system(size: 48))
-                    .foregroundColor(.accentColor)
+                    .foregroundStyle(Color.accentColor)
 
                 Text("onboarding.shortcuts.title".localized)
                     .font(.title2)
@@ -36,7 +36,7 @@ public struct OnboardingShortcutsView: View {
 
                 Text("onboarding.shortcuts.subtitle".localized)
                     .font(.body)
-                    .foregroundColor(.secondary)
+                    .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
                     .fixedSize(horizontal: false, vertical: true)
             }
@@ -93,7 +93,7 @@ private struct OnboardingShortcutRow: View {
             // Icon
             Image(systemName: iconName(for: item.type))
                 .font(.system(size: 24))
-                .foregroundColor(.accentColor)
+                .foregroundStyle(Color.accentColor)
                 .frame(width: 40, height: 40)
                 .background(
                     Circle()
@@ -104,11 +104,11 @@ private struct OnboardingShortcutRow: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(item.titleKey.localized)
                     .font(.headline)
-                    .foregroundColor(.primary)
+                    .foregroundStyle(.primary)
 
                 Text("onboarding.shortcuts.current".localized(with: currentShortcutSummary))
                     .font(.caption)
-                    .foregroundColor(isConfigured ? .secondary : .orange)
+                    .foregroundStyle(isConfigured ? Color.secondary : Color.orange)
             }
 
             Spacer()

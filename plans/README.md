@@ -208,7 +208,7 @@ honor its STOP conditions, and update your row when done.
 | 038 | Define Swift 6.2 and macOS SwiftUI project standards | P1 | M | - | DONE |
 | 039 | Align the project with Swift 6.2 concurrency checks | P1 | L | 038 | DONE |
 | 040 | Migrate UI state to Observation at stable boundaries | P1 | L | 039 | TODO |
-| 041 | Modernize SwiftUI interactions and accessibility semantics | P1 | M | 038 | TODO |
+| 041 | Modernize SwiftUI interactions and accessibility semantics | P1 | M | 038 | DONE |
 | 042 | Decompose recording runtime hotspots without changing behavior | P1 | L | 039 | TODO |
 | 043 | Decompose the rich-text notes editor family | P1 | L | 041 | TODO |
 | 044 | Replace brittle SettingsSearchIndex prefix routing | P2 | M | 038 | TODO |

@@ -351,6 +351,10 @@ private struct UpcomingCalendarEventRow: View {
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
+
+                Button("metrics.calendar.event.open_detail.accessibility".localized, action: onOpen)
+                    .buttonStyle(.link)
+                    .font(.caption)
             }
 
             Spacer(minLength: 0)
@@ -402,10 +406,6 @@ private struct UpcomingCalendarEventRow: View {
         .padding(.vertical, 10)
         .background(AppDesignSystem.Colors.settingsInlineBackground(intensity: .regular))
         .clipShape(RoundedRectangle(cornerRadius: AppDesignSystem.Layout.smallCornerRadius))
-        .contentShape(Rectangle())
-        .onTapGesture {
-            onOpen()
-        }
     }
 
     private var timeLabel: String {
