@@ -1,4 +1,8 @@
 extension SettingsSearchIndex {
+    /// Searchable localization keys intentionally excluded from destination routing.
+    /// Keep this explicit when a searchable key is UI copy rather than a Settings route.
+    static let explicitlyUnroutedKeys: Set<String> = []
+
     static let searchableKeys: [String] = [
         "metrics.activity.legend.most",
         "metrics.activity.legend.none",

@@ -83,9 +83,68 @@ final class SettingsSearchIndexTests: XCTestCase {
         for key in SettingsSearchIndex.searchableKeys {
             XCTAssertNotNil(
                 SettingsSearchIndex.section(forLocalizationKey: key),
-                "Key should map to a section: \(key)"
+                "Key should map to a section: \(key)",
             )
         }
+    }
+
+    func testEverySearchableKeyIsRoutedOrExplicitlyUnrouted() {
+        let searchableKeys = Set(SettingsSearchIndex.searchableKeys)
+        let explicitlyUnroutedKeys = SettingsSearchIndex.explicitlyUnroutedKeys
+        let missingRoutes = searchableKeys
+            .subtracting(explicitlyUnroutedKeys)
+            .filter { SettingsSearchIndex.destination(forLocalizationKey: $0) == nil }
+
+        XCTAssertTrue(
+            explicitlyUnroutedKeys.isSubset(of: searchableKeys),
+            "Explicitly unrouted keys must remain searchable: \(explicitlyUnroutedKeys.subtracting(searchableKeys))",
+        )
+        XCTAssertTrue(missingRoutes.isEmpty, "Searchable keys need a route or explicit classification: \(missingRoutes)")
+    }
+
+    func testPrefixManifestRoutesEveryDeclaredFamily() {
+        for route in SettingsSearchRouteManifest.prefixRoutes {
+            let fixtureKey = route.prefix + "fixture"
+            XCTAssertEqual(
+                SettingsSearchIndex.destination(forLocalizationKey: fixtureKey),
+                route.destination,
+                "Prefix should route deterministically: \(route.prefix)",
+            )
+        }
+    }
+
+    func testOverlappingPrefixRoutesPreferTheLongestMatch() {
+        XCTAssertEqual(
+            SettingsSearchIndex.destination(forLocalizationKey: "settings.enhancements.selector.meeting.title"),
+            SettingsSection.meetings.destination,
+        )
+        XCTAssertEqual(
+            SettingsSearchIndex.destination(forLocalizationKey: "settings.models.routing.active_model"),
+            SettingsSection.dictation.destination,
+        )
+        XCTAssertEqual(
+            SettingsSearchIndex.destination(forLocalizationKey: "settings.service.transcription_provider.provider.title"),
+            SettingsSection.dictation.destination,
+        )
+    }
+
+    func testExplicitExceptionsPreserveLegacyDestinations() {
+        XCTAssertEqual(
+            SettingsSearchIndex.destination(forLocalizationKey: "settings.section.metrics"),
+            SettingsSection.metrics.destination,
+        )
+        XCTAssertEqual(
+            SettingsSearchIndex.destination(forLocalizationKey: "settings.permissions.description"),
+            SettingsDestination(section: .system, systemRoute: .permissions),
+        )
+        XCTAssertEqual(
+            SettingsSearchIndex.destination(forLocalizationKey: "settings.general.audio_format"),
+            SettingsSection.audio.destination,
+        )
+        XCTAssertEqual(
+            SettingsSearchIndex.destination(forLocalizationKey: "settings.context_awareness.accessibility_text"),
+            SettingsSection.dictation.destination,
+        )
     }
 
     func testTextContextDescriptionKeyRoutesToSettingsSection() {
@@ -185,7 +244,7 @@ final class SettingsSearchIndexTests: XCTestCase {
         _ localizationKey: String,
         routesTo expectedSection: SettingsSection,
         file: StaticString = #filePath,
-        line: UInt = #line
+        line: UInt = #line,
     ) {
         let localized = localizationKey.localized
         guard localized != localizationKey else { return }

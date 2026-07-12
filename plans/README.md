@@ -211,7 +211,7 @@ honor its STOP conditions, and update your row when done.
 | 041 | Modernize SwiftUI interactions and accessibility semantics | P1 | M | 038 | DONE |
 | 042 | Decompose recording runtime hotspots without changing behavior | P1 | L | 039 | DONE |
 | 043 | Decompose the rich-text notes editor family | P1 | L | 041 | DONE |
-| 044 | Replace brittle SettingsSearchIndex prefix routing | P2 | M | 038 | TODO |
+| 044 | Replace brittle SettingsSearchIndex prefix routing | P2 | M | 038 | DONE |
 | 045 | Establish the history performance baseline before FRC or FTS | P2 | M | 001 | TODO |
 | 046 | Make custom provider setup explicit and resilient | P1 | M | 039 | TODO |
 | 047 | Decompose settings bootstrap and transcription initialization | P2 | M | 039 | TODO |
