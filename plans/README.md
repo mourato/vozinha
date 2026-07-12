@@ -210,7 +210,7 @@ honor its STOP conditions, and update your row when done.
 | 040 | Migrate UI state to Observation at stable boundaries | P1 | L | 039 | TODO |
 | 041 | Modernize SwiftUI interactions and accessibility semantics | P1 | M | 038 | DONE |
 | 042 | Decompose recording runtime hotspots without changing behavior | P1 | L | 039 | DONE |
-| 043 | Decompose the rich-text notes editor family | P1 | L | 041 | TODO |
+| 043 | Decompose the rich-text notes editor family | P1 | L | 041 | DONE |
 | 044 | Replace brittle SettingsSearchIndex prefix routing | P2 | M | 038 | TODO |
 | 045 | Establish the history performance baseline before FRC or FTS | P2 | M | 001 | TODO |
 | 046 | Make custom provider setup explicit and resilient | P1 | M | 039 | TODO |

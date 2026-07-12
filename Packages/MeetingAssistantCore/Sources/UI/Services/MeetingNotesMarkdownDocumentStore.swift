@@ -39,7 +39,7 @@ public struct MeetingNotesMarkdownDocument: Equatable, Sendable {
         eventIdentifierRaw: String?,
         createdAt: Date,
         updatedAt: Date,
-        markdownBody: String
+        markdownBody: String,
     ) {
         self.schemaVersion = schemaVersion
         self.kind = kind
@@ -70,7 +70,7 @@ public protocol MeetingNotesMarkdownDocumentStoreProtocol: AnyObject {
 
     func runBackfillIfNeeded(
         storage: any StorageService,
-        meetingNotesRichTextStore: any MeetingNotesRichTextStoreProtocol
+        meetingNotesRichTextStore: any MeetingNotesRichTextStoreProtocol,
     ) async
 }
 
@@ -136,7 +136,7 @@ public final class MeetingNotesMarkdownDocumentStore: MeetingNotesMarkdownDocume
         rootDirectoryURL: URL? = nil,
         now: @escaping () -> Date = Date.init,
         writesAsynchronously: Bool = true,
-        writeCoalescingNanoseconds: UInt64 = 120_000_000
+        writeCoalescingNanoseconds: UInt64 = 120_000_000,
     ) {
         self.userDefaults = userDefaults
         self.fileManager = fileManager
@@ -152,7 +152,7 @@ public final class MeetingNotesMarkdownDocumentStore: MeetingNotesMarkdownDocume
         if writesAsynchronously {
             writeCoordinator = MeetingNotesMarkdownWriteCoordinator(
                 rootDirectoryURL: self.rootDirectoryURL,
-                coalescingNanoseconds: writeCoalescingNanoseconds
+                coalescingNanoseconds: writeCoalescingNanoseconds,
             )
         } else {
             writeCoordinator = nil
@@ -161,7 +161,7 @@ public final class MeetingNotesMarkdownDocumentStore: MeetingNotesMarkdownDocume
 
     public func loadTranscriptionNotesContent(
         for transcriptionID: UUID,
-        legacyContent: MeetingNotesContent
+        legacyContent: MeetingNotesContent,
     ) -> MeetingNotesContent {
         loadContent(for: .transcription(transcriptionID), legacyContent: legacyContent)
     }
@@ -176,7 +176,7 @@ public final class MeetingNotesMarkdownDocumentStore: MeetingNotesMarkdownDocume
 
     public func loadMeetingNotesContent(
         for meetingID: UUID,
-        legacyContent: MeetingNotesContent
+        legacyContent: MeetingNotesContent,
     ) -> MeetingNotesContent {
         loadContent(for: .meeting(meetingID), legacyContent: legacyContent)
     }
@@ -191,7 +191,7 @@ public final class MeetingNotesMarkdownDocumentStore: MeetingNotesMarkdownDocume
 
     public func loadCalendarEventNotesContent(
         for eventIdentifier: String,
-        legacyContent: MeetingNotesContent
+        legacyContent: MeetingNotesContent,
     ) -> MeetingNotesContent {
         loadContent(for: .calendarEvent(eventIdentifier), legacyContent: legacyContent)
     }
@@ -206,7 +206,7 @@ public final class MeetingNotesMarkdownDocumentStore: MeetingNotesMarkdownDocume
 
     public func runBackfillIfNeeded(
         storage: any StorageService,
-        meetingNotesRichTextStore: any MeetingNotesRichTextStoreProtocol
+        meetingNotesRichTextStore: any MeetingNotesRichTextStoreProtocol,
     ) async {
         guard !userDefaults.bool(forKey: Keys.markdownBackfillCheckpoint) else { return }
 
@@ -220,16 +220,16 @@ public final class MeetingNotesMarkdownDocumentStore: MeetingNotesMarkdownDocume
                 uniqueKeysWithValues: transcriptions.map { transcription in
                     (
                         transcription.id,
-                        transcription.contextItems.first(where: { $0.source == .meetingNotes })?.text ?? ""
+                        transcription.contextItems.first(where: { $0.source == .meetingNotes })?.text ?? "",
                     )
-                }
+                },
             )
             let transcriptionIDs = Set(transcriptions.map(\.id)).union(richOnlyTranscriptionIDs)
 
             for transcriptionID in transcriptionIDs {
                 let content = MeetingNotesContent(
                     plainText: plainByTranscriptionID[transcriptionID] ?? "",
-                    richTextRTFData: meetingNotesRichTextStore.transcriptionNotesRTFData(for: transcriptionID)
+                    richTextRTFData: meetingNotesRichTextStore.transcriptionNotesRTFData(for: transcriptionID),
                 )
                 didAttemptWrite = didAttemptWrite || hasPersistedContent(content)
                 if !backfillIfMissing(content, for: .transcription(transcriptionID)) {
@@ -241,14 +241,14 @@ public final class MeetingNotesMarkdownDocumentStore: MeetingNotesMarkdownDocume
             AppLogger.error(
                 "Meeting notes markdown backfill failed to load transcriptions",
                 category: .storage,
-                error: error
+                error: error,
             )
         }
 
         for meetingID in legacyMeetingIDs() {
             let content = MeetingNotesContent(
                 plainText: userDefaults.string(forKey: LegacyKeys.meetingPrefix + meetingID.uuidString) ?? "",
-                richTextRTFData: meetingNotesRichTextStore.meetingNotesRTFData(for: meetingID)
+                richTextRTFData: meetingNotesRichTextStore.meetingNotesRTFData(for: meetingID),
             )
             didAttemptWrite = didAttemptWrite || hasPersistedContent(content)
             if !backfillIfMissing(content, for: .meeting(meetingID)) {
@@ -259,7 +259,7 @@ public final class MeetingNotesMarkdownDocumentStore: MeetingNotesMarkdownDocume
         for eventIdentifier in legacyEventIdentifiers() {
             let content = MeetingNotesContent(
                 plainText: userDefaults.string(forKey: LegacyKeys.eventPrefix + eventIdentifier) ?? "",
-                richTextRTFData: meetingNotesRichTextStore.calendarEventNotesRTFData(for: eventIdentifier)
+                richTextRTFData: meetingNotesRichTextStore.calendarEventNotesRTFData(for: eventIdentifier),
             )
             didAttemptWrite = didAttemptWrite || hasPersistedContent(content)
             if !backfillIfMissing(content, for: .calendarEvent(eventIdentifier)) {
@@ -273,14 +273,14 @@ public final class MeetingNotesMarkdownDocumentStore: MeetingNotesMarkdownDocume
             AppLogger.info(
                 "Meeting notes markdown backfill completed",
                 category: .storage,
-                extra: ["wroteDocuments": didAttemptWrite]
+                extra: ["wroteDocuments": didAttemptWrite],
             )
         }
     }
 
     private func loadContent(
         for key: MeetingNotesDocumentKey,
-        legacyContent: MeetingNotesContent
+        legacyContent: MeetingNotesContent,
     ) -> MeetingNotesContent {
         do {
             guard let document = try readDocument(for: key) else {
@@ -295,7 +295,7 @@ public final class MeetingNotesMarkdownDocumentStore: MeetingNotesMarkdownDocume
             AppLogger.error(
                 "Failed to parse meeting notes markdown document; using legacy fallback",
                 category: .storage,
-                error: error
+                error: error,
             )
             if shouldUseLegacyFallback(for: legacyContent) {
                 writeContent(legacyContent, for: key, overwriteExisting: true)
@@ -318,7 +318,7 @@ public final class MeetingNotesMarkdownDocumentStore: MeetingNotesMarkdownDocume
                 sequence: sequence,
                 overwriteExisting: true,
                 includeRawEventIdentifier: userDefaults.bool(forKey: Keys.includeRawEventIdentifier),
-                timestamp: now()
+                timestamp: now(),
             )
             pendingWriteSubmissionTasks.append(submissionTask)
             return
@@ -393,7 +393,7 @@ public final class MeetingNotesMarkdownDocumentStore: MeetingNotesMarkdownDocume
     private func writeContent(
         _ content: MeetingNotesContent,
         for key: MeetingNotesDocumentKey,
-        overwriteExisting: Bool
+        overwriteExisting: Bool,
     ) {
         do {
             try writeContentOrThrow(content, for: key, overwriteExisting: overwriteExisting)
@@ -405,7 +405,7 @@ public final class MeetingNotesMarkdownDocumentStore: MeetingNotesMarkdownDocume
     private func writeContentOrThrow(
         _ content: MeetingNotesContent,
         for key: MeetingNotesDocumentKey,
-        overwriteExisting: Bool
+        overwriteExisting: Bool,
     ) throws {
         let fileURL = try fileURL(for: key)
         if !overwriteExisting, fileManager.fileExists(atPath: fileURL.path) {
@@ -426,7 +426,7 @@ public final class MeetingNotesMarkdownDocumentStore: MeetingNotesMarkdownDocume
             for: key,
             content: content,
             createdAt: existingDocument?.createdAt ?? timestamp,
-            updatedAt: timestamp
+            updatedAt: timestamp,
         )
         let serialized = serialize(document)
         try serialized.write(to: fileURL, atomically: true, encoding: .utf8)
@@ -450,7 +450,7 @@ public final class MeetingNotesMarkdownDocumentStore: MeetingNotesMarkdownDocume
         for key: MeetingNotesDocumentKey,
         content: MeetingNotesContent,
         createdAt: Date,
-        updatedAt: Date
+        updatedAt: Date,
     ) -> MeetingNotesMarkdownDocument {
         let markdownBody = markdownBodyForPersistence(from: content)
         let eventIdentifierHash: String? = if case let .calendarEvent(eventIdentifier) = key {
@@ -476,7 +476,7 @@ public final class MeetingNotesMarkdownDocumentStore: MeetingNotesMarkdownDocume
             eventIdentifierRaw: eventIdentifierRaw,
             createdAt: createdAt,
             updatedAt: updatedAt,
-            markdownBody: markdownBody
+            markdownBody: markdownBody,
         )
     }
 
@@ -486,7 +486,7 @@ public final class MeetingNotesMarkdownDocumentStore: MeetingNotesMarkdownDocume
            let attributedText = try? NSAttributedString(
                data: richTextRTFData,
                options: [.documentType: NSAttributedString.DocumentType.rtf],
-               documentAttributes: nil
+               documentAttributes: nil,
            )
         {
             let markdown = markdownFormatter.markdownForPersistence(from: attributedText)
@@ -600,7 +600,7 @@ public final class MeetingNotesMarkdownDocumentStore: MeetingNotesMarkdownDocume
             eventIdentifierRaw: values["eventIdentifierRaw"],
             createdAt: createdAt,
             updatedAt: updatedAt,
-            markdownBody: markdownBody
+            markdownBody: markdownBody,
         )
     }
 
@@ -712,7 +712,7 @@ public final class MeetingNotesMarkdownDocumentStore: MeetingNotesMarkdownDocume
         value.range(of: "^[A-Fa-f0-9]{64}$", options: .regularExpression) != nil
     }
 
-    fileprivate nonisolated static func sha256Hex(_ value: String) -> String {
+    nonisolated static func sha256Hex(_ value: String) -> String {
         let digest = SHA256.hash(data: Data(value.utf8))
         return digest.map { String(format: "%02x", $0) }.joined()
     }
@@ -725,344 +725,7 @@ public final class MeetingNotesMarkdownDocumentStore: MeetingNotesMarkdownDocume
 
 }
 
-private actor MeetingNotesMarkdownWriteCoordinator {
-    private enum PendingOperation {
-        case save(
-            sequence: UInt64,
-            content: MeetingNotesContent,
-            overwriteExisting: Bool,
-            includeRawEventIdentifier: Bool,
-            timestamp: Date
-        )
-        case delete(sequence: UInt64)
-
-        var sequence: UInt64 {
-            switch self {
-            case let .save(sequence, _, _, _, _):
-                sequence
-            case let .delete(sequence):
-                sequence
-            }
-        }
-    }
-
-    private let rootDirectoryURL: URL
-    private let coalescingNanoseconds: UInt64
-    private let fileManager: FileManager = .default
-    private let markdownFormatter = MeetingNotesMarkdownFormatter()
-    private let isoFormatterWithFractionalSeconds: ISO8601DateFormatter = {
-        let formatter = ISO8601DateFormatter()
-        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-        return formatter
-    }()
-
-    private let trimCharacters = CharacterSet.whitespacesAndNewlines
-
-    private var pendingOperations: [MeetingNotesDocumentKey: PendingOperation] = [:]
-    private var workers: [MeetingNotesDocumentKey: Task<Void, Never>] = [:]
-
-    init(rootDirectoryURL: URL, coalescingNanoseconds: UInt64) {
-        self.rootDirectoryURL = rootDirectoryURL
-        self.coalescingNanoseconds = coalescingNanoseconds
-    }
-
-    @discardableResult
-    nonisolated func enqueueSaveFromAnyThread(
-        content: MeetingNotesContent,
-        for key: MeetingNotesDocumentKey,
-        sequence: UInt64,
-        overwriteExisting: Bool,
-        includeRawEventIdentifier: Bool,
-        timestamp: Date
-    ) -> Task<Void, Never> {
-        Task {
-            await enqueueSave(
-                content: content,
-                for: key,
-                sequence: sequence,
-                overwriteExisting: overwriteExisting,
-                includeRawEventIdentifier: includeRawEventIdentifier,
-                timestamp: timestamp
-            )
-        }
-    }
-
-    @discardableResult
-    nonisolated func enqueueDeleteFromAnyThread(for key: MeetingNotesDocumentKey, sequence: UInt64) -> Task<Void, Never> {
-        Task {
-            await enqueueDelete(for: key, sequence: sequence)
-        }
-    }
-
-    private func enqueueSave(
-        content: MeetingNotesContent,
-        for key: MeetingNotesDocumentKey,
-        sequence: UInt64,
-        overwriteExisting: Bool,
-        includeRawEventIdentifier: Bool,
-        timestamp: Date
-    ) {
-        upsertPendingOperation(
-            .save(
-                sequence: sequence,
-                content: content,
-                overwriteExisting: overwriteExisting,
-                includeRawEventIdentifier: includeRawEventIdentifier,
-                timestamp: timestamp
-            ),
-            for: key
-        )
-        ensureWorker(for: key)
-    }
-
-    private func enqueueDelete(for key: MeetingNotesDocumentKey, sequence: UInt64) {
-        upsertPendingOperation(.delete(sequence: sequence), for: key)
-        ensureWorker(for: key)
-    }
-
-    private func upsertPendingOperation(_ operation: PendingOperation, for key: MeetingNotesDocumentKey) {
-        if let existing = pendingOperations[key], existing.sequence > operation.sequence {
-            return
-        }
-        pendingOperations[key] = operation
-    }
-
-    func flush() async {
-        while !workers.isEmpty {
-            let tasks = Array(workers.values)
-            for task in tasks {
-                await task.value
-            }
-        }
-    }
-
-    private func ensureWorker(for key: MeetingNotesDocumentKey) {
-        guard workers[key] == nil else { return }
-        workers[key] = Task { [weak self] in
-            await self?.runWorker(for: key)
-        }
-    }
-
-    private func runWorker(for key: MeetingNotesDocumentKey) async {
-        while true {
-            if coalescingNanoseconds > 0 {
-                try? await Task.sleep(nanoseconds: coalescingNanoseconds)
-            } else {
-                await Task.yield()
-            }
-
-            guard let operation = pendingOperations.removeValue(forKey: key) else {
-                break
-            }
-
-            apply(operation, for: key)
-        }
-
-        workers[key] = nil
-    }
-
-    private func apply(_ operation: PendingOperation, for key: MeetingNotesDocumentKey) {
-        switch operation {
-        case let .save(
-            _,
-            content: content,
-            overwriteExisting: overwriteExisting,
-            includeRawEventIdentifier: includeRawEventIdentifier,
-            timestamp: timestamp
-        ):
-            do {
-                try writeContent(
-                    content,
-                    for: key,
-                    overwriteExisting: overwriteExisting,
-                    includeRawEventIdentifier: includeRawEventIdentifier,
-                    timestamp: timestamp
-                )
-            } catch {
-                AppLogger.error("Failed to write markdown notes document", category: .storage, error: error)
-            }
-        case .delete:
-            deleteContent(for: key)
-        }
-    }
-
-    private func writeContent(
-        _ content: MeetingNotesContent,
-        for key: MeetingNotesDocumentKey,
-        overwriteExisting: Bool,
-        includeRawEventIdentifier: Bool,
-        timestamp: Date
-    ) throws {
-        let fileURL = try fileURL(for: key)
-        if !overwriteExisting, fileManager.fileExists(atPath: fileURL.path) {
-            return
-        }
-
-        guard hasPersistedContent(content) else {
-            if fileManager.fileExists(atPath: fileURL.path) {
-                try fileManager.removeItem(at: fileURL)
-            }
-            return
-        }
-
-        try ensureDirectoryStructure(for: fileURL)
-        let markdownBody = markdownBodyForPersistence(from: content)
-        let document = makeDocument(
-            for: key,
-            markdownBody: markdownBody,
-            includeRawEventIdentifier: includeRawEventIdentifier,
-            timestamp: timestamp
-        )
-        let serialized = serialize(document)
-        try serialized.write(to: fileURL, atomically: true, encoding: .utf8)
-    }
-
-    private func deleteContent(for key: MeetingNotesDocumentKey) {
-        let documentURL: URL
-        do {
-            documentURL = try fileURL(for: key)
-        } catch {
-            AppLogger.error("Failed to resolve markdown notes path for deletion", category: .storage, error: error)
-            return
-        }
-
-        guard fileManager.fileExists(atPath: documentURL.path) else { return }
-        do {
-            try fileManager.removeItem(at: documentURL)
-        } catch {
-            AppLogger.error("Failed to delete markdown notes document", category: .storage, error: error)
-        }
-    }
-
-    private func hasPersistedContent(_ content: MeetingNotesContent) -> Bool {
-        if !content.plainText.trimmingCharacters(in: trimCharacters).isEmpty {
-            return true
-        }
-        if let richTextRTFData = content.richTextRTFData, !richTextRTFData.isEmpty {
-            return true
-        }
-        return false
-    }
-
-    private func markdownBodyForPersistence(from content: MeetingNotesContent) -> String {
-        if let richTextRTFData = content.richTextRTFData,
-           !richTextRTFData.isEmpty,
-           let attributedText = try? NSAttributedString(
-               data: richTextRTFData,
-               options: [.documentType: NSAttributedString.DocumentType.rtf],
-               documentAttributes: nil
-           )
-        {
-            let markdown = markdownFormatter.markdownForPersistence(from: attributedText)
-            let trimmedMarkdown = markdown.trimmingCharacters(in: trimCharacters)
-            if !trimmedMarkdown.isEmpty {
-                return trimmedMarkdown
-            }
-        }
-
-        return MeetingNotesMarkdownSanitizer
-            .sanitizeForMarkdownRendering(content.plainText)
-            .trimmingCharacters(in: trimCharacters)
-    }
-
-    private func makeDocument(
-        for key: MeetingNotesDocumentKey,
-        markdownBody: String,
-        includeRawEventIdentifier: Bool,
-        timestamp: Date
-    ) -> MeetingNotesMarkdownDocument {
-        let eventIdentifierHash: String? = if case let .calendarEvent(eventIdentifier) = key {
-            normalizedCalendarEventIdentifier(eventIdentifier).map(MeetingNotesMarkdownDocumentStore.sha256Hex)
-        } else {
-            nil
-        }
-        let eventIdentifierRaw: String? = if case let .calendarEvent(eventIdentifier) = key,
-                                             includeRawEventIdentifier
-        {
-            normalizedCalendarEventIdentifier(eventIdentifier)
-        } else {
-            nil
-        }
-
-        return MeetingNotesMarkdownDocument(
-            schemaVersion: 1,
-            kind: key.documentKind,
-            documentId: key.documentId,
-            transcriptionId: key.transcriptionID,
-            meetingId: key.meetingID,
-            eventIdentifierHash: eventIdentifierHash,
-            eventIdentifierRaw: eventIdentifierRaw,
-            createdAt: timestamp,
-            updatedAt: timestamp,
-            markdownBody: markdownBody
-        )
-    }
-
-    private func serialize(_ document: MeetingNotesMarkdownDocument) -> String {
-        var lines: [String] = [
-            "---",
-            "schemaVersion: \(document.schemaVersion)",
-            "kind: \(document.kind.rawValue)",
-            "documentId: \(quoted(document.documentId))",
-        ]
-
-        if let transcriptionId = document.transcriptionId {
-            lines.append("transcriptionId: \(transcriptionId.uuidString)")
-        }
-        if let meetingId = document.meetingId {
-            lines.append("meetingId: \(meetingId.uuidString)")
-        }
-        if let eventIdentifierHash = document.eventIdentifierHash {
-            lines.append("eventIdentifierHash: \(eventIdentifierHash)")
-        }
-        if let eventIdentifierRaw = document.eventIdentifierRaw {
-            lines.append("eventIdentifierRaw: \(quoted(eventIdentifierRaw))")
-        }
-        lines.append("createdAt: \(isoFormatterWithFractionalSeconds.string(from: document.createdAt))")
-        lines.append("updatedAt: \(isoFormatterWithFractionalSeconds.string(from: document.updatedAt))")
-        lines.append("---")
-        lines.append(document.markdownBody)
-        return lines.joined(separator: "\n")
-    }
-
-    private func quoted(_ value: String) -> String {
-        let escaped = value
-            .replacingOccurrences(of: "\\", with: "\\\\")
-            .replacingOccurrences(of: "\"", with: "\\\"")
-        return "\"\(escaped)\""
-    }
-
-    private func ensureDirectoryStructure(for fileURL: URL) throws {
-        let directoryURL = fileURL.deletingLastPathComponent()
-        if !fileManager.fileExists(atPath: directoryURL.path) {
-            try fileManager.createDirectory(at: directoryURL, withIntermediateDirectories: true)
-        }
-    }
-
-    private func fileURL(for key: MeetingNotesDocumentKey) throws -> URL {
-        let directoryURL = directoryURL(for: key.documentKind)
-        let filename = try key.filenameComponent + ".md"
-        return directoryURL.appendingPathComponent(filename, isDirectory: false)
-    }
-
-    private func directoryURL(for kind: MeetingNotesDocumentKind) -> URL {
-        switch kind {
-        case .transcription:
-            rootDirectoryURL.appendingPathComponent("transcriptions", isDirectory: true)
-        case .meeting:
-            rootDirectoryURL.appendingPathComponent("meetings", isDirectory: true)
-        case .calendarEvent:
-            rootDirectoryURL.appendingPathComponent("calendar-events", isDirectory: true)
-        }
-    }
-
-    private func normalizedCalendarEventIdentifier(_ identifier: String) -> String? {
-        let normalized = identifier.trimmingCharacters(in: trimCharacters)
-        return normalized.isEmpty ? nil : normalized
-    }
-}
-
-private extension MeetingNotesDocumentKey {
+extension MeetingNotesDocumentKey {
     var documentKind: MeetingNotesDocumentKind {
         switch self {
         case .transcription:
