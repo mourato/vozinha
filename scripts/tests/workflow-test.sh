@@ -30,16 +30,28 @@ new_fixture() {
     rm -rf "${fixture}"
     mkdir -p "${fixture}/scripts/lib" \
         "${fixture}/scripts/config" \
+        "${fixture}/scripts/tests" \
         "${fixture}/Packages/MeetingAssistantCore/Tests/MeetingAssistantCoreTests"
 
     cp "${SCRIPT_ROOT}/scripts/scope-check.sh" "${fixture}/scripts/scope-check.sh"
+    cp "${SCRIPT_ROOT}/scripts/validate-agent.sh" "${fixture}/scripts/validate-agent.sh"
     cp "${SCRIPT_ROOT}/scripts/lib/agent-output.sh" "${fixture}/scripts/lib/agent-output.sh"
     cp "${SCRIPT_ROOT}/scripts/config/test-target-mapping.conf" "${fixture}/scripts/config/test-target-mapping.conf"
+    cp "${SCRIPT_ROOT}/scripts/tests/workflow-fixture-step.sh" "${fixture}/scripts/tests/workflow-fixture-step.sh"
     chmod +x "${fixture}/scripts/scope-check.sh"
+    chmod +x "${fixture}/scripts/validate-agent.sh" "${fixture}/scripts/tests/workflow-fixture-step.sh"
 
     touch "${fixture}/Packages/MeetingAssistantCore/Tests/MeetingAssistantCoreTests/AlphaTests.swift"
     touch "${fixture}/Packages/MeetingAssistantCore/Tests/MeetingAssistantCoreTests/BetaTests.swift"
     printf '%s\n' 'fixture baseline' > "${fixture}/README.md"
+    printf '%s\n' \
+        'scope-check-agent:' \
+        $'\t@./scripts/tests/workflow-fixture-step.sh scope-check' \
+        'lint-strict-agent:' \
+        $'\t@./scripts/tests/workflow-fixture-step.sh lint' \
+        'build-test:' \
+        $'\t@./scripts/tests/workflow-fixture-step.sh build-test' \
+        > "${fixture}/Makefile"
 
     git -C "${fixture}" init -q
     git -C "${fixture}" config user.email workflow-test@example.invalid
@@ -54,6 +66,13 @@ scope_output() {
     local log_root="$2"
     shift 2
     (cd "${fixture}" && MA_AGENT_MODE=1 MA_AGENT_LOG_DIR="${log_root}" ./scripts/scope-check.sh --dry-run --agent "$@")
+}
+
+validate_output() {
+    local fixture="$1"
+    local log_root="$2"
+    shift 2
+    (cd "${fixture}" && MA_AGENT_LOG_DIR="${log_root}" ./scripts/validate-agent.sh "$@" --agent)
 }
 
 test_committed_delta_boundaries() {
@@ -196,10 +215,105 @@ test_nested_commands_inherit_run_tree() {
     )
 }
 
+test_validate_runner_preview_and_reuse() {
+    local fixture
+    local output
+    local first_result
+    local second_result
+    local cache_result
+    local child_result
+    local toolchain_dir
+    local tool
+
+    fixture="$(new_fixture)"
+    output="$(validate_output "${fixture}" "${TMP_ROOT}/validate-preview" --lane fast --dry-run)"
+    assert_contains "${output}" "Validation preview (no evidence recorded):"
+    assert_contains "${output}" "Command: make scope-check-agent"
+    assert_not_contains "${output}" "AGENT_STATUS=PASS"
+    test -z "$(find "${TMP_ROOT}/validate-preview" -name 'validate-agent.result.json' -print 2>/dev/null)"
+
+    output="$(validate_output "${fixture}" "${TMP_ROOT}/validate-cache" --lane fast --no-reuse)"
+    assert_contains "${output}" "AGENT_STATUS=PASS"
+    first_result="$(printf '%s\n' "${output}" | sed -n 's/^AGENT_RESULT_JSON=//p' | tail -n 1)"
+    test -f "${first_result}"
+    cache_result="$(find "${TMP_ROOT}/validate-cache/validate-agent-index" -name '*.result.json' -print | head -n 1)"
+    test -f "${cache_result}"
+
+    output="$(validate_output "${fixture}" "${TMP_ROOT}/validate-cache" --lane fast)"
+    assert_contains "${output}" "Reusing PASS evidence"
+    assert_contains "${output}" "AGENT_REUSED=1"
+    second_result="$(printf '%s\n' "${output}" | sed -n 's/^AGENT_RESULT_JSON=//p' | tail -n 1)"
+    test "${second_result}" = "${cache_result}"
+
+    child_result="$(python3 - "${cache_result}" <<'PY'
+import json
+import sys
+
+with open(sys.argv[1], encoding="utf-8") as handle:
+    print(json.load(handle)["childResults"][0])
+PY
+    )"
+    child_log="$(python3 - "${child_result}" <<'PY'
+import json
+import sys
+
+with open(sys.argv[1], encoding="utf-8") as handle:
+    print(json.load(handle)["log"].split(",")[0])
+PY
+    )"
+    rm -f "${child_log}"
+    output="$(validate_output "${fixture}" "${TMP_ROOT}/validate-cache" --lane fast)"
+    assert_not_contains "${output}" "Reusing PASS evidence"
+    assert_contains "${output}" "AGENT_STATUS=PASS"
+
+    child_result="$(python3 - "${cache_result}" <<'PY'
+import json
+import sys
+
+with open(sys.argv[1], encoding="utf-8") as handle:
+    print(json.load(handle)["childResults"][0])
+PY
+    )"
+    printf '%s\n' '{}' > "${child_result}"
+    output="$(validate_output "${fixture}" "${TMP_ROOT}/validate-cache" --lane fast)"
+    assert_not_contains "${output}" "Reusing PASS evidence"
+    assert_contains "${output}" "AGENT_STATUS=PASS"
+
+    printf '%s\n' '{}' > "${cache_result}"
+    output="$(validate_output "${fixture}" "${TMP_ROOT}/validate-cache" --lane fast)"
+    assert_not_contains "${output}" "Reusing PASS evidence"
+    assert_contains "${output}" "AGENT_STATUS=PASS"
+
+    printf '%s\n' '# config change' >> "${fixture}/Makefile"
+    output="$(validate_output "${fixture}" "${TMP_ROOT}/validate-cache" --lane fast)"
+    assert_not_contains "${output}" "Reusing PASS evidence"
+
+    printf '%s\n' 'untracked' > "${fixture}/untracked.swift"
+    output="$(validate_output "${fixture}" "${TMP_ROOT}/validate-cache" --lane fast)"
+    assert_not_contains "${output}" "Reusing PASS evidence"
+
+    output="$(validate_output "${fixture}" "${TMP_ROOT}/validate-cache" --lane full --no-reuse)"
+    assert_contains "${output}" "AGENT_STATUS=PASS"
+    test "$(printf '%s\n' "${output}" | grep -Fc 'Running lint-strict:')" -eq 1
+    test "$(printf '%s\n' "${output}" | grep -Fc 'Running build-test:')" -eq 1
+    output="$(validate_output "${fixture}" "${TMP_ROOT}/validate-cache" --lane full)"
+    assert_contains "${output}" "Reusing PASS evidence"
+
+    toolchain_dir="${TMP_ROOT}/toolchain"
+    mkdir -p "${toolchain_dir}"
+    for tool in swift xcodebuild swiftlint swiftformat; do
+        printf '#!/bin/sh\nprintf "%s\\n" fixture-%s\n' "${tool}" "${tool}" > "${toolchain_dir}/${tool}"
+        chmod +x "${toolchain_dir}/${tool}"
+    done
+    output="$(cd "${fixture}" && PATH="${toolchain_dir}:${PATH}" MA_AGENT_LOG_DIR="${TMP_ROOT}/validate-cache" ./scripts/validate-agent.sh --lane full --agent)"
+    assert_not_contains "${output}" "Reusing PASS evidence"
+}
+
 test_committed_delta_boundaries
 test_source_file_churn
 test_worktree_layers_are_unique
 test_repeated_file_targets_and_invalid_base
 test_schema_and_parallel_artifacts
 test_nested_commands_inherit_run_tree
+test_validate_runner_preview_and_reuse
 echo "WORKFLOW_TEST_STATUS=PASS"
