@@ -13,7 +13,7 @@ public struct EnhancementsProviderAvatar: View {
         provider: AIProvider,
         customIconName: String? = nil,
         size: CGFloat = 40,
-        glyphSize: CGFloat = 22
+        glyphSize: CGFloat = 22,
     ) {
         self.provider = provider
         self.customIconName = customIconName
@@ -28,7 +28,7 @@ public struct EnhancementsProviderAvatar: View {
                 .frame(width: size, height: size)
                 .overlay(
                     RoundedRectangle(cornerRadius: AppDesignSystem.Layout.smallCornerRadius)
-                        .strokeBorder(AppDesignSystem.Colors.separator.opacity(0.18), lineWidth: 1)
+                        .strokeBorder(AppDesignSystem.Colors.separator.opacity(0.18), lineWidth: 1),
                 )
 
             if let logoImage {
@@ -78,7 +78,7 @@ public struct EnhancementsProviderAvatar: View {
             ?? Bundle.module.url(
                 forResource: logoAssetName,
                 withExtension: "png",
-                subdirectory: "ProviderLogos"
+                subdirectory: "ProviderLogos",
             )
 
         guard let logoURL,

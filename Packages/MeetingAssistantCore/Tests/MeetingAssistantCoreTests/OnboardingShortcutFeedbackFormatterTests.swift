@@ -1,6 +1,6 @@
-import XCTest
 @testable import MeetingAssistantCore
 @testable import MeetingAssistantCoreUI
+import XCTest
 
 @MainActor
 final class OnboardingShortcutFeedbackFormatterTests: XCTestCase {
@@ -25,7 +25,7 @@ final class OnboardingShortcutFeedbackFormatterTests: XCTestCase {
         let definition = ShortcutDefinition(
             modifiers: [.option, .command],
             primaryKey: .letter("D", keyCode: 0x02),
-            trigger: .singleTap
+            trigger: .singleTap,
         )
 
         let summary = OnboardingShortcutFeedbackFormatter.summary(for: definition)
@@ -36,7 +36,7 @@ final class OnboardingShortcutFeedbackFormatterTests: XCTestCase {
         let definition = ShortcutDefinition(
             modifiers: [.rightShift],
             primaryKey: nil,
-            trigger: .doubleTap
+            trigger: .doubleTap,
         )
 
         let summary = OnboardingShortcutFeedbackFormatter.summary(for: definition)
@@ -49,7 +49,7 @@ final class OnboardingShortcutFeedbackFormatterTests: XCTestCase {
         let assistantShortcut = ShortcutDefinition(
             modifiers: [.control],
             primaryKey: .letter("A", keyCode: 0x00),
-            trigger: .singleTap
+            trigger: .singleTap,
         )
 
         assistantViewModel.assistantShortcutDefinition = assistantShortcut
@@ -58,7 +58,7 @@ final class OnboardingShortcutFeedbackFormatterTests: XCTestCase {
         let current = OnboardingShortcutFeedbackFormatter.currentDefinition(
             for: .assistant,
             shortcutViewModel: shortcutViewModel,
-            assistantViewModel: assistantViewModel
+            assistantViewModel: assistantViewModel,
         )
 
         XCTAssertEqual(current, assistantShortcut)
@@ -67,7 +67,7 @@ final class OnboardingShortcutFeedbackFormatterTests: XCTestCase {
     func testIsUsingDefaultRecognizesAssistantDefaultDefinition() {
         let isDefault = OnboardingShortcutFeedbackFormatter.isUsingDefault(
             current: AppSettingsStore.defaultAssistantShortcutDefinition,
-            type: .assistant
+            type: .assistant,
         )
         XCTAssertTrue(isDefault)
     }

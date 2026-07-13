@@ -85,13 +85,13 @@ public final class AudioMerger {
 
                 guard let compositionTrack = composition.addMutableTrack(
                     withMediaType: .audio,
-                    preferredTrackID: Int32(index + 1)
+                    preferredTrackID: Int32(index + 1),
                 ) else { continue }
 
                 try compositionTrack.insertTimeRange(
                     CMTimeRange(start: .zero, duration: duration),
                     of: track,
-                    at: .zero
+                    at: .zero,
                 )
             } catch {
                 logger.warning("Failed to add track from \(url.lastPathComponent): \(error.localizedDescription)")
@@ -118,7 +118,7 @@ public final class AudioMerger {
         composition: AVAsset,
         to outputURL: URL,
         format: AppSettingsStore.AudioFormat,
-        sampleRate: Double
+        sampleRate: Double,
     ) async throws {
         let (reader, readerOutput) = try await createReader(for: composition)
         let (writer, writerInput) = try createWriter(outputURL: outputURL, format: format, sampleRate: sampleRate)
@@ -181,7 +181,7 @@ public final class AudioMerger {
     private func createWriter(
         outputURL: URL,
         format: AppSettingsStore.AudioFormat,
-        sampleRate: Double
+        sampleRate: Double,
     ) throws -> (AVAssetWriter, AVAssetWriterInput) {
         let writer = try AVAssetWriter(outputURL: outputURL, fileType: format == .m4a ? .m4a : .wav)
         let settings = getWriterSettings(for: format, sampleRate: sampleRate)

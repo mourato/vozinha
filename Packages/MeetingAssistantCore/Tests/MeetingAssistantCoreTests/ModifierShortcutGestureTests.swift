@@ -5,7 +5,7 @@ final class ModifierShortcutGestureTests: XCTestCase {
     func testGestureNormalizationSortsAndDeduplicatesKeys() {
         let gesture = ModifierShortcutGesture(
             keys: [.rightShift, .leftCommand, .leftCommand, .fn],
-            triggerMode: .singleTap
+            triggerMode: .singleTap,
         )
 
         XCTAssertEqual(gesture.keys, [.leftCommand, .rightShift, .fn])
@@ -29,16 +29,16 @@ final class ModifierShortcutGestureTests: XCTestCase {
             actionDisplayName: "Assistant",
             gesture: ModifierShortcutGesture(
                 keys: [.rightCommand],
-                triggerMode: .singleTap
-            )
+                triggerMode: .singleTap,
+            ),
         )
         let candidate = ModifierShortcutBinding(
             actionID: .dictation,
             actionDisplayName: "Dictation",
             gesture: ModifierShortcutGesture(
                 keys: [.rightCommand],
-                triggerMode: .singleTap
-            )
+                triggerMode: .singleTap,
+            ),
         )
 
         let conflict = ModifierShortcutConflictService.conflict(for: candidate, in: [existing])
@@ -52,12 +52,12 @@ final class ModifierShortcutGestureTests: XCTestCase {
         let existing = ModifierShortcutBinding(
             actionID: .dictation,
             actionDisplayName: "Dictation",
-            gesture: ModifierShortcutGesture(keys: [.rightCommand], triggerMode: .singleTap)
+            gesture: ModifierShortcutGesture(keys: [.rightCommand], triggerMode: .singleTap),
         )
         let candidate = ModifierShortcutBinding(
             actionID: .dictation,
             actionDisplayName: "Dictation",
-            gesture: ModifierShortcutGesture(keys: [.rightCommand], triggerMode: .singleTap)
+            gesture: ModifierShortcutGesture(keys: [.rightCommand], triggerMode: .singleTap),
         )
 
         let conflict = ModifierShortcutConflictService.conflict(for: candidate, in: [existing])
@@ -69,17 +69,17 @@ final class ModifierShortcutGestureTests: XCTestCase {
         let dictation = ModifierShortcutBinding(
             actionID: .dictation,
             actionDisplayName: "Dictation",
-            gesture: ModifierShortcutGesture(keys: [.rightOption], triggerMode: .hold)
+            gesture: ModifierShortcutGesture(keys: [.rightOption], triggerMode: .hold),
         )
         let assistant = ModifierShortcutBinding(
             actionID: .assistant,
             actionDisplayName: "Assistant",
-            gesture: ModifierShortcutGesture(keys: [.rightOption], triggerMode: .hold)
+            gesture: ModifierShortcutGesture(keys: [.rightOption], triggerMode: .hold),
         )
         let meeting = ModifierShortcutBinding(
             actionID: .meeting,
             actionDisplayName: "Meetings",
-            gesture: ModifierShortcutGesture(keys: [.leftShift], triggerMode: .singleTap)
+            gesture: ModifierShortcutGesture(keys: [.leftShift], triggerMode: .singleTap),
         )
 
         let conflicts = ModifierShortcutConflictService.allConflicts(in: [dictation, assistant, meeting])

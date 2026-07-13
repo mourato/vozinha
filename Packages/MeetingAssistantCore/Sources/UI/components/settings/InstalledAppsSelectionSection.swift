@@ -22,7 +22,7 @@ public struct InstalledAppsSelectionSection: View {
         protectedBadgeKey: String? = nil,
         icon: String,
         onAddApp: (() -> Void)? = nil,
-        viewModel: InstalledAppsSelectionViewModel
+        viewModel: InstalledAppsSelectionViewModel,
     ) {
         self.titleKey = titleKey
         self.descriptionKey = descriptionKey
@@ -43,7 +43,7 @@ public struct InstalledAppsSelectionSection: View {
                 if !descriptionKey.localized.isEmpty {
                     DSInfoPopoverButton(
                         title: titleKey.localized,
-                        message: descriptionKey.localized
+                        message: descriptionKey.localized,
                     )
                 }
             },
@@ -54,9 +54,9 @@ public struct InstalledAppsSelectionSection: View {
                     removeButtonKey: removeButtonKey,
                     protectedBadgeKey: protectedBadgeKey,
                     onAddApp: onAddApp,
-                    viewModel: viewModel
+                    viewModel: viewModel,
                 )
-            }
+            },
         )
     }
 }
@@ -75,7 +75,7 @@ public struct InstalledAppsSelectionList: View {
         removeButtonKey: String = "settings.markdown_targets.remove",
         protectedBadgeKey: String? = nil,
         onAddApp: (() -> Void)? = nil,
-        viewModel: InstalledAppsSelectionViewModel
+        viewModel: InstalledAppsSelectionViewModel,
     ) {
         self.emptyKey = emptyKey
         self.addButtonKey = addButtonKey
@@ -176,8 +176,8 @@ public struct InstalledAppsSelectionList: View {
                 defaultBundleIdentifiers: identifiers.wrappedValue,
                 hasConfigured: { true },
                 loadBundleIdentifiers: { identifiers.wrappedValue },
-                saveBundleIdentifiers: { identifiers.wrappedValue = $0 }
-            )
+                saveBundleIdentifiers: { identifiers.wrappedValue = $0 },
+            ),
         )
         .padding()
     }
@@ -192,8 +192,8 @@ public struct InstalledAppsSelectionList: View {
                 defaultBundleIdentifiers: identifiers.wrappedValue,
                 hasConfigured: { true },
                 loadBundleIdentifiers: { identifiers.wrappedValue },
-                saveBundleIdentifiers: { identifiers.wrappedValue = $0 }
-            )
+                saveBundleIdentifiers: { identifiers.wrappedValue = $0 },
+            ),
         )
         .padding()
     }

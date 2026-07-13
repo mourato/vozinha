@@ -90,7 +90,9 @@ class MockTranscriptionClient: TranscriptionService, TranscriptionServiceFinalDi
 
     func healthCheck() async throws -> Bool {
         healthCheckCallCount += 1
-        if shouldFailHealthCheck { return false }
+        if shouldFailHealthCheck {
+            return false
+        }
         return true
     }
 
@@ -105,13 +107,13 @@ class MockTranscriptionClient: TranscriptionService, TranscriptionServiceFinalDi
             uptimeSeconds: 100,
             lastTranscriptionTime: nil,
             totalTranscriptions: 0,
-            totalAudioProcessedSeconds: 0
+            totalAudioProcessedSeconds: 0,
         )
     }
 
     func transcribe(
         audioURL: URL,
-        onProgress: (@Sendable (Double) -> Void)? = nil
+        onProgress: (@Sendable (Double) -> Void)? = nil,
     ) async throws -> TranscriptionResponse {
         transcribeCallCount += 1
         fileTranscribeCallCount += 1
@@ -135,7 +137,7 @@ class MockTranscriptionClient: TranscriptionService, TranscriptionServiceFinalDi
             durationSeconds: mockDurationSeconds,
             model: mockModel,
             processedAt: Date().ISO8601Format(),
-            confidenceScore: mockConfidenceScore
+            confidenceScore: mockConfidenceScore,
         )
     }
 
@@ -155,7 +157,7 @@ class MockTranscriptionClient: TranscriptionService, TranscriptionServiceFinalDi
             durationSeconds: mockDurationSeconds,
             model: mockModel,
             processedAt: Date().ISO8601Format(),
-            confidenceScore: mockConfidenceScore
+            confidenceScore: mockConfidenceScore,
         )
     }
 
@@ -170,7 +172,7 @@ class MockTranscriptionClient: TranscriptionService, TranscriptionServiceFinalDi
 
     func assignSpeakers(
         to segments: [Transcription.Segment],
-        using speakerTimeline: [SpeakerTimelineSegment]
+        using speakerTimeline: [SpeakerTimelineSegment],
     ) -> [Transcription.Segment] {
         assignSpeakersCallCount += 1
         guard !speakerTimeline.isEmpty else { return segments }
@@ -185,7 +187,7 @@ class MockTranscriptionClient: TranscriptionService, TranscriptionServiceFinalDi
                 speaker: speaker,
                 text: segment.text,
                 startTime: segment.startTime,
-                endTime: segment.endTime
+                endTime: segment.endTime,
             )
         }
     }
@@ -228,7 +230,7 @@ class MockPostProcessingService: PostProcessingServiceProtocol {
         _ text: String,
         with prompt: PostProcessingPrompt,
         mode: IntelligenceKernelMode,
-        systemPromptOverride: String?
+        systemPromptOverride: String?,
     ) async throws -> String {
         lastMode = mode
         lastSystemPromptOverride = systemPromptOverride
@@ -240,7 +242,7 @@ class MockPostProcessingService: PostProcessingServiceProtocol {
             id: UUID(),
             title: "Default",
             promptText: "Fix this: {{TRANSCRIPTION}}",
-            isActive: true
+            isActive: true,
         ))
     }
 
@@ -253,19 +255,19 @@ class MockPostProcessingService: PostProcessingServiceProtocol {
                 isGroundedInTranscript: true,
                 containsSpeculation: false,
                 isHumanReviewed: false,
-                confidenceScore: 0.8
-            )
+                confidenceScore: 0.8,
+            ),
         )
         return DomainPostProcessingResult(
             processedText: processedText,
             canonicalSummary: summary,
-            outputState: .structured
+            outputState: .structured,
         )
     }
 
     func processTranscriptionStructured(
         _ transcription: String,
-        with prompt: PostProcessingPrompt
+        with prompt: PostProcessingPrompt,
     ) async throws -> DomainPostProcessingResult {
         let processedText = try await processTranscription(transcription, with: prompt)
         let summary = CanonicalSummary(
@@ -275,24 +277,24 @@ class MockPostProcessingService: PostProcessingServiceProtocol {
                 isGroundedInTranscript: true,
                 containsSpeculation: false,
                 isHumanReviewed: false,
-                confidenceScore: 0.8
-            )
+                confidenceScore: 0.8,
+            ),
         )
         return DomainPostProcessingResult(
             processedText: processedText,
             canonicalSummary: summary,
-            outputState: .structured
+            outputState: .structured,
         )
     }
 
     func processTranscriptionStructured(
         _ transcription: String,
         with prompt: PostProcessingPrompt,
-        mode _: IntelligenceKernelMode
+        mode _: IntelligenceKernelMode,
     ) async throws -> DomainPostProcessingResult {
         try await processTranscriptionStructured(
             transcription,
-            with: prompt
+            with: prompt,
         )
     }
 }
@@ -315,9 +317,9 @@ class MockMeetingQAService: MeetingQAServiceProtocol {
                 speaker: "Speaker 1",
                 startTime: 0,
                 endTime: 5,
-                excerpt: "Mock evidence"
+                excerpt: "Mock evidence",
             ),
-        ]
+        ],
     )
     var nextError: MeetingQAError?
 
@@ -438,7 +440,7 @@ class MockStorageService: StorageService, @unchecked Sendable {
             }
             .sorted { query.sortNewestFirst ? $0.createdAt > $1.createdAt : $0.createdAt < $1.createdAt }
             .prefix(query.limit.map { max($0, 0) } ?? Int.max)
-            .map { $0 }
+            .map(\.self)
     }
 
     func loadModelPerformanceAttempts(matching query: ModelPerformanceAttemptQuery) async throws -> [ModelPerformanceAttempt] {
@@ -504,7 +506,7 @@ class MockStorageService: StorageService, @unchecked Sendable {
                 duration: transcription.meeting.duration,
                 audioFilePath: transcription.meeting.audioFilePath,
                 inputSource: transcription.inputSource,
-                lifecycleState: transcription.lifecycleState
+                lifecycleState: transcription.lifecycleState,
             )
         }
     }
@@ -525,14 +527,14 @@ class MockStorageService: StorageService, @unchecked Sendable {
         RetentionCleanupPreview(
             retentionDays: days,
             audioFiles: [],
-            transcriptions: []
+            transcriptions: [],
         )
     }
 
     func performRetentionCleanup(preview: RetentionCleanupPreview) async throws -> RetentionCleanupResult {
         RetentionCleanupResult(
             deletedAudioCount: preview.audioCount,
-            deletedTranscriptionCount: preview.transcriptionCount
+            deletedTranscriptionCount: preview.transcriptionCount,
         )
     }
 }
@@ -561,7 +563,7 @@ final class MockAudioSilenceCompactor: AudioSilenceCompacting, @unchecked Sendab
     func compactForTranscription(
         inputURL: URL,
         outputURL: URL,
-        format: AppSettingsStore.AudioFormat
+        format: AppSettingsStore.AudioFormat,
     ) async throws -> AudioCompactionResult {
         compactCallCount += 1
         lastInputURL = inputURL
@@ -583,7 +585,7 @@ final class MockAudioSilenceCompactor: AudioSilenceCompacting, @unchecked Sendab
             compactedDuration: nextWasCompacted ? 6 : 10,
             removedDuration: nextWasCompacted ? 4 : 0,
             removedRatio: nextWasCompacted ? nextRemovedRatio : 0,
-            wasCompacted: nextWasCompacted
+            wasCompacted: nextWasCompacted,
         )
     }
 }
@@ -609,7 +611,7 @@ final class MockCaptureContextResolver: CaptureContextResolving {
             matchedWebMeetingTargetID: nil,
             matchedWebContextTargetID: nil,
             matchedDictationRuleBundleID: nil,
-            isKnownMeetingCandidate: purpose == .meeting
+            isKnownMeetingCandidate: purpose == .meeting,
         )
     }
 

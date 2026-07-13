@@ -92,7 +92,7 @@ public final class CoreDataStack: Sendable {
     private static func migrateLegacyPersistentStoreIfNeeded(
         currentStoreURL: URL,
         currentStoreName: String,
-        logger: Logger
+        logger: Logger,
     ) {
         let fileManager = FileManager.default
         let appSupportDirectory = fileManager.urls(for: .applicationSupportDirectory, in: .userDomainMask).first
@@ -123,7 +123,7 @@ public final class CoreDataStack: Sendable {
         guard shouldMigrateLegacyStore(
             currentStoreURL: currentStoreURL,
             legacyStoreURL: legacyStoreURL,
-            fileManager: fileManager
+            fileManager: fileManager,
         ) else {
             return
         }
@@ -140,7 +140,7 @@ public final class CoreDataStack: Sendable {
     private static func shouldMigrateLegacyStore(
         currentStoreURL: URL,
         legacyStoreURL: URL,
-        fileManager: FileManager
+        fileManager: FileManager,
     ) -> Bool {
         guard fileManager.fileExists(atPath: legacyStoreURL.path) else {
             return false
@@ -173,7 +173,7 @@ public final class CoreDataStack: Sendable {
     private static func replaceStoreCluster(
         sourceStoreURL: URL,
         destinationStoreURL: URL,
-        fileManager: FileManager
+        fileManager: FileManager,
     ) throws {
         for destinationFileURL in storeClusterURLs(for: destinationStoreURL) where fileManager.fileExists(atPath: destinationFileURL.path) {
             try fileManager.removeItem(at: destinationFileURL)
@@ -197,7 +197,7 @@ public final class CoreDataStack: Sendable {
     private static func storeClusterMetrics(for storeURL: URL, fileManager: FileManager) -> (sqliteBytes: UInt64, walBytes: UInt64) {
         (
             fileSize(of: storeURL, fileManager: fileManager),
-            fileSize(of: URL(fileURLWithPath: storeURL.path + "-wal"), fileManager: fileManager)
+            fileSize(of: URL(fileURLWithPath: storeURL.path + "-wal"), fileManager: fileManager),
         )
     }
 
@@ -241,7 +241,7 @@ public final class CoreDataStack: Sendable {
     /// - Parameter operation: Bloco assíncrono a executar
     /// - Returns: Resultado da operação
     public func performBackgroundTask<T: Sendable>(
-        _ operation: @Sendable @escaping (NSManagedObjectContext) throws -> T
+        _ operation: @Sendable @escaping (NSManagedObjectContext) throws -> T,
     ) async throws -> T {
         let context = backgroundContext
         return try await withCheckedThrowingContinuation { continuation in
@@ -278,7 +278,7 @@ public final class CoreDataStack: Sendable {
     }
 
     public func sanitizeMeetingOnlyPresentationDataIfNeeded(
-        checkpointKey: String? = nil
+        checkpointKey: String? = nil,
     ) async {
         let checkpointKey = checkpointKey ?? MigrationKeys.didSanitizeNonMeetingPresentationDataV1
         guard !UserDefaults.standard.bool(forKey: checkpointKey) else { return }
@@ -292,7 +292,7 @@ public final class CoreDataStack: Sendable {
 
             if updatedCount > 0 {
                 logger.notice(
-                    "Sanitized non-meeting title/calendar data for \(updatedCount, privacy: .public) persisted meetings"
+                    "Sanitized non-meeting title/calendar data for \(updatedCount, privacy: .public) persisted meetings",
                 )
             }
         } catch {
@@ -301,7 +301,7 @@ public final class CoreDataStack: Sendable {
     }
 
     public func sanitizeMockTranscriptionArtifactsIfNeeded(
-        checkpointKey: String? = nil
+        checkpointKey: String? = nil,
     ) async {
         let checkpointKey = checkpointKey ?? MigrationKeys.didRemoveMockTranscriptionArtifactsV1
         guard !UserDefaults.standard.bool(forKey: checkpointKey) else { return }
@@ -315,7 +315,7 @@ public final class CoreDataStack: Sendable {
 
             if removedCount > 0 {
                 logger.notice(
-                    "Removed \(removedCount, privacy: .public) mock transcription artifacts from persistent history"
+                    "Removed \(removedCount, privacy: .public) mock transcription artifacts from persistent history",
                 )
             }
         } catch {
@@ -334,7 +334,7 @@ public final class CoreDataStack: Sendable {
         try persistentContainer.persistentStoreCoordinator.addPersistentStore(
             ofType: NSInMemoryStoreType,
             configurationName: nil,
-            at: nil
+            at: nil,
         )
     }
 }

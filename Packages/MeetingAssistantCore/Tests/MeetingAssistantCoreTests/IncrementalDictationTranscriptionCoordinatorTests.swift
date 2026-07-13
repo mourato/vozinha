@@ -4,7 +4,7 @@ import AVFoundation
 import XCTest
 
 @MainActor
-final class IncrementalDictationTranscriptionCoordinatorTests: XCTestCase {
+final class IncrementalDictationCoordinatorTests: XCTestCase {
     func testAppend_LongSpeechPersistsPartialCheckpointBeforeFinish() async throws {
         let storage = MockStorageService()
         let transcriptionClient = MockTranscriptionClient()
@@ -19,15 +19,15 @@ final class IncrementalDictationTranscriptionCoordinatorTests: XCTestCase {
             transcriptionClientBox: transcriptionClientBox,
             callbacks: .init(
                 onPreviewTextChanged: { text in previewRecorder.values.append(text) },
-                onProcessedDurationChanged: { _ in }
-            )
+                onProcessedDurationChanged: { _ in },
+            ),
         )
 
         try await coordinator.start()
         try await coordinator.append(
             bufferBox: RecordingManager.SendableIncrementalAudioBufferBox(
-                buffer: makeBuffer(segments: [.tone(13.0, amplitude: 0.25)])
-            )
+                buffer: makeBuffer(segments: [.tone(13.0, amplitude: 0.25)]),
+            ),
         )
 
         XCTAssertGreaterThanOrEqual(storage.savedTranscriptions.count, 2)
@@ -56,15 +56,15 @@ final class IncrementalDictationTranscriptionCoordinatorTests: XCTestCase {
             transcriptionClientBox: transcriptionClientBox,
             callbacks: .init(
                 onPreviewTextChanged: { _ in },
-                onProcessedDurationChanged: { _ in }
-            )
+                onProcessedDurationChanged: { _ in },
+            ),
         )
 
         try await coordinator.start()
         try await coordinator.append(
             bufferBox: RecordingManager.SendableIncrementalAudioBufferBox(
-                buffer: makeBuffer(segments: [.tone(1.0, amplitude: 0.25)])
-            )
+                buffer: makeBuffer(segments: [.tone(1.0, amplitude: 0.25)]),
+            ),
         )
 
         do {
@@ -94,8 +94,8 @@ final class IncrementalDictationTranscriptionCoordinatorTests: XCTestCase {
             transcriptionClientBox: transcriptionClientBox,
             callbacks: .init(
                 onPreviewTextChanged: { _ in },
-                onProcessedDurationChanged: { _ in }
-            )
+                onProcessedDurationChanged: { _ in },
+            ),
         )
 
         try await coordinator.start()
@@ -124,7 +124,7 @@ final class IncrementalDictationTranscriptionCoordinatorTests: XCTestCase {
             app: .unknown,
             capturePurpose: .dictation,
             title: "Dictation Test",
-            audioFilePath: "/tmp/dictation-test.wav"
+            audioFilePath: "/tmp/dictation-test.wav",
         )
     }
 
@@ -141,7 +141,7 @@ final class IncrementalDictationTranscriptionCoordinatorTests: XCTestCase {
         let buffer = try XCTUnwrap(AVAudioPCMBuffer(pcmFormat: format, frameCapacity: frameCount))
         buffer.frameLength = frameCount
         guard let channelData = buffer.floatChannelData else {
-            throw NSError(domain: "IncrementalDictationTranscriptionCoordinatorTests", code: 1)
+            throw NSError(domain: "IncrementalDictationCoordinatorTests", code: 1)
         }
 
         for (index, sample) in samples.enumerated() {

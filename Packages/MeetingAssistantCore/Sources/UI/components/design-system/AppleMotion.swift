@@ -56,7 +56,7 @@ public enum AppleMotion {
     public static func animation(
         reduceMotion: Bool,
         kind: SpringKind = .default,
-        reduceMotionAnimation: ReduceMotionAnimation = .fade
+        reduceMotionAnimation: ReduceMotionAnimation = .fade,
     ) -> Animation? {
         guard reduceMotion else {
             return animation(for: springSpec(for: kind))
@@ -72,14 +72,14 @@ public enum AppleMotion {
 
     public static func transitionStyle(
         reduceMotion: Bool,
-        edge: Edge = .top
+        edge: Edge = .top,
     ) -> TransitionStyle {
         reduceMotion ? .opacity : .moveAndOpacity(edge: edge)
     }
 
     public static func transition(
         reduceMotion: Bool,
-        edge: Edge = .top
+        edge: Edge = .top,
     ) -> AnyTransition {
         switch transitionStyle(reduceMotion: reduceMotion, edge: edge) {
         case .opacity:

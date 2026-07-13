@@ -9,14 +9,14 @@ import MeetingAssistantCoreInfrastructure
 extension RecordingManager {
     func shouldUseIncrementalDictationCapture(
         purpose: CapturePurpose,
-        source: RecordingSource
+        source: RecordingSource,
     ) -> Bool {
         let config = IncrementalCaptureSupportConfig(
             expectedPurpose: .dictation,
             expectedSource: .microphone,
             incrementalFeatureEnabled: FeatureFlags.enableIncrementalDictationTranscription,
             realtimeFeatureEnabled: FeatureFlags.enableRealtimeVADForDictation,
-            executionMode: .dictation
+            executionMode: .dictation,
         )
         return supportsIncrementalCapture(config, actualPurpose: purpose, actualSource: source)
     }
@@ -24,7 +24,7 @@ extension RecordingManager {
     func prepareIncrementalDictationSessionIfNeeded(
         meeting: Meeting,
         purpose: CapturePurpose,
-        source: RecordingSource
+        source: RecordingSource,
     ) async throws {
         guard shouldUseIncrementalDictationCapture(purpose: purpose, source: source) else {
             teardownIncrementalDictationSession()
@@ -50,13 +50,13 @@ extension RecordingManager {
                 onProcessedDurationChanged: { [weak self] (processedDuration: Double) in
                     Task { @MainActor [weak self] in
                         guard let self else { return }
-                        self.transcriptionStatus.updateProgress(
+                        transcriptionStatus.updateProgress(
                             phase: .processing,
-                            processedSeconds: processedDuration
+                            processedSeconds: processedDuration,
                         )
                     }
-                }
-            )
+                },
+            ),
         )
 
         installIncrementalBufferForwarder(
@@ -68,7 +68,7 @@ extension RecordingManager {
                 Task {
                     await coordinator.setHighLoadMode(isHighLoad)
                 }
-            }
+            },
         )
 
         do {
@@ -83,7 +83,7 @@ extension RecordingManager {
 
     func finishIncrementalDictationSession(
         audioURL: URL,
-        session: TranscriptionSessionSnapshot
+        session: TranscriptionSessionSnapshot,
     ) async throws -> Transcription {
         guard let incrementalDictationCoordinator else {
             throw TranscriptionError.transcriptionFailed("Missing incremental dictation session")
@@ -91,7 +91,7 @@ extension RecordingManager {
 
         let audioDuration = await beginIncrementalFinalizationUI(
             audioURL: audioURL,
-            sessionID: session.id
+            sessionID: session.id,
         )
 
         let result = try await incrementalDictationCoordinator.finish()
@@ -102,14 +102,14 @@ extension RecordingManager {
                 "path": "incremental-final",
                 "sessionID": session.id.uuidString,
                 "capturePurpose": session.meeting.capturePurpose.rawValue,
-            ]
+            ],
         )
         let transcription = try await finalizeIncrementalPreparedResponse(
             response: result.response,
             checkpointID: result.checkpointID,
             session: session,
             audioDuration: audioDuration,
-            transcriptionDuration: result.wallClockDuration
+            transcriptionDuration: result.wallClockDuration,
         )
         teardownIncrementalDictationSession()
         return transcription

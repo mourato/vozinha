@@ -13,7 +13,7 @@ final class ActivityHeatmapMonthMarkerTests: XCTestCase {
         let visibleMarkers = ActivityHeatmap.resolveVisibleMonthMarkers(
             markers,
             estimatedLabelWidth: 24,
-            minimumSpacing: 6
+            minimumSpacing: 6,
         )
 
         XCTAssertEqual(visibleMarkers.map(\.label), ["Mar", "May", "Jun"])
@@ -44,15 +44,15 @@ final class ActivityHeatmapMonthMarkerTests: XCTestCase {
             ActivityHeatmap.shouldShowRangeStartMonthLabel(
                 for: firstWeekStart,
                 rangeStart: rangeStart,
-                calendar: calendar
-            )
+                calendar: calendar,
+            ),
         )
         XCTAssertFalse(
             ActivityHeatmap.shouldShowRangeStartMonthLabel(
                 for: secondWeekStart,
                 rangeStart: rangeStart,
-                calendar: calendar
-            )
+                calendar: calendar,
+            ),
         )
     }
 

@@ -70,7 +70,7 @@ public struct SettingsView: View {
             }
             .modifier(SettingsDetailChromeModifier(
                 legacyHeader: detailNavigationBar,
-                usesToolbarChrome: usesToolbarChrome
+                usesToolbarChrome: usesToolbarChrome,
             ))
         }
         .navigationSplitViewStyle(.balanced)
@@ -117,13 +117,13 @@ public struct SettingsView: View {
         SettingsSidebarView(
             selectedSection: $selectedSection,
             searchText: $settingsSearchText,
-            onSelectDestination: selectDestination
+            onSelectDestination: selectDestination,
         )
         .frame(maxHeight: .infinity, alignment: .top)
         .navigationSplitViewColumnWidth(
             min: LayoutConstants.sidebarMinWidth,
             ideal: LayoutConstants.sidebarIdealWidth,
-            max: LayoutConstants.sidebarMaxWidth
+            max: LayoutConstants.sidebarMaxWidth,
         )
     }
 
@@ -257,14 +257,14 @@ private extension SettingsView {
                     systemImage: "chevron.left",
                     helpKey: "transcription.qa.navigation.back",
                     isEnabled: canNavigateBack,
-                    action: navigateBack
+                    action: navigateBack,
                 )
 
                 legacyNavigationHistoryButton(
                     systemImage: "chevron.right",
                     helpKey: "transcription.qa.navigation.forward",
                     isEnabled: canNavigateForward,
-                    action: navigateForward
+                    action: navigateForward,
                 )
             }
 
@@ -300,7 +300,7 @@ private extension SettingsView {
     private var transcriptionsSearchField: some View {
         SettingsSearchField(
             text: $transcriptionsSearchText,
-            placeholder: "settings.transcriptions.search_placeholder".localized
+            placeholder: "settings.transcriptions.search_placeholder".localized,
         )
     }
 
@@ -316,24 +316,24 @@ private extension SettingsView {
                 title: "settings.capabilities.meeting_transcription".localized,
                 isOn: Binding(
                     get: { settingsStore.isMeetingTranscriptionEnabled },
-                    set: { settingsStore.isMeetingTranscriptionEnabled = $0 }
-                )
+                    set: { settingsStore.isMeetingTranscriptionEnabled = $0 },
+                ),
             )
         case .assistant:
             makeCapabilityToolbarToggle(
                 title: "settings.capabilities.assistant".localized,
                 isOn: Binding(
                     get: { settingsStore.isAssistantEnabled },
-                    set: { settingsStore.isAssistantEnabled = $0 }
-                )
+                    set: { settingsStore.isAssistantEnabled = $0 },
+                ),
             )
         case .integrations:
             makeCapabilityToolbarToggle(
                 title: "settings.capabilities.assistant_integrations".localized,
                 isOn: Binding(
                     get: { settingsStore.isAssistantIntegrationsEnabled },
-                    set: { settingsStore.isAssistantIntegrationsEnabled = $0 }
-                )
+                    set: { settingsStore.isAssistantIntegrationsEnabled = $0 },
+                ),
             )
         default:
             EmptyView()
@@ -366,7 +366,7 @@ private extension SettingsView {
         systemImage: String,
         helpKey: String,
         isEnabled: Bool,
-        action: @escaping () -> Void
+        action: @escaping () -> Void,
     ) -> some View {
         Button(action: action) {
             Image(systemName: systemImage)
@@ -519,7 +519,7 @@ private extension SettingsView {
         case .transcriptions:
             TranscriptionsSettingsTab(
                 searchText: $transcriptionsSearchText,
-                navigationHistory: $activityNavigationState.transcriptionsNavigationHistory
+                navigationHistory: $activityNavigationState.transcriptionsNavigationHistory,
             )
         case .enhancements:
             EnhancementsSettingsTab(navigationState: $enhancementsNavigationState)
@@ -528,7 +528,7 @@ private extension SettingsView {
         case .activity:
             ActivitySettingsTab(
                 navigationState: $activityNavigationState,
-                transcriptionsSearchText: $transcriptionsSearchText
+                transcriptionsSearchText: $transcriptionsSearchText,
             )
         case .intelligence:
             SystemSettingsTab(route: .constant(.models))

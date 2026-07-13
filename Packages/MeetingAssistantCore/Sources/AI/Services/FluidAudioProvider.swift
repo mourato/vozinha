@@ -77,14 +77,14 @@ final class FluidAudioProvider: @unchecked Sendable {
             ASRTranscriptionResult.TokenTiming(
                 token: token.token,
                 startTime: Double(token.startTime),
-                endTime: Double(token.endTime)
+                endTime: Double(token.endTime),
             )
         } ?? []
 
         return ASRTranscriptionResult(
             text: result.text,
             confidence: result.confidence,
-            tokenTimings: tokenTimings
+            tokenTimings: tokenTimings,
         )
     }
 
@@ -104,14 +104,14 @@ final class FluidAudioProvider: @unchecked Sendable {
             ASRTranscriptionResult.TokenTiming(
                 token: token.token,
                 startTime: Double(token.startTime),
-                endTime: Double(token.endTime)
+                endTime: Double(token.endTime),
             )
         } ?? []
 
         return ASRTranscriptionResult(
             text: result.text,
             confidence: result.confidence,
-            tokenTimings: tokenTimings
+            tokenTimings: tokenTimings,
         )
     }
 

@@ -24,7 +24,7 @@ public struct IntegrationsSettingsTab: View {
         SettingsScrollableContent {
             SettingsSectionHeader(
                 title: "settings.section.integrations".localized,
-                description: "settings.integrations.header_desc".localized
+                description: "settings.integrations.header_desc".localized,
             )
 
             integrationsSection
@@ -32,7 +32,7 @@ public struct IntegrationsSettingsTab: View {
                 .opacity(isIntegrationsContentEnabled ? 1 : CapabilityLayout.disabledOpacity)
                 .animation(
                     SettingsMotion.sectionAnimation(reduceMotion: reduceMotion),
-                    value: isIntegrationsContentEnabled
+                    value: isIntegrationsContentEnabled,
                 )
         }
         .sheet(item: $editingIntegration) { integration in
@@ -52,7 +52,7 @@ public struct IntegrationsSettingsTab: View {
                 onOpenAdvanced: { draft in
                     advancedIntegrationDraft = draft.integration
                     editingIntegration = nil
-                }
+                },
             )
         }
         .sheet(item: $advancedIntegrationDraft) { integration in
@@ -73,7 +73,7 @@ public struct IntegrationsSettingsTab: View {
                 onClose: {
                     advancedIntegrationDraft = nil
                     viewModel.clearScriptTestResult()
-                }
+                },
             )
         }
     }
@@ -82,7 +82,7 @@ public struct IntegrationsSettingsTab: View {
         AssistantIntegrationsSection(
             viewModel: viewModel,
             showsCapabilityToggle: false,
-            editingIntegration: $editingIntegration
+            editingIntegration: $editingIntegration,
         )
     }
 

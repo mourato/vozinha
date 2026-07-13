@@ -23,7 +23,7 @@ public final class FluidAIProvider: AIInfrastructureProvider, Sendable {
     public func transcribe(audioURL: URL, language: String?) async throws -> AITranscriptionResult {
         let response: TranscriptionResponse = try await LocalTranscriptionClient.shared.transcribe(
             audioURL: audioURL,
-            inputLanguageHintCode: language
+            inputLanguageHintCode: language,
         )
 
         return AITranscriptionResult(
@@ -35,10 +35,10 @@ public final class FluidAIProvider: AIInfrastructureProvider, Sendable {
                     speaker: segment.speaker,
                     text: segment.text,
                     startTime: segment.startTime,
-                    endTime: segment.endTime
+                    endTime: segment.endTime,
                 )
             },
-            model: response.model
+            model: response.model,
         )
     }
 

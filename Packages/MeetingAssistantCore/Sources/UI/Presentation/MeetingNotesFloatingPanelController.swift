@@ -26,7 +26,7 @@ public final class MeetingNotesFloatingPanelController {
         content: MeetingNotesContent,
         documentId: String = "meeting-notes-panel",
         onTextChange: @escaping (MeetingNotesContent) -> Void,
-        onClose: @escaping () -> Void
+        onClose: @escaping () -> Void,
     ) {
         let panel = ensurePanel(onClose: onClose)
 
@@ -46,7 +46,7 @@ public final class MeetingNotesFloatingPanelController {
         let rootView = MeetingNotesFloatingPanelView(
             content: content,
             documentId: documentId,
-            onTextChange: onTextChange
+            onTextChange: onTextChange,
         )
 
         if let hostingView {
@@ -71,7 +71,7 @@ public final class MeetingNotesFloatingPanelController {
 
     fileprivate static func maximumPanelHeight(for screen: NSScreen?) -> CGFloat {
         guard let visibleFrame = screen?.visibleFrame else {
-            return Self.minimumPanelHeight
+            return minimumPanelHeight
         }
         return max(Self.minimumPanelHeight, floor(visibleFrame.height * Self.maximumScreenHeightRatio))
     }
@@ -86,7 +86,7 @@ public final class MeetingNotesFloatingPanelController {
             contentRect: NSRect(x: 0, y: 0, width: Self.initialPanelWidth, height: Self.initialPanelHeight),
             styleMask: [.titled, .closable, .resizable],
             backing: .buffered,
-            defer: false
+            defer: false,
         )
         panel.isFloatingPanel = true
         panel.hidesOnDeactivate = false
@@ -123,7 +123,7 @@ private final class PanelDelegate: NSObject, NSWindowDelegate {
     func windowWillResize(_ window: NSWindow, to newSize: NSSize) -> NSSize {
         NSSize(
             width: min(max(newSize.width, window.minSize.width), window.maxSize.width),
-            height: min(max(newSize.height, window.minSize.height), window.maxSize.height)
+            height: min(max(newSize.height, window.minSize.height), window.maxSize.height),
         )
     }
 
@@ -133,7 +133,7 @@ private final class PanelDelegate: NSObject, NSWindowDelegate {
         let maxHeight = MeetingNotesFloatingPanelController.maximumPanelHeight(for: screen)
         window.maxSize = NSSize(
             width: MeetingNotesFloatingPanelController.maximumPanelWidth,
-            height: maxHeight
+            height: maxHeight,
         )
     }
 }
@@ -146,7 +146,7 @@ private struct MeetingNotesFloatingPanelView: View {
     init(
         content: MeetingNotesContent,
         documentId: String,
-        onTextChange: @escaping (MeetingNotesContent) -> Void
+        onTextChange: @escaping (MeetingNotesContent) -> Void,
     ) {
         _content = State(initialValue: content)
         self.documentId = documentId
@@ -176,7 +176,7 @@ private struct MeetingNotesFloatingPanelView: View {
     MeetingNotesFloatingPanelView(
         content: MeetingNotesContent(plainText: "- Revisar backlog\n- Alinhar owners para Q2"),
         documentId: "meeting-notes-panel-preview",
-        onTextChange: { _ in }
+        onTextChange: { _ in },
     )
     .frame(width: 620, height: 300)
 }

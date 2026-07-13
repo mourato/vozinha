@@ -8,7 +8,7 @@ public actor HTTPClient {
 
     public init(
         session: URLSession = .shared,
-        timeout: TimeInterval = 30
+        timeout: TimeInterval = 30,
     ) {
         self.session = session
         defaultTimeout = timeout
@@ -16,7 +16,7 @@ public actor HTTPClient {
 
     public func request<T: Decodable>(
         _ endpoint: APIEndpoint,
-        responseType: T.Type
+        responseType: T.Type,
     ) async throws -> T {
         var request = URLRequest(url: endpoint.url)
         request.httpMethod = endpoint.method.rawValue
@@ -54,7 +54,7 @@ public actor HTTPClient {
 
     public func upload(
         _ endpoint: APIEndpoint,
-        fileURL: URL
+        fileURL: URL,
     ) async throws -> Data {
         var request = URLRequest(url: endpoint.url)
         request.httpMethod = endpoint.method.rawValue

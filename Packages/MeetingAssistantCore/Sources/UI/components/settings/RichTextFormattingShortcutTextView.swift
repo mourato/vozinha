@@ -107,7 +107,7 @@ final class RichTextFormattingShortcutTextView: NSTextView {
 
     private func handleListShortcutByStableKeyCode(
         event: NSEvent,
-        normalizedFlags: NSEvent.ModifierFlags
+        normalizedFlags: NSEvent.ModifierFlags,
     ) -> Bool {
         guard normalizedFlags == [.command] || normalizedFlags == [.command, .shift] else {
             return false
@@ -147,7 +147,9 @@ final class RichTextFormattingShortcutTextView: NSTextView {
 
         let expandedDirtyRect = dirtyRect.insetBy(dx: -8, dy: -8)
         let glyphRange = layoutManager.glyphRange(forBoundingRect: expandedDirtyRect, in: textContainer)
-        if glyphRange.length == 0 { return }
+        if glyphRange.length == 0 {
+            return
+        }
 
         let characterRange = layoutManager.characterRange(forGlyphRange: glyphRange, actualGlyphRange: nil)
         let accentColor = NSColor.controlAccentColor
@@ -164,7 +166,9 @@ final class RichTextFormattingShortcutTextView: NSTextView {
 
             let markerCharacterRange = NSRange(location: range.location, length: 1)
             let markerGlyphRange = layoutManager.glyphRange(forCharacterRange: markerCharacterRange, actualCharacterRange: nil)
-            if markerGlyphRange.length == 0 { return }
+            if markerGlyphRange.length == 0 {
+                return
+            }
 
             let glyphRect = layoutManager.boundingRect(forGlyphRange: markerGlyphRange, in: textContainer)
             let lineHeight = max(fallbackLineHeight, glyphRect.height)
@@ -173,17 +177,17 @@ final class RichTextFormattingShortcutTextView: NSTextView {
                 markerCharacterIndex: range.location,
                 textStorage: textStorage,
                 layoutManager: layoutManager,
-                textContainer: textContainer
+                textContainer: textContainer,
             )
             let resolvedOriginX = max(
                 textContainerInset.width,
-                bodyLeadingX - Self.taskMarkerTextSpacing - markerSize
+                bodyLeadingX - Self.taskMarkerTextSpacing - markerSize,
             )
             let markerRect = NSRect(
                 x: resolvedOriginX,
                 y: glyphRect.midY + textContainerInset.height - (markerSize / 2),
                 width: markerSize,
-                height: markerSize
+                height: markerSize,
             )
 
             nextLayouts.append(TaskMarkerLayout(characterIndex: range.location, rect: markerRect))
@@ -198,7 +202,7 @@ final class RichTextFormattingShortcutTextView: NSTextView {
         markerCharacterIndex: Int,
         textStorage: NSTextStorage,
         layoutManager: NSLayoutManager,
-        textContainer: NSTextContainer
+        textContainer: NSTextContainer,
     ) -> CGFloat {
         let string = textStorage.string as NSString
         let bodyCharacterIndex = markerCharacterIndex + 2
@@ -206,9 +210,9 @@ final class RichTextFormattingShortcutTextView: NSTextView {
             return textContainerInset.width + layoutManager.boundingRect(
                 forGlyphRange: layoutManager.glyphRange(
                     forCharacterRange: NSRange(location: markerCharacterIndex, length: 1),
-                    actualCharacterRange: nil
+                    actualCharacterRange: nil,
                 ),
-                in: textContainer
+                in: textContainer,
             ).maxX
         }
 
@@ -217,15 +221,15 @@ final class RichTextFormattingShortcutTextView: NSTextView {
             return textContainerInset.width + layoutManager.boundingRect(
                 forGlyphRange: layoutManager.glyphRange(
                     forCharacterRange: NSRange(location: markerCharacterIndex, length: 1),
-                    actualCharacterRange: nil
+                    actualCharacterRange: nil,
                 ),
-                in: textContainer
+                in: textContainer,
             ).maxX
         }
 
         let bodyGlyphRange = layoutManager.glyphRange(
             forCharacterRange: NSRange(location: bodyCharacterIndex, length: 1),
-            actualCharacterRange: nil
+            actualCharacterRange: nil,
         )
         let bodyGlyphRect = layoutManager.boundingRect(forGlyphRange: bodyGlyphRange, in: textContainer)
         return bodyGlyphRect.minX + textContainerInset.width

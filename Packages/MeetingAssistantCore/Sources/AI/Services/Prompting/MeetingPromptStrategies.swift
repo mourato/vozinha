@@ -24,7 +24,7 @@ public struct GeneralMeetingStrategy: PromptStrategy {
             promptText: userPrompt(for: ""),
             icon: "doc.text",
             description: "Standard summary with topics, decisions, and actions.",
-            isPredefined: true
+            isPredefined: true,
         )
     }
 }
@@ -54,7 +54,7 @@ public struct StandupMeetingStrategy: PromptStrategy {
             promptText: userPrompt(for: ""),
             icon: "figure.stand",
             description: "Focuses on progress, plans, and blockers.",
-            isPredefined: true
+            isPredefined: true,
         )
     }
 }
@@ -83,7 +83,7 @@ public struct DesignReviewStrategy: PromptStrategy {
             promptText: userPrompt(for: ""),
             icon: "paintbrush",
             description: "Captures design feedback and decisions.",
-            isPredefined: true
+            isPredefined: true,
         )
     }
 }

@@ -23,7 +23,7 @@ public struct TranscriptionsSettingsTab: View {
 
     public init(
         searchText: Binding<String> = .constant(""),
-        navigationHistory: Binding<TranscriptionsNavigationHistory> = .constant(TranscriptionsNavigationHistory())
+        navigationHistory: Binding<TranscriptionsNavigationHistory> = .constant(TranscriptionsNavigationHistory()),
     ) {
         _searchText = searchText
         _navigationHistory = navigationHistory
@@ -61,7 +61,7 @@ public struct TranscriptionsSettingsTab: View {
         .confirmationDialog(
             "settings.transcriptions.delete_title".localized,
             isPresented: $viewModel.showDeleteConfirmation,
-            titleVisibility: .visible
+            titleVisibility: .visible,
         ) {
             Button("common.delete".localized, role: .destructive) {
                 Task {
@@ -80,7 +80,7 @@ public struct TranscriptionsSettingsTab: View {
                 if !$0 {
                     viewModel.operationErrorMessage = nil
                 }
-            }
+            },
         )) {
             Button("common.ok".localized, role: .cancel) {}
         } message: {
@@ -109,7 +109,7 @@ public struct TranscriptionsSettingsTab: View {
             VStack(alignment: .leading, spacing: 16) {
                 SettingsSectionHeader(
                     title: "settings.section.history".localized,
-                    description: "settings.transcriptions.items_found".localized(with: viewModel.filteredTranscriptions.count)
+                    description: "settings.transcriptions.items_found".localized(with: viewModel.filteredTranscriptions.count),
                 )
 
                 HStack(spacing: 16) {
@@ -128,7 +128,7 @@ public struct TranscriptionsSettingsTab: View {
                         kind: .warning,
                         title: "settings.transcriptions.error_load".localized,
                         message: errorMessage,
-                        actionTitle: "settings.service.verify".localized
+                        actionTitle: "settings.service.verify".localized,
                     ) {
                         Task {
                             await viewModel.loadTranscriptions()
@@ -143,7 +143,7 @@ public struct TranscriptionsSettingsTab: View {
             if viewModel.isLoading {
                 SettingsStateBlock(
                     kind: .loading,
-                    title: "settings.transcriptions.loading".localized
+                    title: "settings.transcriptions.loading".localized,
                 )
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
                 .padding(24)
@@ -162,7 +162,7 @@ public struct TranscriptionsSettingsTab: View {
     private var sourceFilterPicker: some View {
         Picker(
             "",
-            selection: $viewModel.sourceFilter
+            selection: $viewModel.sourceFilter,
         ) {
             ForEach(RecordingSourceFilter.allCases, id: \.self) { filter in
                 Text(filter.displayName).tag(filter)
@@ -251,7 +251,7 @@ public struct TranscriptionsSettingsTab: View {
             MAEmptyStateView(
                 iconName: "clock.arrow.circlepath",
                 title: "settings.transcriptions.empty_title".localized,
-                message: "settings.transcriptions.empty_desc".localized
+                message: "settings.transcriptions.empty_desc".localized,
             )
             .frame(maxWidth: .infinity, alignment: .top)
             .padding(.top, 48)
@@ -272,7 +272,7 @@ public struct TranscriptionsSettingsTab: View {
                         .fontWeight(.bold)
                         .foregroundStyle(.secondary)
                         .padding(.top, 16)
-                        .padding(.bottom, 8)
+                        .padding(.bottom, 8),
                 ) {
                     ForEach(viewModel.groupedTranscriptions[date] ?? []) { transcription in
                         HStack(alignment: .top, spacing: 16) {
@@ -283,7 +283,7 @@ public struct TranscriptionsSettingsTab: View {
                                 .padding(.top, 12)
                                 .frame(width: 50, alignment: .trailing)
 
-                             TranscriptionCardView(
+                            TranscriptionCardView(
                                 transcription: transcription,
                                 transcriptionDetail: viewModel.selectedId == transcription.id ? viewModel.selectedTranscription : nil,
                                 isExpanded: viewModel.selectedId == transcription.id,
@@ -311,7 +311,7 @@ public struct TranscriptionsSettingsTab: View {
                                 },
                                 onAction: { action in
                                     handleTranscriptionAction(action, for: transcription)
-                                }
+                                },
                             )
                         }
                         .listRowSeparator(.hidden)
@@ -338,7 +338,7 @@ public struct TranscriptionsSettingsTab: View {
             activeTranscription: activeTranscription,
             viewModel: viewModel,
             dictationService: dictationService,
-            onToggleDictation: handleDictationToggle
+            onToggleDictation: handleDictationToggle,
         )
     }
 
@@ -555,7 +555,7 @@ struct TranscriptionRowView: View {
                     bundleIdentifier: metadata.appBundleIdentifier,
                     fallbackSystemName: appIcon,
                     size: 22,
-                    cornerRadius: 5
+                    cornerRadius: 5,
                 )
             }
 

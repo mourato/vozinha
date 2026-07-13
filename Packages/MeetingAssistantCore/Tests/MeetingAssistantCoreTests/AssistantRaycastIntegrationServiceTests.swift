@@ -1,5 +1,5 @@
-import XCTest
 @testable import MeetingAssistantCore
+import XCTest
 
 @MainActor
 final class AssistantRaycastIntegrationServiceTests: XCTestCase {
@@ -49,12 +49,12 @@ final class AssistantRaycastIntegrationServiceTests: XCTestCase {
             openURL: { url in
                 openedURLs.append(url)
                 return true
-            }
+            },
         )
 
         let result = try service.dispatch(
             command: "hello world",
-            baseDeepLink: "raycast://extensions/raycast/raycast-ai/ai-chat"
+            baseDeepLink: "raycast://extensions/raycast/raycast-ai/ai-chat",
         )
 
         XCTAssertEqual(result, .openedDeepLink)
@@ -74,19 +74,19 @@ final class AssistantRaycastIntegrationServiceTests: XCTestCase {
             openURL: { url in
                 openedURL = url
                 return true
-            }
+            },
         )
 
         let result = try service.dispatch(
             command: "new value",
-            baseDeepLink: "raycast://extensions/raycast/raycast-ai/ai-chat?fallbackText=old&query=old"
+            baseDeepLink: "raycast://extensions/raycast/raycast-ai/ai-chat?fallbackText=old&query=old",
         )
 
         XCTAssertEqual(result, .openedDeepLink)
-        let components = try XCTUnwrap(URLComponents(url: try XCTUnwrap(openedURL), resolvingAgainstBaseURL: false))
+        let components = try XCTUnwrap(try URLComponents(url: XCTUnwrap(openedURL), resolvingAgainstBaseURL: false))
         let fallbackValues = components.queryItems?
             .filter { $0.name == "fallbackText" || $0.name == "query" }
-            .compactMap { $0.value } ?? []
+            .compactMap(\.value) ?? []
         XCTAssertEqual(fallbackValues, ["new value", "new value"])
     }
 
@@ -94,7 +94,7 @@ final class AssistantRaycastIntegrationServiceTests: XCTestCase {
         let service = makeService()
 
         XCTAssertThrowsError(
-            try service.dispatch(command: "test", baseDeepLink: "invalid-link")
+            try service.dispatch(command: "test", baseDeepLink: "invalid-link"),
         ) { error in
             XCTAssertEqual(error as? AssistantIntegrationDispatchError, .invalidDeepLink)
         }
@@ -104,7 +104,7 @@ final class AssistantRaycastIntegrationServiceTests: XCTestCase {
         let service = makeService()
 
         XCTAssertThrowsError(
-            try service.dispatch(command: "test", baseDeepLink: "raycast://unknown-host/ask")
+            try service.dispatch(command: "test", baseDeepLink: "raycast://unknown-host/ask"),
         ) { error in
             XCTAssertEqual(error as? AssistantIntegrationDispatchError, .invalidDeepLink)
         }
@@ -121,12 +121,12 @@ final class AssistantRaycastIntegrationServiceTests: XCTestCase {
             copyToClipboard: { text in
                 copiedText = text
             },
-            maxDeepLinkLength: 40
+            maxDeepLinkLength: 40,
         )
 
         let result = try service.dispatch(
             command: String(repeating: "x", count: 120),
-            baseDeepLink: "raycast://extensions/raycast/raycast-ai/ai-chat"
+            baseDeepLink: "raycast://extensions/raycast/raycast-ai/ai-chat",
         )
 
         XCTAssertEqual(result, .openedDeepLink)
@@ -136,19 +136,19 @@ final class AssistantRaycastIntegrationServiceTests: XCTestCase {
         let components = try XCTUnwrap(URLComponents(url: openedURLs[0], resolvingAgainstBaseURL: false))
         let dispatchValues = components.queryItems?
             .filter { ["fallbackText", "text", "query", "prompt"].contains($0.name) }
-            .compactMap { $0.value } ?? []
+            .compactMap(\.value) ?? []
         XCTAssertEqual(dispatchValues, Array(repeating: String(repeating: "x", count: 120), count: 4))
     }
 
     private func makeService(
         openURL: @escaping (URL) -> Bool = { _ in true },
         copyToClipboard: @escaping (String) -> Void = { _ in },
-        maxDeepLinkLength: Int = 3_800
+        maxDeepLinkLength: Int = 3_800,
     ) -> AssistantRaycastIntegrationService {
         AssistantRaycastIntegrationService(
             openURL: openURL,
             copyToClipboard: copyToClipboard,
-            maxDeepLinkLength: maxDeepLinkLength
+            maxDeepLinkLength: maxDeepLinkLength,
         )
     }
 }

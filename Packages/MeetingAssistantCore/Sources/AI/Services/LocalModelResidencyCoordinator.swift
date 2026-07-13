@@ -63,7 +63,7 @@ public final class LocalModelResidencyCoordinator {
     init(
         modelManager: any LocalModelResidencyManaging,
         settingsStore: any ModelResidencyTimeoutSettingsProviding = AppSettingsStore.shared,
-        checkIntervalSeconds: TimeInterval = 30
+        checkIntervalSeconds: TimeInterval = 30,
     ) {
         modelManagers = [modelManager]
         self.settingsStore = settingsStore
@@ -74,7 +74,7 @@ public final class LocalModelResidencyCoordinator {
     init(
         modelManagers: [any LocalModelResidencyManaging] = LocalModelRuntimeRegistry.residencyManagers,
         settingsStore: any ModelResidencyTimeoutSettingsProviding = AppSettingsStore.shared,
-        checkIntervalSeconds: TimeInterval = 30
+        checkIntervalSeconds: TimeInterval = 30,
     ) {
         self.modelManagers = modelManagers
         self.settingsStore = settingsStore
@@ -133,7 +133,7 @@ public final class LocalModelResidencyCoordinator {
     private func shouldUnloadASR(
         using modelManager: any LocalModelResidencyManaging,
         now: Date,
-        timeoutInterval: TimeInterval
+        timeoutInterval: TimeInterval,
     ) -> Bool {
         guard modelManager.isASRResidentInMemory else { return false }
         guard !modelManager.isASRInUse else { return false }
@@ -144,7 +144,7 @@ public final class LocalModelResidencyCoordinator {
     private func shouldUnloadDiarization(
         using modelManager: any LocalModelResidencyManaging,
         now: Date,
-        timeoutInterval: TimeInterval
+        timeoutInterval: TimeInterval,
     ) -> Bool {
         guard modelManager.isDiarizationResidentInMemory else { return false }
         guard !modelManager.isDiarizationInUse else { return false }
@@ -163,7 +163,7 @@ public final class LocalModelResidencyCoordinator {
         }
 
         logger.error(
-            "Missing residency manager coverage for local model IDs: \(uncoveredModelIDs.sorted().joined(separator: ", "), privacy: .public)."
+            "Missing residency manager coverage for local model IDs: \(uncoveredModelIDs.sorted().joined(separator: ", "), privacy: .public).",
         )
     }
 }

@@ -58,7 +58,7 @@ public struct VocabularyReplacementRule: Identifiable, Codable, Hashable, Sendab
                     in: output,
                     options: [],
                     range: range,
-                    withTemplate: escapedReplacement
+                    withTemplate: escapedReplacement,
                 )
             }
         }
@@ -68,7 +68,7 @@ public struct VocabularyReplacementRule: Identifiable, Codable, Hashable, Sendab
 
     public static func apply<Segment: VocabularyReplaceableSegment>(
         rules: [VocabularyReplacementRule],
-        to segments: [Segment]
+        to segments: [Segment],
     ) -> [Segment] {
         segments.map { segment in
             Segment(
@@ -76,7 +76,7 @@ public struct VocabularyReplacementRule: Identifiable, Codable, Hashable, Sendab
                 speaker: segment.speaker,
                 text: apply(rules: rules, to: segment.text),
                 startTime: segment.startTime,
-                endTime: segment.endTime
+                endTime: segment.endTime,
             )
         }
     }

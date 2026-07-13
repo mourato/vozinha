@@ -28,7 +28,7 @@ actor IncrementalDictationTranscriptionCoordinator {
         storage: any StorageService,
         transcriptionClientBox: RecordingManager.UncheckedTranscriptionServiceBox,
         voiceActivityKernel: any VoiceActivityKernel = RealtimeVoiceActivityWindowAssembler(),
-        callbacks: Callbacks
+        callbacks: Callbacks,
     ) {
         core = IncrementalTranscriptionCoordinatorCore(
             configuration: .init(
@@ -40,8 +40,8 @@ actor IncrementalDictationTranscriptionCoordinator {
                 voiceActivityKernel: voiceActivityKernel,
                 onPreviewTextChanged: callbacks.onPreviewTextChanged,
                 onProcessedDurationChanged: callbacks.onProcessedDurationChanged,
-                fallbackLogMessage: "Dictation incremental transcription degraded; full-file fallback required"
-            )
+                fallbackLogMessage: "Dictation incremental transcription degraded; full-file fallback required",
+            ),
         )
     }
 
@@ -88,7 +88,7 @@ actor IncrementalDictationTranscriptionCoordinator {
         return await FinalizedResult(
             response: response,
             checkpointID: core.checkpointID,
-            wallClockDuration: core.wallClockElapsedSeconds
+            wallClockDuration: core.wallClockElapsedSeconds,
         )
     }
 

@@ -64,7 +64,7 @@ final class AssistantOverlayLifecycleTests: XCTestCase {
         let recordingState = RecordingIndicatorRenderState(
             mode: .recording,
             kind: .assistantIntegration,
-            assistantIntegrationID: integrationID
+            assistantIntegrationID: integrationID,
         )
         let processingState = recordingState.with(mode: .processing)
 

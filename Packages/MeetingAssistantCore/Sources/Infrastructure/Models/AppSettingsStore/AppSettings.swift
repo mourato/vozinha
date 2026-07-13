@@ -688,11 +688,11 @@ public class AppSettingsStore: ObservableObject {
     }
 
     /// Delay before automatic meeting recording starts after a meeting candidate is detected.
-    @Published public var automaticMeetingRecordingConfirmationDelay: AutomaticMeetingRecordingConfirmationDelay {
+    @Published public var automaticAutomaticMeetingRecordingConfirmationDelay: AutomaticMeetingRecordingConfirmationDelay {
         didSet {
             UserDefaults.standard.set(
-                automaticMeetingRecordingConfirmationDelay.rawValue,
-                forKey: Keys.automaticMeetingRecordingConfirmationDelay,
+                automaticAutomaticMeetingRecordingConfirmationDelay.rawValue,
+                forKey: Keys.automaticAutomaticMeetingRecordingConfirmationDelay,
             )
         }
     }
@@ -868,7 +868,7 @@ public class AppSettingsStore: ObservableObject {
         recordingIndicatorStyle = uiSettings.recordingIndicatorStyle
         recordingIndicatorPosition = uiSettings.recordingIndicatorPosition
         recordingIndicatorAnimationSpeed = uiSettings.recordingIndicatorAnimationSpeed
-        automaticMeetingRecordingConfirmationDelay = uiSettings.automaticMeetingRecordingConfirmationDelay
+        automaticAutomaticMeetingRecordingConfirmationDelay = uiSettings.automaticAutomaticMeetingRecordingConfirmationDelay
         autoDeleteTranscriptions = uiSettings.autoDeleteTranscriptions
         autoDeletePeriodDays = uiSettings.autoDeletePeriodDays
         appAccentColor = uiSettings.appAccentColor

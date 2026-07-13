@@ -1,8 +1,8 @@
-import XCTest
 @testable import MeetingAssistantCore
+import XCTest
 
 @MainActor
-final class AppSettingsRecordingIndicatorAnimationSpeedTests: XCTestCase {
+final class RecordingIndicatorAnimationSpeedTests: XCTestCase {
     private var settings: AppSettingsStore!
 
     override func setUp() async throws {
@@ -29,13 +29,13 @@ final class AppSettingsRecordingIndicatorAnimationSpeedTests: XCTestCase {
         settings.recordingIndicatorAnimationSpeed = .slow
         XCTAssertEqual(
             UserDefaults.standard.string(forKey: "recordingIndicatorAnimationSpeed"),
-            RecordingIndicatorAnimationSpeed.slow.rawValue
+            RecordingIndicatorAnimationSpeed.slow.rawValue,
         )
 
         settings.recordingIndicatorAnimationSpeed = .fast
         XCTAssertEqual(
             UserDefaults.standard.string(forKey: "recordingIndicatorAnimationSpeed"),
-            RecordingIndicatorAnimationSpeed.fast.rawValue
+            RecordingIndicatorAnimationSpeed.fast.rawValue,
         )
     }
 

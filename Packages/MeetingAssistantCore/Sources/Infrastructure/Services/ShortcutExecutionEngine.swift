@@ -21,7 +21,7 @@ public final class ShortcutExecutionEngine {
 
     public init(
         holdThreshold: TimeInterval = 0.35,
-        doubleTapInterval: TimeInterval = 0.25
+        doubleTapInterval: TimeInterval = 0.25,
     ) {
         self.holdThreshold = holdThreshold
         self.doubleTapInterval = doubleTapInterval
@@ -45,7 +45,7 @@ public final class ShortcutExecutionEngine {
     public func handleTransition(
         isActive: Bool,
         trigger: ShortcutTrigger,
-        isRecording: Bool
+        isRecording: Bool,
     ) -> [ShortcutExecutionAction] {
         if isActive {
             guard !isPressed else {
@@ -66,7 +66,7 @@ public final class ShortcutExecutionEngine {
 
     public func handleDown(
         trigger: ShortcutTrigger,
-        isRecording: Bool
+        isRecording: Bool,
     ) -> [ShortcutExecutionAction] {
         switch trigger {
         case .singleTap:
@@ -88,7 +88,7 @@ public final class ShortcutExecutionEngine {
 
     public func handleUp(
         trigger: ShortcutTrigger,
-        isRecording: Bool
+        isRecording: Bool,
     ) -> [ShortcutExecutionAction] {
         switch trigger {
         case .singleTap:
@@ -141,9 +141,9 @@ public final class ShortcutExecutionEngine {
                 shortcutTarget: "recording_toggle",
                 source: "execution_engine",
                 trigger: trigger.rawValue,
-                reason: reason
+                reason: reason,
             ),
-            category: .health
+            category: .health,
         )
     }
 }

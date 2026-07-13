@@ -1,6 +1,6 @@
 import Foundation
-import XCTest
 @testable import MeetingAssistantCore
+import XCTest
 
 final class SummaryExportSafetyServicesTests: XCTestCase {
     func testEvaluateBlocksWhenCanonicalSummaryIsMissing() {
@@ -11,7 +11,7 @@ final class SummaryExportSafetyServicesTests: XCTestCase {
             transcription: transcription,
             exportDestination: URL(fileURLWithPath: "/tmp"),
             candidateContent: "Valid content",
-            policyLevel: .standard
+            policyLevel: .standard,
         )
 
         XCTAssertFalse(decision.isCompliant)
@@ -27,8 +27,8 @@ final class SummaryExportSafetyServicesTests: XCTestCase {
                 isGroundedInTranscript: false,
                 containsSpeculation: false,
                 isHumanReviewed: false,
-                confidenceScore: 0.55
-            )
+                confidenceScore: 0.55,
+            ),
         )
         let transcription = makeTranscription(canonicalSummary: summary)
 
@@ -36,7 +36,7 @@ final class SummaryExportSafetyServicesTests: XCTestCase {
             transcription: transcription,
             exportDestination: URL(fileURLWithPath: "/tmp"),
             candidateContent: "Valid content",
-            policyLevel: .standard
+            policyLevel: .standard,
         )
 
         XCTAssertFalse(decision.isCompliant)
@@ -53,8 +53,8 @@ final class SummaryExportSafetyServicesTests: XCTestCase {
                 isGroundedInTranscript: true,
                 containsSpeculation: false,
                 isHumanReviewed: false,
-                confidenceScore: 0.92
-            )
+                confidenceScore: 0.92,
+            ),
         )
         let transcription = makeTranscription(canonicalSummary: summary)
 
@@ -62,7 +62,7 @@ final class SummaryExportSafetyServicesTests: XCTestCase {
             transcription: transcription,
             exportDestination: URL(fileURLWithPath: "/tmp"),
             candidateContent: "Valid content",
-            policyLevel: .strict
+            policyLevel: .strict,
         )
 
         XCTAssertTrue(decision.isCompliant)
@@ -88,7 +88,7 @@ final class SummaryExportSafetyServicesTests: XCTestCase {
         try FileManager.default.createDirectory(at: tempRoot, withIntermediateDirectories: true)
 
         let writer = SummaryExportAuditTrailWriter(
-            rootDirectoryURL: tempRoot
+            rootDirectoryURL: tempRoot,
         )
 
         let first = makeAuditEvent(outcome: .blocked)
@@ -101,7 +101,7 @@ final class SummaryExportSafetyServicesTests: XCTestCase {
         XCTAssertEqual(files.count, 1)
 
         let data = try Data(contentsOf: files[0])
-        let text = String(decoding: data, as: UTF8.self)
+        let text = try XCTUnwrap(String(bytes: data, encoding: .utf8))
         let lines = text.split(separator: "\n")
         XCTAssertEqual(lines.count, 2)
     }
@@ -113,7 +113,7 @@ final class SummaryExportSafetyServicesTests: XCTestCase {
             text: "Processed text",
             rawText: "Raw text",
             processedContent: "Processed text",
-            canonicalSummary: canonicalSummary
+            canonicalSummary: canonicalSummary,
         )
     }
 
@@ -132,7 +132,7 @@ final class SummaryExportSafetyServicesTests: XCTestCase {
             groundedInTranscript: true,
             redactionApplied: true,
             destinationPath: "/tmp/result.md",
-            errorDescription: nil
+            errorDescription: nil,
         )
     }
 }

@@ -1,5 +1,5 @@
-import XCTest
 @testable import MeetingAssistantCore
+import XCTest
 
 @MainActor
 final class RecordingIndicatorOverlayLayoutTests: XCTestCase {
@@ -18,7 +18,7 @@ final class RecordingIndicatorOverlayLayoutTests: XCTestCase {
     func testDictationLayoutShowsPromptAndLanguage() {
         let layout = RecordingIndicatorOverlayLayout.resolve(
             renderState: RecordingIndicatorRenderState(mode: .recording, kind: .dictation),
-            settingsStore: settings
+            settingsStore: settings,
         )
 
         XCTAssertEqual(layout.showsPromptSelector, true)
@@ -30,7 +30,7 @@ final class RecordingIndicatorOverlayLayoutTests: XCTestCase {
     func testAssistantLayoutShowsOnlyMainPill() {
         let layout = RecordingIndicatorOverlayLayout.resolve(
             renderState: RecordingIndicatorRenderState(mode: .recording, kind: .assistant),
-            settingsStore: settings
+            settingsStore: settings,
         )
 
         XCTAssertEqual(layout.showsPromptSelector, false)
@@ -46,7 +46,7 @@ final class RecordingIndicatorOverlayLayoutTests: XCTestCase {
             isEnabled: true,
             deepLink: "raycast://custom",
             showsPromptSelectorInOverlay: true,
-            showsLanguageSelectorInOverlay: false
+            showsLanguageSelectorInOverlay: false,
         )
         settings.assistantIntegrations = [integration]
         settings.assistantSelectedIntegrationId = integration.id
@@ -55,9 +55,9 @@ final class RecordingIndicatorOverlayLayoutTests: XCTestCase {
             renderState: RecordingIndicatorRenderState(
                 mode: .recording,
                 kind: .assistantIntegration,
-                assistantIntegrationID: integration.id
+                assistantIntegrationID: integration.id,
             ),
-            settingsStore: settings
+            settingsStore: settings,
         )
 
         XCTAssertEqual(layout.showsPromptSelector, true)
@@ -73,7 +73,7 @@ final class RecordingIndicatorOverlayLayoutTests: XCTestCase {
             isEnabled: true,
             deepLink: "raycast://custom",
             showsPromptSelectorInOverlay: false,
-            showsLanguageSelectorInOverlay: true
+            showsLanguageSelectorInOverlay: true,
         )
         settings.assistantIntegrations = [integration]
 
@@ -81,9 +81,9 @@ final class RecordingIndicatorOverlayLayoutTests: XCTestCase {
             renderState: RecordingIndicatorRenderState(
                 mode: .recording,
                 kind: .assistantIntegration,
-                assistantIntegrationID: integration.id
+                assistantIntegrationID: integration.id,
             ),
-            settingsStore: settings
+            settingsStore: settings,
         )
 
         XCTAssertEqual(layout.showsPromptSelector, false)
@@ -99,7 +99,7 @@ final class RecordingIndicatorOverlayLayoutTests: XCTestCase {
             isEnabled: true,
             deepLink: "raycast://custom",
             showsPromptSelectorInOverlay: false,
-            showsLanguageSelectorInOverlay: false
+            showsLanguageSelectorInOverlay: false,
         )
         settings.assistantIntegrations = [integration]
 
@@ -107,9 +107,9 @@ final class RecordingIndicatorOverlayLayoutTests: XCTestCase {
             renderState: RecordingIndicatorRenderState(
                 mode: .recording,
                 kind: .assistantIntegration,
-                assistantIntegrationID: integration.id
+                assistantIntegrationID: integration.id,
             ),
-            settingsStore: settings
+            settingsStore: settings,
         )
 
         XCTAssertEqual(layout.showsPromptSelector, false)
@@ -123,9 +123,9 @@ final class RecordingIndicatorOverlayLayoutTests: XCTestCase {
             renderState: RecordingIndicatorRenderState(
                 mode: .recording,
                 kind: .assistantIntegration,
-                assistantIntegrationID: UUID()
+                assistantIntegrationID: UUID(),
             ),
-            settingsStore: settings
+            settingsStore: settings,
         )
 
         XCTAssertEqual(layout.showsPromptSelector, false)
@@ -139,9 +139,9 @@ final class RecordingIndicatorOverlayLayoutTests: XCTestCase {
             renderState: RecordingIndicatorRenderState(
                 mode: .recording,
                 kind: .meeting,
-                meetingType: .standup
+                meetingType: .standup,
             ),
-            settingsStore: settings
+            settingsStore: settings,
         )
 
         XCTAssertEqual(layout.showsPromptSelector, true)
@@ -157,7 +157,7 @@ final class RecordingIndicatorOverlayLayoutTests: XCTestCase {
             isEnabled: true,
             deepLink: "raycast://custom",
             showsPromptSelectorInOverlay: true,
-            showsLanguageSelectorInOverlay: true
+            showsLanguageSelectorInOverlay: true,
         )
         settings.assistantIntegrations = [integration]
 
@@ -165,9 +165,9 @@ final class RecordingIndicatorOverlayLayoutTests: XCTestCase {
             renderState: RecordingIndicatorRenderState(
                 mode: .processing,
                 kind: .assistantIntegration,
-                assistantIntegrationID: integration.id
+                assistantIntegrationID: integration.id,
             ),
-            settingsStore: settings
+            settingsStore: settings,
         )
 
         XCTAssertEqual(layout.showsPromptSelector, false)

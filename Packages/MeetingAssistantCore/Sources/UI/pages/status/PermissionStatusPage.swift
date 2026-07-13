@@ -19,7 +19,7 @@ public struct PermissionStatusView: View {
     public init(
         viewModel: PermissionViewModel,
         requiredSource: RecordingSource = .all,
-        onDismiss: (() -> Void)? = nil
+        onDismiss: (() -> Void)? = nil,
     ) {
         self.viewModel = viewModel
         self.requiredSource = requiredSource
@@ -35,19 +35,19 @@ public struct PermissionStatusView: View {
                 PermissionRowView(
                     permission: PermissionInfo(type: .microphone, state: viewModel.microphoneState),
                     onRequest: { Task { await viewModel.requestMicrophonePermission() } },
-                    onOpenSettings: { viewModel.openMicrophoneSystemSettings() }
+                    onOpenSettings: { viewModel.openMicrophoneSystemSettings() },
                 )
 
                 PermissionRowView(
                     permission: PermissionInfo(type: .screenRecording, state: viewModel.screenState),
                     onRequest: { Task { await viewModel.requestScreenPermission() } },
-                    onOpenSettings: { viewModel.openScreenSystemSettings() }
+                    onOpenSettings: { viewModel.openScreenSystemSettings() },
                 )
 
                 PermissionRowView(
                     permission: PermissionInfo(type: .accessibility, state: viewModel.accessibilityState),
                     onRequest: { viewModel.requestAccessibilityPermission() },
-                    onOpenSettings: { viewModel.openAccessibilitySystemSettings() }
+                    onOpenSettings: { viewModel.openAccessibilitySystemSettings() },
                 )
             }
 
@@ -65,7 +65,7 @@ public struct PermissionStatusView: View {
     private var requiredPermissionsGranted: Bool {
         requiredSource.requiredPermissionsGranted(
             microphone: viewModel.microphoneState,
-            screenRecording: viewModel.screenState
+            screenRecording: viewModel.screenState,
         ) && viewModel.accessibilityState.isAuthorized
     }
 
@@ -181,7 +181,7 @@ struct PermissionRowView: View {
                 .font(.title3)
                 .foregroundStyle(permission.statusColor)
                 .symbolEffect(
-                    .pulse, options: .nonRepeating, isActive: permission.state == .notDetermined
+                    .pulse, options: .nonRepeating, isActive: permission.state == .notDetermined,
                 )
 
             // Action button when not granted
@@ -229,15 +229,15 @@ public struct CompactPermissionStatusView: View {
     public var body: some View {
         HStack(spacing: 12) {
             CompactPermissionIndicator(
-                permission: permissionManager.microphonePermission
+                permission: permissionManager.microphonePermission,
             )
 
             CompactPermissionIndicator(
-                permission: permissionManager.screenRecordingPermission
+                permission: permissionManager.screenRecordingPermission,
             )
 
             CompactPermissionIndicator(
-                permission: permissionManager.accessibilityPermission
+                permission: permissionManager.accessibilityPermission,
             )
         }
     }
@@ -261,7 +261,7 @@ struct CompactPermissionIndicator: View {
         .padding(.vertical, 4)
         .background(
             Capsule()
-                .fill(permission.statusColor.opacity(0.5))
+                .fill(permission.statusColor.opacity(0.5)),
         )
         .help("\(permission.type.displayName): \(permission.state.displayName)")
     }
@@ -283,7 +283,7 @@ struct CompactPermissionIndicator: View {
         openMicrophoneSettings: {},
         openScreenSettings: {},
         requestAccessibility: {},
-        openAccessibilitySettings: {}
+        openAccessibilitySettings: {},
     )
 
     return PermissionStatusView(viewModel: vm)
@@ -304,7 +304,7 @@ struct CompactPermissionIndicator: View {
         openMicrophoneSettings: {},
         openScreenSettings: {},
         requestAccessibility: {},
-        openAccessibilitySettings: {}
+        openAccessibilitySettings: {},
     )
 
     return PermissionStatusView(viewModel: vm)
@@ -322,7 +322,7 @@ struct CompactPermissionIndicator: View {
         openMicrophoneSettings: {},
         openScreenSettings: {},
         requestAccessibility: {},
-        openAccessibilitySettings: {}
+        openAccessibilitySettings: {},
     )
 
     return PermissionStatusView(viewModel: vm)

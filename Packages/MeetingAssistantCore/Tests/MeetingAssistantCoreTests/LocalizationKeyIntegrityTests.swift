@@ -13,7 +13,7 @@ final class LocalizationKeyIntegrityTests: XCTestCase {
             Localizable.strings files must stay symmetric.
             Missing from en: \(ptKeys.subtracting(enKeys).sorted())
             Missing from pt: \(enKeys.subtracting(ptKeys).sorted())
-            """
+            """,
         )
     }
 
@@ -27,7 +27,7 @@ final class LocalizationKeyIntegrityTests: XCTestCase {
         let missingKeys = usedKeys.subtracting(supportedKeys)
         XCTAssertTrue(
             missingKeys.isEmpty,
-            "Register every literal .localized key in all locale files: \(missingKeys.sorted())"
+            "Register every literal .localized key in all locale files: \(missingKeys.sorted())",
         )
     }
 
@@ -65,7 +65,7 @@ final class LocalizationKeyIntegrityTests: XCTestCase {
             guard let enumerator = fileManager.enumerator(
                 at: root,
                 includingPropertiesForKeys: [.isRegularFileKey],
-                options: [.skipsHiddenFiles]
+                options: [.skipsHiddenFiles],
             ) else {
                 continue
             }

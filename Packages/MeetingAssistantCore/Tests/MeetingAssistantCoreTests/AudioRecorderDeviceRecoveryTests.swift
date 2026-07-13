@@ -11,8 +11,8 @@ final class AudioRecorderDeviceRecoveryTests: XCTestCase {
             AudioRecorder.shouldRecoverInputDevice(
                 activeInputUID: "usb-mic",
                 desiredInputUID: "default-mic",
-                availableDevices: devices
-            )
+                availableDevices: devices,
+            ),
         )
     }
 
@@ -26,8 +26,8 @@ final class AudioRecorderDeviceRecoveryTests: XCTestCase {
             AudioRecorder.shouldRecoverInputDevice(
                 activeInputUID: "default-mic",
                 desiredInputUID: "preferred-mic",
-                availableDevices: devices
-            )
+                availableDevices: devices,
+            ),
         )
     }
 
@@ -41,8 +41,8 @@ final class AudioRecorderDeviceRecoveryTests: XCTestCase {
             AudioRecorder.shouldRecoverInputDevice(
                 activeInputUID: "preferred-mic",
                 desiredInputUID: "preferred-mic",
-                availableDevices: devices
-            )
+                availableDevices: devices,
+            ),
         )
     }
 
@@ -55,8 +55,8 @@ final class AudioRecorderDeviceRecoveryTests: XCTestCase {
             AudioRecorder.shouldRecoverInputDevice(
                 activeInputUID: "default-mic",
                 desiredInputUID: "preferred-mic",
-                availableDevices: devices
-            )
+                availableDevices: devices,
+            ),
         )
     }
 }

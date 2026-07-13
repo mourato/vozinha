@@ -39,7 +39,7 @@ final class MeetingNotesMarkdownFormatterTests: XCTestCase {
         let formatter = MeetingNotesMarkdownFormatter(
             parser: { _, _ in
                 throw ParserError.forcedFailure
-            }
+            },
         )
         let markdown = "# Keep this as plain text"
 

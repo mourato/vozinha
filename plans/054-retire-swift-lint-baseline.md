@@ -9,6 +9,7 @@
 - **Risk**: MED
 - **Depends on**: 032
 - **Category**: quality
+- **Result**: DONE — SwiftFormat baseline retired, strict error/format aliases enabled, and advisory warnings retained for follow-up structural cleanup.
 
 ## Why this matters
 
@@ -35,6 +36,16 @@
 4. Run a thermo-nuclear review and fix all Critical/Medium findings.
 5. When strict lint passes cleanly, add `lint-strict` and `lint-strict-agent` aliases and update the Full-lane guidance to use them.
 6. Mark this row `DONE` only after `make lint`, strict lint, `make build-test`, `make guidance-check`, and `git diff --check` pass.
+
+## Delivery Evidence — 2026-07-12
+
+- Risk: MEDIUM/full lane. Reused existing filter/configuration and post-processing context shapes; extracted only where the lint limits exposed an existing parameter or body-shape problem.
+- SwiftFormat normalized the repository baseline; `RecordingManagerTests` and `TranscriptionSettingsViewModelTests` were decomposed into colocated test files.
+- Mechanical SwiftLint fixes included valid numeric separators, closure formatting, type naming, `for where`, discarded-result syntax where SwiftUI result-builder semantics allowed it, and test helper cleanup.
+- Added `make lint-strict` and `make lint-strict-agent`; updated `AGENTS.md`, delivery workflow, and build/test guidance.
+- Passed: `make lint`, `make lint-strict-agent`, `make build-agent`, focused transcription/settings tests (43/43), `make guidance-check`, and `git diff --check`.
+- `make build-test` completed the full suite with 993 tests, 17 skipped, 977 passed, and 16 known `MetricsDashboardViewModelTests` failures; those failures predate this plan and remain separate baseline work.
+- The lint report still exposes 270 advisory SwiftLint warnings, concentrated in pre-existing type/function size limits. They are intentionally visible and not suppressed; follow-up structural work should reduce them incrementally.
 
 ## Stop conditions
 

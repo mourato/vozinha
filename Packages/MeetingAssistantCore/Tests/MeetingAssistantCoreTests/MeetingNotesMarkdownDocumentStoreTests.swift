@@ -33,7 +33,7 @@ final class MeetingNotesMarkdownDocumentStoreTests: XCTestCase {
         store = MeetingNotesMarkdownDocumentStore(
             userDefaults: userDefaults,
             rootDirectoryURL: rootDirectoryURL,
-            writesAsynchronously: false
+            writesAsynchronously: false,
         )
         richTextStore = MeetingNotesRichTextStore(userDefaults: userDefaults)
         mockStorage = MockStorageService()
@@ -59,7 +59,7 @@ final class MeetingNotesMarkdownDocumentStoreTests: XCTestCase {
         let transcriptionID = UUID()
         store.saveTranscriptionNotesContent(
             MeetingNotesContent(plainText: "Line 1\nLine 2"),
-            for: transcriptionID
+            for: transcriptionID,
         )
 
         let content = try XCTUnwrap(try readFile(at: transcriptionURL(for: transcriptionID)))
@@ -76,16 +76,16 @@ final class MeetingNotesMarkdownDocumentStoreTests: XCTestCase {
         richAttributed.addAttribute(
             .link,
             value: URL(string: "https://openai.com") as Any,
-            range: NSRange(location: 0, length: richAttributed.length)
+            range: NSRange(location: 0, length: richAttributed.length),
         )
         let richRTF = try richAttributed.data(
             from: NSRange(location: 0, length: richAttributed.length),
-            documentAttributes: [.documentType: NSAttributedString.DocumentType.rtf]
+            documentAttributes: [.documentType: NSAttributedString.DocumentType.rtf],
         )
 
         store.saveTranscriptionNotesContent(
             MeetingNotesContent(plainText: "OpenAI", richTextRTFData: richRTF),
-            for: transcriptionID
+            for: transcriptionID,
         )
 
         let richContent = try XCTUnwrap(try readFile(at: transcriptionURL(for: transcriptionID)))
@@ -93,7 +93,7 @@ final class MeetingNotesMarkdownDocumentStoreTests: XCTestCase {
 
         let invalidRichContent = MeetingNotesContent(
             plainText: "Plain fallback",
-            richTextRTFData: Data([0x01, 0x02, 0x03])
+            richTextRTFData: Data([0x01, 0x02, 0x03]),
         )
         store.saveTranscriptionNotesContent(invalidRichContent, for: transcriptionID)
 
@@ -105,7 +105,7 @@ final class MeetingNotesMarkdownDocumentStoreTests: XCTestCase {
         let meetingID = UUID()
         let loaded = store.loadMeetingNotesContent(
             for: meetingID,
-            legacyContent: MeetingNotesContent(plainText: "Legacy source")
+            legacyContent: MeetingNotesContent(plainText: "Legacy source"),
         )
 
         XCTAssertEqual(loaded.plainText, "Legacy source")
@@ -120,7 +120,7 @@ final class MeetingNotesMarkdownDocumentStoreTests: XCTestCase {
 
         let preferred = store.loadMeetingNotesContent(
             for: meetingID,
-            legacyContent: MeetingNotesContent(plainText: "Legacy source")
+            legacyContent: MeetingNotesContent(plainText: "Legacy source"),
         )
         XCTAssertEqual(preferred.plainText, "Markdown source")
 
@@ -128,7 +128,7 @@ final class MeetingNotesMarkdownDocumentStoreTests: XCTestCase {
         try "invalid-front-matter".write(to: meetingFileURL, atomically: true, encoding: .utf8)
         let fallback = store.loadMeetingNotesContent(
             for: meetingID,
-            legacyContent: MeetingNotesContent(plainText: "Legacy fallback")
+            legacyContent: MeetingNotesContent(plainText: "Legacy fallback"),
         )
         XCTAssertEqual(fallback, .empty)
     }
@@ -141,15 +141,15 @@ final class MeetingNotesMarkdownDocumentStoreTests: XCTestCase {
             makeTranscription(
                 id: transcriptionID,
                 meetingID: meetingID,
-                contextItems: [.init(source: .meetingNotes, text: "Transcription legacy note")]
+                contextItems: [.init(source: .meetingNotes, text: "Transcription legacy note")],
             ),
         ]
-        richTextStore.saveTranscriptionNotesRTFData(Data([0x7B, 0x5C, 0x72, 0x74, 0x66]), for: transcriptionID)
+        richTextStore.saveTranscriptionNotesRTFData(Data([0x7b, 0x5c, 0x72, 0x74, 0x66]), for: transcriptionID)
 
         userDefaults.set("Meeting legacy note", forKey: "meetingNotes.\(meetingID.uuidString)")
         userDefaults.set("Event legacy note", forKey: "meetingNotes.event.\(eventIdentifier)")
-        richTextStore.saveMeetingNotesRTFData(Data([0x7B, 0x5C, 0x72, 0x74, 0x66]), for: meetingID)
-        richTextStore.saveCalendarEventNotesRTFData(Data([0x7B, 0x5C, 0x72, 0x74, 0x66]), for: eventIdentifier)
+        richTextStore.saveMeetingNotesRTFData(Data([0x7b, 0x5c, 0x72, 0x74, 0x66]), for: meetingID)
+        richTextStore.saveCalendarEventNotesRTFData(Data([0x7b, 0x5c, 0x72, 0x74, 0x66]), for: eventIdentifier)
 
         await store.runBackfillIfNeeded(storage: mockStorage, meetingNotesRichTextStore: richTextStore)
 
@@ -176,7 +176,7 @@ final class MeetingNotesMarkdownDocumentStoreTests: XCTestCase {
 
         store.saveCalendarEventNotesContent(
             MeetingNotesContent(plainText: "Event markdown note"),
-            for: eventIdentifier
+            for: eventIdentifier,
         )
         let defaultFileContent = try XCTUnwrap(try readFile(at: eventURL(for: eventIdentifier)))
         XCTAssertTrue(defaultFileContent.contains("eventIdentifierHash: \(expectedHash)"))
@@ -185,7 +185,7 @@ final class MeetingNotesMarkdownDocumentStoreTests: XCTestCase {
         userDefaults.set(true, forKey: Flags.includeRawEventIdentifier)
         store.saveCalendarEventNotesContent(
             MeetingNotesContent(plainText: "Event markdown note"),
-            for: eventIdentifier
+            for: eventIdentifier,
         )
         let fileWithRawIdentifier = try XCTUnwrap(try readFile(at: eventURL(for: eventIdentifier)))
         XCTAssertTrue(fileWithRawIdentifier.contains("eventIdentifierRaw: \"\(eventIdentifier)\""))
@@ -206,7 +206,7 @@ final class MeetingNotesMarkdownDocumentStoreTests: XCTestCase {
             userDefaults: userDefaults,
             rootDirectoryURL: rootDirectoryURL,
             writesAsynchronously: true,
-            writeCoalescingNanoseconds: 50_000_000
+            writeCoalescingNanoseconds: 50_000_000,
         )
         let meetingID = UUID()
 
@@ -250,7 +250,7 @@ final class MeetingNotesMarkdownDocumentStoreTests: XCTestCase {
     private func makeTranscription(
         id: UUID,
         meetingID: UUID,
-        contextItems: [TranscriptionContextItem]
+        contextItems: [TranscriptionContextItem],
     ) -> Transcription {
         Transcription(
             id: id,
@@ -259,12 +259,12 @@ final class MeetingNotesMarkdownDocumentStoreTests: XCTestCase {
                 app: .zoom,
                 capturePurpose: .meeting,
                 startTime: Date(),
-                endTime: Date().addingTimeInterval(60)
+                endTime: Date().addingTimeInterval(60),
             ),
             contextItems: contextItems,
             segments: [.init(speaker: "Speaker 1", text: "content", startTime: 0, endTime: 1)],
             text: "content",
-            rawText: "content"
+            rawText: "content",
         )
     }
 }

@@ -1,5 +1,5 @@
-@testable import MeetingAssistantCore
 import CoreData
+@testable import MeetingAssistantCore
 import XCTest
 
 final class StorageServiceSecurityTests: XCTestCase {

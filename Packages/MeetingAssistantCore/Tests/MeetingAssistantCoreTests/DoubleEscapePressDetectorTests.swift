@@ -1,5 +1,5 @@
-import XCTest
 @testable import MeetingAssistantCore
+import XCTest
 
 final class DoubleEscapePressDetectorTests: XCTestCase {
     func testSecondPressWithinWindowConfirmsDoublePress() {

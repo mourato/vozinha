@@ -55,7 +55,7 @@ struct ActionIconButton: View {
         helpKey: String,
         keyboardShortcut: KeyEquivalent? = nil,
         style: Style = .neutral,
-        action: @escaping @Sendable () -> Void
+        action: @escaping @Sendable () -> Void,
     ) {
         self.symbol = symbol
         self.helpKey = helpKey
@@ -114,7 +114,7 @@ struct KeyboardShortcutModifier: ViewModifier {
     }
 }
 
-struct RecordingIndicatorPostProcessingWarningDescriptor: Equatable {
+struct RecordingPostProcessingWarningDescriptor: Equatable {
     let issue: EnhancementsInferenceReadinessIssue
     let mode: IntelligenceKernelMode
 
@@ -178,7 +178,7 @@ enum FloatingRecordingIndicatorViewUtilities {
 
     static func confirmationMessageWidth(for size: FloatingRecordingIndicatorView.IndicatorSize) -> CGFloat {
         let sample = "recording_indicator.auto_meeting_confirmation.countdown".localized(
-            with: confirmationSampleSeconds
+            with: confirmationSampleSeconds,
         ) as NSString
         return ceil(sample.size(withAttributes: [.font: confirmationFont(for: size)]).width)
     }
@@ -256,18 +256,18 @@ enum FloatingRecordingIndicatorViewUtilities {
 
     static func processingStatusWidth(
         for size: FloatingRecordingIndicatorView.IndicatorSize,
-        processingSnapshot: RecordingIndicatorProcessingSnapshot?
+        processingSnapshot: RecordingIndicatorProcessingSnapshot?,
     ) -> CGFloat {
         let textWidth = ceil(
             (processingText(for: processingSnapshot) as NSString).size(
-                withAttributes: [.font: processingStatusFont(for: size)]
-            ).width
+                withAttributes: [.font: processingStatusFont(for: size)],
+            ).width,
         )
         let dotsWidth: CGFloat = 15
         let totalWidth = textWidth + 6 + dotsWidth
         return min(
             max(totalWidth, processingStatusMinWidth(for: size)),
-            processingStatusMaxWidth(for: size)
+            processingStatusMaxWidth(for: size),
         )
     }
 
@@ -310,8 +310,8 @@ enum FloatingRecordingIndicatorViewUtilities {
     static func defaultProcessingSnapshot(
         for renderState: RecordingIndicatorRenderState = RecordingIndicatorRenderState(
             mode: .processing,
-            kind: .dictation
-        )
+            kind: .dictation,
+        ),
     ) -> RecordingIndicatorProcessingSnapshot {
         let step: RecordingIndicatorProcessingStep = switch renderState.kind {
         case .assistant, .assistantIntegration:
@@ -338,7 +338,7 @@ enum FloatingRecordingIndicatorViewUtilities {
     static func clusterWidth(
         for size: FloatingRecordingIndicatorView.IndicatorSize,
         renderState: RecordingIndicatorRenderState,
-        processingSnapshot: RecordingIndicatorProcessingSnapshot? = nil
+        processingSnapshot: RecordingIndicatorProcessingSnapshot? = nil,
     ) -> CGFloat {
         var width = AppDesignSystem.Layout.recordingIndicatorDotSize + contentSpacing(for: size)
 
@@ -359,7 +359,7 @@ enum FloatingRecordingIndicatorViewUtilities {
     static func externalAuxiliaryControlCount(
         for size: FloatingRecordingIndicatorView.IndicatorSize,
         renderState: RecordingIndicatorRenderState,
-        layout: RecordingIndicatorOverlayLayout
+        layout: RecordingIndicatorOverlayLayout,
     ) -> Int {
         if usesInlineDictationSelectors(for: size, renderState: renderState) {
             return 0
@@ -372,7 +372,7 @@ enum FloatingRecordingIndicatorViewUtilities {
         renderState: RecordingIndicatorRenderState,
         layout: RecordingIndicatorOverlayLayout,
         expanded: Bool,
-        processingSnapshot: RecordingIndicatorProcessingSnapshot? = nil
+        processingSnapshot: RecordingIndicatorProcessingSnapshot? = nil,
     ) -> CGFloat {
         if case .confirmingAutomaticMeetingStart = renderState.mode {
             return confirmationPillWidth(for: size)
@@ -398,7 +398,7 @@ enum FloatingRecordingIndicatorViewUtilities {
 
             if usesInlineDictationSelectors(
                 for: size,
-                renderState: renderState
+                renderState: renderState,
             ) {
                 if layout.showsPromptSelector {
                     elementWidths.append(dividerWidth)
@@ -422,7 +422,7 @@ enum FloatingRecordingIndicatorViewUtilities {
 
     static func promptIconImage(
         symbolName: String,
-        size: FloatingRecordingIndicatorView.IndicatorSize
+        size: FloatingRecordingIndicatorView.IndicatorSize,
     ) -> NSImage {
         let fallbackName = "doc.text"
         let symbolConfig = NSImage.SymbolConfiguration(pointSize: promptIconSize(for: size), weight: .medium)
@@ -438,7 +438,7 @@ enum FloatingRecordingIndicatorViewUtilities {
 
     static func languageFlagImage(
         _ emoji: String,
-        size: FloatingRecordingIndicatorView.IndicatorSize
+        size: FloatingRecordingIndicatorView.IndicatorSize,
     ) -> NSImage {
         emojiImage(emoji, pointSize: languageFlagPointSize(for: size))
     }
@@ -513,7 +513,7 @@ enum FloatingRecordingIndicatorViewUtilities {
 
     static func superFooterLeadingWidth(
         layout: RecordingIndicatorOverlayLayout,
-        renderState: RecordingIndicatorRenderState
+        renderState: RecordingIndicatorRenderState,
     ) -> CGFloat {
         guard renderState.mode == .recording else { return 0 }
 
@@ -539,7 +539,7 @@ enum FloatingRecordingIndicatorViewUtilities {
 
     static func superShowsFooter(
         layout: RecordingIndicatorOverlayLayout,
-        renderState: RecordingIndicatorRenderState
+        renderState: RecordingIndicatorRenderState,
     ) -> Bool {
         superFooterLeadingWidth(layout: layout, renderState: renderState) > 0
             || superActionGroupWidth(for: renderState) > 0
@@ -547,7 +547,7 @@ enum FloatingRecordingIndicatorViewUtilities {
 
     static func superBodyWidth(
         renderState: RecordingIndicatorRenderState,
-        processingSnapshot: RecordingIndicatorProcessingSnapshot? = nil
+        processingSnapshot: RecordingIndicatorProcessingSnapshot? = nil,
     ) -> CGFloat {
         (AppDesignSystem.Layout.recordingIndicatorSuperHorizontalPadding * 2)
             + clusterWidth(for: .super, renderState: renderState, processingSnapshot: processingSnapshot)
@@ -555,7 +555,7 @@ enum FloatingRecordingIndicatorViewUtilities {
 
     static func superFooterWidth(
         layout: RecordingIndicatorOverlayLayout,
-        renderState: RecordingIndicatorRenderState
+        renderState: RecordingIndicatorRenderState,
     ) -> CGFloat {
         guard superShowsFooter(layout: layout, renderState: renderState) else { return 0 }
 
@@ -572,7 +572,7 @@ enum FloatingRecordingIndicatorViewUtilities {
     static func superCardWidth(
         layout: RecordingIndicatorOverlayLayout,
         renderState: RecordingIndicatorRenderState,
-        processingSnapshot: RecordingIndicatorProcessingSnapshot? = nil
+        processingSnapshot: RecordingIndicatorProcessingSnapshot? = nil,
     ) -> CGFloat {
         if case .confirmingAutomaticMeetingStart = renderState.mode {
             return confirmationPillWidth(for: .super)
@@ -580,13 +580,13 @@ enum FloatingRecordingIndicatorViewUtilities {
 
         return max(
             superBodyWidth(renderState: renderState, processingSnapshot: processingSnapshot),
-            superFooterWidth(layout: layout, renderState: renderState)
+            superFooterWidth(layout: layout, renderState: renderState),
         )
     }
 
     static func superCardHeight(
         layout: RecordingIndicatorOverlayLayout,
-        renderState: RecordingIndicatorRenderState
+        renderState: RecordingIndicatorRenderState,
     ) -> CGFloat {
         let baseHeight = (AppDesignSystem.Layout.recordingIndicatorSuperVerticalPadding * 2)
             + waveformHeight(for: .super)
@@ -622,7 +622,7 @@ enum FloatingRecordingIndicatorViewUtilities {
             x: 0,
             y: (imageSize.height - pointSize) / 2,
             width: imageSize.width * 1.06,
-            height: pointSize * 1.06
+            height: pointSize * 1.06,
         )
         attributed.draw(in: drawRect)
 
@@ -633,7 +633,7 @@ enum FloatingRecordingIndicatorViewUtilities {
 
     private static func usesInlineDictationSelectors(
         for size: FloatingRecordingIndicatorView.IndicatorSize,
-        renderState: RecordingIndicatorRenderState
+        renderState: RecordingIndicatorRenderState,
     ) -> Bool {
         renderState.mode == .recording
             && renderState.kind == .dictation
@@ -646,7 +646,7 @@ enum FloatingRecordingIndicatorViewUtilities {
         symbol: "arrow.up",
         helpKey: "recording_indicator.stop.help",
         keyboardShortcut: nil,
-        style: .neutral
+        style: .neutral,
     ) {
         // Preview only
     }

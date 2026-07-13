@@ -27,7 +27,7 @@ final class MeetingSettingsNavigationStateTests: XCTestCase {
         for route in drillDownRoutes {
             var state = MeetingSettingsNavigationState(
                 currentRoute: .root,
-                forwardRoute: route
+                forwardRoute: route,
             )
 
             _ = state.goForward()
@@ -42,7 +42,7 @@ final class MeetingSettingsNavigationStateTests: XCTestCase {
     func testOpenMovesToRouteAndClearsForwardRoute() {
         var state = MeetingSettingsNavigationState(
             currentRoute: .root,
-            forwardRoute: .export
+            forwardRoute: .export,
         )
 
         state.open(.meetingPrompts)

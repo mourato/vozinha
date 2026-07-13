@@ -1,10 +1,11 @@
-import XCTest
 @testable import MeetingAssistantCore
 @testable import MeetingAssistantCoreInfrastructure
 @testable import MeetingAssistantCoreUI
+import XCTest
 
 @MainActor
 final class AssistantAIPhaseTests: XCTestCase {
+
     // MARK: - assistantPromptInstructions
 
     func testPromptInstructions_IntegrationDispatch_NoBaseInstructions() {
@@ -12,7 +13,7 @@ final class AssistantAIPhaseTests: XCTestCase {
         let result = phase.assistantPromptInstructions(
             baseInstructions: nil,
             voiceCommand: "summarize this",
-            executionFlow: .integrationDispatch
+            executionFlow: .integrationDispatch,
         )
         XCTAssertTrue(result.contains("You are preparing text that will be sent to another AI assistant"))
         XCTAssertTrue(result.contains("User command:\nsummarize this"))
@@ -24,7 +25,7 @@ final class AssistantAIPhaseTests: XCTestCase {
         let result = phase.assistantPromptInstructions(
             baseInstructions: "Be concise",
             voiceCommand: "summarize this",
-            executionFlow: .integrationDispatch
+            executionFlow: .integrationDispatch,
         )
         XCTAssertTrue(result.contains("You are preparing text that will be sent to another AI assistant"))
         XCTAssertTrue(result.contains("Additional user instructions:\nBe concise"))
@@ -36,7 +37,7 @@ final class AssistantAIPhaseTests: XCTestCase {
         let result = phase.assistantPromptInstructions(
             baseInstructions: nil,
             voiceCommand: "replace with hello",
-            executionFlow: .assistantMode
+            executionFlow: .assistantMode,
         )
         XCTAssertEqual(result, "replace with hello")
     }
@@ -46,7 +47,7 @@ final class AssistantAIPhaseTests: XCTestCase {
         let result = phase.assistantPromptInstructions(
             baseInstructions: "Translate to French",
             voiceCommand: "hello",
-            executionFlow: .assistantMode
+            executionFlow: .assistantMode,
         )
         XCTAssertTrue(result.contains("Translate to French"))
         XCTAssertTrue(result.contains("Comando do usuário:\nhello"))
@@ -57,7 +58,7 @@ final class AssistantAIPhaseTests: XCTestCase {
         let result = phase.assistantPromptInstructions(
             baseInstructions: nil,
             voiceCommand: "  hello  ",
-            executionFlow: .assistantMode
+            executionFlow: .assistantMode,
         )
         XCTAssertEqual(result, "hello")
     }
@@ -91,11 +92,11 @@ final class AssistantAIPhaseTests: XCTestCase {
         let phase = makePhase(postProcessingService: postProcessingService) { script, input, _ in
             switch script {
             case "before":
-                return "normalized: \(input)"
+                "normalized: \(input)"
             case "after":
-                return "after: \(input)"
+                "after: \(input)"
             default:
-                return input
+                input
             }
         }
 
@@ -105,8 +106,8 @@ final class AssistantAIPhaseTests: XCTestCase {
             executionFlow: .assistantMode,
             selectedIntegration: makeIntegrationConfig(
                 promptInstructions: "Keep it short",
-                advancedScript: .init(stage: .beforeAI, script: "before")
-            )
+                advancedScript: .init(stage: .beforeAI, script: "before"),
+            ),
         )
 
         XCTAssertEqual(result, "Processed: source transcript")
@@ -126,15 +127,15 @@ final class AssistantAIPhaseTests: XCTestCase {
             sourceText: "source transcript",
             command: "summarize this",
             executionFlow: .integrationDispatch,
-            selectedIntegration: makeIntegrationConfig(promptInstructions: "Be concise")
+            selectedIntegration: makeIntegrationConfig(promptInstructions: "Be concise"),
         )
 
         XCTAssertEqual(result, "Processed: source transcript")
         XCTAssertEqual(postProcessingService.lastSystemPromptOverride, AIPromptTemplates.assistantSystemPrompt)
         XCTAssertTrue(
             postProcessingService.lastPromptText?.contains(
-                "You are preparing text that will be sent to another AI assistant"
-            ) == true
+                "You are preparing text that will be sent to another AI assistant",
+            ) == true,
         )
         XCTAssertTrue(postProcessingService.lastPromptText?.contains("Additional user instructions:\nBe concise") == true)
     }
@@ -151,8 +152,8 @@ final class AssistantAIPhaseTests: XCTestCase {
                 executionFlow: .assistantMode,
                 selectedIntegration: makeIntegrationConfig(
                     promptInstructions: nil,
-                    advancedScript: .init(stage: .beforeAI, script: "before")
-                )
+                    advancedScript: .init(stage: .beforeAI, script: "before"),
+                ),
             )
             XCTFail("Expected processing failure")
         } catch {
@@ -164,19 +165,17 @@ final class AssistantAIPhaseTests: XCTestCase {
 
     private func makePhase(
         postProcessingService: MockPostProcessingService = MockPostProcessingService(),
-        runScript: @escaping @Sendable (_ script: String, _ input: String, _ timeoutSeconds: UInt64) async throws -> String? = {
-            _, input, _ in input
-        }
+        runScript: @escaping @Sendable (_ script: String, _ input: String, _ timeoutSeconds: UInt64) async throws -> String? = { _, input, _ in input },
     ) -> AssistantAIPhase {
         AssistantAIPhase(
             postProcessingService: postProcessingService,
-            runScript: runScript
+            runScript: runScript,
         )
     }
 
     private func makeIntegrationConfig(
         promptInstructions: String?,
-        advancedScript: AssistantIntegrationScriptConfig? = nil
+        advancedScript: AssistantIntegrationScriptConfig? = nil,
     ) -> AssistantIntegrationConfig {
         AssistantIntegrationConfig(
             id: UUID(),
@@ -192,7 +191,7 @@ final class AssistantAIPhaseTests: XCTestCase {
             modifierShortcutGesture: nil,
             advancedScript: advancedScript,
             showsPromptSelectorInOverlay: false,
-            showsLanguageSelectorInOverlay: false
+            showsLanguageSelectorInOverlay: false,
         )
     }
 }

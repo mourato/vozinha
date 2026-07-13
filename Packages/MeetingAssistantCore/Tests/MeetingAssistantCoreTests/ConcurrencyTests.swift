@@ -5,6 +5,7 @@ import Combine
 import XCTest
 
 final class ConcurrencyTests: XCTestCase {
+
     // MARK: - RecordingActor Isolation Tests
 
     func testRecordingActor_Isolation_ConcurrentStateAccess() async {

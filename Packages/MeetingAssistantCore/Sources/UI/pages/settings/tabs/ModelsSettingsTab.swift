@@ -28,31 +28,31 @@ public struct ModelsSettingsTab: View {
             if showsHeader {
                 SettingsSectionHeader(
                     title: "settings.section.models".localized,
-                    description: "settings.models.description".localized
+                    description: "settings.models.description".localized,
                 )
             }
 
             modelHubSectionIntro(
                 title: "settings.models.ai_provider_models".localized,
                 description: "settings.models.ai_provider_models_desc".localized,
-                icon: "sparkles"
+                icon: "sparkles",
             )
 
             EnhancementsProviderModelsPage(
                 viewModel: aiSettingsViewModel,
-                postProcessingViewModel: postProcessingViewModel
+                postProcessingViewModel: postProcessingViewModel,
             )
 
             modelHubSectionIntro(
                 title: "settings.models.transcription_models".localized,
                 description: "settings.models.transcription_models_desc".localized,
-                icon: "waveform"
+                icon: "waveform",
             )
 
             ServiceSettingsContent(
                 viewModel: viewModel,
                 includeTranscriptionProviderSection: false,
-                includeMeetingTranscriptionSection: false
+                includeMeetingTranscriptionSection: false,
             )
         }
     }

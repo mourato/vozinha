@@ -12,7 +12,7 @@ extension RecordingManager {
     /// - Parameter selectionOverride: Optional provider/model override for this retry.
     public func retryTranscription(
         for transcription: Transcription,
-        selectionOverride: TranscriptionProviderSelection? = nil
+        selectionOverride: TranscriptionProviderSelection? = nil,
     ) async {
         guard !isTranscribing else {
             AppLogger.info("Already transcribing", category: .recordingManager)
@@ -24,7 +24,7 @@ extension RecordingManager {
         await runRetryTranscription(
             audioURL: audioURL,
             transcription: transcription,
-            selectionOverride: selectionOverride
+            selectionOverride: selectionOverride,
         )
     }
 
@@ -47,7 +47,7 @@ extension RecordingManager {
     func runRetryTranscription(
         audioURL: URL,
         transcription: Transcription,
-        selectionOverride: TranscriptionProviderSelection? = nil
+        selectionOverride: TranscriptionProviderSelection? = nil,
     ) async {
         let capturePurpose = transcription.meeting.capturePurpose
         let configuredSelection = configuredRetrySelection(for: capturePurpose)
@@ -56,21 +56,21 @@ extension RecordingManager {
             capturePurpose: capturePurpose,
             configuredSelection: configuredSelection,
             transcriptionAPIKeyExists: transcriptionAPIKeyExists,
-            isLocalModelReady: isLocalRetryModelReady
+            isLocalModelReady: isLocalRetryModelReady,
         )
         let effectiveSelectionOverride = RetryTranscriptionSelectionMatrix.selectionOverrideIfNeeded(
             requestedOverride: selectionOverride,
             capturePurpose: capturePurpose,
             configuredSelection: configuredSelection,
             transcriptionAPIKeyExists: transcriptionAPIKeyExists,
-            isLocalModelReady: isLocalRetryModelReady
+            isLocalModelReady: isLocalRetryModelReady,
         )
         let shouldRemoveSilence = shouldRemoveSilenceBeforeRetryTranscription(
-            effectiveSelection: effectiveSelection
+            effectiveSelection: effectiveSelection,
         )
         let preparedAudio = await prepareAudioForTranscription(
             audioURL: audioURL,
-            allowSilenceRemoval: shouldRemoveSilence
+            allowSilenceRemoval: shouldRemoveSilence,
         )
         defer {
             cleanupPreparedTranscriptionAudio(preparedAudio)
@@ -81,7 +81,7 @@ extension RecordingManager {
         let audioDuration = await getAudioDuration(from: preparedAudio.transcriptionURL)
         transcriptionStatus.beginTranscription(audioDuration: audioDuration)
         RecordingIndicatorProcessingStateStore.shared.update(
-            snapshot: RecordingIndicatorProcessingSnapshot(step: .preparingAudio, progressPercent: 0)
+            snapshot: RecordingIndicatorProcessingSnapshot(step: .preparingAudio, progressPercent: 0),
         )
 
         let retryStartedAt = Date()
@@ -91,17 +91,17 @@ extension RecordingManager {
                 transcription: transcription,
                 audioDuration: audioDuration,
                 selectionOverride: effectiveSelectionOverride,
-                effectiveSelection: effectiveSelection
+                effectiveSelection: effectiveSelection,
             )
             try await storage.saveTranscription(updated)
             await persistRetryPerformanceAttempts(
                 updatedTranscription: updated,
                 effectiveSelection: effectiveSelection,
                 startedAt: retryStartedAt,
-                completedAt: Date()
+                completedAt: Date(),
             )
             RecordingIndicatorProcessingStateStore.shared.update(
-                snapshot: RecordingIndicatorProcessingSnapshot(step: .finalizingResult, progressPercent: 100)
+                snapshot: RecordingIndicatorProcessingSnapshot(step: .finalizingResult, progressPercent: 100),
             )
             transcriptionStatus.completeTranscription(success: true)
             notifySuccess(for: updated)
@@ -113,7 +113,7 @@ extension RecordingManager {
                 startedAt: retryStartedAt,
                 completedAt: Date(),
                 audioDuration: audioDuration,
-                error: error
+                error: error,
             )
             cancelEstimatedPostProcessingProgress()
             handleTranscriptionError(error)
@@ -128,11 +128,11 @@ extension RecordingManager {
         transcription: Transcription,
         audioDuration: Double?,
         selectionOverride: TranscriptionProviderSelection? = nil,
-        effectiveSelection: TranscriptionProviderSelection
+        effectiveSelection: TranscriptionProviderSelection,
     ) async throws -> Transcription {
         try await performHealthCheck(
             capturePurpose: transcription.meeting.capturePurpose,
-            effectiveSelection: effectiveSelection
+            effectiveSelection: effectiveSelection,
         )
 
         let transcriptionStart = Date()
@@ -141,17 +141,17 @@ extension RecordingManager {
             audioURL: audioURL,
             diarizationEnabledOverride: diarizationEnabledOverride,
             capturePurpose: transcription.meeting.capturePurpose,
-            selectionOverride: selectionOverride
+            selectionOverride: selectionOverride,
         )
         let transcriptionProcessingDuration = Date().timeIntervalSince(transcriptionStart)
         let settings = AppSettingsStore.shared
         let replacedText = VocabularyReplacementRule.apply(
             rules: settings.vocabularyReplacementRules,
-            to: response.text
+            to: response.text,
         )
         guard !replacedText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
             throw TranscriptionError.transcriptionFailed(
-                PostProcessingError.emptyTranscription.localizedDescription
+                PostProcessingError.emptyTranscription.localizedDescription,
             )
         }
         let wordCount = replacedText.split { $0.isWhitespace || $0.isNewline }.count
@@ -163,11 +163,11 @@ extension RecordingManager {
                 "words": String(wordCount),
                 "segments": String(response.segments.count),
                 "durationSeconds": String(response.durationSeconds),
-            ]
+            ],
         )
         let replacedSegments = VocabularyReplacementRule.apply(
             rules: settings.vocabularyReplacementRules,
-            to: response.segments
+            to: response.segments,
         )
         let qualityProfile = transcriptPreprocessor.preprocess(
             transcriptionText: replacedText,
@@ -177,14 +177,14 @@ extension RecordingManager {
                     speaker: $0.speaker,
                     text: $0.text,
                     startTime: $0.startTime,
-                    endTime: $0.endTime
+                    endTime: $0.endTime,
                 )
             },
-            asrConfidenceScore: response.confidenceScore
+            asrConfidenceScore: response.confidenceScore,
         )
         let includeQualityMetadata = !isDictationMode(
             for: transcription.meeting,
-            capturePurposeOverride: transcription.meeting.capturePurpose
+            capturePurposeOverride: transcription.meeting.capturePurpose,
         )
         let resolvedPostProcessingContext = PostProcessingSystemContextMetadata.augment(postProcessingContext)
         let postProcessingInput = mergedPostProcessingInput(
@@ -192,7 +192,7 @@ extension RecordingManager {
             qualityProfile: qualityProfile,
             context: resolvedPostProcessingContext,
             meetingNotes: transcription.contextItems.first(where: { $0.source == .meetingNotes })?.text,
-            includeQualityMetadata: includeQualityMetadata
+            includeQualityMetadata: includeQualityMetadata,
         )
 
         let meeting = updatedMeeting(for: transcription.meeting, audioDuration: audioDuration)
@@ -200,7 +200,7 @@ extension RecordingManager {
             postProcessingInput: postProcessingInput,
             meeting: meeting,
             qualityProfile: qualityProfile,
-            capturePurposeOverride: transcription.meeting.capturePurpose
+            capturePurposeOverride: transcription.meeting.capturePurpose,
         )
         let resolvedMeeting = meetingWithResolvedTitle(meeting, canonicalSummary: postProcessing.canonicalSummary)
 
@@ -226,12 +226,12 @@ extension RecordingManager {
             postProcessingDuration: postProcessing.duration,
             postProcessingModel: postProcessing.model,
             meetingType: transcription.meeting.type.rawValue,
-            postProcessingFailureReason: postProcessing.failureReason
+            postProcessingFailureReason: postProcessing.failureReason,
         )
     }
 
     func shouldRemoveSilenceBeforeRetryTranscription(
-        effectiveSelection: TranscriptionProviderSelection
+        effectiveSelection: TranscriptionProviderSelection,
     ) -> Bool {
         !effectiveSelection.provider.usesRemoteInference
     }
@@ -240,10 +240,10 @@ extension RecordingManager {
         updatedTranscription: Transcription,
         effectiveSelection: TranscriptionProviderSelection,
         startedAt: Date,
-        completedAt: Date
+        completedAt: Date,
     ) async {
         let transcriptionIdentity = effectiveSelection.provider.modelPerformanceIdentity(
-            modelID: effectiveSelection.selectedModel
+            modelID: effectiveSelection.selectedModel,
         )
         let transcriptionAttempt = ModelPerformanceAttempt(
             transcriptionID: updatedTranscription.id,
@@ -259,7 +259,7 @@ extension RecordingManager {
             inputUTF8Bytes: 0,
             inputCharacterCount: 0,
             outputCharacterCount: updatedTranscription.rawText.count,
-            failureReason: nil
+            failureReason: nil,
         )
         try? await storage.saveModelPerformanceAttempt(transcriptionAttempt)
 
@@ -283,7 +283,7 @@ extension RecordingManager {
             inputUTF8Bytes: updatedTranscription.rawText.lengthOfBytes(using: .utf8),
             inputCharacterCount: updatedTranscription.rawText.count,
             outputCharacterCount: updatedTranscription.processedContent?.count ?? 0,
-            failureReason: updatedTranscription.postProcessingFailureReason
+            failureReason: updatedTranscription.postProcessingFailureReason,
         )
         try? await storage.saveModelPerformanceAttempt(postProcessingAttempt)
     }
@@ -294,10 +294,10 @@ extension RecordingManager {
         startedAt: Date,
         completedAt: Date,
         audioDuration: Double?,
-        error: Error
+        error: Error,
     ) async {
         let identity = effectiveSelection.provider.modelPerformanceIdentity(
-            modelID: effectiveSelection.selectedModel
+            modelID: effectiveSelection.selectedModel,
         )
         let attempt = ModelPerformanceAttempt(
             transcriptionID: transcription.id,
@@ -313,7 +313,7 @@ extension RecordingManager {
             inputUTF8Bytes: 0,
             inputCharacterCount: 0,
             outputCharacterCount: 0,
-            failureReason: error.localizedDescription
+            failureReason: error.localizedDescription,
         )
         try? await storage.saveModelPerformanceAttempt(attempt)
     }
@@ -330,7 +330,7 @@ extension RecordingManager {
         qualityProfile: TranscriptionQualityProfile,
         context: String?,
         meetingNotes: String?,
-        includeQualityMetadata: Bool
+        includeQualityMetadata: Bool,
     ) -> String {
         var blocks = [transcriptionText]
         if includeQualityMetadata {
@@ -347,7 +347,7 @@ extension RecordingManager {
                     <MEETING_NOTES>
                     \(sanitizedMeetingNotes)
                     </MEETING_NOTES>
-                    """
+                    """,
                 )
             }
         }
@@ -362,7 +362,7 @@ extension RecordingManager {
                     <CONTEXT_METADATA>
                     \(sanitizedContext)
                     </CONTEXT_METADATA>
-                    """
+                    """,
                 )
             }
         }
@@ -392,13 +392,13 @@ extension RecordingManager {
 
     func recalibrateCanonicalSummary(
         _ summary: CanonicalSummary,
-        with qualityProfile: TranscriptionQualityProfile
+        with qualityProfile: TranscriptionQualityProfile,
     ) -> CanonicalSummary {
         let trustFlags = CanonicalSummary.TrustFlags(
             isGroundedInTranscript: summary.trustFlags.isGroundedInTranscript,
             containsSpeculation: summary.trustFlags.containsSpeculation || qualityProfile.containsUncertainty,
             isHumanReviewed: summary.trustFlags.isHumanReviewed,
-            confidenceScore: min(summary.trustFlags.confidenceScore, qualityProfile.overallConfidence)
+            confidenceScore: min(summary.trustFlags.confidenceScore, qualityProfile.overallConfidence),
         )
 
         return CanonicalSummary(
@@ -410,13 +410,13 @@ extension RecordingManager {
             decisions: summary.decisions,
             actionItems: summary.actionItems,
             openQuestions: summary.openQuestions,
-            trustFlags: trustFlags
+            trustFlags: trustFlags,
         )
     }
 
     func meetingWithResolvedTitle(
         _ meeting: Meeting,
-        canonicalSummary: CanonicalSummary?
+        canonicalSummary: CanonicalSummary?,
     ) -> Meeting {
         guard meeting.supportsMeetingConversation else {
             return meeting.sanitizedForPersistence()
@@ -450,7 +450,7 @@ extension RecordingManager {
 
     func resolveInputSourceLabel(
         for meeting: Meeting,
-        recordingSource: RecordingSource? = nil
+        recordingSource: RecordingSource? = nil,
     ) -> String? {
         if meeting.app == .importedFile {
             return "meeting.app.imported".localized

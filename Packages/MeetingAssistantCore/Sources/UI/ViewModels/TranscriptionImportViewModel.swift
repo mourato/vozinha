@@ -18,7 +18,7 @@ public class TranscriptionImportViewModel: ObservableObject {
 
     public init(
         recordingManager: RecordingManager = .shared,
-        onImportSuccess: @escaping () async -> Void
+        onImportSuccess: @escaping () async -> Void,
     ) {
         self.recordingManager = recordingManager
         self.onImportSuccess = onImportSuccess

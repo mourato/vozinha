@@ -8,7 +8,7 @@ public struct ActivitySettingsTab: View {
     @MainActor
     public init(
         navigationState: Binding<ActivitySettingsNavigationState> = .constant(ActivitySettingsNavigationState()),
-        transcriptionsSearchText: Binding<String> = .constant("")
+        transcriptionsSearchText: Binding<String> = .constant(""),
     ) {
         _navigationState = navigationState
         _transcriptionsSearchText = transcriptionsSearchText
@@ -27,7 +27,7 @@ public struct ActivitySettingsTab: View {
         case .history:
             TranscriptionsSettingsTab(
                 searchText: $transcriptionsSearchText,
-                navigationHistory: $navigationState.transcriptionsNavigationHistory
+                navigationHistory: $navigationState.transcriptionsNavigationHistory,
             )
         case .modelPerformance, .moreInsights, .eventDetail:
             MetricsDashboardSettingsTab(navigationState: $navigationState.metricsNavigationState)
@@ -40,7 +40,7 @@ public struct ActivitySettingsTab: View {
             openHistory: { navigationState.open(.history) },
             openMoreInsights: { navigationState.open(.moreInsights) },
             openPerformance: { navigationState.open(.modelPerformance) },
-            openEventDetail: { navigationState.open(.eventDetail($0)) }
+            openEventDetail: { navigationState.open(.eventDetail($0)) },
         )
         .task {
             await viewModel.load()

@@ -16,7 +16,7 @@ public struct ShortcutSettingsSection<SettingsContent: View>: View {
         groupTitle: String,
         groupIcon: String = "keyboard",
         descriptionText: String,
-        @ViewBuilder settingsContent: @escaping () -> SettingsContent
+        @ViewBuilder settingsContent: @escaping () -> SettingsContent,
     ) {
         self.groupTitle = groupTitle
         self.groupIcon = groupIcon
@@ -32,10 +32,10 @@ public struct ShortcutSettingsSection<SettingsContent: View>: View {
                 if !helperMessage.isEmpty {
                     DSInfoPopoverButton(
                         title: groupTitle,
-                        message: helperMessage
+                        message: helperMessage,
                     )
                 }
-            }
+            },
         ) {
             settingsContent()
         }
@@ -51,7 +51,7 @@ public struct ShortcutSettingsSection<SettingsContent: View>: View {
 #Preview {
     ShortcutSettingsSection(
         groupTitle: "Shortcuts",
-        descriptionText: "Configure the shortcut behavior."
+        descriptionText: "Configure the shortcut behavior.",
     ) {
         Text("In-house shortcut editor")
             .font(.caption)

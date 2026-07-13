@@ -17,7 +17,7 @@ public struct AutomaticMeetingRecordingConfirmation: Sendable, Equatable {
         detectedContext: ResolvedCaptureContext,
         detectedAt: Date,
         deadline: Date,
-        duration: TimeInterval
+        duration: TimeInterval,
     ) {
         self.id = id
         self.meetingApp = meetingApp
@@ -32,7 +32,7 @@ enum AutoMeetingConfirmationPolicy {
     static func isIdleForAutomaticMeetingStart(
         currentCapturePurpose: CapturePurpose?,
         isRecording: Bool,
-        isStartingRecording: Bool
+        isStartingRecording: Bool,
     ) -> Bool {
         guard !isRecording, !isStartingRecording else { return false }
         return currentCapturePurpose == nil
@@ -85,7 +85,7 @@ extension RecordingManager {
                     if AutoMeetingConfirmationPolicy.isIdleForAutomaticMeetingStart(
                         currentCapturePurpose: self.currentCapturePurpose,
                         isRecording: self.isRecording,
-                        isStartingRecording: self.isStartingRecording
+                        isStartingRecording: self.isStartingRecording,
                     ) {
                         self.scheduleAutomaticMeetingRecordingConfirmation(for: detectedContext)
                     }
@@ -108,13 +108,13 @@ extension RecordingManager {
         automaticMeetingRecordingConfirmationTask?.cancel()
 
         let detectedAt = Date()
-        let duration = AppSettingsStore.shared.automaticMeetingRecordingConfirmationDelay.timeInterval
+        let duration = AppSettingsStore.shared.automaticAutomaticMeetingRecordingConfirmationDelay.timeInterval
         let confirmation = AutomaticMeetingRecordingConfirmation(
             meetingApp: detectedContext.meetingApp,
             detectedContext: detectedContext,
             detectedAt: detectedAt,
             deadline: detectedAt.addingTimeInterval(duration),
-            duration: duration
+            duration: duration,
         )
 
         automaticMeetingRecordingConfirmation = confirmation
@@ -141,7 +141,7 @@ extension RecordingManager {
         guard AutoMeetingConfirmationPolicy.isIdleForAutomaticMeetingStart(
             currentCapturePurpose: currentCapturePurpose,
             isRecording: isRecording,
-            isStartingRecording: isStartingRecording
+            isStartingRecording: isStartingRecording,
         ) else {
             cancelAutomaticMeetingRecordingConfirmation()
             return
@@ -152,7 +152,7 @@ extension RecordingManager {
         await startCapture(
             purpose: .meeting,
             requestedAt: confirmation.deadline,
-            triggerLabel: "recording.start.automatic_meeting_confirmation"
+            triggerLabel: "recording.start.automatic_meeting_confirmation",
         )
     }
 }

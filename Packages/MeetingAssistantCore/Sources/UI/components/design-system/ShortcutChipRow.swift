@@ -26,7 +26,7 @@ struct ShortcutChipRow: View {
                         .background(chipBackground)
                         .overlay(
                             Capsule()
-                                .stroke(AppDesignSystem.Colors.separator, lineWidth: 1)
+                                .stroke(AppDesignSystem.Colors.separator, lineWidth: 1),
                         )
                         .foregroundStyle(chipForeground)
                         .clipShape(Capsule())

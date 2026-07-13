@@ -8,7 +8,7 @@ final class MetricsDashboardNavigationTests: XCTestCase {
             eventIdentifier: "event-1",
             title: "Design Review",
             startDate: Date(timeIntervalSince1970: 1_700_000_000),
-            endDate: Date(timeIntervalSince1970: 1_700_003_600)
+            endDate: Date(timeIntervalSince1970: 1_700_003_600),
         )
 
         navigationState.open(.eventDetail(event))
@@ -24,7 +24,7 @@ final class MetricsDashboardNavigationTests: XCTestCase {
             eventIdentifier: "event-2",
             title: "Planning",
             startDate: Date(timeIntervalSince1970: 1_700_010_000),
-            endDate: Date(timeIntervalSince1970: 1_700_013_600)
+            endDate: Date(timeIntervalSince1970: 1_700_013_600),
         )
 
         navigationState.open(.eventDetail(event))

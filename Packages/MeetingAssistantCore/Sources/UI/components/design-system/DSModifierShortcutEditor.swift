@@ -27,7 +27,7 @@ public struct DSModifierShortcutEditor: View {
         shortcut: Binding<ShortcutDefinition?>,
         conflictMessage: String?,
         showsTitle: Bool = true,
-        maxInputWidth: CGFloat? = 200
+        maxInputWidth: CGFloat? = 200,
     ) {
         _shortcut = shortcut
         self.conflictMessage = conflictMessage
@@ -129,11 +129,11 @@ public struct DSModifierShortcutEditor: View {
         .frame(minHeight: 38)
         .background(
             RoundedRectangle(cornerRadius: AppDesignSystem.Layout.smallCornerRadius)
-                .fill(AppDesignSystem.Colors.textBackground)
+                .fill(AppDesignSystem.Colors.textBackground),
         )
         .overlay(
             RoundedRectangle(cornerRadius: AppDesignSystem.Layout.smallCornerRadius)
-                .strokeBorder(AppDesignSystem.Colors.separator, lineWidth: 1)
+                .strokeBorder(AppDesignSystem.Colors.separator, lineWidth: 1),
         )
         .contentShape(Rectangle())
     }
@@ -160,7 +160,7 @@ public struct DSModifierShortcutEditor: View {
                         .padding(AppDesignSystem.Layout.compactInset)
                         .background(
                             Circle()
-                                .fill(AppDesignSystem.Colors.secondaryFill)
+                                .fill(AppDesignSystem.Colors.secondaryFill),
                         )
                 }
                 .buttonStyle(.plain)
@@ -308,7 +308,7 @@ public struct DSModifierShortcutEditor: View {
     PreviewStateContainer(ShortcutDefinition?.none) { shortcut in
         DSModifierShortcutEditor(
             shortcut: shortcut,
-            conflictMessage: nil
+            conflictMessage: nil,
         )
         .padding()
         .frame(width: 560)
@@ -321,13 +321,13 @@ public struct DSModifierShortcutEditor: View {
             ShortcutDefinition(
                 modifiers: [.rightCommand],
                 primaryKey: nil,
-                trigger: .doubleTap
-            )
-        )
+                trigger: .doubleTap,
+            ),
+        ),
     ) { shortcut in
         DSModifierShortcutEditor(
             shortcut: shortcut,
-            conflictMessage: "settings.shortcuts.modifier.conflict".localized(with: "Meeting Shortcut")
+            conflictMessage: "settings.shortcuts.modifier.conflict".localized(with: "Meeting Shortcut"),
         )
         .padding()
         .frame(width: 560)

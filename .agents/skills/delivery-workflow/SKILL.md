@@ -75,7 +75,7 @@ Minimum expectation:
 - Prefer compact `*-agent` commands during iteration; use `make scope-check-agent ARGS="--dry-run --base main"` as a planning preview when the gate is unclear.
 - Reserve `make build-test` for milestone validation and mandatory merge gate.
 - Before push/merge, run:
-  - `make lint` (fast-fail before build)
+  - `make lint-strict` (fast-fail before build)
   - `make build-test`
 
 `make preflight` remains optional and does not replace lane merge gates.
@@ -92,7 +92,7 @@ Every handoff, commit, or PR must state:
 - known baseline failures and whether they are in scope;
 - review outcome, including unresolved Minor findings when applicable.
 
-Fast lane evidence must include scoped checks and the final `make scope-check` result. Full lane evidence must include scoped iteration checks, `make lint`, `make build-test`, and the thermo-nuclear semaforo review. A dry-run is planning evidence only and never substitutes for the executed gate.
+Fast lane evidence must include scoped checks and the final `make scope-check` result. Full lane evidence must include scoped iteration checks, `make lint-strict`, `make build-test`, and the thermo-nuclear semaforo review. A dry-run is planning evidence only and never substitutes for the executed gate.
 
 ## Scoped Validation
 
@@ -159,7 +159,7 @@ Agent delivery sequence:
 2. Run the smallest meaningful changed-path check: targeted tests, `make build-agent`, `make preview-check`, `make arch-check`, or `make guidance-check`.
 3. Before commit, the staged pre-commit hook runs SwiftFormat and SwiftLint for staged Swift files. Run `make lint-fix` when it fails; `SKIP_LINT=1` is an explicit emergency bypass.
 4. Before push, the pre-push hook runs `make scope-check-agent ARGS="--base <default-branch>"`. Set `PUSH_CHECK_VERBOSE=1` for human-readable output; `SKIP_TESTS=1` remains an emergency bypass.
-5. Full-lane changes still require `make lint` and `make build-test`. `STRICT_LINT=1 make lint-agent` currently reports the repository baseline and is not a merge gate until it passes.
+5. Full-lane changes require `make lint-strict` and `make build-test`. `make lint-strict-agent` is the compact equivalent; advisory SwiftLint warnings remain visible in its report.
 6. Use `make preflight-agent` or `make deliverable-gate` for release or high-confidence validation.
 
 Tests are intentionally not run before every commit: staged lint/format is the cheap mechanical gate, while tests remain scoped to behavior and lane/risk requirements.

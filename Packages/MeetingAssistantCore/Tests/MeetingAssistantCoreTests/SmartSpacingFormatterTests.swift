@@ -1,5 +1,5 @@
-import XCTest
 @testable import MeetingAssistantCore
+import XCTest
 
 final class SmartSpacingFormatterTests: XCTestCase {
     func testFormat_AddsLeadingSpaceWhenPreviousCharacterIsLetter() {
@@ -9,8 +9,8 @@ final class SmartSpacingFormatterTests: XCTestCase {
                 previousCharacter: "o",
                 nextCharacter: nil,
                 isEmptyDocument: false,
-                support: .supported
-            )
+                support: .supported,
+            ),
         )
 
         XCTAssertEqual(result, " friend")
@@ -23,8 +23,8 @@ final class SmartSpacingFormatterTests: XCTestCase {
                 previousCharacter: nil,
                 nextCharacter: "H",
                 isEmptyDocument: false,
-                support: .supported
-            )
+                support: .supported,
+            ),
         )
 
         XCTAssertEqual(result, "Hi there ")
@@ -37,8 +37,8 @@ final class SmartSpacingFormatterTests: XCTestCase {
                 previousCharacter: "e",
                 nextCharacter: nil,
                 isEmptyDocument: false,
-                support: .supported
-            )
+                support: .supported,
+            ),
         )
 
         XCTAssertEqual(result, " store today")
@@ -51,8 +51,8 @@ final class SmartSpacingFormatterTests: XCTestCase {
                 previousCharacter: ".",
                 nextCharacter: nil,
                 isEmptyDocument: false,
-                support: .supported
-            )
+                support: .supported,
+            ),
         )
 
         XCTAssertEqual(result, " Store today")
@@ -65,8 +65,8 @@ final class SmartSpacingFormatterTests: XCTestCase {
                 previousCharacter: ".",
                 nextCharacter: nil,
                 isEmptyDocument: false,
-                support: .supported
-            )
+                support: .supported,
+            ),
         )
 
         XCTAssertEqual(result, " Store today")
@@ -79,8 +79,8 @@ final class SmartSpacingFormatterTests: XCTestCase {
                 previousCharacter: "!",
                 nextCharacter: nil,
                 isEmptyDocument: false,
-                support: .supported
-            )
+                support: .supported,
+            ),
         )
 
         XCTAssertEqual(result, " Store today")
@@ -93,8 +93,8 @@ final class SmartSpacingFormatterTests: XCTestCase {
                 previousCharacter: "?",
                 nextCharacter: nil,
                 isEmptyDocument: false,
-                support: .supported
-            )
+                support: .supported,
+            ),
         )
 
         XCTAssertEqual(result, " Store today")
@@ -107,8 +107,8 @@ final class SmartSpacingFormatterTests: XCTestCase {
                 previousCharacter: ".",
                 nextCharacter: nil,
                 isEmptyDocument: false,
-                support: .supported
-            )
+                support: .supported,
+            ),
         )
 
         XCTAssertEqual(result, " Store today")
@@ -121,8 +121,8 @@ final class SmartSpacingFormatterTests: XCTestCase {
                 previousCharacter: nil,
                 nextCharacter: nil,
                 isEmptyDocument: true,
-                support: .supported
-            )
+                support: .supported,
+            ),
         )
 
         XCTAssertEqual(result, "Hello")
@@ -135,8 +135,8 @@ final class SmartSpacingFormatterTests: XCTestCase {
                 previousCharacter: nil,
                 nextCharacter: nil,
                 isEmptyDocument: false,
-                support: .permissionDenied
-            )
+                support: .permissionDenied,
+            ),
         )
 
         XCTAssertEqual(result, "Hello ")
@@ -149,8 +149,8 @@ final class SmartSpacingFormatterTests: XCTestCase {
                 previousCharacter: nil,
                 nextCharacter: nil,
                 isEmptyDocument: false,
-                support: .unsupported
-            )
+                support: .unsupported,
+            ),
         )
 
         XCTAssertEqual(result, "Hello")

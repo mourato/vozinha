@@ -4,7 +4,7 @@ import Foundation
 import XCTest
 
 @MainActor
-final class TranscriptIntelligenceAlignmentRegressionTests: XCTestCase {
+final class TranscriptAlignmentRegressionTests: XCTestCase {
     func testASRConfidencePropagatesToEntityQualityProfile() async throws {
         let transcriptionRepository = MeetingAssistantCoreDomain.MacroMockTranscriptionRepository()
         let storageRepository = makeMacroMockTranscriptionStorageRepository()
@@ -17,7 +17,7 @@ final class TranscriptIntelligenceAlignmentRegressionTests: XCTestCase {
                 durationSeconds: 1,
                 model: "test-model",
                 processedAt: "now",
-                confidenceScore: 0.91
+                confidenceScore: 0.91,
             )
         }
 
@@ -25,12 +25,12 @@ final class TranscriptIntelligenceAlignmentRegressionTests: XCTestCase {
 
         let useCase = TranscribeAudioUseCase(
             transcriptionRepository: transcriptionRepository,
-            transcriptionStorageRepository: storageRepository
+            transcriptionStorageRepository: storageRepository,
         )
 
         let transcription = try await useCase.execute(
             audioURL: URL(fileURLWithPath: "/tmp/test.wav"),
-            meeting: MeetingEntity(app: .googleMeet)
+            meeting: MeetingEntity(app: .googleMeet),
         )
 
         XCTAssertEqual(transcription.qualityProfile?.overallConfidence ?? -1, 0.91, accuracy: 0.001)
@@ -44,12 +44,12 @@ final class TranscriptIntelligenceAlignmentRegressionTests: XCTestCase {
         let first = preprocessor.preprocess(
             transcriptionText: original,
             segments: [],
-            asrConfidenceScore: 0.9
+            asrConfidenceScore: 0.9,
         )
         let second = preprocessor.preprocess(
             transcriptionText: first.normalizedTextForIntelligence,
             segments: [],
-            asrConfidenceScore: 0.9
+            asrConfidenceScore: 0.9,
         )
 
         XCTAssertEqual(first.normalizedTextForIntelligence, second.normalizedTextForIntelligence)
@@ -62,7 +62,7 @@ final class TranscriptIntelligenceAlignmentRegressionTests: XCTestCase {
         let profile = preprocessor.preprocess(
             transcriptionText: original,
             segments: [],
-            asrConfidenceScore: 0.88
+            asrConfidenceScore: 0.88,
         )
 
         let overlap = tokenOverlap(lhs: original, rhs: profile.normalizedTextForIntelligence)
@@ -76,14 +76,14 @@ final class TranscriptIntelligenceAlignmentRegressionTests: XCTestCase {
                 speaker: "A",
                 text: "We should [inaudible] proceed ???",
                 startTime: 2,
-                endTime: 5
+                endTime: 5,
             ),
         ]
 
         let profile = preprocessor.preprocess(
             transcriptionText: "We should [inaudible] proceed ???",
             segments: segments,
-            asrConfidenceScore: 0.60
+            asrConfidenceScore: 0.60,
         )
 
         let reasons = Set(profile.markers.map(\.reason))
@@ -105,7 +105,7 @@ final class TranscriptIntelligenceAlignmentRegressionTests: XCTestCase {
                 durationSeconds: 1,
                 model: "test-model",
                 processedAt: "now",
-                confidenceScore: 0.89
+                confidenceScore: 0.89,
             )
         }
 
@@ -115,7 +115,7 @@ final class TranscriptIntelligenceAlignmentRegressionTests: XCTestCase {
             return DomainPostProcessingResult(
                 processedText: "ok",
                 canonicalSummary: CanonicalSummary(title: "ok", summary: "ok"),
-                outputState: .structured
+                outputState: .structured,
             )
         }
         storageRepository.saveTranscriptionHandler = { _ in }
@@ -123,7 +123,7 @@ final class TranscriptIntelligenceAlignmentRegressionTests: XCTestCase {
         let useCase = TranscribeAudioUseCase(
             transcriptionRepository: transcriptionRepository,
             transcriptionStorageRepository: storageRepository,
-            postProcessingRepository: postProcessingRepository
+            postProcessingRepository: postProcessingRepository,
         )
 
         _ = try await useCase.execute(
@@ -132,7 +132,7 @@ final class TranscriptIntelligenceAlignmentRegressionTests: XCTestCase {
             vocabularyReplacementRules: [.init(find: "open ay eye", replace: "OpenAI")],
             applyPostProcessing: true,
             postProcessingPrompt: .init(title: "Prompt", content: "Prompt"),
-            postProcessingContext: "Active app: Safari"
+            postProcessingContext: "Active app: Safari",
         )
 
         let input = try XCTUnwrap(capturedInput)
@@ -143,8 +143,8 @@ final class TranscriptIntelligenceAlignmentRegressionTests: XCTestCase {
         XCTAssertNotNil(transcriptIndex)
         XCTAssertNotNil(qualityIndex)
         XCTAssertNotNil(contextIndex)
-        XCTAssertLessThan(transcriptIndex!, qualityIndex!)
-        XCTAssertLessThan(qualityIndex!, contextIndex!)
+        XCTAssertLessThan(try XCTUnwrap(transcriptIndex), try XCTUnwrap(qualityIndex))
+        XCTAssertLessThan(try XCTUnwrap(qualityIndex), try XCTUnwrap(contextIndex))
     }
 
     func testSummaryTrustFlagsAreRecalibratedByTranscriptQuality() async throws {
@@ -160,7 +160,7 @@ final class TranscriptIntelligenceAlignmentRegressionTests: XCTestCase {
                 durationSeconds: 1,
                 model: "test-model",
                 processedAt: "now",
-                confidenceScore: 0.55
+                confidenceScore: 0.55,
             )
         }
         postProcessingRepository.processTranscriptionStructured_4Handler = { _, _, _ in
@@ -173,10 +173,10 @@ final class TranscriptIntelligenceAlignmentRegressionTests: XCTestCase {
                         isGroundedInTranscript: true,
                         containsSpeculation: false,
                         isHumanReviewed: false,
-                        confidenceScore: 0.9
-                    )
+                        confidenceScore: 0.9,
+                    ),
                 ),
-                outputState: .structured
+                outputState: .structured,
             )
         }
         storageRepository.saveTranscriptionHandler = { _ in }
@@ -184,20 +184,20 @@ final class TranscriptIntelligenceAlignmentRegressionTests: XCTestCase {
         let useCase = TranscribeAudioUseCase(
             transcriptionRepository: transcriptionRepository,
             transcriptionStorageRepository: storageRepository,
-            postProcessingRepository: postProcessingRepository
+            postProcessingRepository: postProcessingRepository,
         )
 
         let transcription = try await useCase.execute(
             audioURL: URL(fileURLWithPath: "/tmp/test.wav"),
             meeting: MeetingEntity(app: .googleMeet),
             applyPostProcessing: true,
-            postProcessingPrompt: .init(title: "Prompt", content: "Prompt")
+            postProcessingPrompt: .init(title: "Prompt", content: "Prompt"),
         )
 
         XCTAssertEqual(
             transcription.canonicalSummary?.trustFlags.confidenceScore ?? -1,
             transcription.qualityProfile?.overallConfidence ?? -2,
-            accuracy: 0.001
+            accuracy: 0.001,
         )
         XCTAssertEqual(transcription.canonicalSummary?.trustFlags.containsSpeculation, true)
     }
@@ -219,14 +219,14 @@ final class TranscriptIntelligenceAlignmentRegressionTests: XCTestCase {
                     snippet: "[inaudible]",
                     startTime: 2,
                     endTime: 4,
-                    reason: .lexicalUncertainty
+                    reason: .lexicalUncertainty,
                 ),
-            ]
+            ],
         )
 
         var config = TranscriptionEntity.Configuration(
             text: "Display transcript",
-            rawText: "Raw transcript"
+            rawText: "Raw transcript",
         )
         config.qualityProfile = qualityProfile
         let transcription = TranscriptionEntity(meeting: meeting, config: config)
@@ -253,7 +253,7 @@ final class TranscriptIntelligenceAlignmentRegressionTests: XCTestCase {
             normalizedTextForIntelligence: "T",
             overallConfidence: 0.64,
             containsUncertainty: true,
-            markers: [.init(snippet: "???", reason: .lexicalUncertainty)]
+            markers: [.init(snippet: "???", reason: .lexicalUncertainty)],
         )
         let transcription = TranscriptionEntity(meeting: meeting, config: config)
         try await transcriptionRepo.saveTranscription(transcription)
@@ -282,7 +282,7 @@ final class TranscriptIntelligenceAlignmentRegressionTests: XCTestCase {
             systemRecorder: system,
             transcriptionClient: transcriptionClient,
             postProcessingService: postProcessing,
-            storage: storage
+            storage: storage,
         )
 
         let audioURL = URL(fileURLWithPath: "/tmp/retry-transcription-quality.wav")
@@ -292,14 +292,14 @@ final class TranscriptIntelligenceAlignmentRegressionTests: XCTestCase {
             app: .googleMeet,
             startTime: Date(),
             endTime: Date().addingTimeInterval(10),
-            audioFilePath: audioURL.path
+            audioFilePath: audioURL.path,
         )
         let transcription = Transcription(
             meeting: meeting,
             text: "old text",
             rawText: "old raw",
             language: "en",
-            modelName: "old-model"
+            modelName: "old-model",
         )
 
         await manager.retryTranscription(for: transcription)

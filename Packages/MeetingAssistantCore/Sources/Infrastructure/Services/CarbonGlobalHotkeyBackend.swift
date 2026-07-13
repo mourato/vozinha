@@ -42,7 +42,7 @@ public final class CarbonGlobalHotkeyBackend: GlobalHotkeyBackend {
             hotKeyID,
             GetEventDispatcherTarget(),
             0,
-            &hotKeyRef
+            &hotKeyRef,
         )
 
         guard status == noErr, let hotKeyRef else {
@@ -54,7 +54,7 @@ public final class CarbonGlobalHotkeyBackend: GlobalHotkeyBackend {
                     "keyCode": registration.keyCode,
                     "modifiers": registration.modifiers,
                     "status": status,
-                ]
+                ],
             )
             return false
         }
@@ -113,11 +113,11 @@ public final class CarbonGlobalHotkeyBackend: GlobalHotkeyBackend {
         var eventTypes = [
             EventTypeSpec(
                 eventClass: OSType(kEventClassKeyboard),
-                eventKind: UInt32(kEventHotKeyPressed)
+                eventKind: UInt32(kEventHotKeyPressed),
             ),
             EventTypeSpec(
                 eventClass: OSType(kEventClassKeyboard),
-                eventKind: UInt32(kEventHotKeyReleased)
+                eventKind: UInt32(kEventHotKeyReleased),
             ),
         ]
 
@@ -129,7 +129,7 @@ public final class CarbonGlobalHotkeyBackend: GlobalHotkeyBackend {
                 bufferPointer.count,
                 bufferPointer.baseAddress,
                 userData,
-                &eventHandlerRef
+                &eventHandlerRef,
             )
         }
 
@@ -137,7 +137,7 @@ public final class CarbonGlobalHotkeyBackend: GlobalHotkeyBackend {
             AppLogger.warning(
                 "Failed to install global hotkey event handler",
                 category: .assistant,
-                extra: ["status": status]
+                extra: ["status": status],
             )
         }
     }
@@ -156,7 +156,7 @@ public final class CarbonGlobalHotkeyBackend: GlobalHotkeyBackend {
             nil,
             MemoryLayout<EventHotKeyID>.size,
             nil,
-            &hotKeyID
+            &hotKeyID,
         )
 
         guard status == noErr,

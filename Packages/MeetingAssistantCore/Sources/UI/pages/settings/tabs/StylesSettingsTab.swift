@@ -16,7 +16,7 @@ public struct StylesSettingsTab: View {
         SettingsScrollableContent {
             SettingsSectionHeader(
                 title: "settings.section.rules_per_app".localized,
-                description: "settings.styles.description".localized
+                description: "settings.styles.description".localized,
             )
 
             DSGroup("settings.styles.title".localized, icon: "paintpalette") {
@@ -52,7 +52,7 @@ public struct StylesSettingsTab: View {
                     },
                     providerDisplayName: viewModel.enhancementsProviderDisplayName(for:),
                     onSave: viewModel.saveStyle,
-                    onCancel: viewModel.dismissEditor
+                    onCancel: viewModel.dismissEditor,
                 )
             }
         }
@@ -69,7 +69,7 @@ public struct StylesSettingsTab: View {
             SettingsInlineList(
                 items: viewModel.styles,
                 emptyText: "settings.styles.empty".localized,
-                containerStyle: .plain
+                containerStyle: .plain,
             ) { style in
                 styleRow(style)
             }
@@ -88,7 +88,7 @@ public struct StylesSettingsTab: View {
                 },
                 content: {
                     styleRowContent(style, isSelected: selectedStyleID == style.id)
-                }
+                },
             )
 
             styleActionsMenu(for: style, isSelected: selectedStyleID == style.id)
@@ -142,7 +142,7 @@ public struct StylesSettingsTab: View {
             accessibilityLabel: "settings.styles.actions".localized,
             symbolColor: isSelected
                 ? AppDesignSystem.Colors.selectedContentSecondaryForeground
-                : .secondary
+                : .secondary,
         ) {
             Button {
                 selectedStyleID = style.id
@@ -170,7 +170,7 @@ public struct StylesSettingsTab: View {
                     .padding(.vertical, 2)
                     .background(
                         Capsule()
-                            .fill(AppDesignSystem.Colors.subtleFill2)
+                            .fill(AppDesignSystem.Colors.subtleFill2),
                     )
                     .foregroundStyle(AppDesignSystem.Colors.secondaryTextStyle(isSelected: isSelected))
             }
@@ -188,7 +188,7 @@ public struct StylesSettingsTab: View {
                 .padding(.vertical, 2)
                 .background(
                     Capsule()
-                        .fill(AppDesignSystem.Colors.subtleFill2)
+                        .fill(AppDesignSystem.Colors.subtleFill2),
                 )
                 .foregroundStyle(AppDesignSystem.Colors.secondaryTextStyle(isSelected: isSelected))
         }
@@ -220,11 +220,11 @@ public struct StylesSettingsTab: View {
                     .frame(width: 24, height: 24)
                     .background(
                         RoundedRectangle(cornerRadius: 7)
-                            .fill(AppDesignSystem.Colors.subtleFill2)
+                            .fill(AppDesignSystem.Colors.subtleFill2),
                     )
                     .overlay(
                         RoundedRectangle(cornerRadius: 7)
-                            .stroke(AppDesignSystem.Colors.selectionStroke.opacity(0.4), lineWidth: 0.5)
+                            .stroke(AppDesignSystem.Colors.selectionStroke.opacity(0.4), lineWidth: 0.5),
                     )
             }
         }
@@ -239,7 +239,7 @@ public struct StylesSettingsTab: View {
                 bundleIdentifier: bundleIdentifier,
                 fallbackSystemName: "app.fill",
                 size: 16,
-                cornerRadius: 5
+                cornerRadius: 5,
             )
         case .website:
             Image(systemName: "globe")
@@ -265,7 +265,7 @@ public struct StylesSettingsTab: View {
                 .fill(AppDesignSystem.Colors.selectionFill)
                 .overlay(
                     RoundedRectangle(cornerRadius: AppDesignSystem.Layout.smallCornerRadius)
-                        .stroke(AppDesignSystem.Colors.selectionStroke, lineWidth: 1)
+                        .stroke(AppDesignSystem.Colors.selectionStroke, lineWidth: 1),
                 )
         } else {
             Color.clear

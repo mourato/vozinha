@@ -1,5 +1,5 @@
-import XCTest
 @testable import MeetingAssistantCore
+import XCTest
 
 final class TranscriptionOutputSanitizerTests: XCTestCase {
     func testSanitize_WhenOutputContainsContextBlock_RemovesBlockAndKeepsText() {
@@ -7,7 +7,7 @@ final class TranscriptionOutputSanitizerTests: XCTestCase {
 
         let result = TranscriptionOutputSanitizer.sanitize(
             processedContent: input,
-            contextMetadata: nil
+            contextMetadata: nil,
         )
 
         XCTAssertEqual(result.text, "Clean text")
@@ -20,7 +20,7 @@ final class TranscriptionOutputSanitizerTests: XCTestCase {
 
         let result = TranscriptionOutputSanitizer.sanitize(
             processedContent: input,
-            contextMetadata: nil
+            contextMetadata: nil,
         )
 
         XCTAssertNil(result.text)
@@ -33,7 +33,7 @@ final class TranscriptionOutputSanitizerTests: XCTestCase {
 
         let result = TranscriptionOutputSanitizer.sanitize(
             processedContent: input,
-            contextMetadata: nil
+            contextMetadata: nil,
         )
 
         XCTAssertNil(result.text)
@@ -55,7 +55,7 @@ final class TranscriptionOutputSanitizerTests: XCTestCase {
 
         XCTAssertEqual(
             extracted,
-            "- Active app: Visual Studio Code\n- Focused text: Build log"
+            "- Active app: Visual Studio Code\n- Focused text: Build log",
         )
     }
 

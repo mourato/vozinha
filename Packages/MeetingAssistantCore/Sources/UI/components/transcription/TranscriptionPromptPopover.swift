@@ -108,7 +108,7 @@ struct TranscriptionPromptPopover: View {
             Process this transcription and create a summary.
             </INSTRUCTIONS>
             """,
-            modelName: "Whisper-v3"
-        )
+            modelName: "Whisper-v3",
+        ),
     )
 }

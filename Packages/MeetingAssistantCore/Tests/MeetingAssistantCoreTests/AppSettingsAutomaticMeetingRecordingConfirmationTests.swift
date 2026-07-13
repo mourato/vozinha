@@ -1,6 +1,6 @@
-import XCTest
 @testable import MeetingAssistantCore
 @testable import MeetingAssistantCoreInfrastructure
+import XCTest
 
 @MainActor
 final class AutoMeetingConfirmationSettingsTests: XCTestCase {
@@ -19,29 +19,29 @@ final class AutoMeetingConfirmationSettingsTests: XCTestCase {
     }
 
     func testConfirmationDelayDefaultsToThreeSecondsAfterReset() {
-        settings.automaticMeetingRecordingConfirmationDelay = .seconds9
+        settings.automaticAutomaticMeetingRecordingConfirmationDelay = .seconds9
 
         settings.resetToDefaults()
 
-        XCTAssertEqual(settings.automaticMeetingRecordingConfirmationDelay, .seconds3)
+        XCTAssertEqual(settings.automaticAutomaticMeetingRecordingConfirmationDelay, .seconds3)
     }
 
     func testConfirmationDelayPersistsSupportedRawValues() {
         for delay in AppSettingsStore.AutomaticMeetingRecordingConfirmationDelay.allCases {
-            settings.automaticMeetingRecordingConfirmationDelay = delay
+            settings.automaticAutomaticMeetingRecordingConfirmationDelay = delay
 
             XCTAssertEqual(
-                UserDefaults.standard.integer(forKey: "automaticMeetingRecordingConfirmationDelay"),
-                delay.rawValue
+                UserDefaults.standard.integer(forKey: "automaticAutomaticMeetingRecordingConfirmationDelay"),
+                delay.rawValue,
             )
         }
     }
 
     func testConfirmationDelayRejectsUnsupportedPersistedValues() {
-        UserDefaults.standard.set(12, forKey: "automaticMeetingRecordingConfirmationDelay")
+        UserDefaults.standard.set(12, forKey: "automaticAutomaticMeetingRecordingConfirmationDelay")
 
         let loaded = AppSettingsStore.loadUIAndIndicatorSettings()
 
-        XCTAssertEqual(loaded.automaticMeetingRecordingConfirmationDelay, .seconds3)
+        XCTAssertEqual(loaded.automaticAutomaticMeetingRecordingConfirmationDelay, .seconds3)
     }
 }

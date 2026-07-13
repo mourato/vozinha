@@ -5,7 +5,7 @@
 # with CI/CD pipelines and headless environments.
 # =============================================================================
 
-.PHONY: help build build-debug build-release build-agent build-test build-test-strict xcodebuild-safe test test-agent test-full test-full-agent test-smoke test-perf test-sensitive test-appkit test-parity test-parity-agent test-swift test-verbose test-strict test-ci-strict scope-check scope-check-agent benchmark-summary benchmark-summary-agent lint lint-agent lint-fix arch-check preview-check guidance-check preflight preflight-fast preflight-agent preflight-agent-fast clean run run-release dmg setup-self-signed-cert setup format health ci-build ci-test ci-release-parity ci-release-parity-self-signed deliverable-gate docs docs-preview docs-clean profile profile-report profile-cpu profile-memory profile-animation profile-animation-report
+.PHONY: help build build-debug build-release build-agent build-test build-test-strict xcodebuild-safe test test-agent test-full test-full-agent test-smoke test-perf test-sensitive test-appkit test-parity test-parity-agent test-swift test-verbose test-strict test-ci-strict scope-check scope-check-agent benchmark-summary benchmark-summary-agent lint lint-agent lint-strict lint-strict-agent lint-fix arch-check preview-check guidance-check preflight preflight-fast preflight-agent preflight-agent-fast clean run run-release dmg setup-self-signed-cert setup format health ci-build ci-test ci-release-parity ci-release-parity-self-signed deliverable-gate docs docs-preview docs-clean profile profile-report profile-cpu profile-memory profile-animation profile-animation-report
 
 # Default target
 help:
@@ -44,6 +44,8 @@ help:
 	@echo "Code Quality:"
 	@echo "  make lint           - Run linting checks (use FIX=1 to auto-fix first)"
 	@echo "  make lint-agent     - Run lint with compact machine-readable output"
+	@echo "  make lint-strict    - Run lint with strict error handling"
+	@echo "  make lint-strict-agent - Run strict lint with compact output"
 	@echo "  make lint-fix       - Auto-fix linting issues"
 	@echo "  make arch-check     - Run architecture boundary checks"
 	@echo "  make preview-check  - Verify all SwiftUI views have previews"
@@ -196,6 +198,12 @@ lint:
 
 lint-agent:
 	@MA_AGENT_MODE=1 MA_AGENT_LOG_DIR="$(AGENT_LOG_DIR)" ./scripts/lint.sh --agent
+
+lint-strict:
+	@STRICT_LINT=1 ./scripts/lint.sh
+
+lint-strict-agent:
+	@STRICT_LINT=1 MA_AGENT_MODE=1 MA_AGENT_LOG_DIR="$(AGENT_LOG_DIR)" ./scripts/lint.sh --agent
 
 lint-fix:
 	@echo -e "$(BLUE)Auto-fixing lint issues...$(NC)"

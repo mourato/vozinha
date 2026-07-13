@@ -23,7 +23,7 @@ final class StartRecordingUseCaseMacroMockingTests: XCTestCase {
         let useCase = StartRecordingUseCase(
             recordingRepository: recordingRepository,
             audioFileRepository: audioFileRepository,
-            meetingRepository: meetingRepository
+            meetingRepository: meetingRepository,
         )
 
         let meeting = MeetingEntity(app: .googleMeet)

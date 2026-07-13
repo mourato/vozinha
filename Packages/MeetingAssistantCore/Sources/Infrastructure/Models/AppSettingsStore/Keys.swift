@@ -72,7 +72,7 @@ extension AppSettingsStore {
         static let recordingIndicatorStyle = "recordingIndicatorStyle"
         static let recordingIndicatorPosition = "recordingIndicatorPosition"
         static let recordingIndicatorAnimationSpeed = "recordingIndicatorAnimationSpeed"
-        static let automaticMeetingRecordingConfirmationDelay = "automaticMeetingRecordingConfirmationDelay"
+        static let automaticAutomaticMeetingRecordingConfirmationDelay = "automaticAutomaticMeetingRecordingConfirmationDelay"
         static let autoDeleteTranscriptions = "autoDeleteTranscriptions"
         static let autoDeletePeriodDays = "autoDeletePeriodDays"
         static let appAccentColor = "appAccentColor"

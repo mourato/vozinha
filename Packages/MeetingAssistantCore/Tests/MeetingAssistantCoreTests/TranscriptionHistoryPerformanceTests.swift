@@ -29,22 +29,7 @@ final class TranscriptionHistoryPerformanceTests: XCTestCase {
 
             let filtered = TranscriptionHistoryFilterEngine.filteredTranscriptions(
                 from: metadata,
-                sourceFilter: .meetings,
-                dateFilter: .allEntries,
-                searchText: "needle",
-                appFilterId: "raw:zoom",
-                allAppsId: "__all_apps__",
-                rawAppPrefix: "raw:",
-                bundleAppPrefix: "bundle:",
-                nameAppPrefix: "name:",
-            )
-            XCTAssertEqual(filtered.count, fixture.expectedFilteredCount)
-
-            var filterDurations: [TimeInterval] = []
-            for _ in 0..<measurementSamples {
-                let start = Date()
-                let result = TranscriptionHistoryFilterEngine.filteredTranscriptions(
-                    from: metadata,
+                configuration: .init(
                     sourceFilter: .meetings,
                     dateFilter: .allEntries,
                     searchText: "needle",
@@ -53,6 +38,25 @@ final class TranscriptionHistoryPerformanceTests: XCTestCase {
                     rawAppPrefix: "raw:",
                     bundleAppPrefix: "bundle:",
                     nameAppPrefix: "name:",
+                ),
+            )
+            XCTAssertEqual(filtered.count, fixture.expectedFilteredCount)
+
+            var filterDurations: [TimeInterval] = []
+            for _ in 0..<measurementSamples {
+                let start = Date()
+                let result = TranscriptionHistoryFilterEngine.filteredTranscriptions(
+                    from: metadata,
+                    configuration: .init(
+                        sourceFilter: .meetings,
+                        dateFilter: .allEntries,
+                        searchText: "needle",
+                        appFilterId: "raw:zoom",
+                        allAppsId: "__all_apps__",
+                        rawAppPrefix: "raw:",
+                        bundleAppPrefix: "bundle:",
+                        nameAppPrefix: "name:",
+                    ),
                 )
                 filterDurations.append(Date().timeIntervalSince(start))
                 XCTAssertEqual(result.count, fixture.expectedFilteredCount)
@@ -103,14 +107,16 @@ final class TranscriptionHistoryPerformanceTests: XCTestCase {
 
         let filtered = TranscriptionHistoryFilterEngine.filteredTranscriptions(
             from: metadata,
-            sourceFilter: .meetings,
-            dateFilter: .allEntries,
-            searchText: "needle",
-            appFilterId: "raw:zoom",
-            allAppsId: "__all_apps__",
-            rawAppPrefix: "raw:",
-            bundleAppPrefix: "bundle:",
-            nameAppPrefix: "name:",
+            configuration: .init(
+                sourceFilter: .meetings,
+                dateFilter: .allEntries,
+                searchText: "needle",
+                appFilterId: "raw:zoom",
+                allAppsId: "__all_apps__",
+                rawAppPrefix: "raw:",
+                bundleAppPrefix: "bundle:",
+                nameAppPrefix: "name:",
+            ),
         )
 
         XCTAssertEqual(filtered.count, fixture.expectedFilteredCount)

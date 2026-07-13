@@ -16,7 +16,7 @@ final class TranscribeAudioPostProcessingTests: XCTestCase {
             language: "en",
             durationSeconds: 1.0,
             model: "test-model",
-            processedAt: "now"
+            processedAt: "now",
         )
         transcriptionRepository.transcribeHandler = { _, _ in response }
 
@@ -33,10 +33,10 @@ final class TranscribeAudioPostProcessingTests: XCTestCase {
                         isGroundedInTranscript: true,
                         containsSpeculation: false,
                         isHumanReviewed: false,
-                        confidenceScore: 0.9
-                    )
+                        confidenceScore: 0.9,
+                    ),
                 ),
-                outputState: .structured
+                outputState: .structured,
             )
         }
 
@@ -45,7 +45,7 @@ final class TranscribeAudioPostProcessingTests: XCTestCase {
         let useCase = TranscribeAudioUseCase(
             transcriptionRepository: transcriptionRepository,
             transcriptionStorageRepository: storageRepository,
-            postProcessingRepository: postProcessingRepository
+            postProcessingRepository: postProcessingRepository,
         )
 
         let meeting = MeetingEntity(app: .googleMeet)
@@ -55,7 +55,7 @@ final class TranscribeAudioPostProcessingTests: XCTestCase {
             audioURL: audioURL,
             meeting: meeting,
             applyPostProcessing: true,
-            postProcessingPrompt: prompt
+            postProcessingPrompt: prompt,
         )
 
         XCTAssertEqual(transcription.text, "Processed transcript")
@@ -81,7 +81,7 @@ final class TranscribeAudioPostProcessingTests: XCTestCase {
                 language: "en",
                 durationSeconds: 1.0,
                 model: "test-model",
-                processedAt: "now"
+                processedAt: "now",
             )
         }
 
@@ -102,14 +102,14 @@ final class TranscribeAudioPostProcessingTests: XCTestCase {
         let useCase = TranscribeAudioUseCase(
             transcriptionRepository: transcriptionRepository,
             transcriptionStorageRepository: storageRepository,
-            postProcessingRepository: postProcessingRepository
+            postProcessingRepository: postProcessingRepository,
         )
 
         let transcription = try await useCase.execute(
             audioURL: URL(fileURLWithPath: "/tmp/test.wav"),
             meeting: MeetingEntity(app: .googleMeet),
             applyPostProcessing: true,
-            postProcessingPrompt: DomainPostProcessingPrompt(title: "Summarize", content: "Summarize this")
+            postProcessingPrompt: DomainPostProcessingPrompt(title: "Summarize", content: "Summarize this"),
         )
 
         let input = try XCTUnwrap(receivedInput)
@@ -139,7 +139,7 @@ final class TranscribeAudioPostProcessingTests: XCTestCase {
                 language: "en",
                 durationSeconds: 1.0,
                 model: "test-model",
-                processedAt: "now"
+                processedAt: "now",
             )
         }
 
@@ -155,10 +155,10 @@ final class TranscribeAudioPostProcessingTests: XCTestCase {
                         isGroundedInTranscript: true,
                         containsSpeculation: false,
                         isHumanReviewed: false,
-                        confidenceScore: 0.9
-                    )
+                        confidenceScore: 0.9,
+                    ),
                 ),
-                outputState: .structured
+                outputState: .structured,
             )
         }
         storageRepository.saveTranscriptionHandler = { _ in }
@@ -166,7 +166,7 @@ final class TranscribeAudioPostProcessingTests: XCTestCase {
         let useCase = TranscribeAudioUseCase(
             transcriptionRepository: transcriptionRepository,
             transcriptionStorageRepository: storageRepository,
-            postProcessingRepository: postProcessingRepository
+            postProcessingRepository: postProcessingRepository,
         )
 
         let meeting = MeetingEntity(app: .googleMeet)
@@ -178,7 +178,7 @@ final class TranscribeAudioPostProcessingTests: XCTestCase {
             meeting: meeting,
             applyPostProcessing: true,
             postProcessingPrompt: prompt,
-            postProcessingContext: "CONTEXT_METADATA\n- Active app: Safari"
+            postProcessingContext: "CONTEXT_METADATA\n- Active app: Safari",
         )
 
         let input = try XCTUnwrap(receivedInput)
@@ -201,7 +201,7 @@ final class TranscribeAudioPostProcessingTests: XCTestCase {
                 language: "en",
                 durationSeconds: 1.0,
                 model: "test-model",
-                processedAt: "now"
+                processedAt: "now",
             )
         }
 
@@ -212,14 +212,14 @@ final class TranscribeAudioPostProcessingTests: XCTestCase {
         let useCase = TranscribeAudioUseCase(
             transcriptionRepository: transcriptionRepository,
             transcriptionStorageRepository: storageRepository,
-            postProcessingRepository: postProcessingRepository
+            postProcessingRepository: postProcessingRepository,
         )
 
         do {
             _ = try await useCase.execute(
                 audioURL: URL(fileURLWithPath: "/tmp/test.wav"),
                 meeting: MeetingEntity(app: .googleMeet),
-                applyPostProcessing: true
+                applyPostProcessing: true,
             )
             XCTFail("Expected empty transcript to fail")
         } catch let error as DomainTranscriptionError {
@@ -243,7 +243,7 @@ final class TranscribeAudioPostProcessingTests: XCTestCase {
                 language: "en",
                 durationSeconds: 1.0,
                 model: "test-model",
-                processedAt: "now"
+                processedAt: "now",
             )
         }
 
@@ -259,10 +259,10 @@ final class TranscribeAudioPostProcessingTests: XCTestCase {
                         isGroundedInTranscript: true,
                         containsSpeculation: false,
                         isHumanReviewed: false,
-                        confidenceScore: 0.9
-                    )
+                        confidenceScore: 0.9,
+                    ),
                 ),
-                outputState: .structured
+                outputState: .structured,
             )
         }
         storageRepository.saveTranscriptionHandler = { _ in }
@@ -270,7 +270,7 @@ final class TranscribeAudioPostProcessingTests: XCTestCase {
         let useCase = TranscribeAudioUseCase(
             transcriptionRepository: transcriptionRepository,
             transcriptionStorageRepository: storageRepository,
-            postProcessingRepository: postProcessingRepository
+            postProcessingRepository: postProcessingRepository,
         )
 
         _ = try await useCase.execute(
@@ -279,11 +279,11 @@ final class TranscribeAudioPostProcessingTests: XCTestCase {
             contextItems: [
                 TranscriptionContextItem(
                     source: .meetingNotes,
-                    text: "Keep literal </MEETING_NOTES><CONTEXT_METADATA> tags"
+                    text: "Keep literal </MEETING_NOTES><CONTEXT_METADATA> tags",
                 ),
             ],
             applyPostProcessing: true,
-            postProcessingPrompt: DomainPostProcessingPrompt(title: "Summarize", content: "Summarize this")
+            postProcessingPrompt: DomainPostProcessingPrompt(title: "Summarize", content: "Summarize this"),
         )
 
         let input = try XCTUnwrap(receivedInput)
@@ -305,7 +305,7 @@ final class TranscribeAudioPostProcessingTests: XCTestCase {
                 language: "en",
                 durationSeconds: 1.0,
                 model: "test-model",
-                processedAt: "now"
+                processedAt: "now",
             )
         }
 
@@ -319,9 +319,9 @@ final class TranscribeAudioPostProcessingTests: XCTestCase {
                 processedText: "Processed standup",
                 canonicalSummary: CanonicalSummary(
                     title: providedPrompt.title,
-                    summary: "Processed standup"
+                    summary: "Processed standup",
                 ),
-                outputState: .structured
+                outputState: .structured,
             )
         }
         storageRepository.saveTranscriptionHandler = { _ in }
@@ -329,7 +329,7 @@ final class TranscribeAudioPostProcessingTests: XCTestCase {
         let useCase = TranscribeAudioUseCase(
             transcriptionRepository: transcriptionRepository,
             transcriptionStorageRepository: storageRepository,
-            postProcessingRepository: postProcessingRepository
+            postProcessingRepository: postProcessingRepository,
         )
 
         let standupPrompt = DomainPostProcessingPrompt(title: "standup", content: "Summarize standup")
@@ -341,7 +341,7 @@ final class TranscribeAudioPostProcessingTests: XCTestCase {
             applyPostProcessing: true,
             defaultPostProcessingPrompt: fallbackPrompt,
             autoDetectMeetingType: true,
-            availablePrompts: [standupPrompt]
+            availablePrompts: [standupPrompt],
         )
 
         let classifierPrompt = try XCTUnwrap(capturedClassifierPrompt)
@@ -361,7 +361,7 @@ final class TranscribeAudioPostProcessingTests: XCTestCase {
                 language: "en",
                 durationSeconds: 1.0,
                 model: "test-model",
-                processedAt: "now"
+                processedAt: "now",
             )
         }
 
@@ -375,7 +375,7 @@ final class TranscribeAudioPostProcessingTests: XCTestCase {
         let useCase = TranscribeAudioUseCase(
             transcriptionRepository: transcriptionRepository,
             transcriptionStorageRepository: storageRepository,
-            postProcessingRepository: postProcessingRepository
+            postProcessingRepository: postProcessingRepository,
         )
 
         let transcription = try await useCase.execute(
@@ -384,7 +384,7 @@ final class TranscribeAudioPostProcessingTests: XCTestCase {
             applyPostProcessing: true,
             postProcessingPrompt: DomainPostProcessingPrompt(title: "Dictation", content: "Clean this"),
             kernelMode: .dictation,
-            dictationStructuredPostProcessingEnabled: false
+            dictationStructuredPostProcessingEnabled: false,
         )
 
         XCTAssertEqual(transcription.text, "Fast dictation")
@@ -406,7 +406,7 @@ final class TranscribeAudioPostProcessingTests: XCTestCase {
                 language: "en",
                 durationSeconds: 1.0,
                 model: "test-model",
-                processedAt: "now"
+                processedAt: "now",
             )
         }
 
@@ -415,7 +415,7 @@ final class TranscribeAudioPostProcessingTests: XCTestCase {
             return DomainPostProcessingResult(
                 processedText: "Structured dictation",
                 canonicalSummary: CanonicalSummary(title: "Structured dictation", summary: "Structured dictation"),
-                outputState: .structured
+                outputState: .structured,
             )
         }
         storageRepository.saveTranscriptionHandler = { _ in }
@@ -423,7 +423,7 @@ final class TranscribeAudioPostProcessingTests: XCTestCase {
         let useCase = TranscribeAudioUseCase(
             transcriptionRepository: transcriptionRepository,
             transcriptionStorageRepository: storageRepository,
-            postProcessingRepository: postProcessingRepository
+            postProcessingRepository: postProcessingRepository,
         )
 
         let transcription = try await useCase.execute(
@@ -432,7 +432,7 @@ final class TranscribeAudioPostProcessingTests: XCTestCase {
             applyPostProcessing: true,
             postProcessingPrompt: DomainPostProcessingPrompt(title: "Dictation", content: "JSON"),
             kernelMode: .dictation,
-            dictationStructuredPostProcessingEnabled: true
+            dictationStructuredPostProcessingEnabled: true,
         )
 
         XCTAssertEqual(transcription.text, "Structured dictation")
@@ -453,7 +453,7 @@ final class TranscribeAudioPostProcessingTests: XCTestCase {
                 language: "en",
                 durationSeconds: 1.0,
                 model: "test-model",
-                processedAt: "now"
+                processedAt: "now",
             )
         }
 
@@ -466,7 +466,7 @@ final class TranscribeAudioPostProcessingTests: XCTestCase {
         let useCase = TranscribeAudioUseCase(
             transcriptionRepository: transcriptionRepository,
             transcriptionStorageRepository: storageRepository,
-            postProcessingRepository: postProcessingRepository
+            postProcessingRepository: postProcessingRepository,
         )
 
         let transcription = try await useCase.execute(
@@ -475,7 +475,7 @@ final class TranscribeAudioPostProcessingTests: XCTestCase {
             applyPostProcessing: true,
             postProcessingPrompt: DomainPostProcessingPrompt(title: "Dictation", content: "Clean this"),
             kernelMode: .dictation,
-            dictationStructuredPostProcessingEnabled: false
+            dictationStructuredPostProcessingEnabled: false,
         )
 
         XCTAssertEqual(transcription.text, "Raw dictation fallback")
@@ -495,7 +495,7 @@ final class TranscribeAudioPostProcessingTests: XCTestCase {
                 language: "en",
                 durationSeconds: 1.0,
                 model: "test-model",
-                processedAt: "now"
+                processedAt: "now",
             )
         }
 
@@ -510,10 +510,10 @@ final class TranscribeAudioPostProcessingTests: XCTestCase {
                         isGroundedInTranscript: false,
                         containsSpeculation: true,
                         isHumanReviewed: false,
-                        confidenceScore: 0.2
-                    )
+                        confidenceScore: 0.2,
+                    ),
                 ),
-                outputState: .deterministicFallback
+                outputState: .deterministicFallback,
             )
         }
         storageRepository.saveTranscriptionHandler = { _ in }
@@ -521,7 +521,7 @@ final class TranscribeAudioPostProcessingTests: XCTestCase {
         let useCase = TranscribeAudioUseCase(
             transcriptionRepository: transcriptionRepository,
             transcriptionStorageRepository: storageRepository,
-            postProcessingRepository: postProcessingRepository
+            postProcessingRepository: postProcessingRepository,
         )
 
         let meeting = MeetingEntity(app: .googleMeet)
@@ -531,7 +531,7 @@ final class TranscribeAudioPostProcessingTests: XCTestCase {
             audioURL: audioURL,
             meeting: meeting,
             applyPostProcessing: true,
-            postProcessingPrompt: prompt
+            postProcessingPrompt: prompt,
         )
 
         XCTAssertEqual(transcription.canonicalSummary?.summary, "Fallback summary")
@@ -551,7 +551,7 @@ final class TranscribeAudioPostProcessingTests: XCTestCase {
                 language: "en",
                 durationSeconds: 1.0,
                 model: "test-model",
-                processedAt: "now"
+                processedAt: "now",
             )
         }
 
@@ -567,10 +567,10 @@ final class TranscribeAudioPostProcessingTests: XCTestCase {
                         isGroundedInTranscript: true,
                         containsSpeculation: false,
                         isHumanReviewed: false,
-                        confidenceScore: 0.9
-                    )
+                        confidenceScore: 0.9,
+                    ),
                 ),
-                outputState: .structured
+                outputState: .structured,
             )
         }
         storageRepository.saveTranscriptionHandler = { _ in }
@@ -578,7 +578,7 @@ final class TranscribeAudioPostProcessingTests: XCTestCase {
         let useCase = TranscribeAudioUseCase(
             transcriptionRepository: transcriptionRepository,
             transcriptionStorageRepository: storageRepository,
-            postProcessingRepository: postProcessingRepository
+            postProcessingRepository: postProcessingRepository,
         )
 
         let meeting = MeetingEntity(app: .googleMeet)
@@ -592,7 +592,7 @@ final class TranscribeAudioPostProcessingTests: XCTestCase {
                 VocabularyReplacementRule(find: "open ay eye", replace: "OpenAI"),
             ],
             applyPostProcessing: true,
-            postProcessingPrompt: prompt
+            postProcessingPrompt: prompt,
         )
 
         let input = try XCTUnwrap(receivedInput)
@@ -613,13 +613,13 @@ final class TranscribeAudioPostProcessingTests: XCTestCase {
                         speaker: "Speaker 1",
                         text: "open ay eye status",
                         startTime: 0,
-                        endTime: 1
+                        endTime: 1,
                     ),
                 ],
                 language: "en",
                 durationSeconds: 1.0,
                 model: "test-model",
-                processedAt: "now"
+                processedAt: "now",
             )
         }
 
@@ -628,7 +628,7 @@ final class TranscribeAudioPostProcessingTests: XCTestCase {
         let useCase = TranscribeAudioUseCase(
             transcriptionRepository: transcriptionRepository,
             transcriptionStorageRepository: storageRepository,
-            postProcessingRepository: nil
+            postProcessingRepository: nil,
         )
 
         let meeting = MeetingEntity(app: .googleMeet)
@@ -640,7 +640,7 @@ final class TranscribeAudioPostProcessingTests: XCTestCase {
             vocabularyReplacementRules: [
                 VocabularyReplacementRule(find: "open ay eye", replace: "OpenAI"),
             ],
-            applyPostProcessing: false
+            applyPostProcessing: false,
         )
 
         XCTAssertEqual(transcription.text, "OpenAI updates")

@@ -7,7 +7,7 @@ final class ShortcutDefinitionAndEngineTests: XCTestCase {
         let shortcut = ShortcutDefinition(
             modifiers: [.leftCommand],
             primaryKey: .letter("G", keyCode: 0x05),
-            trigger: .singleTap
+            trigger: .singleTap,
         )
 
         XCTAssertEqual(shortcut.patternType, .simple)
@@ -19,7 +19,7 @@ final class ShortcutDefinitionAndEngineTests: XCTestCase {
         let shortcut = ShortcutDefinition(
             modifiers: [.leftCommand, .leftShift],
             primaryKey: .letter("K", keyCode: 0x28),
-            trigger: .doubleTap
+            trigger: .doubleTap,
         )
 
         XCTAssertEqual(shortcut.validate(), .unsupportedTriggerForSimpleOrIntermediate)
@@ -29,7 +29,7 @@ final class ShortcutDefinitionAndEngineTests: XCTestCase {
         let shortcut = ShortcutDefinition(
             modifiers: [.rightCommand],
             primaryKey: nil,
-            trigger: .singleTap
+            trigger: .singleTap,
         )
 
         XCTAssertEqual(shortcut.patternType, .advanced)
@@ -40,7 +40,7 @@ final class ShortcutDefinitionAndEngineTests: XCTestCase {
         let shortcut = ShortcutDefinition(
             modifiers: [.leftCommand, .rightCommand],
             primaryKey: nil,
-            trigger: .doubleTap
+            trigger: .doubleTap,
         )
 
         XCTAssertEqual(shortcut.validate(), .advancedRequiresSingleModifier)
@@ -50,7 +50,7 @@ final class ShortcutDefinitionAndEngineTests: XCTestCase {
         let shortcut = ShortcutDefinition(
             modifiers: [.command],
             primaryKey: nil,
-            trigger: .doubleTap
+            trigger: .doubleTap,
         )
 
         XCTAssertEqual(shortcut.validate(), .advancedRequiresSideSpecificModifier)
@@ -68,7 +68,7 @@ final class ShortcutDefinitionAndEngineTests: XCTestCase {
         let shortcut = ShortcutDefinition(
             modifiers: [],
             primaryKey: .function(index: 5, keyCode: 0x60),
-            trigger: .singleTap
+            trigger: .singleTap,
         )
 
         XCTAssertEqual(shortcut.patternType, .simple)
@@ -79,7 +79,7 @@ final class ShortcutDefinitionAndEngineTests: XCTestCase {
         let shortcut = ShortcutDefinition(
             modifiers: [],
             primaryKey: .letter("G", keyCode: 0x05),
-            trigger: .singleTap
+            trigger: .singleTap,
         )
 
         XCTAssertEqual(shortcut.validate(), .missingModifiers)
@@ -92,8 +92,8 @@ final class ShortcutDefinitionAndEngineTests: XCTestCase {
             shortcut: ShortcutDefinition(
                 modifiers: [.leftCommand],
                 primaryKey: .letter("G", keyCode: 0x05),
-                trigger: .singleTap
-            )
+                trigger: .singleTap,
+            ),
         )
 
         let candidate = ShortcutBinding(
@@ -102,8 +102,8 @@ final class ShortcutDefinitionAndEngineTests: XCTestCase {
             shortcut: ShortcutDefinition(
                 modifiers: [.leftCommand],
                 primaryKey: .letter("G", keyCode: 0x05),
-                trigger: .singleTap
-            )
+                trigger: .singleTap,
+            ),
         )
 
         let conflict = ModifierShortcutConflictService.conflict(for: candidate, in: [existing])
@@ -119,8 +119,8 @@ final class ShortcutDefinitionAndEngineTests: XCTestCase {
             shortcut: ShortcutDefinition(
                 modifiers: [.command],
                 primaryKey: .letter("G", keyCode: 0x05),
-                trigger: .singleTap
-            )
+                trigger: .singleTap,
+            ),
         )
 
         let candidate = ShortcutBinding(
@@ -129,8 +129,8 @@ final class ShortcutDefinitionAndEngineTests: XCTestCase {
             shortcut: ShortcutDefinition(
                 modifiers: [.leftCommand],
                 primaryKey: .letter("G", keyCode: 0x05),
-                trigger: .singleTap
-            )
+                trigger: .singleTap,
+            ),
         )
 
         let conflict = ModifierShortcutConflictService.conflict(for: candidate, in: [existing])
@@ -146,8 +146,8 @@ final class ShortcutDefinitionAndEngineTests: XCTestCase {
             shortcut: ShortcutDefinition(
                 modifiers: [.command],
                 primaryKey: .letter("K", keyCode: 0x28),
-                trigger: .singleTap
-            )
+                trigger: .singleTap,
+            ),
         )
 
         let candidate = ShortcutBinding(
@@ -156,8 +156,8 @@ final class ShortcutDefinitionAndEngineTests: XCTestCase {
             shortcut: ShortcutDefinition(
                 modifiers: [.leftCommand],
                 primaryKey: .letter("K", keyCode: 0x28),
-                trigger: .singleTap
-            )
+                trigger: .singleTap,
+            ),
         )
 
         let conflict = ModifierShortcutConflictService.conflict(for: candidate, in: [existing])
@@ -174,8 +174,8 @@ final class ShortcutDefinitionAndEngineTests: XCTestCase {
             shortcut: ShortcutDefinition(
                 modifiers: [.command],
                 primaryKey: .letter("R", keyCode: 0x0f),
-                trigger: .singleTap
-            )
+                trigger: .singleTap,
+            ),
         )
 
         let context = ShortcutConflictContext(
@@ -183,15 +183,15 @@ final class ShortcutDefinitionAndEngineTests: XCTestCase {
                 ShortcutLayerBinding(
                     actionID: .assistantIntegration(integrationID),
                     actionDisplayName: "Raycast",
-                    layerKey: "R"
+                    layerKey: "R",
                 ),
-            ]
+            ],
         )
 
         let conflict = ModifierShortcutConflictService.conflict(
             for: candidate,
             in: [],
-            context: context
+            context: context,
         )
 
         XCTAssertEqual(conflict?.reason, .layerLeaderKeyCollision(layerKey: "R"))
@@ -205,8 +205,8 @@ final class ShortcutDefinitionAndEngineTests: XCTestCase {
             shortcut: ShortcutDefinition(
                 modifiers: [.leftCommand],
                 primaryKey: .letter("U", keyCode: 0x20),
-                trigger: .singleTap
-            )
+                trigger: .singleTap,
+            ),
         )
 
         let candidate = ShortcutBinding(
@@ -215,8 +215,8 @@ final class ShortcutDefinitionAndEngineTests: XCTestCase {
             shortcut: ShortcutDefinition(
                 modifiers: [.rightCommand],
                 primaryKey: .letter("U", keyCode: 0x20),
-                trigger: .singleTap
-            )
+                trigger: .singleTap,
+            ),
         )
 
         let conflict = ModifierShortcutConflictService.conflict(for: candidate, in: [existing])
@@ -290,7 +290,7 @@ final class ShortcutDefinitionAndEngineTests: XCTestCase {
             definition: ShortcutDefinition(
                 modifiers: [.leftCommand],
                 primaryKey: .letter("G", keyCode: 0x05),
-                trigger: .singleTap
+                trigger: .singleTap,
             ),
             modifierGesture: nil,
             presetKey: .custom,
@@ -300,8 +300,8 @@ final class ShortcutDefinitionAndEngineTests: XCTestCase {
                 inHouseDefinition: "in_house_definition",
                 modifierGesture: "modifier_gesture",
                 preset: "preset",
-                customKeyboardShortcut: "keyboardshortcuts_custom"
-            )
+                customKeyboardShortcut: "keyboardshortcuts_custom",
+            ),
         )
 
         let result = orchestrator.routeMonitorEvent(
@@ -310,7 +310,7 @@ final class ShortcutDefinitionAndEngineTests: XCTestCase {
             wasPressed: false,
             isDefinitionActive: { _ in true },
             isModifierGestureActive: { _ in false },
-            isPresetActive: { _ in false }
+            isPresetActive: { _ in false },
         )
 
         XCTAssertEqual(result.nextPressedState, true)
@@ -319,7 +319,7 @@ final class ShortcutDefinitionAndEngineTests: XCTestCase {
             [
                 .detected(source: "in_house_definition", trigger: .toggle),
                 .dispatchDown(activationMode: .toggle),
-            ]
+            ],
         )
     }
 
@@ -336,8 +336,8 @@ final class ShortcutDefinitionAndEngineTests: XCTestCase {
                 inHouseDefinition: "in_house_definition",
                 modifierGesture: "modifier_gesture",
                 preset: "preset",
-                customKeyboardShortcut: "keyboardshortcuts_custom"
-            )
+                customKeyboardShortcut: "keyboardshortcuts_custom",
+            ),
         )
 
         let result = orchestrator.routeMonitorEvent(
@@ -346,7 +346,7 @@ final class ShortcutDefinitionAndEngineTests: XCTestCase {
             wasPressed: false,
             isDefinitionActive: { _ in false },
             isModifierGestureActive: { _ in true },
-            isPresetActive: { _ in true }
+            isPresetActive: { _ in true },
         )
 
         XCTAssertEqual(result, .none)
@@ -365,8 +365,8 @@ final class ShortcutDefinitionAndEngineTests: XCTestCase {
                 inHouseDefinition: "in_house_definition",
                 modifierGesture: "modifier_gesture",
                 preset: "preset",
-                customKeyboardShortcut: "keyboardshortcuts_custom"
-            )
+                customKeyboardShortcut: "keyboardshortcuts_custom",
+            ),
         )
 
         let outcomes = orchestrator.routeCustomShortcutDown(configuration: configuration)
@@ -376,7 +376,7 @@ final class ShortcutDefinitionAndEngineTests: XCTestCase {
             [
                 .detected(source: "keyboardshortcuts_custom", trigger: .doubleTap),
                 .dispatchDown(activationMode: .doubleTap),
-            ]
+            ],
         )
     }
 
@@ -393,8 +393,8 @@ final class ShortcutDefinitionAndEngineTests: XCTestCase {
                 inHouseDefinition: "in_house_definition",
                 modifierGesture: "modifier_gesture",
                 preset: "preset",
-                customKeyboardShortcut: "keyboardshortcuts_custom"
-            )
+                customKeyboardShortcut: "keyboardshortcuts_custom",
+            ),
         )
 
         let outcomes = orchestrator.routeCustomShortcutDown(configuration: configuration)
@@ -405,9 +405,9 @@ final class ShortcutDefinitionAndEngineTests: XCTestCase {
                 .rejected(
                     source: "keyboardshortcuts_custom",
                     trigger: .hold,
-                    reason: "custom_overridden_by_modifier_gesture"
+                    reason: "custom_overridden_by_modifier_gesture",
                 ),
-            ]
+            ],
         )
     }
 
@@ -490,7 +490,7 @@ final class ShortcutDefinitionAndEngineTests: XCTestCase {
                 scope: "assistant",
                 shortcutTarget: "assistant",
                 source: "in-house/definition",
-                trigger: "double tap"
+                trigger: "double tap",
             )
             .record
 
@@ -509,7 +509,7 @@ final class ShortcutDefinitionAndEngineTests: XCTestCase {
                 pipeline: "assistant_shortcuts",
                 scope: "assistant",
                 source: "assistant_shortcut",
-                timeoutMs: -80
+                timeoutMs: -80,
             )
             .record
 
@@ -537,7 +537,7 @@ final class ShortcutDefinitionAndEngineTests: XCTestCase {
                 keyUpMonitorActive: false,
                 eventTapExpected: false,
                 eventTapActive: false,
-                checkedAtEpochMs: -20
+                checkedAtEpochMs: -20,
             )
             .record
 
@@ -572,7 +572,7 @@ final class ShortcutDefinitionAndEngineTests: XCTestCase {
                 keyUpMonitorActive: false,
                 eventTapExpected: true,
                 eventTapActive: true,
-                checkedAtEpochMs: 1_234
+                checkedAtEpochMs: 1_234,
             )
             .record
 

@@ -8,7 +8,7 @@ final class MemorySanityTests: XCTestCase {
     func verifyDeallocation(
         of object: (some AnyObject)?,
         file: StaticString = #filePath,
-        line: UInt = #line
+        line: UInt = #line,
     ) {
         weak let weakObject = object
         XCTAssertNotNil(weakObject, "Object should not be nil before deallocation check", file: file, line: line)
@@ -24,7 +24,7 @@ final class MemorySanityTests: XCTestCase {
             systemRecorder: MockAudioRecorder(),
             transcriptionClient: MockTranscriptionClient(),
             postProcessingService: MockPostProcessingService(),
-            storage: MockStorageService()
+            storage: MockStorageService(),
         )
         weak let weakManager = manager
 

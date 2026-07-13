@@ -38,11 +38,11 @@ final class IntelligenceKernelContractsTests: XCTestCase {
         AppSettingsStore.shared.aiConfiguration = AIConfiguration(
             provider: .openai,
             baseURL: "https://example.com/v1",
-            selectedModel: "gpt-4o-mini"
+            selectedModel: "gpt-4o-mini",
         )
         AppSettingsStore.shared.enhancementsAISelection = EnhancementsAISelection(
             provider: .openai,
-            selectedModel: "gpt-4o-mini"
+            selectedModel: "gpt-4o-mini",
         )
 
         let configuration = URLSessionConfiguration.ephemeral
@@ -63,7 +63,7 @@ final class IntelligenceKernelContractsTests: XCTestCase {
             """
             return (
                 HTTPURLResponse(url: URL(string: "https://example.com")!, statusCode: 200, httpVersion: nil, headerFields: nil)!,
-                Data(body.utf8)
+                Data(body.utf8),
             )
         }
 
@@ -71,7 +71,7 @@ final class IntelligenceKernelContractsTests: XCTestCase {
             settings: .shared,
             session: session,
             apiKeyProvider: { _ in "test-key" },
-            sleepFunction: { _ in }
+            sleepFunction: { _ in },
         )
 
         let response = try await service.ask(
@@ -81,9 +81,9 @@ final class IntelligenceKernelContractsTests: XCTestCase {
                 transcription: makeTranscription(),
                 modelSelectionOverride: MeetingQAModelSelection(
                     providerRawValue: AIProvider.openai.rawValue,
-                    modelID: "gpt-4o-mini"
-                )
-            )
+                    modelID: "gpt-4o-mini",
+                ),
+            ),
         )
 
         XCTAssertEqual(response.status, .answered)
@@ -97,12 +97,12 @@ final class IntelligenceKernelContractsTests: XCTestCase {
                 .init(speaker: "Ana", text: "Decision logged", startTime: 2, endTime: 4),
             ],
             text: "Decision logged",
-            rawText: "decision logged"
+            rawText: "decision logged",
         )
     }
 }
 
-private final class MockKernelQANetworkURLProtocol: URLProtocol {
+private class MockKernelQANetworkURLProtocol: URLProtocol {
     nonisolated(unsafe) static var requestHandler: ((URLRequest) throws -> (HTTPURLResponse, Data))?
 
     override class func canInit(with request: URLRequest) -> Bool {

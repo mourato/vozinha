@@ -75,7 +75,7 @@ public extension View {
     func subtleScrollbars() -> some View {
         background(
             SubtleScrollbarsConfigurator()
-                .frame(width: 0, height: 0)
+                .frame(width: 0, height: 0),
         )
     }
 }

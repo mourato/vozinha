@@ -66,7 +66,7 @@ public extension TranscriptionMO {
         let request = fetchRequest()
         request.predicate = NSPredicate(
             format: "lifecycleStateRawValue IN %@",
-            [TranscriptionLifecycleState.completed.rawValue, TranscriptionLifecycleState.failed.rawValue]
+            [TranscriptionLifecycleState.completed.rawValue, TranscriptionLifecycleState.failed.rawValue],
         )
         return request
     }
@@ -89,9 +89,9 @@ public extension TranscriptionMO {
                 NSPredicate(format: "meeting.id == %@", meetingId as CVarArg),
                 NSPredicate(
                     format: "lifecycleStateRawValue IN %@",
-                    [TranscriptionLifecycleState.completed.rawValue, TranscriptionLifecycleState.failed.rawValue]
+                    [TranscriptionLifecycleState.completed.rawValue, TranscriptionLifecycleState.failed.rawValue],
                 ),
-            ]
+            ],
         )
         request.sortDescriptors = [NSSortDescriptor(key: "createdAt", ascending: false)]
         return request
@@ -150,7 +150,7 @@ extension TranscriptionMO {
             text: text,
             rawText: rawText,
             segments: sortedSegments,
-            language: language
+            language: language,
         )
         config.id = id
         config.contextItems = decodeContextItems()
@@ -214,7 +214,7 @@ extension TranscriptionMO {
     static func create(from entity: TranscriptionEntity, meeting: MeetingMO, in context: NSManagedObjectContext) -> TranscriptionMO {
         let transcriptionMO = TranscriptionMO(
             entity: resolvedEntityDescription(named: "TranscriptionMO", in: context),
-            insertInto: context
+            insertInto: context,
         )
         transcriptionMO.id = entity.id
         transcriptionMO.text = entity.text

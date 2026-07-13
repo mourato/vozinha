@@ -12,7 +12,7 @@ enum AudioVisualizerMath {
     static func typeWhisperWaveformLevels(
         audioLevel: Double,
         barCount: Int,
-        isAnimationActive: Bool
+        isAnimationActive: Bool,
     ) -> [Double] {
         guard barCount > 0 else { return [] }
         guard isAnimationActive else { return Array(repeating: 0.0, count: barCount) }
@@ -58,7 +58,7 @@ struct AudioVisualizer: View {
         barWidth: CGFloat = 4,
         barSpacing: CGFloat = 2,
         barCornerRadius: CGFloat = 1.5,
-        minHeight: CGFloat = 8
+        minHeight: CGFloat = 8,
     ) {
         self.audioLevel = audioLevel
         self.isAnimationActive = isAnimationActive
@@ -75,7 +75,7 @@ struct AudioVisualizer: View {
         let levels = isSetup ? bounceLevels : AudioVisualizerMath.typeWhisperWaveformLevels(
             audioLevel: audioLevel,
             barCount: barCount,
-            isAnimationActive: isAnimationActive
+            isAnimationActive: isAnimationActive,
         )
 
         return HStack(spacing: barSpacing) {
@@ -87,8 +87,8 @@ struct AudioVisualizer: View {
                         height: AudioVisualizerMath.barHeight(
                             level: levels[safe: index] ?? 0.0,
                             minHeight: minHeight,
-                            maxHeight: maxHeight
-                        )
+                            maxHeight: maxHeight,
+                        ),
                     )
                     .animation(isSetup ? setupBounceAnimation : nil, value: bounceIndex)
             }
@@ -117,7 +117,7 @@ struct AudioVisualizer: View {
 
     private var bounceLevels: [Double] {
         guard barCount > 0 else { return [] }
-        let bounceLevel = max(0.0, min(1.0, (14.0 - minHeight) / max(maxHeight - minHeight, 0.0_001)))
+        let bounceLevel = max(0.0, min(1.0, (14.0 - minHeight) / max(maxHeight - minHeight, 0.000_001)))
         return (0..<barCount).map { index in
             index == bounceIndex ? bounceLevel : 0.0
         }
@@ -157,7 +157,7 @@ private struct AudioVisualizerLivePreview: View {
             barWidth: AppDesignSystem.Layout.recordingIndicatorWaveformBarWidth,
             barSpacing: AppDesignSystem.Layout.recordingIndicatorWaveformBarSpacing,
             barCornerRadius: 1.5,
-            minHeight: AppDesignSystem.Layout.recordingIndicatorWaveformMinHeight
+            minHeight: AppDesignSystem.Layout.recordingIndicatorWaveformMinHeight,
         )
         .padding()
         .background(AppDesignSystem.Colors.neutral.opacity(0.8))

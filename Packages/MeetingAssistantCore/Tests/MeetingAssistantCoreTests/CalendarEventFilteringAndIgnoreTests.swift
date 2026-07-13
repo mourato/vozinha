@@ -27,22 +27,22 @@ final class CalendarEventFilteringAndIgnoreTests: XCTestCase {
         XCTAssertFalse(
             CalendarEventService.isEligibleUpcomingEvent(
                 attendeeCount: 1,
-                searchableValues: []
-            )
+                searchableValues: [],
+            ),
         )
 
         XCTAssertTrue(
             CalendarEventService.isEligibleUpcomingEvent(
                 attendeeCount: 1,
-                searchableValues: ["https://meet.google.com/abc-defg-hij"]
-            )
+                searchableValues: ["https://meet.google.com/abc-defg-hij"],
+            ),
         )
 
         XCTAssertTrue(
             CalendarEventService.isEligibleUpcomingEvent(
                 attendeeCount: 3,
-                searchableValues: []
-            )
+                searchableValues: [],
+            ),
         )
     }
 
@@ -75,14 +75,14 @@ final class CalendarEventFilteringAndIgnoreTests: XCTestCase {
                 title: "Lunch break",
                 startDate: Date(),
                 endDate: Date().addingTimeInterval(3_600),
-                attendees: []
+                attendees: [],
             ),
             MeetingCalendarEventSnapshot(
                 eventIdentifier: allowedIdentifier,
                 title: "Team Sync",
                 startDate: Date(),
                 endDate: Date().addingTimeInterval(3_600),
-                attendees: ["Alice", "Bob"]
+                attendees: ["Alice", "Bob"],
             ),
         ]
 
@@ -90,7 +90,7 @@ final class CalendarEventFilteringAndIgnoreTests: XCTestCase {
             storage: MockStorageService(),
             calendarEventService: calendarService,
             recordingManager: .shared,
-            settingsStore: settings
+            settingsStore: settings,
         )
 
         await viewModel.load()
@@ -132,7 +132,7 @@ private final class MockCalendarEventService: CalendarEventServiceProtocol, @unc
         limit _: Int,
         now _: Date,
         window _: TimeInterval,
-        ignoredEventIdentifiers: Set<String>
+        ignoredEventIdentifiers: Set<String>,
     ) throws -> [MeetingCalendarEventSnapshot] {
         lastIgnoredIdentifiers = ignoredEventIdentifiers
         return eventsToReturn.filter { !ignoredEventIdentifiers.contains($0.eventIdentifier) }
@@ -140,7 +140,7 @@ private final class MockCalendarEventService: CalendarEventServiceProtocol, @unc
 
     func bestMatchingEvent(
         at _: Date,
-        in events: [MeetingCalendarEventSnapshot]
+        in events: [MeetingCalendarEventSnapshot],
     ) -> MeetingCalendarEventSnapshot? {
         events.first
     }

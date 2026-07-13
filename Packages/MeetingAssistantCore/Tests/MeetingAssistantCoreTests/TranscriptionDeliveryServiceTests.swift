@@ -46,8 +46,8 @@ final class TranscriptionDeliveryServiceTests: XCTestCase {
                 previousCharacter: nil,
                 nextCharacter: nil,
                 isEmptyDocument: false,
-                support: .unsupported
-            )
+                support: .unsupported,
+            ),
         )
     }
 
@@ -63,7 +63,7 @@ final class TranscriptionDeliveryServiceTests: XCTestCase {
         TranscriptionDeliveryService.deliver(
             transcription: transcription,
             settings: settings,
-            pasteboard: mockPasteboard
+            pasteboard: mockPasteboard,
         )
 
         XCTAssertNil(mockPasteboard.storedString)
@@ -77,7 +77,7 @@ final class TranscriptionDeliveryServiceTests: XCTestCase {
         TranscriptionDeliveryService.deliver(
             transcription: transcription,
             settings: settings,
-            pasteboard: mockPasteboard
+            pasteboard: mockPasteboard,
         )
 
         XCTAssertEqual(mockPasteboard.storedString, kDictationText)
@@ -92,7 +92,7 @@ final class TranscriptionDeliveryServiceTests: XCTestCase {
             transcription: transcription,
             recordingSource: .all,
             settings: settings,
-            pasteboard: mockPasteboard
+            pasteboard: mockPasteboard,
         )
 
         XCTAssertNil(mockPasteboard.storedString)
@@ -106,7 +106,7 @@ final class TranscriptionDeliveryServiceTests: XCTestCase {
         TranscriptionDeliveryService.deliver(
             transcription: transcription,
             settings: settings,
-            pasteboard: mockPasteboard
+            pasteboard: mockPasteboard,
         )
 
         XCTAssertNil(mockPasteboard.storedString)
@@ -120,7 +120,7 @@ final class TranscriptionDeliveryServiceTests: XCTestCase {
         TranscriptionDeliveryService.deliver(
             transcription: transcription,
             settings: settings,
-            pasteboard: mockPasteboard
+            pasteboard: mockPasteboard,
         )
 
         XCTAssertNil(mockPasteboard.storedString)
@@ -132,14 +132,14 @@ final class TranscriptionDeliveryServiceTests: XCTestCase {
             meeting: meeting,
             text: "Clean result",
             rawText: kDictationText,
-            processedContent: "Clean result\n\n<CONTEXT_METADATA>\n- Active window OCR: leaked\n</CONTEXT_METADATA>"
+            processedContent: "Clean result\n\n<CONTEXT_METADATA>\n- Active window OCR: leaked\n</CONTEXT_METADATA>",
         )
         let settings = makeSettings(autoCopy: true, autoPaste: false)
 
         TranscriptionDeliveryService.deliver(
             transcription: transcription,
             settings: settings,
-            pasteboard: mockPasteboard
+            pasteboard: mockPasteboard,
         )
 
         XCTAssertEqual(mockPasteboard.storedString, "Clean result")
@@ -151,14 +151,14 @@ final class TranscriptionDeliveryServiceTests: XCTestCase {
             meeting: meeting,
             text: kDictationText,
             rawText: kDictationText,
-            processedContent: "<CONTEXT_METADATA>\n- Active window OCR: leaked\n</CONTEXT_METADATA>"
+            processedContent: "<CONTEXT_METADATA>\n- Active window OCR: leaked\n</CONTEXT_METADATA>",
         )
         let settings = makeSettings(autoCopy: true, autoPaste: false)
 
         TranscriptionDeliveryService.deliver(
             transcription: transcription,
             settings: settings,
-            pasteboard: mockPasteboard
+            pasteboard: mockPasteboard,
         )
 
         XCTAssertEqual(mockPasteboard.storedString, kDictationText)
@@ -173,14 +173,14 @@ final class TranscriptionDeliveryServiceTests: XCTestCase {
                 previousCharacter: "e",
                 nextCharacter: nil,
                 isEmptyDocument: false,
-                support: .supported
-            )
+                support: .supported,
+            ),
         )
 
         TranscriptionDeliveryService.deliver(
             transcription: transcription,
             settings: settings,
-            pasteboard: mockPasteboard
+            pasteboard: mockPasteboard,
         )
 
         XCTAssertEqual(mockPasteboard.storedString, " store today")
@@ -195,14 +195,14 @@ final class TranscriptionDeliveryServiceTests: XCTestCase {
                 previousCharacter: ".",
                 nextCharacter: nil,
                 isEmptyDocument: false,
-                support: .supported
-            )
+                support: .supported,
+            ),
         )
 
         TranscriptionDeliveryService.deliver(
             transcription: transcription,
             settings: settings,
-            pasteboard: mockPasteboard
+            pasteboard: mockPasteboard,
         )
 
         XCTAssertEqual(mockPasteboard.storedString, " Next step starts now")
@@ -224,14 +224,14 @@ final class TranscriptionDeliveryServiceTests: XCTestCase {
                 previousCharacter: nil,
                 nextCharacter: nil,
                 isEmptyDocument: false,
-                support: .supported
-            )
+                support: .supported,
+            ),
         )
 
         TranscriptionDeliveryService.deliver(
             transcription: transcription,
             settings: settings,
-            pasteboard: mockPasteboard
+            pasteboard: mockPasteboard,
         )
 
         XCTAssertEqual(
@@ -239,7 +239,7 @@ final class TranscriptionDeliveryServiceTests: XCTestCase {
             [
                 "We reviewed the roadmap and captured all launch blockers. The design team confirmed the new sidebar and toolbar direction. Engineering agreed to finish the migration before the beta cutoff. Support prepared the updated macros for customer rollout questions.",
                 "Marketing will publish the announcement once the release build is ready.",
-            ].joined(separator: "\n\n")
+            ].joined(separator: "\n\n"),
         )
     }
 
@@ -258,7 +258,7 @@ final class TranscriptionDeliveryServiceTests: XCTestCase {
         TranscriptionDeliveryService.deliver(
             transcription: transcription,
             settings: settings,
-            pasteboard: mockPasteboard
+            pasteboard: mockPasteboard,
         )
 
         XCTAssertEqual(mockPasteboard.storedString, text)
@@ -273,14 +273,14 @@ final class TranscriptionDeliveryServiceTests: XCTestCase {
                 previousCharacter: nil,
                 nextCharacter: nil,
                 isEmptyDocument: false,
-                support: .permissionDenied
-            )
+                support: .permissionDenied,
+            ),
         )
 
         TranscriptionDeliveryService.deliver(
             transcription: transcription,
             settings: settings,
-            pasteboard: mockPasteboard
+            pasteboard: mockPasteboard,
         )
 
         XCTAssertEqual(mockPasteboard.storedString, "Hello ")
@@ -295,14 +295,14 @@ final class TranscriptionDeliveryServiceTests: XCTestCase {
                 previousCharacter: "e",
                 nextCharacter: nil,
                 isEmptyDocument: false,
-                support: .supported
-            )
+                support: .supported,
+            ),
         )
 
         TranscriptionDeliveryService.deliver(
             transcription: transcription,
             settings: settings,
-            pasteboard: mockPasteboard
+            pasteboard: mockPasteboard,
         )
 
         XCTAssertEqual(mockPasteboard.storedString, "Store today")
@@ -312,13 +312,13 @@ final class TranscriptionDeliveryServiceTests: XCTestCase {
         autoCopy: Bool,
         autoPaste: Bool,
         smartSpacingEnabled: Bool = true,
-        smartParagraphsEnabled: Bool = true
+        smartParagraphsEnabled: Bool = true,
     ) -> MockDeliverySettings {
         MockDeliverySettings(
             autoCopyTranscriptionToClipboard: autoCopy,
             autoPasteTranscriptionToActiveApp: autoPaste,
             smartSpacingAndCapitalizationEnabled: smartSpacingEnabled,
-            smartParagraphsEnabled: smartParagraphsEnabled
+            smartParagraphsEnabled: smartParagraphsEnabled,
         )
     }
 }

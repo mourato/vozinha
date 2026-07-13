@@ -1,6 +1,6 @@
 import CoreAudio
-import XCTest
 @testable import MeetingAssistantCore
+import XCTest
 
 @MainActor
 final class MicrophoneInputSelectionResolverTests: XCTestCase {
@@ -25,11 +25,11 @@ final class MicrophoneInputSelectionResolverTests: XCTestCase {
             deviceIDsByUID: ["mic-ac": 101, "mic-battery": 202],
             usableDeviceIDs: [101, 202],
             namesByDeviceID: [101: "Desk Mic", 202: "Laptop Mic"],
-            defaultInputDeviceID: 999
+            defaultInputDeviceID: 999,
         )
         let resolver = MicrophoneInputSelectionResolver(
             deviceManager: deviceResolver,
-            powerSourceProvider: MockPowerSourceStateProvider(state: .charging)
+            powerSourceProvider: MockPowerSourceStateProvider(state: .charging),
         )
 
         XCTAssertEqual(resolver.resolveCustomMicrophoneDeviceID(settings: settings), 101)
@@ -44,11 +44,11 @@ final class MicrophoneInputSelectionResolverTests: XCTestCase {
             deviceIDsByUID: ["mic-ac": 101, "mic-battery": 202],
             usableDeviceIDs: [101, 202],
             namesByDeviceID: [101: "Desk Mic", 202: "Laptop Mic"],
-            defaultInputDeviceID: 999
+            defaultInputDeviceID: 999,
         )
         let resolver = MicrophoneInputSelectionResolver(
             deviceManager: deviceResolver,
-            powerSourceProvider: MockPowerSourceStateProvider(state: .battery)
+            powerSourceProvider: MockPowerSourceStateProvider(state: .battery),
         )
 
         XCTAssertEqual(resolver.resolveCustomMicrophoneDeviceID(settings: settings), 202)
@@ -63,16 +63,16 @@ final class MicrophoneInputSelectionResolverTests: XCTestCase {
             deviceIDsByUID: [:],
             usableDeviceIDs: [],
             namesByDeviceID: [909: "System Default Mic"],
-            defaultInputDeviceID: 909
+            defaultInputDeviceID: 909,
         )
         let resolver = MicrophoneInputSelectionResolver(
             deviceManager: deviceResolver,
-            powerSourceProvider: MockPowerSourceStateProvider(state: .charging)
+            powerSourceProvider: MockPowerSourceStateProvider(state: .charging),
         )
 
         XCTAssertEqual(
             resolver.resolvePreferredMicrophoneDeviceName(settings: settings),
-            "System Default Mic"
+            "System Default Mic",
         )
     }
 
@@ -85,16 +85,16 @@ final class MicrophoneInputSelectionResolverTests: XCTestCase {
             deviceIDsByUID: ["mic-ac": 101, "mic-battery": 202],
             usableDeviceIDs: [101, 202],
             namesByDeviceID: [101: "Desk Mic", 202: "Laptop Mic", 303: "System Default Mic"],
-            defaultInputDeviceID: 303
+            defaultInputDeviceID: 303,
         )
         let resolver = MicrophoneInputSelectionResolver(
             deviceManager: deviceResolver,
-            powerSourceProvider: MockPowerSourceStateProvider(state: .battery)
+            powerSourceProvider: MockPowerSourceStateProvider(state: .battery),
         )
 
         XCTAssertEqual(
             resolver.resolvePreferredMicrophoneDeviceName(settings: settings),
-            "System Default Mic"
+            "System Default Mic",
         )
     }
 }
@@ -120,7 +120,7 @@ private final class MockMicrophoneDeviceResolver: MicrophoneDeviceResolving {
         deviceIDsByUID: [String: AudioObjectID],
         usableDeviceIDs: Set<AudioObjectID>,
         namesByDeviceID: [AudioObjectID: String],
-        defaultInputDeviceID: AudioObjectID?
+        defaultInputDeviceID: AudioObjectID?,
     ) {
         self.availableInputDevices = availableInputDevices
         self.deviceIDsByUID = deviceIDsByUID

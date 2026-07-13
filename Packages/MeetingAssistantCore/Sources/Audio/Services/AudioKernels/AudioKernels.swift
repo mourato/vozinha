@@ -18,7 +18,7 @@ struct SwiftEnergyMeterKernel: EnergyMeterKernel {
 
     func makeMeterSnapshot(
         from buffer: AVAudioPCMBuffer,
-        barCount: Int
+        barCount: Int,
     ) -> AudioRecordingWorker.MeterSnapshot? {
         guard let channelData = buffer.floatChannelData else { return nil }
         let channelCount = Int(buffer.format.channelCount)
@@ -56,7 +56,7 @@ struct SwiftEnergyMeterKernel: EnergyMeterKernel {
             channelData: channelData,
             channelCount: channelCount,
             frameLength: frameLength,
-            barCount: sanitizedBarCount
+            barCount: sanitizedBarCount,
         )
 
         let averagePowerDB = Self.powerDB(fromLinear: maxRMS)
@@ -66,7 +66,7 @@ struct SwiftEnergyMeterKernel: EnergyMeterKernel {
             averagePowerDB: averagePowerDB,
             peakPowerDB: peakPowerDB,
             barPowerDBLevels: barPowerDBLevels,
-            deltaTime: Double(frameLength) / sampleRate
+            deltaTime: Double(frameLength) / sampleRate,
         )
     }
 
@@ -74,7 +74,7 @@ struct SwiftEnergyMeterKernel: EnergyMeterKernel {
         channelData: UnsafePointer<UnsafeMutablePointer<Float>>,
         channelCount: Int,
         frameLength: Int,
-        barCount: Int
+        barCount: Int,
     ) -> [Float] {
         guard barCount > 0 else { return [] }
 

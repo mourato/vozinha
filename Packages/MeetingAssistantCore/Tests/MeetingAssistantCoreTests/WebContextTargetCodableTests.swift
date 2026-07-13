@@ -1,5 +1,5 @@
-import XCTest
 @testable import MeetingAssistantCore
+import XCTest
 
 final class WebContextTargetCodableTests: XCTestCase {
     func testDecodingLegacyPayload_UsesBackwardCompatibleDefaults() throws {

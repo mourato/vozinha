@@ -1,6 +1,6 @@
-import XCTest
 @testable import MeetingAssistantCore
 @testable import MeetingAssistantCoreInfrastructure
+import XCTest
 
 @MainActor
 final class AppSettingsAudioDuckingTests: XCTestCase {

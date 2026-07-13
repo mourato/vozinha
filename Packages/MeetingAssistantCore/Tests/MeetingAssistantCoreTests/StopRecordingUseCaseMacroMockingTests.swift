@@ -14,7 +14,7 @@ final class StopRecordingUseCaseMacroMockingTests: XCTestCase {
 
         let useCase = StopRecordingUseCase(
             recordingRepository: recordingRepository,
-            meetingRepository: meetingRepository
+            meetingRepository: meetingRepository,
         )
 
         let meeting = MeetingEntity(app: .googleMeet)

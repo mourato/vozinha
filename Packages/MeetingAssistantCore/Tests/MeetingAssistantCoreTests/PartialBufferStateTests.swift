@@ -136,13 +136,13 @@ final class PartialBufferStateTests: XCTestCase {
 
     private func createTestBuffer(
         frames: AVAudioFrameCount = 1_000,
-        channels: AVAudioChannelCount = 2
+        channels: AVAudioChannelCount = 2,
     ) throws -> AVAudioPCMBuffer {
         guard let format = AVAudioFormat(
             commonFormat: .pcmFormatFloat32,
             sampleRate: 48_000,
             channels: channels,
-            interleaved: false
+            interleaved: false,
         ) else {
             throw NSError(domain: "Test", code: 1, userInfo: [NSLocalizedDescriptionKey: "Failed to create format"])
         }

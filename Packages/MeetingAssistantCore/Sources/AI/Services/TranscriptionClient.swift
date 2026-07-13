@@ -60,7 +60,7 @@ public class TranscriptionClient: ObservableObject, TranscriptionService, Transc
     private init(
         settingsStore: AppSettingsStore = .shared,
         groqTranscriptionClient: GroqTranscriptionClient = GroqTranscriptionClient(),
-        elevenLabsTranscriptionClient: ElevenLabsTranscriptionClient = ElevenLabsTranscriptionClient()
+        elevenLabsTranscriptionClient: ElevenLabsTranscriptionClient = ElevenLabsTranscriptionClient(),
     ) {
         self.settingsStore = settingsStore
         self.groqTranscriptionClient = groqTranscriptionClient
@@ -100,7 +100,7 @@ public class TranscriptionClient: ObservableObject, TranscriptionService, Transc
                 uptimeSeconds: xpcStatus.uptimeSeconds,
                 lastTranscriptionTime: nil,
                 totalTranscriptions: 0,
-                totalAudioProcessedSeconds: 0
+                totalAudioProcessedSeconds: 0,
             )
         case .local:
             let state = FluidAIModelManager.shared.modelState
@@ -115,7 +115,7 @@ public class TranscriptionClient: ObservableObject, TranscriptionService, Transc
                 uptimeSeconds: 0,
                 lastTranscriptionTime: nil,
                 totalTranscriptions: 0,
-                totalAudioProcessedSeconds: 0
+                totalAudioProcessedSeconds: 0,
             )
         }
     }
@@ -126,7 +126,7 @@ public class TranscriptionClient: ObservableObject, TranscriptionService, Transc
             updateCachedReadiness(.unknown)
             AppLogger.debug(
                 "Skipped model warmup because meeting transcription capability is disabled",
-                category: .transcriptionEngine
+                category: .transcriptionEngine,
             )
             return
         }
@@ -157,66 +157,26 @@ public class TranscriptionClient: ObservableObject, TranscriptionService, Transc
     /// Transcribe an audio file.
     public func transcribe(
         audioURL: URL,
-        onProgress: (@Sendable (Double) -> Void)? = nil
+        onProgress: (@Sendable (Double) -> Void)? = nil,
     ) async throws -> TranscriptionResponse {
         try await transcribe(
             audioURL: audioURL,
             onProgress: onProgress,
             executionMode: .meeting,
-            diarizationEnabledOverride: nil
+            diarizationEnabledOverride: nil,
         )
     }
 
     public func transcribe(
         audioURL: URL,
         onProgress: (@Sendable (Double) -> Void)?,
-        capturePurpose: CapturePurpose
+        capturePurpose: CapturePurpose,
     ) async throws -> TranscriptionResponse {
         try await transcribe(
             audioURL: audioURL,
             onProgress: onProgress,
             executionMode: executionMode(for: capturePurpose),
-            diarizationEnabledOverride: nil
-        )
-    }
-
-    public func transcribe(
-        audioURL: URL,
-        onProgress: (@Sendable (Double) -> Void)?,
-        executionMode: TranscriptionExecutionMode
-    ) async throws -> TranscriptionResponse {
-        try await transcribe(
-            audioURL: audioURL,
-            onProgress: onProgress,
-            executionMode: executionMode,
-            diarizationEnabledOverride: nil
-        )
-    }
-
-    public func transcribe(
-        audioURL: URL,
-        onProgress: (@Sendable (Double) -> Void)?,
-        diarizationEnabledOverride: Bool?
-    ) async throws -> TranscriptionResponse {
-        try await transcribe(
-            audioURL: audioURL,
-            onProgress: onProgress,
-            executionMode: .meeting,
-            diarizationEnabledOverride: diarizationEnabledOverride
-        )
-    }
-
-    public func transcribe(
-        audioURL: URL,
-        onProgress: (@Sendable (Double) -> Void)?,
-        diarizationEnabledOverride: Bool?,
-        capturePurpose: CapturePurpose
-    ) async throws -> TranscriptionResponse {
-        try await transcribe(
-            audioURL: audioURL,
-            onProgress: onProgress,
-            executionMode: executionMode(for: capturePurpose),
-            diarizationEnabledOverride: diarizationEnabledOverride
+            diarizationEnabledOverride: nil,
         )
     }
 
@@ -224,7 +184,47 @@ public class TranscriptionClient: ObservableObject, TranscriptionService, Transc
         audioURL: URL,
         onProgress: (@Sendable (Double) -> Void)?,
         executionMode: TranscriptionExecutionMode,
-        diarizationEnabledOverride: Bool?
+    ) async throws -> TranscriptionResponse {
+        try await transcribe(
+            audioURL: audioURL,
+            onProgress: onProgress,
+            executionMode: executionMode,
+            diarizationEnabledOverride: nil,
+        )
+    }
+
+    public func transcribe(
+        audioURL: URL,
+        onProgress: (@Sendable (Double) -> Void)?,
+        diarizationEnabledOverride: Bool?,
+    ) async throws -> TranscriptionResponse {
+        try await transcribe(
+            audioURL: audioURL,
+            onProgress: onProgress,
+            executionMode: .meeting,
+            diarizationEnabledOverride: diarizationEnabledOverride,
+        )
+    }
+
+    public func transcribe(
+        audioURL: URL,
+        onProgress: (@Sendable (Double) -> Void)?,
+        diarizationEnabledOverride: Bool?,
+        capturePurpose: CapturePurpose,
+    ) async throws -> TranscriptionResponse {
+        try await transcribe(
+            audioURL: audioURL,
+            onProgress: onProgress,
+            executionMode: executionMode(for: capturePurpose),
+            diarizationEnabledOverride: diarizationEnabledOverride,
+        )
+    }
+
+    public func transcribe(
+        audioURL: URL,
+        onProgress: (@Sendable (Double) -> Void)?,
+        executionMode: TranscriptionExecutionMode,
+        diarizationEnabledOverride: Bool?,
     ) async throws -> TranscriptionResponse {
         let selection = selectionOverride ?? settingsStore.resolvedTranscriptionSelection(for: executionMode)
         selectionOverride = nil
@@ -248,7 +248,7 @@ public class TranscriptionClient: ObservableObject, TranscriptionService, Transc
                 "filename": audioURL.lastPathComponent,
                 "implementation": implementationLabel,
                 "mode": executionMode.rawValue,
-            ]
+            ],
         )
 
         switch backend {
@@ -256,33 +256,33 @@ public class TranscriptionClient: ObservableObject, TranscriptionService, Transc
             return try await transcribeViaXPC(
                 audioURL: audioURL,
                 onProgress: onProgress,
-                diarizationEnabledOverride: diarizationEnabledOverride
+                diarizationEnabledOverride: diarizationEnabledOverride,
             )
         case .local:
             let effectiveDiarizationOverride = localDiarizationOverride(
                 for: selection,
-                requestedOverride: diarizationEnabledOverride
+                requestedOverride: diarizationEnabledOverride,
             )
             return try await transcribeLocally(
                 audioURL: audioURL,
                 onProgress: onProgress,
                 diarizationEnabledOverride: effectiveDiarizationOverride,
                 modelID: selection.selectedModel,
-                inputLanguageCode: inputLanguageCode
+                inputLanguageCode: inputLanguageCode,
             )
         case let .groq(modelID):
             return try await transcribeViaGroq(
                 audioURL: audioURL,
                 modelID: modelID,
                 onProgress: onProgress,
-                inputLanguageCode: inputLanguageCode
+                inputLanguageCode: inputLanguageCode,
             )
         case let .elevenLabs(modelID):
             return try await transcribeViaElevenLabs(
                 audioURL: audioURL,
                 modelID: modelID,
                 onProgress: onProgress,
-                inputLanguageCode: inputLanguageCode
+                inputLanguageCode: inputLanguageCode,
             )
         }
     }
@@ -291,7 +291,7 @@ public class TranscriptionClient: ObservableObject, TranscriptionService, Transc
         AppLogger.info(
             "Transcribing in-memory samples",
             category: .transcriptionEngine,
-            extra: ["sampleCount": samples.count, "implementation": transcriptionImplementation == .xpc ? "XPC" : "local"]
+            extra: ["sampleCount": samples.count, "implementation": transcriptionImplementation == .xpc ? "XPC" : "local"],
         )
 
         guard supportsIncrementalTranscription else {
@@ -303,7 +303,7 @@ public class TranscriptionClient: ObservableObject, TranscriptionService, Transc
             let inputLanguageCode = settingsStore.resolvedTranscriptionInputLanguageCode(for: .dictation)
             let response = try await LocalTranscriptionClient.shared.transcribe(
                 samples: samples,
-                inputLanguageHintCode: inputLanguageCode
+                inputLanguageHintCode: inputLanguageCode,
             )
             updateCachedReadiness(.healthy)
             return response
@@ -330,12 +330,12 @@ public class TranscriptionClient: ObservableObject, TranscriptionService, Transc
 
     public func assignSpeakers(
         to segments: [Transcription.Segment],
-        using speakerTimeline: [SpeakerTimelineSegment]
+        using speakerTimeline: [SpeakerTimelineSegment],
     ) -> [Transcription.Segment] {
         guard transcriptionImplementation == .local else { return segments }
         return LocalTranscriptionClient.shared.assignSpeakers(
             to: segments,
-            using: speakerTimeline
+            using: speakerTimeline,
         )
     }
 
@@ -356,18 +356,18 @@ public class TranscriptionClient: ObservableObject, TranscriptionService, Transc
     private func transcribeViaXPC(
         audioURL: URL,
         onProgress: (@Sendable (Double) -> Void)?,
-        diarizationEnabledOverride: Bool?
+        diarizationEnabledOverride: Bool?,
     ) async throws -> TranscriptionResponse {
         do {
             let response = try await MeetingAssistantAIClient.shared.transcribe(
                 audioURL: audioURL,
-                diarizationEnabledOverride: diarizationEnabledOverride
+                diarizationEnabledOverride: diarizationEnabledOverride,
             )
             updateCachedReadiness(.healthy)
             AppLogger.info(
                 "Transcription completed via XPC",
                 category: .transcriptionEngine,
-                extra: ["words": response.text.split(separator: " ").count]
+                extra: ["words": response.text.split(separator: " ").count],
             )
             return response
         } catch {
@@ -376,7 +376,7 @@ public class TranscriptionClient: ObservableObject, TranscriptionService, Transc
                 "Transcription failed via XPC",
                 category: .transcriptionEngine,
                 error: error,
-                extra: ["filename": audioURL.lastPathComponent]
+                extra: ["filename": audioURL.lastPathComponent],
             )
             throw error
         }
@@ -387,7 +387,7 @@ public class TranscriptionClient: ObservableObject, TranscriptionService, Transc
         onProgress: (@Sendable (Double) -> Void)?,
         diarizationEnabledOverride: Bool?,
         modelID: String,
-        inputLanguageCode: String?
+        inputLanguageCode: String?,
     ) async throws -> TranscriptionResponse {
         do {
             let response = try await LocalTranscriptionClient.shared.transcribe(
@@ -395,13 +395,13 @@ public class TranscriptionClient: ObservableObject, TranscriptionService, Transc
                 isDiarizationEnabled: diarizationEnabledOverride,
                 modelID: modelID,
                 inputLanguageHintCode: inputLanguageCode,
-                onProgress: onProgress
+                onProgress: onProgress,
             )
             updateCachedReadiness(.healthy)
             AppLogger.info(
                 "Transcription completed locally",
                 category: .transcriptionEngine,
-                extra: ["words": response.text.split(separator: " ").count]
+                extra: ["words": response.text.split(separator: " ").count],
             )
             return response
         } catch {
@@ -410,7 +410,7 @@ public class TranscriptionClient: ObservableObject, TranscriptionService, Transc
                 "Transcription failed locally",
                 category: .transcriptionEngine,
                 error: error,
-                extra: ["filename": audioURL.lastPathComponent]
+                extra: ["filename": audioURL.lastPathComponent],
             )
             throw error
         }
@@ -420,20 +420,20 @@ public class TranscriptionClient: ObservableObject, TranscriptionService, Transc
         audioURL: URL,
         modelID: String,
         onProgress: (@Sendable (Double) -> Void)?,
-        inputLanguageCode: String?
+        inputLanguageCode: String?,
     ) async throws -> TranscriptionResponse {
         do {
             let response = try await groqTranscriptionClient.transcribe(
                 audioURL: audioURL,
                 modelID: modelID,
                 inputLanguageCode: inputLanguageCode,
-                onProgress: onProgress
+                onProgress: onProgress,
             )
             updateCachedReadiness(.healthy)
             AppLogger.info(
                 "Transcription completed via Groq",
                 category: .transcriptionEngine,
-                extra: ["words": response.text.split(separator: " ").count, "model": response.model]
+                extra: ["words": response.text.split(separator: " ").count, "model": response.model],
             )
             return response
         } catch {
@@ -442,7 +442,7 @@ public class TranscriptionClient: ObservableObject, TranscriptionService, Transc
                 "Transcription failed via Groq",
                 category: .transcriptionEngine,
                 error: error,
-                extra: ["filename": audioURL.lastPathComponent, "model": modelID]
+                extra: ["filename": audioURL.lastPathComponent, "model": modelID],
             )
             throw error
         }
@@ -452,20 +452,20 @@ public class TranscriptionClient: ObservableObject, TranscriptionService, Transc
         audioURL: URL,
         modelID: String,
         onProgress: (@Sendable (Double) -> Void)?,
-        inputLanguageCode: String?
+        inputLanguageCode: String?,
     ) async throws -> TranscriptionResponse {
         do {
             let response = try await elevenLabsTranscriptionClient.transcribe(
                 audioURL: audioURL,
                 modelID: modelID,
                 inputLanguageCode: inputLanguageCode,
-                onProgress: onProgress
+                onProgress: onProgress,
             )
             updateCachedReadiness(.healthy)
             AppLogger.info(
                 "Transcription completed via ElevenLabs",
                 category: .transcriptionEngine,
-                extra: ["words": response.text.split(separator: " ").count, "model": response.model]
+                extra: ["words": response.text.split(separator: " ").count, "model": response.model],
             )
             return response
         } catch {
@@ -474,7 +474,7 @@ public class TranscriptionClient: ObservableObject, TranscriptionService, Transc
                 "Transcription failed via ElevenLabs",
                 category: .transcriptionEngine,
                 error: error,
-                extra: ["filename": audioURL.lastPathComponent, "model": modelID]
+                extra: ["filename": audioURL.lastPathComponent, "model": modelID],
             )
             throw error
         }
@@ -502,7 +502,7 @@ public class TranscriptionClient: ObservableObject, TranscriptionService, Transc
 
     private func localDiarizationOverride(
         for selection: TranscriptionProviderSelection,
-        requestedOverride: Bool?
+        requestedOverride: Bool?,
     ) -> Bool? {
         guard selection.provider == .local else { return requestedOverride }
         guard !settingsStore.localModelSupportsDiarization(modelID: selection.selectedModel) else {
@@ -513,7 +513,7 @@ public class TranscriptionClient: ObservableObject, TranscriptionService, Transc
             AppLogger.info(
                 "Diarization auto-disabled for selected local transcription model",
                 category: .transcriptionEngine,
-                extra: ["model": selection.selectedModel]
+                extra: ["model": selection.selectedModel],
             )
         }
         return false

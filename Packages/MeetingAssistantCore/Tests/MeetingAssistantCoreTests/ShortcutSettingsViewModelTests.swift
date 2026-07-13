@@ -1,5 +1,5 @@
-import XCTest
 @testable import MeetingAssistantCore
+import XCTest
 
 @MainActor
 final class ShortcutSettingsViewModelTests: XCTestCase {
@@ -22,7 +22,7 @@ final class ShortcutSettingsViewModelTests: XCTestCase {
         let shortcut = ShortcutDefinition(
             modifiers: [.command],
             primaryKey: .letter("K", keyCode: 0x28),
-            trigger: .singleTap
+            trigger: .singleTap,
         )
 
         viewModel.dictationShortcutDefinition = shortcut
@@ -43,7 +43,7 @@ final class ShortcutSettingsViewModelTests: XCTestCase {
         let shortcut = ShortcutDefinition(
             modifiers: [.control],
             primaryKey: .letter("J", keyCode: 0x26),
-            trigger: .singleTap
+            trigger: .singleTap,
         )
 
         viewModel.meetingShortcutDefinition = shortcut
@@ -70,13 +70,13 @@ final class ShortcutSettingsViewModelTests: XCTestCase {
             requiresGlobalCapture: true,
             accessibilityTrusted: false,
             eventTapExpected: false,
-            eventTapActive: false
+            eventTapActive: false,
         )
         await Task.yield()
 
         XCTAssertEqual(
             viewModel.shortcutCaptureHealthPresentation?.messageKey,
-            "settings.shortcuts.health.degraded.message.permissions_accessibility"
+            "settings.shortcuts.health.degraded.message.permissions_accessibility",
         )
         XCTAssertEqual(viewModel.shortcutCaptureHealthPresentation?.isFallback, false)
     }
@@ -86,7 +86,7 @@ final class ShortcutSettingsViewModelTests: XCTestCase {
         let enterShortcut = ShortcutDefinition(
             modifiers: [.command],
             primaryKey: .symbol("↩", keyCode: 0x24),
-            trigger: .singleTap
+            trigger: .singleTap,
         )
 
         viewModel.dictationShortcutDefinition = enterShortcut
@@ -95,7 +95,7 @@ final class ShortcutSettingsViewModelTests: XCTestCase {
         XCTAssertEqual(settings.dictationShortcutDefinition, AppSettingsStore.defaultDictationShortcutDefinition)
         XCTAssertEqual(
             viewModel.dictationModifierConflictMessage,
-            "settings.shortcuts.modifier.primary_key_required".localized
+            "settings.shortcuts.modifier.primary_key_required".localized,
         )
     }
 }

@@ -55,7 +55,7 @@ public enum ContextAwarenessPrivacy {
                 in: output,
                 options: [],
                 range: fullRange,
-                withTemplate: replacement
+                withTemplate: replacement,
             )
         }
 
@@ -71,7 +71,7 @@ public enum ContextAwarenessPrivacy {
             excludedBundleIDs
                 .map { $0.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() }
                 .filter { !$0.isEmpty }
-                .prefix(maxExcludedBundleIDs)
+                .prefix(maxExcludedBundleIDs),
         )
 
         return defaultSensitiveBundleIDs.contains(normalizedBundleID) || normalizedExcludedBundleIDs.contains(normalizedBundleID)

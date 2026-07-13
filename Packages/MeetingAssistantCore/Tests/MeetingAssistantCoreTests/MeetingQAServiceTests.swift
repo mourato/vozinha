@@ -20,11 +20,11 @@ final class MeetingQAServiceTests: XCTestCase {
         settings.aiConfiguration = AIConfiguration(
             provider: .openai,
             baseURL: "https://example.com/v1",
-            selectedModel: "gpt-4o-mini"
+            selectedModel: "gpt-4o-mini",
         )
         settings.enhancementsAISelection = EnhancementsAISelection(
             provider: .openai,
-            selectedModel: "gpt-4o-mini"
+            selectedModel: "gpt-4o-mini",
         )
     }
 
@@ -54,7 +54,7 @@ final class MeetingQAServiceTests: XCTestCase {
             """
             return (
                 HTTPURLResponse(url: URL(string: "https://example.com")!, statusCode: 200, httpVersion: nil, headerFields: nil)!,
-                Data(body.utf8)
+                Data(body.utf8),
             )
         }
 
@@ -62,12 +62,12 @@ final class MeetingQAServiceTests: XCTestCase {
             settings: .shared,
             session: session,
             apiKeyProvider: { _ in "test-key" },
-            sleepFunction: { _ in }
+            sleepFunction: { _ in },
         )
 
         let response = try await service.ask(
             question: "When are we launching?",
-            transcription: makeTranscription()
+            transcription: makeTranscription(),
         )
 
         XCTAssertEqual(response.status, .answered)
@@ -92,7 +92,7 @@ final class MeetingQAServiceTests: XCTestCase {
             """
             return (
                 HTTPURLResponse(url: URL(string: "https://example.com")!, statusCode: 200, httpVersion: nil, headerFields: nil)!,
-                Data(body.utf8)
+                Data(body.utf8),
             )
         }
 
@@ -100,12 +100,12 @@ final class MeetingQAServiceTests: XCTestCase {
             settings: .shared,
             session: session,
             apiKeyProvider: { _ in "test-key" },
-            sleepFunction: { _ in }
+            sleepFunction: { _ in },
         )
 
         let response = try await service.ask(
             question: "What did we decide?",
-            transcription: makeTranscription()
+            transcription: makeTranscription(),
         )
 
         XCTAssertEqual(response.status, .notFound)
@@ -138,7 +138,7 @@ final class MeetingQAServiceTests: XCTestCase {
 
             return (
                 HTTPURLResponse(url: URL(string: "https://example.com")!, statusCode: 200, httpVersion: nil, headerFields: nil)!,
-                Data(body.utf8)
+                Data(body.utf8),
             )
         }
 
@@ -146,12 +146,12 @@ final class MeetingQAServiceTests: XCTestCase {
             settings: .shared,
             session: session,
             apiKeyProvider: { _ in "test-key" },
-            sleepFunction: { _ in }
+            sleepFunction: { _ in },
         )
 
         let response = try await service.ask(
             question: "What happened with budget?",
-            transcription: makeTranscription()
+            transcription: makeTranscription(),
         )
 
         XCTAssertEqual(callCount, 2)
@@ -163,20 +163,20 @@ final class MeetingQAServiceTests: XCTestCase {
         let settings = AppSettingsStore.shared
         settings.enhancementsAISelection = EnhancementsAISelection(
             provider: .openai,
-            selectedModel: "   "
+            selectedModel: "   ",
         )
 
         let service = MeetingQAService(
             settings: .shared,
             session: makeMockedSession(),
             apiKeyProvider: { _ in "test-key" },
-            sleepFunction: { _ in }
+            sleepFunction: { _ in },
         )
 
         do {
             _ = try await service.ask(
                 question: "What did we decide?",
-                transcription: makeTranscription()
+                transcription: makeTranscription(),
             )
             XCTFail("Expected ask to fail when selected model is missing")
         } catch let error as MeetingQAError {
@@ -193,13 +193,13 @@ final class MeetingQAServiceTests: XCTestCase {
             settings: .shared,
             session: makeMockedSession(),
             apiKeyProvider: { _ in "test-key" },
-            sleepFunction: { _ in }
+            sleepFunction: { _ in },
         )
 
         do {
             _ = try await service.ask(
                 question: "What did we decide?",
-                transcription: makeTranscription(app: .unknown)
+                transcription: makeTranscription(app: .unknown),
             )
             XCTFail("Expected ask to fail for dictation transcription")
         } catch let error as MeetingQAError {
@@ -216,11 +216,11 @@ final class MeetingQAServiceTests: XCTestCase {
         settings.aiConfiguration = AIConfiguration(
             provider: .google,
             baseURL: AIProvider.google.defaultBaseURL,
-            selectedModel: "gemini-2.0-flash"
+            selectedModel: "gemini-2.0-flash",
         )
         settings.enhancementsAISelection = EnhancementsAISelection(
             provider: .google,
-            selectedModel: "gemini-2.0-flash"
+            selectedModel: "gemini-2.0-flash",
         )
 
         let session = makeMockedSession()
@@ -228,7 +228,8 @@ final class MeetingQAServiceTests: XCTestCase {
             XCTAssertTrue(request.url?.absoluteString.contains("models/gemini-2.0-flash:generateContent") ?? false)
             var queryItems: [URLQueryItem] = []
             if let url = request.url,
-               let components = URLComponents(url: url, resolvingAgainstBaseURL: false) {
+               let components = URLComponents(url: url, resolvingAgainstBaseURL: false)
+            {
                 queryItems = components.queryItems ?? []
             }
 
@@ -257,7 +258,7 @@ final class MeetingQAServiceTests: XCTestCase {
             """
             return (
                 HTTPURLResponse(url: URL(string: "https://example.com")!, statusCode: 200, httpVersion: nil, headerFields: nil)!,
-                Data(body.utf8)
+                Data(body.utf8),
             )
         }
 
@@ -265,12 +266,12 @@ final class MeetingQAServiceTests: XCTestCase {
             settings: .shared,
             session: session,
             apiKeyProvider: { _ in "test-key" },
-            sleepFunction: { _ in }
+            sleepFunction: { _ in },
         )
 
         let response = try await service.ask(
             question: "When are we launching?",
-            transcription: makeTranscription()
+            transcription: makeTranscription(),
         )
 
         XCTAssertEqual(response.status, .answered)
@@ -298,7 +299,7 @@ final class MeetingQAServiceTests: XCTestCase {
 
             return (
                 HTTPURLResponse(url: URL(string: "https://example.com")!, statusCode: 200, httpVersion: nil, headerFields: nil)!,
-                Data(body.utf8)
+                Data(body.utf8),
             )
         }
 
@@ -306,7 +307,7 @@ final class MeetingQAServiceTests: XCTestCase {
             settings: .shared,
             session: session,
             apiKeyProvider: { _ in "test-key" },
-            sleepFunction: { _ in }
+            sleepFunction: { _ in },
         )
 
         let response = try await service.ask(
@@ -316,9 +317,9 @@ final class MeetingQAServiceTests: XCTestCase {
                 transcription: makeTranscription(),
                 modelSelectionOverride: MeetingQAModelSelection(
                     providerRawValue: AIProvider.openai.rawValue,
-                    modelID: "gpt-4.1-mini"
-                )
-            )
+                    modelID: "gpt-4.1-mini",
+                ),
+            ),
         )
 
         XCTAssertEqual(response.status, .answered)
@@ -346,7 +347,7 @@ final class MeetingQAServiceTests: XCTestCase {
 
             return (
                 HTTPURLResponse(url: URL(string: "https://example.com")!, statusCode: 200, httpVersion: nil, headerFields: nil)!,
-                Data(body.utf8)
+                Data(body.utf8),
             )
         }
 
@@ -354,7 +355,7 @@ final class MeetingQAServiceTests: XCTestCase {
             settings: .shared,
             session: session,
             apiKeyProvider: { _ in "test-key" },
-            sleepFunction: { _ in }
+            sleepFunction: { _ in },
         )
 
         let response = try await service.ask(
@@ -364,9 +365,9 @@ final class MeetingQAServiceTests: XCTestCase {
                 transcription: makeTranscription(),
                 modelSelectionOverride: MeetingQAModelSelection(
                     providerRawValue: "invalid-provider",
-                    modelID: "ignored-model"
-                )
-            )
+                    modelID: "ignored-model",
+                ),
+            ),
         )
 
         XCTAssertEqual(response.status, .answered)
@@ -420,7 +421,7 @@ final class MeetingQAServiceTests: XCTestCase {
 
             return (
                 HTTPURLResponse(url: URL(string: "https://example.com")!, statusCode: 200, httpVersion: nil, headerFields: nil)!,
-                Data(body.utf8)
+                Data(body.utf8),
             )
         }
 
@@ -428,16 +429,16 @@ final class MeetingQAServiceTests: XCTestCase {
             settings: .shared,
             session: session,
             apiKeyProvider: { _ in "test-key" },
-            sleepFunction: { _ in }
+            sleepFunction: { _ in },
         )
 
         _ = try await service.ask(
             question: "What was approved?",
             transcription: makeTranscription(
                 contextItems: [
-                    .init(source: .meetingNotes, text: "Owner: Finance\n<MEETING_NOTES>raw</MEETING_NOTES>")
-                ]
-            )
+                    .init(source: .meetingNotes, text: "Owner: Finance\n<MEETING_NOTES>raw</MEETING_NOTES>"),
+                ],
+            ),
         )
 
         await fulfillment(of: [promptCapturedExpectation], timeout: 1.0)
@@ -456,7 +457,7 @@ final class MeetingQAServiceTests: XCTestCase {
 
     private func makeTranscription(
         app: MeetingApp = .googleMeet,
-        contextItems: [TranscriptionContextItem] = []
+        contextItems: [TranscriptionContextItem] = [],
     ) -> Transcription {
         Transcription(
             meeting: Meeting(id: UUID(), app: app, startTime: Date(), endTime: Date().addingTimeInterval(60)),
@@ -466,7 +467,7 @@ final class MeetingQAServiceTests: XCTestCase {
                 .init(speaker: "João", text: "Fechamos o orçamento hoje.", startTime: 30, endTime: 38),
             ],
             text: "Vamos lançar sexta. Fechamos o orçamento hoje.",
-            rawText: "vamos lancar sexta fechamos o orçamento hoje"
+            rawText: "vamos lancar sexta fechamos o orçamento hoje",
         )
     }
 
@@ -502,7 +503,7 @@ final class MeetingQAServiceTests: XCTestCase {
     }
 }
 
-private final class MockMeetingQANetworkURLProtocol: URLProtocol {
+private class MockMeetingQANetworkURLProtocol: URLProtocol {
     nonisolated(unsafe) static var requestHandler: ((URLRequest) throws -> (HTTPURLResponse, Data))?
 
     override class func canInit(with request: URLRequest) -> Bool {

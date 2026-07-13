@@ -44,17 +44,17 @@ final class ExtractedWorkflowServicesTests: XCTestCase {
             title: " Design Review ",
             startDate: Date(),
             endDate: Date().addingTimeInterval(3_600),
-            attendees: ["Alice", "Bob"]
+            attendees: ["Alice", "Bob"],
         )
         let calendarService = MockCalendarEventServiceForExtraction()
         calendarService.eventsToReturn = [event]
         let service = MeetingCalendarIntegrationService(
             calendarEventService: calendarService,
-            ignoredEventIdentifiers: { [] }
+            ignoredEventIdentifiers: { [] },
         )
 
         let result = await service.applyAutomaticCalendarEventIfAvailable(
-            to: Meeting(app: .zoom, capturePurpose: .meeting)
+            to: Meeting(app: .zoom, capturePurpose: .meeting),
         )
 
         XCTAssertEqual(result.linkedCalendarEvent?.eventIdentifier, event.eventIdentifier)
@@ -75,7 +75,7 @@ final class ExtractedWorkflowServicesTests: XCTestCase {
             activeWindowTitle: nil,
             activeAccessibilityText: "Visible text",
             clipboardText: nil,
-            activeWindowOCRText: nil
+            activeWindowOCRText: nil,
         )
         contextService.context = "CONTEXT_METADATA\n- Focused UI text (Accessibility):\nVisible text"
         let service = AssistantContextCaptureService(
@@ -84,7 +84,7 @@ final class ExtractedWorkflowServicesTests: XCTestCase {
             textContextGuardrails: TextContextGuardrails(),
             textContextPolicy: .default,
             isAccessibilityTrusted: { true },
-            requestAccessibilityPermission: {}
+            requestAccessibilityPermission: {},
         )
 
         let result = await service.capturePostProcessingContext(
@@ -92,7 +92,7 @@ final class ExtractedWorkflowServicesTests: XCTestCase {
             settings: settings,
             activeTabURL: "https://example.com",
             calendarContext: nil,
-            isDictationMode: false
+            isDictationMode: false,
         )
 
         XCTAssertEqual(contextService.lastOptions?.includeAccessibilityText, true)
@@ -103,7 +103,7 @@ final class ExtractedWorkflowServicesTests: XCTestCase {
                 TranscriptionContextItem.Source.activeApp,
                 .accessibilityText,
                 .activeTabURL,
-            ]
+            ],
         )
     }
 
@@ -121,7 +121,7 @@ final class ExtractedWorkflowServicesTests: XCTestCase {
             activeWindowTitle: "Draft",
             activeAccessibilityText: "Visible text",
             clipboardText: "Clipboard",
-            activeWindowOCRText: "OCR"
+            activeWindowOCRText: "OCR",
         )
         contextService.context = "CONTEXT_METADATA\n- Active app: Safari"
         let service = AssistantContextCaptureService(
@@ -130,7 +130,7 @@ final class ExtractedWorkflowServicesTests: XCTestCase {
             textContextGuardrails: TextContextGuardrails(),
             textContextPolicy: .default,
             isAccessibilityTrusted: { true },
-            requestAccessibilityPermission: {}
+            requestAccessibilityPermission: {},
         )
 
         let result = await service.capturePostProcessingContext(
@@ -138,7 +138,7 @@ final class ExtractedWorkflowServicesTests: XCTestCase {
             settings: settings,
             activeTabURL: nil,
             calendarContext: nil,
-            isDictationMode: true
+            isDictationMode: true,
         )
 
         XCTAssertNil(result.context)
@@ -160,7 +160,7 @@ final class ExtractedWorkflowServicesTests: XCTestCase {
             activeWindowTitle: "Draft",
             activeAccessibilityText: nil,
             clipboardText: nil,
-            activeWindowOCRText: nil
+            activeWindowOCRText: nil,
         )
         contextService.context = "CONTEXT_METADATA\n- Active app: Safari"
 
@@ -170,7 +170,7 @@ final class ExtractedWorkflowServicesTests: XCTestCase {
             textContextGuardrails: TextContextGuardrails(),
             textContextPolicy: .default,
             isAccessibilityTrusted: { true },
-            requestAccessibilityPermission: {}
+            requestAccessibilityPermission: {},
         )
 
         let result = await service.capturePostProcessingContext(
@@ -178,13 +178,13 @@ final class ExtractedWorkflowServicesTests: XCTestCase {
             settings: settings,
             activeTabURL: nil,
             calendarContext: nil,
-            isDictationMode: true
+            isDictationMode: true,
         )
 
         XCTAssertTrue(
             result.items.contains(where: {
                 $0.source == TranscriptionContextItem.Source.focusedText && $0.text == "Focused draft"
-            })
+            }),
         )
         XCTAssertTrue(result.context?.contains("Focused draft") == true)
     }
@@ -203,7 +203,7 @@ final class ExtractedWorkflowServicesTests: XCTestCase {
             activeWindowTitle: "Draft",
             activeAccessibilityText: "Visible text",
             clipboardText: "Clipboard",
-            activeWindowOCRText: "OCR"
+            activeWindowOCRText: "OCR",
         )
         contextService.context = "CONTEXT_METADATA\n- Active app: Safari"
         let service = AssistantContextCaptureService(
@@ -212,7 +212,7 @@ final class ExtractedWorkflowServicesTests: XCTestCase {
             textContextGuardrails: TextContextGuardrails(),
             textContextPolicy: .default,
             isAccessibilityTrusted: { true },
-            requestAccessibilityPermission: {}
+            requestAccessibilityPermission: {},
         )
 
         let result = await service.capturePostProcessingContext(
@@ -225,8 +225,8 @@ final class ExtractedWorkflowServicesTests: XCTestCase {
                 includeClipboard: false,
                 includeWindowOCR: false,
                 includeAccessibilityText: false,
-                redactSensitiveData: true
-            )
+                redactSensitiveData: true,
+            ),
         )
 
         XCTAssertNil(result.context)
@@ -249,7 +249,7 @@ final class ExtractedWorkflowServicesTests: XCTestCase {
             textContextGuardrails: TextContextGuardrails(),
             textContextPolicy: .default,
             isAccessibilityTrusted: { true },
-            requestAccessibilityPermission: {}
+            requestAccessibilityPermission: {},
         )
 
         _ = await service.capturePostProcessingContext(
@@ -262,8 +262,8 @@ final class ExtractedWorkflowServicesTests: XCTestCase {
                 includeClipboard: true,
                 includeWindowOCR: false,
                 includeAccessibilityText: false,
-                redactSensitiveData: false
-            )
+                redactSensitiveData: false,
+            ),
         )
 
         XCTAssertEqual(contextService.lastOptions?.includeClipboard, true)
@@ -291,14 +291,14 @@ private final class MockCalendarEventServiceForExtraction: CalendarEventServiceP
         limit _: Int,
         now _: Date,
         window _: TimeInterval,
-        ignoredEventIdentifiers _: Set<String>
+        ignoredEventIdentifiers _: Set<String>,
     ) throws -> [MeetingCalendarEventSnapshot] {
         eventsToReturn
     }
 
     func bestMatchingEvent(
         at _: Date,
-        in events: [MeetingCalendarEventSnapshot]
+        in events: [MeetingCalendarEventSnapshot],
     ) -> MeetingCalendarEventSnapshot? {
         events.first
     }
@@ -311,7 +311,7 @@ private final class MockContextAwarenessService: ContextAwarenessServiceProtocol
         activeWindowTitle: nil,
         activeAccessibilityText: nil,
         clipboardText: nil,
-        activeWindowOCRText: nil
+        activeWindowOCRText: nil,
     )
     var context: String?
     var lastOptions: ContextAwarenessCaptureOptions?
@@ -333,7 +333,7 @@ private struct MockTextContextProvider: TextContextProvider {
         TextContextSnapshot(
             text: text ?? "",
             source: .accessibility,
-            appContext: ActiveAppContext(bundleIdentifier: "com.apple.Safari", name: "Safari", processIdentifier: 1)
+            appContext: ActiveAppContext(bundleIdentifier: "com.apple.Safari", name: "Safari", processIdentifier: 1),
         )
     }
 }

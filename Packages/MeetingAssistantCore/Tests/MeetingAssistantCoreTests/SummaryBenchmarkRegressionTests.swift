@@ -13,7 +13,7 @@ final class SummaryBenchmarkRegressionTests: XCTestCase {
 
     func testSummaryBenchmarkGate() throws {
         let runner = SummaryBenchmarkRunner()
-        let fixtureSet = try runner.loadFixtureSet(from: try fixturesURL())
+        let fixtureSet = try runner.loadFixtureSet(from: fixturesURL())
 
         let modeRaw = ProcessInfo.processInfo.environment[EnvironmentKeys.mode] ?? SummaryBenchmarkGateMode.reportOnly.rawValue
         let mode = SummaryBenchmarkGateMode(rawValue: modeRaw) ?? .reportOnly
@@ -40,7 +40,7 @@ final class SummaryBenchmarkRegressionTests: XCTestCase {
         if mode == .enforce {
             XCTAssertTrue(
                 result.passesEnforcement,
-                "Summary benchmark regressions detected. Threshold failures: \(result.thresholdFailures). Baseline regressions: \(result.baselineRegressions)."
+                "Summary benchmark regressions detected. Threshold failures: \(result.thresholdFailures). Baseline regressions: \(result.baselineRegressions).",
             )
         }
     }
@@ -83,7 +83,7 @@ final class SummaryBenchmarkRegressionTests: XCTestCase {
         XCTAssertThrowsError(try runner.loadFixtureSet(from: tempURL)) { error in
             XCTAssertEqual(
                 error as? SummaryBenchmarkRunnerError,
-                .unsupportedFixtureSchemaVersion(3)
+                .unsupportedFixtureSchemaVersion(3),
             )
         }
     }
@@ -91,8 +91,8 @@ final class SummaryBenchmarkRegressionTests: XCTestCase {
     func testSummaryBenchmarkIsDeterministicForSameInput() throws {
         let fixedDate = Date(timeIntervalSince1970: 1_700_000_000)
         let runner = SummaryBenchmarkRunner(nowProvider: { fixedDate })
-        let fixtureSet = try runner.loadFixtureSet(from: try fixturesURL())
-        let baseline = try runner.loadBaseline(from: try baselineURL())
+        let fixtureSet = try runner.loadFixtureSet(from: fixturesURL())
+        let baseline = try runner.loadBaseline(from: baselineURL())
 
         let first = runner.run(fixtureSet: fixtureSet, mode: .enforce, baseline: baseline)
         let second = runner.run(fixtureSet: fixtureSet, mode: .enforce, baseline: baseline)
@@ -121,12 +121,12 @@ final class SummaryBenchmarkRegressionTests: XCTestCase {
                             isGroundedInTranscript: true,
                             containsSpeculation: false,
                             isHumanReviewed: false,
-                            confidenceScore: 0.95
-                        )
-                    )
+                            confidenceScore: 0.95,
+                        ),
+                    ),
                 ),
             ],
-            rubric: .v1
+            rubric: .v1,
         )
 
         let runner = SummaryBenchmarkRunner(nowProvider: { Date(timeIntervalSince1970: 1_700_000_000) })
@@ -137,7 +137,7 @@ final class SummaryBenchmarkRegressionTests: XCTestCase {
 
     func testBaselineRoundTrip() throws {
         let runner = SummaryBenchmarkRunner(nowProvider: { Date(timeIntervalSince1970: 1_700_000_000) })
-        let fixtureSet = try runner.loadFixtureSet(from: try fixturesURL())
+        let fixtureSet = try runner.loadFixtureSet(from: fixturesURL())
         let result = runner.run(fixtureSet: fixtureSet, mode: .reportOnly, baseline: nil)
         let baseline = runner.makeBaseline(metrics: result.metrics, source: "round-trip-test")
 
@@ -150,7 +150,7 @@ final class SummaryBenchmarkRegressionTests: XCTestCase {
 
     func testEnforceModeDetectsBaselineRegression() throws {
         let runner = SummaryBenchmarkRunner(nowProvider: { Date(timeIntervalSince1970: 1_700_000_000) })
-        let fixtureSet = try runner.loadFixtureSet(from: try fixturesURL())
+        let fixtureSet = try runner.loadFixtureSet(from: fixturesURL())
 
         let strictBaseline = SummaryBenchmarkBaseline(
             schemaVersion: 1,
@@ -164,8 +164,8 @@ final class SummaryBenchmarkRegressionTests: XCTestCase {
                 actionItemsTitleF1: 1,
                 openQuestionsF1: 1,
                 trustFlagsAccuracy: 1,
-                hallucinationRate: 0
-            )
+                hallucinationRate: 0,
+            ),
         )
 
         let result = runner.run(fixtureSet: fixtureSet, mode: .enforce, baseline: strictBaseline)
@@ -187,11 +187,11 @@ final class SummaryBenchmarkRegressionTests: XCTestCase {
             Bundle.module.url(forResource: resourceName, withExtension: "json"),
         ]
 
-        guard let url = candidates.compactMap({ $0 }).first else {
+        guard let url = candidates.compactMap(\.self).first else {
             throw NSError(
                 domain: "SummaryBenchmarkRegressionTests",
                 code: 1,
-                userInfo: [NSLocalizedDescriptionKey: "Missing benchmark resource: \(resourceName).json"]
+                userInfo: [NSLocalizedDescriptionKey: "Missing benchmark resource: \(resourceName).json"],
             )
         }
 
@@ -205,7 +205,7 @@ final class SummaryBenchmarkRegressionTests: XCTestCase {
             return try runner.loadBaseline(from: explicitURL)
         }
 
-        return try runner.loadBaseline(from: try baselineURL())
+        return try runner.loadBaseline(from: baselineURL())
     }
 
     private func resultURL() -> URL {

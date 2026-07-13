@@ -1,13 +1,13 @@
-import XCTest
 @testable import MeetingAssistantCore
 @testable import MeetingAssistantCoreUI
+import XCTest
 
 @MainActor
 final class RecordingIndicatorPPWarningTests: XCTestCase {
     func testMessageKey_ForMissingModel() {
-        let descriptor = RecordingIndicatorPostProcessingWarningDescriptor(
+        let descriptor = RecordingPostProcessingWarningDescriptor(
             issue: .missingModel,
-            mode: .meeting
+            mode: .meeting,
         )
 
         XCTAssertEqual(descriptor.messageKey, "recording_indicator.post_processing_warning.missing_model")
@@ -15,27 +15,27 @@ final class RecordingIndicatorPPWarningTests: XCTestCase {
     }
 
     func testMessageKey_ForMissingAPIKey() {
-        let descriptor = RecordingIndicatorPostProcessingWarningDescriptor(
+        let descriptor = RecordingPostProcessingWarningDescriptor(
             issue: .missingAPIKey,
-            mode: .dictation
+            mode: .dictation,
         )
 
         XCTAssertEqual(descriptor.messageKey, "recording_indicator.post_processing_warning.missing_api_key")
     }
 
     func testMessageKey_ForInvalidBaseURL() {
-        let descriptor = RecordingIndicatorPostProcessingWarningDescriptor(
+        let descriptor = RecordingPostProcessingWarningDescriptor(
             issue: .invalidBaseURL,
-            mode: .assistant
+            mode: .assistant,
         )
 
         XCTAssertEqual(descriptor.messageKey, "recording_indicator.post_processing_warning.invalid_base_url")
     }
 
     func testOpenSettings_UsesIntelligenceSection() {
-        let descriptor = RecordingIndicatorPostProcessingWarningDescriptor(
+        let descriptor = RecordingPostProcessingWarningDescriptor(
             issue: .missingModel,
-            mode: .meeting
+            mode: .meeting,
         )
         var capturedSection: String?
 

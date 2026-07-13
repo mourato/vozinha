@@ -1,7 +1,7 @@
 import Foundation
-import XCTest
 @testable import MeetingAssistantCoreAI
 @testable import MeetingAssistantCoreInfrastructure
+import XCTest
 
 @MainActor
 final class LocalModelResidencyCoordinatorTests: XCTestCase {
@@ -12,13 +12,13 @@ final class LocalModelResidencyCoordinatorTests: XCTestCase {
             asrResident: true,
             diarizationResident: true,
             lastASRActivityAt: Date(timeIntervalSince1970: 0),
-            lastDiarizationActivityAt: Date(timeIntervalSince1970: 0)
+            lastDiarizationActivityAt: Date(timeIntervalSince1970: 0),
         )
         let settings = MockModelResidencySettings(timeout: .never)
         let coordinator = LocalModelResidencyCoordinator(
             modelManager: manager,
             settingsStore: settings,
-            checkIntervalSeconds: 1
+            checkIntervalSeconds: 1,
         )
 
         coordinator.evaluateAndUnloadIfNeeded(now: Date(timeIntervalSince1970: 10_000))
@@ -35,13 +35,13 @@ final class LocalModelResidencyCoordinatorTests: XCTestCase {
             asrResident: true,
             diarizationResident: true,
             lastASRActivityAt: referenceDate,
-            lastDiarizationActivityAt: referenceDate
+            lastDiarizationActivityAt: referenceDate,
         )
         let settings = MockModelResidencySettings(timeout: .minutes5)
         let coordinator = LocalModelResidencyCoordinator(
             modelManager: manager,
             settingsStore: settings,
-            checkIntervalSeconds: 1
+            checkIntervalSeconds: 1,
         )
 
         coordinator.evaluateAndUnloadIfNeeded(now: referenceDate.addingTimeInterval(5 * 60))
@@ -62,13 +62,13 @@ final class LocalModelResidencyCoordinatorTests: XCTestCase {
             lastASRActivityAt: referenceDate,
             lastDiarizationActivityAt: referenceDate,
             isASRInUse: true,
-            isDiarizationInUse: true
+            isDiarizationInUse: true,
         )
         let settings = MockModelResidencySettings(timeout: .minutes5)
         let coordinator = LocalModelResidencyCoordinator(
             modelManager: manager,
             settingsStore: settings,
-            checkIntervalSeconds: 1
+            checkIntervalSeconds: 1,
         )
 
         coordinator.evaluateAndUnloadIfNeeded(now: referenceDate.addingTimeInterval(15 * 60))
@@ -85,13 +85,13 @@ final class LocalModelResidencyCoordinatorTests: XCTestCase {
             asrResident: true,
             diarizationResident: true,
             lastASRActivityAt: referenceDate,
-            lastDiarizationActivityAt: referenceDate
+            lastDiarizationActivityAt: referenceDate,
         )
         let settings = MockModelResidencySettings(timeout: .minutes10)
         let coordinator = LocalModelResidencyCoordinator(
             modelManager: manager,
             settingsStore: settings,
-            checkIntervalSeconds: 1
+            checkIntervalSeconds: 1,
         )
 
         coordinator.evaluateAndUnloadIfNeeded(now: referenceDate.addingTimeInterval(9 * 60))
@@ -107,7 +107,7 @@ final class LocalModelResidencyCoordinatorTests: XCTestCase {
             asrResident: false,
             diarizationResident: false,
             lastASRActivityAt: nil,
-            lastDiarizationActivityAt: nil
+            lastDiarizationActivityAt: nil,
         )
         let managerB = MockLocalModelResidencyManager(
             residencyManagerID: "manager-b",
@@ -115,20 +115,20 @@ final class LocalModelResidencyCoordinatorTests: XCTestCase {
             asrResident: false,
             diarizationResident: false,
             lastASRActivityAt: nil,
-            lastDiarizationActivityAt: nil
+            lastDiarizationActivityAt: nil,
         )
         let settings = MockModelResidencySettings(timeout: .minutes5)
         let coordinator = LocalModelResidencyCoordinator(
             modelManagers: [managerA, managerB],
             settingsStore: settings,
-            checkIntervalSeconds: 1
+            checkIntervalSeconds: 1,
         )
 
         XCTAssertTrue(
-            coordinator.isResidencyManaged(localModelID: LocalTranscriptionModel.parakeetTdt06BV3.rawValue)
+            coordinator.isResidencyManaged(localModelID: LocalTranscriptionModel.parakeetTdt06BV3.rawValue),
         )
         XCTAssertTrue(
-            coordinator.isResidencyManaged(localModelID: LocalTranscriptionModel.cohereTranscribe032026CoreML6Bit.rawValue)
+            coordinator.isResidencyManaged(localModelID: LocalTranscriptionModel.cohereTranscribe032026CoreML6Bit.rawValue),
         )
     }
 
@@ -139,17 +139,17 @@ final class LocalModelResidencyCoordinatorTests: XCTestCase {
             asrResident: false,
             diarizationResident: false,
             lastASRActivityAt: nil,
-            lastDiarizationActivityAt: nil
+            lastDiarizationActivityAt: nil,
         )
         let settings = MockModelResidencySettings(timeout: .minutes5)
         let coordinator = LocalModelResidencyCoordinator(
             modelManagers: [manager],
             settingsStore: settings,
-            checkIntervalSeconds: 1
+            checkIntervalSeconds: 1,
         )
 
         XCTAssertFalse(
-            coordinator.isResidencyManaged(localModelID: LocalTranscriptionModel.cohereTranscribe032026CoreML6Bit.rawValue)
+            coordinator.isResidencyManaged(localModelID: LocalTranscriptionModel.cohereTranscribe032026CoreML6Bit.rawValue),
         )
     }
 }
@@ -185,7 +185,7 @@ private final class MockLocalModelResidencyManager: LocalModelResidencyManaging 
         lastASRActivityAt: Date?,
         lastDiarizationActivityAt: Date?,
         isASRInUse: Bool = false,
-        isDiarizationInUse: Bool = false
+        isDiarizationInUse: Bool = false,
     ) {
         self.residencyManagerID = residencyManagerID
         self.managedLocalModelIDs = managedLocalModelIDs

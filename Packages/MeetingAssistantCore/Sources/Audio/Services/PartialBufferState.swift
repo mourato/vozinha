@@ -63,7 +63,7 @@ public final class PartialBufferState: @unchecked Sendable {
     public func consume(
         maxFrames: Int,
         into destBuffers: UnsafeMutableAudioBufferListPointer,
-        destOffset: Int
+        destOffset: Int,
     ) -> Int {
         lock.withLock {
             // CRITICAL: No I/O operations in audio callback path - can cause crashes
@@ -96,7 +96,7 @@ public final class PartialBufferState: @unchecked Sendable {
                 if let destStart = destBuffer.mData?.assumingMemoryBound(to: Float.self) {
                     let destPtr = UnsafeMutableBufferPointer(
                         start: destStart.advanced(by: destOffset),
-                        count: framesToCopy
+                        count: framesToCopy,
                     )
                     let srcPtr = UnsafeBufferPointer(start: src, count: framesToCopy)
                     _ = destPtr.initialize(from: srcPtr)
@@ -144,7 +144,7 @@ public final class PartialBufferState: @unchecked Sendable {
         srcOffset: Int,
         maxFrames: Int,
         into destBuffers: UnsafeMutableAudioBufferListPointer,
-        destOffset: Int
+        destOffset: Int,
     ) -> Int {
         let available = Int(buffer.frameLength) - srcOffset
         let framesToCopy = min(maxFrames, available)
@@ -167,7 +167,7 @@ public final class PartialBufferState: @unchecked Sendable {
             if let destStart = destBuffer.mData?.assumingMemoryBound(to: Float.self) {
                 let destPtr = UnsafeMutableBufferPointer(
                     start: destStart.advanced(by: destOffset),
-                    count: framesToCopy
+                    count: framesToCopy,
                 )
                 let srcPtr = UnsafeBufferPointer(start: src, count: framesToCopy)
                 _ = destPtr.initialize(from: srcPtr)

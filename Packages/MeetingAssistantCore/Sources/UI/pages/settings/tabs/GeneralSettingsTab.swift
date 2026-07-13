@@ -194,7 +194,11 @@ public struct GeneralSettingsTab: View {
         }
         .alert("common.error".localized, isPresented: Binding(
             get: { viewModel.cleanupError != nil },
-            set: { if !$0 { viewModel.cleanupError = nil } },
+            set: {
+                if !$0 {
+                    viewModel.cleanupError = nil
+                }
+            },
         )) {
             Button("common.ok".localized, role: .cancel) {}
         } message: {
@@ -204,7 +208,11 @@ public struct GeneralSettingsTab: View {
         }
         .alert("settings.general.launch_at_login.error_title".localized, isPresented: Binding(
             get: { viewModel.launchAtLoginError != nil },
-            set: { if !$0 { viewModel.dismissLaunchAtLoginError() } },
+            set: {
+                if !$0 {
+                    viewModel.dismissLaunchAtLoginError()
+                }
+            },
         )) {
             Button("settings.general.launch_at_login.retry".localized) {
                 viewModel.retryLaunchAtLogin()

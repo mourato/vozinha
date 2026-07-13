@@ -221,7 +221,7 @@ honor its STOP conditions, and update your row when done.
 | 051 | Re-run modularization triage and resolve confirmed hygiene findings | P3 | M | 039 | DONE |
 | 052 | Design an Assistant automation-rule spike | P3 | M | 042 | DONE |
 | 053 | Decide whether optional CloudKit sync fits Prisma's privacy boundary | P3 | L | 049 | DONE |
-| 054 | Retire the repository-wide Swift lint baseline and enable strict gating | P2 | M | 032 | TODO |
+| 054 | Retire the repository-wide Swift lint baseline and enable strict gating | P2 | M | 032 | DONE |
 
 Status values: TODO | IN PROGRESS | DONE | BLOCKED (with one-line reason) | REJECTED (with one-line rationale)
 

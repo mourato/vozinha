@@ -21,7 +21,7 @@ final class OnboardingMeetingRecordingTests: XCTestCase {
     func testStepOrderIncludesMeetingRecordingBeforeCompletion() {
         XCTAssertEqual(
             OnboardingStep.allCases,
-            [.welcome, .permissions, .shortcuts, .downloadModels, .meetingRecording, .completion]
+            [.welcome, .permissions, .shortcuts, .downloadModels, .meetingRecording, .completion],
         )
     }
 
@@ -45,12 +45,12 @@ final class OnboardingMeetingRecordingTests: XCTestCase {
             screenRecordingGranted: true,
             transcriptionModelReady: true,
             isMeetingRecordingEnabled: true,
-            wasSkipped: false
+            wasSkipped: false,
         )
 
         XCTAssertEqual(
             readiness.completionSubtitleKey,
-            "onboarding.completion.subtitle.meetings_ready"
+            "onboarding.completion.subtitle.meetings_ready",
         )
     }
 
@@ -60,12 +60,12 @@ final class OnboardingMeetingRecordingTests: XCTestCase {
             screenRecordingGranted: true,
             transcriptionModelReady: true,
             isMeetingRecordingEnabled: true,
-            wasSkipped: true
+            wasSkipped: true,
         )
 
         XCTAssertEqual(
             readiness.completionSubtitleKey,
-            "onboarding.completion.subtitle.dictation_ready"
+            "onboarding.completion.subtitle.dictation_ready",
         )
     }
 
@@ -75,12 +75,12 @@ final class OnboardingMeetingRecordingTests: XCTestCase {
             screenRecordingGranted: false,
             transcriptionModelReady: true,
             isMeetingRecordingEnabled: true,
-            wasSkipped: false
+            wasSkipped: false,
         )
 
         XCTAssertEqual(
             readiness.completionSubtitleKey,
-            "onboarding.completion.subtitle.dictation_ready"
+            "onboarding.completion.subtitle.dictation_ready",
         )
     }
 }

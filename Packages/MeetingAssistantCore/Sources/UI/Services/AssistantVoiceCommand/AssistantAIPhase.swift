@@ -10,21 +10,21 @@ public struct AssistantAIPhase: @unchecked Sendable {
 
     public init(
         postProcessingService: any PostProcessingServiceProtocol,
-        scriptRunner: AssistantBashScriptRunner
+        scriptRunner: AssistantBashScriptRunner,
     ) {
         self.postProcessingService = postProcessingService
         runScript = { script, input, timeoutSeconds in
             try await scriptRunner.run(
                 script: script,
                 input: input,
-                timeoutSeconds: timeoutSeconds
+                timeoutSeconds: timeoutSeconds,
             )
         }
     }
 
     init(
         postProcessingService: any PostProcessingServiceProtocol,
-        runScript: @escaping @Sendable (_ script: String, _ input: String, _ timeoutSeconds: UInt64) async throws -> String?
+        runScript: @escaping @Sendable (_ script: String, _ input: String, _ timeoutSeconds: UInt64) async throws -> String?,
     ) {
         self.postProcessingService = postProcessingService
         self.runScript = runScript
@@ -34,12 +34,12 @@ public struct AssistantAIPhase: @unchecked Sendable {
         sourceText: String,
         command: String,
         executionFlow: AssistantExecutionFlow,
-        selectedIntegration: AssistantIntegrationConfig?
+        selectedIntegration: AssistantIntegrationConfig?,
     ) async throws -> String {
         guard let beforeAICommand = try await applyScriptIfNeeded(
             stage: .beforeAI,
             input: command,
-            integration: selectedIntegration
+            integration: selectedIntegration,
         ) else {
             throw AssistantVoiceCommandError.processingFailed
         }
@@ -49,8 +49,8 @@ public struct AssistantAIPhase: @unchecked Sendable {
             promptText: assistantPromptInstructions(
                 baseInstructions: normalizedPromptInstructions(from: selectedIntegration),
                 voiceCommand: beforeAICommand,
-                executionFlow: executionFlow
-            )
+                executionFlow: executionFlow,
+            ),
         )
 
         let processedCommand = try await postProcessingService.processTranscription(
@@ -59,7 +59,7 @@ public struct AssistantAIPhase: @unchecked Sendable {
             mode: .assistant,
             systemPromptOverride: executionFlow == .integrationDispatch
                 ? AIPromptTemplates.assistantSystemPrompt
-                : nil
+                : nil,
         )
 
         logPayloadIfNeeded("Assistant post-processing payload", [
@@ -70,7 +70,7 @@ public struct AssistantAIPhase: @unchecked Sendable {
         guard let commandForDispatch = try await applyScriptIfNeeded(
             stage: .afterAI,
             input: processedCommand,
-            integration: selectedIntegration
+            integration: selectedIntegration,
         ) else {
             throw AssistantVoiceCommandError.processingFailed
         }
@@ -81,7 +81,7 @@ public struct AssistantAIPhase: @unchecked Sendable {
     public func assistantPromptInstructions(
         baseInstructions: String?,
         voiceCommand: String,
-        executionFlow: AssistantExecutionFlow
+        executionFlow: AssistantExecutionFlow,
     ) -> String {
         let normalizedVoiceCommand = voiceCommand.trimmingCharacters(in: .whitespacesAndNewlines)
         if executionFlow == .integrationDispatch {
@@ -130,7 +130,7 @@ public struct AssistantAIPhase: @unchecked Sendable {
     public func applyScriptIfNeeded(
         stage: AssistantIntegrationScriptConfig.Stage,
         input: String,
-        integration: AssistantIntegrationConfig?
+        integration: AssistantIntegrationConfig?,
     ) async throws -> String? {
         guard let integration,
               integration.isEnabled,
@@ -151,7 +151,7 @@ public struct AssistantAIPhase: @unchecked Sendable {
                     "inputLength": input.count,
                     "outputLength": output?.count ?? 0,
                     "outputPreview": AssistantPayloadLogging.payloadPreview(output ?? ""),
-                ]
+                ],
             )
         }
 
@@ -159,7 +159,7 @@ public struct AssistantAIPhase: @unchecked Sendable {
             AppLogger.info(
                 "Assistant script returned empty output; skipping remaining processing",
                 category: .assistant,
-                extra: ["stage": stage.rawValue, "integration": integration.name]
+                extra: ["stage": stage.rawValue, "integration": integration.name],
             )
         }
 

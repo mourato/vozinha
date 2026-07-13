@@ -74,7 +74,7 @@ public final class AudioPlayerViewModel: ObservableObject {
             every: Constants.playbackUpdateInterval,
             tolerance: Constants.playbackUpdateInterval * Constants.timerToleranceRatio,
             on: .main,
-            in: .common
+            in: .common,
         )
         .autoconnect()
         .sink { [weak self] _ in
@@ -115,7 +115,7 @@ public final class AudioPlayerViewModel: ObservableObject {
                 commonFormat: .pcmFormatFloat32,
                 sampleRate: audioFile.processingFormat.sampleRate,
                 channels: 1,
-                interleaved: false
+                interleaved: false,
             ) else { return fallback }
 
             guard let buffer = AVAudioPCMBuffer(pcmFormat: format, frameCapacity: totalFrames) else {

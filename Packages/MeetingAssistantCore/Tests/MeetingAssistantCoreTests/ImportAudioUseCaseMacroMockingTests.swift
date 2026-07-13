@@ -28,7 +28,7 @@ final class ImportAudioUseCaseMacroMockingTests: XCTestCase {
 
         let useCase = ImportAudioUseCase(
             audioFileRepository: audioFileRepository,
-            meetingRepository: meetingRepository
+            meetingRepository: meetingRepository,
         )
 
         let result = try await useCase.execute(sourceURL: sourceURL)
@@ -64,12 +64,12 @@ final class ImportAudioUseCaseMacroMockingTests: XCTestCase {
 
         let useCase = ImportAudioUseCase(
             audioFileRepository: audioFileRepository,
-            meetingRepository: meetingRepository
+            meetingRepository: meetingRepository,
         )
 
         let result = try await useCase.execute(
             sourceURL: sourceURL,
-            capturePurpose: .meeting
+            capturePurpose: .meeting,
         )
 
         XCTAssertEqual(result.meeting.capturePurpose, .meeting)
@@ -95,7 +95,7 @@ final class ImportAudioUseCaseMacroMockingTests: XCTestCase {
 
         let useCase = ImportAudioUseCase(
             audioFileRepository: audioFileRepository,
-            meetingRepository: meetingRepository
+            meetingRepository: meetingRepository,
         )
 
         do {

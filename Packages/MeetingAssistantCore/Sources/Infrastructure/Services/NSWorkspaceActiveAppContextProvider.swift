@@ -15,7 +15,7 @@ public final class NSWorkspaceActiveAppContextProvider: ActiveAppContextProvider
         return ActiveAppContext(
             bundleIdentifier: bundleIdentifier,
             name: app.localizedName,
-            processIdentifier: Int(app.processIdentifier)
+            processIdentifier: Int(app.processIdentifier),
         )
     }
 }

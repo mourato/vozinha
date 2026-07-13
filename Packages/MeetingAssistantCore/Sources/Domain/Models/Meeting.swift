@@ -114,7 +114,7 @@ public struct Meeting: Identifiable, Codable, Hashable, Sendable {
         state: MeetingState = .idle,
         startTime: Date = Date(),
         endTime: Date? = nil,
-        audioFilePath: String? = nil
+        audioFilePath: String? = nil,
     ) {
         self.id = id
         self.app = app
@@ -196,7 +196,7 @@ public struct Meeting: Identifiable, Codable, Hashable, Sendable {
 
         return "export.header.meeting_title".localized(
             with: app.displayName,
-            formatter.string(from: startTime)
+            formatter.string(from: startTime),
         )
     }
 

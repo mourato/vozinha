@@ -10,7 +10,7 @@ public enum TextContextLogger {
             extra: [
                 "bundle_id": bundleIdentifier,
                 "reason": reason.logValue,
-            ]
+            ],
         )
     }
 }

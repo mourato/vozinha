@@ -47,7 +47,7 @@ final class DomainLayerTests: XCTestCase {
         let useCase = StartRecordingUseCase(
             recordingRepository: mockRecordingRepo,
             audioFileRepository: mockAudioFileRepo,
-            meetingRepository: mockMeetingRepo
+            meetingRepository: mockMeetingRepo,
         )
         let meeting = MeetingEntity(app: .googleMeet)
         let expectedURL = URL(fileURLWithPath: "/tmp/test.wav")
@@ -81,7 +81,7 @@ final class DomainLayerTests: XCTestCase {
         let useCase = StartRecordingUseCase(
             recordingRepository: mockRecordingRepo,
             audioFileRepository: mockAudioFileRepo,
-            meetingRepository: mockMeetingRepo
+            meetingRepository: mockMeetingRepo,
         )
         let meeting = MeetingEntity(app: .googleMeet)
 
@@ -112,7 +112,7 @@ final class DomainLayerTests: XCTestCase {
         let useCase = TranscribeAudioUseCase(
             transcriptionRepository: mockTranscriptionRepo,
             transcriptionStorageRepository: mockTranscriptionStorageRepo,
-            postProcessingRepository: mockPostProcessingRepo
+            postProcessingRepository: mockPostProcessingRepo,
         )
         let meeting = MeetingEntity(app: .googleMeet)
         let audioURL = URL(fileURLWithPath: "/tmp/test.wav")
@@ -121,7 +121,7 @@ final class DomainLayerTests: XCTestCase {
             language: "en",
             durationSeconds: 5.0,
             model: "test-model",
-            processedAt: "now"
+            processedAt: "now",
         )
 
         mockTranscriptionRepo.transcribeHandler = { _, _ in response }

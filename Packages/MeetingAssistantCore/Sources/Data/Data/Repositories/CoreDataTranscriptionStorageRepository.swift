@@ -47,7 +47,7 @@ public final class CoreDataTranscriptionStorageRepository: TranscriptionStorageR
                 throw NSError(
                     domain: "CoreDataTranscriptionStorageRepository",
                     code: 404,
-                    userInfo: [NSLocalizedDescriptionKey: "Missing transcription for model performance attempt"]
+                    userInfo: [NSLocalizedDescriptionKey: "Missing transcription for model performance attempt"],
                 )
             }
 
@@ -123,7 +123,7 @@ public final class CoreDataTranscriptionStorageRepository: TranscriptionStorageR
                     summaryHumanReviewed: mo.summaryHumanReviewed,
                     summaryConfidenceScore: mo.summaryConfidenceScore,
                     transcriptConfidenceScore: mo.transcriptConfidenceScore,
-                    transcriptContainsUncertainty: mo.transcriptContainsUncertainty
+                    transcriptContainsUncertainty: mo.transcriptContainsUncertainty,
                 )
             }
         }
@@ -187,7 +187,7 @@ public final class CoreDataTranscriptionStorageRepository: TranscriptionStorageR
             text: transcription.text,
             rawText: transcription.rawText,
             segments: transcription.segments,
-            language: transcription.language
+            language: transcription.language,
         )
         config.id = transcription.id
         config.contextItems = transcription.contextItems
@@ -244,8 +244,8 @@ public final class CoreDataTranscriptionStorageRepository: TranscriptionStorageR
                 NSPredicate(
                     format: "startedAt >= %@ AND startedAt < %@",
                     range.start as NSDate,
-                    range.end as NSDate
-                )
+                    range.end as NSDate,
+                ),
             )
         }
 
@@ -256,7 +256,7 @@ public final class CoreDataTranscriptionStorageRepository: TranscriptionStorageR
                     NSPredicate(format: "modelDisplayName CONTAINS[cd] %@", trimmedSearch),
                     NSPredicate(format: "modelID CONTAINS[cd] %@", trimmedSearch),
                     NSPredicate(format: "providerDisplayName CONTAINS[cd] %@", trimmedSearch),
-                ])
+                ]),
             )
         }
 

@@ -1,6 +1,6 @@
-import XCTest
-import MeetingAssistantCore
 import AppKit
+import MeetingAssistantCore
+import XCTest
 
 /// Tests for the pluggable input backend architecture.
 /// These tests verify that the ShortcutInputBackend protocol and its implementations
@@ -10,7 +10,7 @@ final class ShortcutInputBackendTests: XCTestCase {
 
     // MARK: - Mock Backend Tests
 
-    func testMockBackendQueuesEvents() async {
+    func testMockBackendQueuesEvents() {
         let backend = MockShortcutInputBackend()
 
         let event1 = ShortcutInputEvent.keyDown(keyCode: 0x24) // Return key
@@ -22,7 +22,7 @@ final class ShortcutInputBackendTests: XCTestCase {
         XCTAssertEqual(backend.queuedEventCount, 2)
     }
 
-    func testMockBackendInjectsEvents() async {
+    func testMockBackendInjectsEvents() {
         let backend = MockShortcutInputBackend()
 
         var receivedEvents: [ShortcutInputEvent] = []
@@ -40,7 +40,7 @@ final class ShortcutInputBackendTests: XCTestCase {
         XCTAssertEqual(receivedEvents.first?.keyCode, 0x24)
     }
 
-    func testMockBackendReplaySequence() async {
+    func testMockBackendReplaySequence() {
         let backend = MockShortcutInputBackend()
 
         var receivedEvents: [ShortcutInputEvent] = []
@@ -68,7 +68,7 @@ final class ShortcutInputBackendTests: XCTestCase {
         XCTAssertEqual(receivedEvents[1].kind, .keyUp)
     }
 
-    func testMockBackendClearQueue() async {
+    func testMockBackendClearQueue() {
         let backend = MockShortcutInputBackend()
 
         backend.queueEvent(.keyDown(keyCode: 0x24))
@@ -88,7 +88,7 @@ final class ShortcutInputBackendTests: XCTestCase {
             keyCode: 0x24,
             modifiers: .command,
             isRepeat: false,
-            characters: "s"
+            characters: "s",
         )
 
         XCTAssertEqual(event.kind, .keyDown)
@@ -101,7 +101,7 @@ final class ShortcutInputBackendTests: XCTestCase {
         let event = ShortcutInputEvent.keyUp(
             keyCode: 0x24,
             modifiers: .command,
-            characters: "s"
+            characters: "s",
         )
 
         XCTAssertEqual(event.kind, .keyUp)
@@ -110,7 +110,7 @@ final class ShortcutInputBackendTests: XCTestCase {
 
     func testEventFactoryFlagsChanged() {
         let event = ShortcutInputEvent.flagsChanged(
-            modifiers: [.command, .shift]
+            modifiers: [.command, .shift],
         )
 
         XCTAssertEqual(event.kind, .flagsChanged)
@@ -129,8 +129,8 @@ final class ShortcutInputBackendTests: XCTestCase {
                 characters: "",
                 charactersIgnoringModifiers: "",
                 isARepeat: false,
-                keyCode: 55
-            )
+                keyCode: 55,
+            ),
         )
 
         let event = ShortcutInputEvent(systemEvent: systemEvent)
@@ -146,14 +146,14 @@ final class ShortcutInputBackendTests: XCTestCase {
 
     func testModifierPressSequence() {
         let sequence = ShortcutTestSequence.modifierPress(
-            keyCode: 0x3B, // Control key
-            flags: .control
+            keyCode: 0x3b, // Control key
+            flags: .control,
         )
 
         XCTAssertEqual(sequence.count, 4)
         XCTAssertEqual(sequence[0].kind, .flagsChanged)
         XCTAssertEqual(sequence[1].kind, .keyDown)
-        XCTAssertEqual(sequence[1].keyCode, 0x3B)
+        XCTAssertEqual(sequence[1].keyCode, 0x3b)
         XCTAssertEqual(sequence[2].kind, .keyUp)
         XCTAssertEqual(sequence[3].kind, .flagsChanged)
     }
@@ -161,23 +161,23 @@ final class ShortcutInputBackendTests: XCTestCase {
     func testShortcutPressSequence() {
         let sequence = ShortcutTestSequence.shortcutPress(
             keyCode: 0x01, // S key
-            modifiers: .command
+            modifiers: .command,
         )
 
         XCTAssertEqual(sequence.count, 4)
         XCTAssertEqual(sequence[0].kind, .flagsChanged) // Cmd down
-        XCTAssertEqual(sequence[1].kind, .keyDown)     // S down
+        XCTAssertEqual(sequence[1].kind, .keyDown) // S down
         XCTAssertEqual(sequence[1].modifierFlagsRawValue, NSEvent.ModifierFlags.command.rawValue)
-        XCTAssertEqual(sequence[2].kind, .keyUp)       // S up
+        XCTAssertEqual(sequence[2].kind, .keyUp) // S up
         XCTAssertEqual(sequence[3].kind, .flagsChanged) // Cmd up
     }
 
     // MARK: - Backend Integration Tests
 
-    func testBackendWithPresetEvents() async {
+    func testBackendWithPresetEvents() {
         let events = ShortcutTestSequence.shortcutPress(
             keyCode: 0x01,
-            modifiers: .command
+            modifiers: .command,
         )
 
         let backend = MockShortcutInputBackend.withEvents(events)

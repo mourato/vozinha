@@ -11,7 +11,7 @@ final class AudioRecorderOutputInterruptionTests: XCTestCase {
         let plan = AudioRecorder.makeOutputInterruptionPlan(
             mode: .pauseMedia,
             mediaPauseOutcome: .paused(session),
-            duckingLevelPercent: 30
+            duckingLevelPercent: 30,
         )
 
         XCTAssertEqual(plan, .pause(session))
@@ -21,7 +21,7 @@ final class AudioRecorderOutputInterruptionTests: XCTestCase {
         let plan = AudioRecorder.makeOutputInterruptionPlan(
             mode: .pauseMedia,
             mediaPauseOutcome: .unsupported,
-            duckingLevelPercent: 25
+            duckingLevelPercent: 25,
         )
 
         XCTAssertEqual(plan, .duck(25))
@@ -31,7 +31,7 @@ final class AudioRecorderOutputInterruptionTests: XCTestCase {
         let plan = AudioRecorder.makeOutputInterruptionPlan(
             mode: .pauseMedia,
             mediaPauseOutcome: .failed,
-            duckingLevelPercent: 100
+            duckingLevelPercent: 100,
         )
 
         XCTAssertEqual(plan, .none)
@@ -41,7 +41,7 @@ final class AudioRecorderOutputInterruptionTests: XCTestCase {
         let plan = AudioRecorder.makeOutputInterruptionPlan(
             mode: .duckAudio,
             mediaPauseOutcome: .noActivePlayback,
-            duckingLevelPercent: 40
+            duckingLevelPercent: 40,
         )
 
         XCTAssertEqual(plan, .duck(40))
@@ -51,7 +51,7 @@ final class AudioRecorderOutputInterruptionTests: XCTestCase {
         let plan = AudioRecorder.makeOutputInterruptionPlan(
             mode: .none,
             mediaPauseOutcome: .paused(.init(target: .spotify)),
-            duckingLevelPercent: 0
+            duckingLevelPercent: 0,
         )
 
         XCTAssertEqual(plan, .none)

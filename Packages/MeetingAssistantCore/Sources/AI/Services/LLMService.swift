@@ -45,7 +45,7 @@ public struct DefaultLLMService: LLMService {
                     id: normalizedID,
                     object: "model",
                     created: nil,
-                    ownedBy: "google"
+                    ownedBy: "google",
                 )
             }
             .sorted { $0.id < $1.id }
@@ -71,7 +71,7 @@ public struct DefaultLLMService: LLMService {
         case .google:
             guard var components = URLComponents(
                 url: baseURL.appendingPathComponent("models"),
-                resolvingAgainstBaseURL: false
+                resolvingAgainstBaseURL: false,
             ) else {
                 throw URLError(.badURL)
             }

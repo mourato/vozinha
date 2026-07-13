@@ -1,5 +1,5 @@
-import XCTest
 @testable import MeetingAssistantCore
+import XCTest
 
 @MainActor
 final class AppSettingsAssistantIntegrationsTests: XCTestCase {
@@ -49,7 +49,7 @@ final class AppSettingsAssistantIntegrationsTests: XCTestCase {
             name: "Custom Integration",
             kind: .deeplink,
             isEnabled: false,
-            deepLink: "raycast://ai-commands/custom"
+            deepLink: "raycast://ai-commands/custom",
         )
 
         settings.upsertAssistantIntegration(custom)
@@ -63,7 +63,7 @@ final class AppSettingsAssistantIntegrationsTests: XCTestCase {
             name: "Custom Integration",
             kind: .deeplink,
             isEnabled: true,
-            deepLink: "raycast://ai-commands/custom"
+            deepLink: "raycast://ai-commands/custom",
         )
         settings.upsertAssistantIntegration(custom)
         settings.assistantSelectedIntegrationId = custom.id
@@ -91,12 +91,12 @@ final class AppSettingsAssistantIntegrationsTests: XCTestCase {
             shortcutDefinition: ShortcutDefinition(
                 modifiers: [.command, .option],
                 primaryKey: .letter("T", keyCode: 0x11),
-                trigger: .singleTap
+                trigger: .singleTap,
             ),
             shortcutPresetKey: .custom,
             shortcutActivationMode: .toggle,
             showsPromptSelectorInOverlay: true,
-            showsLanguageSelectorInOverlay: true
+            showsLanguageSelectorInOverlay: true,
         )
 
         let encoder = JSONEncoder()

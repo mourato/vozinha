@@ -42,7 +42,7 @@ extension FloatingRecordingIndicatorView {
     }
 
     func postProcessingReadinessWarningOverlay(
-        _ descriptor: RecordingIndicatorPostProcessingWarningDescriptor,
+        _ descriptor: RecordingPostProcessingWarningDescriptor,
     ) -> some View {
         RecordingPostProcessingWarningOverlay(descriptor: descriptor) { section in
             navigationService.openSettings(section: section)
@@ -127,7 +127,7 @@ extension FloatingRecordingIndicatorView {
         RecordingIndicatorOverlayLayout.resolve(renderState: renderState, settingsStore: settingsStore)
     }
 
-    var postProcessingWarningDescriptor: RecordingIndicatorPostProcessingWarningDescriptor? {
+    var postProcessingWarningDescriptor: RecordingPostProcessingWarningDescriptor? {
         guard isRecordingMode || isProcessingMode else { return nil }
         guard settingsStore.postProcessingEnabled else { return nil }
         guard let issue = recordingManager.postProcessingReadinessWarningIssue,
@@ -136,7 +136,7 @@ extension FloatingRecordingIndicatorView {
             return nil
         }
 
-        return RecordingIndicatorPostProcessingWarningDescriptor(issue: issue, mode: warningMode)
+        return RecordingPostProcessingWarningDescriptor(issue: issue, mode: warningMode)
     }
 
     var errorView: some View {

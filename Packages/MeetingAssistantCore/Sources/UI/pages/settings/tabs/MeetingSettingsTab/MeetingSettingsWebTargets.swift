@@ -8,14 +8,14 @@ extension MeetingSettingsTab {
         DSGroup("settings.meetings.web_targets.title".localized, icon: "globe", headerAccessory: {
             DSInfoPopoverButton(
                 title: "settings.meetings.web_targets.title".localized,
-                message: "settings.meetings.web_targets.desc".localized
+                message: "settings.meetings.web_targets.desc".localized,
             )
         }) {
             VStack(alignment: .leading, spacing: 12) {
                 SettingsInlineList(
                     items: webTargetsViewModel.targets,
                     emptyText: "settings.meetings.web_targets.empty".localized,
-                    containerStyle: .plain
+                    containerStyle: .plain,
                 ) { target in
                     webTargetRow(target)
                 }
@@ -45,7 +45,7 @@ extension MeetingSettingsTab {
                 onDoubleClick: {
                     selectedWebTargetID = target.id
                     webTargetsViewModel.editTarget(target)
-                }
+                },
             ) {
                 HStack(spacing: 12) {
                     Image(systemName: target.app.icon)
@@ -74,7 +74,7 @@ extension MeetingSettingsTab {
                 accessibilityLabel: "settings.rules_per_app.actions".localized,
                 symbolColor: isSelected
                     ? AppDesignSystem.Colors.selectedContentSecondaryForeground
-                    : .secondary
+                    : .secondary,
             ) {
                 Button {
                     selectedWebTargetID = target.id
@@ -119,7 +119,7 @@ extension MeetingSettingsTab {
         WebTargetBrowserNamesFormatter.formattedNames(
             bundleIdentifiers: bundleIdentifiers,
             fallbackBundleIdentifiers: meetingViewModel.settings.effectiveWebTargetBrowserBundleIdentifiers,
-            localizedListKey: "settings.meetings.web_targets.browsers"
+            localizedListKey: "settings.meetings.web_targets.browsers",
         )
     }
 
@@ -130,7 +130,7 @@ extension MeetingSettingsTab {
                 .fill(AppDesignSystem.Colors.selectionFill)
                 .overlay(
                     RoundedRectangle(cornerRadius: AppDesignSystem.Layout.smallCornerRadius)
-                        .stroke(AppDesignSystem.Colors.selectionStroke, lineWidth: 1)
+                        .stroke(AppDesignSystem.Colors.selectionStroke, lineWidth: 1),
                 )
         } else {
             Color.clear

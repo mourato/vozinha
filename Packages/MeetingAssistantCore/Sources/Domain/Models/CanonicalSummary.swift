@@ -23,7 +23,7 @@ public struct CanonicalSummary: Codable, Hashable, Sendable {
         decisions: [String] = [],
         actionItems: [ActionItem] = [],
         openQuestions: [String] = [],
-        trustFlags: TrustFlags = .init()
+        trustFlags: TrustFlags = .init(),
     ) {
         self.schemaVersion = schemaVersion
         self.generatedAt = generatedAt
@@ -92,7 +92,7 @@ public extension CanonicalSummary {
             isGroundedInTranscript: Bool = false,
             containsSpeculation: Bool = false,
             isHumanReviewed: Bool = false,
-            confidenceScore: Double = 0.0
+            confidenceScore: Double = 0.0,
         ) {
             self.isGroundedInTranscript = isGroundedInTranscript
             self.containsSpeculation = containsSpeculation

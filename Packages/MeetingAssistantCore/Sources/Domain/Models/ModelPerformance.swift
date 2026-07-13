@@ -78,7 +78,7 @@ public struct ModelPerformanceModelIdentity: Codable, Hashable, Sendable {
         providerDisplayName: String,
         modelID: String,
         modelDisplayName: String,
-        runtimeKind: ModelPerformanceRuntimeKind
+        runtimeKind: ModelPerformanceRuntimeKind,
     ) {
         self.providerID = providerID
         self.providerDisplayName = providerDisplayName
@@ -124,7 +124,7 @@ public struct ModelPerformanceAttempt: Identifiable, Codable, Hashable, Sendable
         inputUTF8Bytes: Int,
         inputCharacterCount: Int,
         outputCharacterCount: Int,
-        failureReason: String? = nil
+        failureReason: String? = nil,
     ) {
         self.id = id
         self.transcriptionID = transcriptionID
@@ -160,7 +160,7 @@ public struct ModelPerformanceAttemptQuery: Hashable, Sendable {
         providerID: String? = nil,
         statusFilter: ModelPerformanceStatusFilter = .all,
         modelSearchText: String = "",
-        limit: Int? = nil
+        limit: Int? = nil,
     ) {
         self.stage = stage
         self.captureFilter = captureFilter
@@ -205,7 +205,7 @@ public struct ModelPerformanceSummary: Equatable, Sendable {
         failedAttempts: Int,
         distinctModels: Int,
         fastestModelDisplayName: String?,
-        fastestModelThroughput: Double
+        fastestModelThroughput: Double,
     ) {
         self.stage = stage
         self.totalAttempts = totalAttempts
@@ -224,7 +224,7 @@ public struct ModelPerformanceSummary: Equatable, Sendable {
             failedAttempts: 0,
             distinctModels: 0,
             fastestModelDisplayName: nil,
-            fastestModelThroughput: 0
+            fastestModelThroughput: 0,
         )
     }
 }
@@ -251,7 +251,7 @@ public struct ModelPerformanceLeaderboardEntry: Identifiable, Equatable, Sendabl
         averageWallClockSeconds: Double,
         normalizedThroughput: Double,
         secondaryThroughput: Double,
-        isBestBalance: Bool
+        isBestBalance: Bool,
     ) {
         self.identity = identity
         self.attemptCount = attemptCount
@@ -282,7 +282,7 @@ public struct ModelPerformanceAnalysis: Equatable, Sendable {
         summary: ModelPerformanceSummary,
         leaderboard: [ModelPerformanceLeaderboardEntry],
         history: [ModelPerformanceAttempt],
-        availableProviderIDs: [String]
+        availableProviderIDs: [String],
     ) {
         self.stage = stage
         self.summary = summary
@@ -297,7 +297,7 @@ public struct ModelPerformanceAnalysis: Equatable, Sendable {
             summary: .empty(for: stage),
             leaderboard: [],
             history: [],
-            availableProviderIDs: []
+            availableProviderIDs: [],
         )
     }
 }

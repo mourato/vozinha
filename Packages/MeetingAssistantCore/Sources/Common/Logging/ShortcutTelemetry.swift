@@ -21,7 +21,7 @@ public struct ShortcutTelemetryRecord: Equatable, Sendable {
     public init(
         name: ShortcutTelemetryEventName,
         level: ShortcutTelemetryLevel,
-        payload: [String: String]
+        payload: [String: String],
     ) {
         self.name = name
         self.level = level
@@ -35,7 +35,7 @@ public enum ShortcutTelemetryEvent: Equatable, Sendable {
         scope: String,
         shortcutTarget: String,
         source: String,
-        trigger: String
+        trigger: String,
     )
 
     case shortcutRejected(
@@ -44,7 +44,7 @@ public enum ShortcutTelemetryEvent: Equatable, Sendable {
         shortcutTarget: String,
         source: String,
         trigger: String,
-        reason: String
+        reason: String,
     )
 
     case layerArmed(
@@ -52,14 +52,14 @@ public enum ShortcutTelemetryEvent: Equatable, Sendable {
         scope: String,
         source: String,
         trigger: String,
-        timeoutMs: Int
+        timeoutMs: Int,
     )
 
     case layerTimeout(
         pipeline: String,
         scope: String,
         source: String,
-        timeoutMs: Int
+        timeoutMs: Int,
     )
 
     case captureHealthChanged(
@@ -79,7 +79,7 @@ public enum ShortcutTelemetryEvent: Equatable, Sendable {
         keyUpMonitorActive: Bool,
         eventTapExpected: Bool,
         eventTapActive: Bool,
-        checkedAtEpochMs: Int64
+        checkedAtEpochMs: Int64,
     )
 
     public var record: ShortcutTelemetryRecord {
@@ -94,8 +94,8 @@ public enum ShortcutTelemetryEvent: Equatable, Sendable {
                         "source": Self.sanitizeToken(source),
                         "trigger": Self.sanitizeToken(trigger),
                     ],
-                    uniquingKeysWith: { _, new in new }
-                )
+                    uniquingKeysWith: { _, new in new },
+                ),
             )
 
         case let .shortcutRejected(pipeline, scope, shortcutTarget, source, trigger, reason):
@@ -109,8 +109,8 @@ public enum ShortcutTelemetryEvent: Equatable, Sendable {
                         "trigger": Self.sanitizeToken(trigger),
                         "reason": Self.sanitizeToken(reason),
                     ],
-                    uniquingKeysWith: { _, new in new }
-                )
+                    uniquingKeysWith: { _, new in new },
+                ),
             )
 
         case let .layerArmed(pipeline, scope, source, trigger, timeoutMs):
@@ -123,8 +123,8 @@ public enum ShortcutTelemetryEvent: Equatable, Sendable {
                         "trigger": Self.sanitizeToken(trigger),
                         "layer_timeout_ms": String(max(timeoutMs, 0)),
                     ],
-                    uniquingKeysWith: { _, new in new }
-                )
+                    uniquingKeysWith: { _, new in new },
+                ),
             )
 
         case let .layerTimeout(pipeline, scope, source, timeoutMs):
@@ -137,8 +137,8 @@ public enum ShortcutTelemetryEvent: Equatable, Sendable {
                         "reason": "timeout",
                         "layer_timeout_ms": String(max(timeoutMs, 0)),
                     ],
-                    uniquingKeysWith: { _, new in new }
-                )
+                    uniquingKeysWith: { _, new in new },
+                ),
             )
 
         case let .captureHealthChanged(
@@ -158,7 +158,7 @@ public enum ShortcutTelemetryEvent: Equatable, Sendable {
             keyUpMonitorActive,
             eventTapExpected,
             eventTapActive,
-            checkedAtEpochMs
+            checkedAtEpochMs,
         ):
             let normalizedResult = Self.sanitizeToken(result)
             var payload = basePayload(pipeline: pipeline, scope: scope).merging(
@@ -177,7 +177,7 @@ public enum ShortcutTelemetryEvent: Equatable, Sendable {
                     "event_tap_active": eventTapActive ? "true" : "false",
                     "checked_at_epoch_ms": String(max(checkedAtEpochMs, 0)),
                 ],
-                uniquingKeysWith: { _, new in new }
+                uniquingKeysWith: { _, new in new },
             )
 
             if let previousResult {
@@ -191,7 +191,7 @@ public enum ShortcutTelemetryEvent: Equatable, Sendable {
             return ShortcutTelemetryRecord(
                 name: .captureHealthChanged,
                 level: normalizedResult == "degraded" ? .warning : .info,
-                payload: payload
+                payload: payload,
             )
         }
     }

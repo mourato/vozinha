@@ -35,7 +35,7 @@ extension AudioRecorder {
                 "sampleRate": outputFormat.sampleRate,
                 "channels": outputFormat.channelCount,
                 "commonFormat": outputFormat.commonFormat.rawValue,
-            ]
+            ],
         )
 
         if outputFormat.sampleRate <= 0 || outputFormat.channelCount == 0 {
@@ -45,7 +45,7 @@ extension AudioRecorder {
                 extra: [
                     "sampleRate": outputFormat.sampleRate,
                     "channels": outputFormat.channelCount,
-                ]
+                ],
             )
         }
 
@@ -60,7 +60,7 @@ extension AudioRecorder {
         AppLogger.info(
             "Starting recording",
             category: .recordingManager,
-            extra: ["path": outputURL.path, "source": source.rawValue]
+            extra: ["path": outputURL.path, "source": source.rawValue],
         )
         activeRecordingSource = source
         lastMeterSnapshotDate = nil
@@ -140,7 +140,7 @@ extension AudioRecorder {
             AppLogger.warning(
                 "Failed to apply system audio ducking",
                 category: .recordingManager,
-                extra: ["error": error.localizedDescription]
+                extra: ["error": error.localizedDescription],
             )
         }
     }
@@ -149,7 +149,7 @@ extension AudioRecorder {
         guard source == .microphone else { return }
 
         let configuredDuckingLevelPercent = AppSettingsStore.clampedAudioDuckingLevelPercent(
-            settings.audioDuckingLevelPercent
+            settings.audioDuckingLevelPercent,
         )
         let mediaPauseOutcome: MediaPlaybackPauseOutcome = settings.recordingMediaHandlingMode == .pauseMedia
             ? mediaPlaybackController.pausePlaybackIfNeeded()
@@ -158,7 +158,7 @@ extension AudioRecorder {
         switch Self.makeOutputInterruptionPlan(
             mode: settings.recordingMediaHandlingMode,
             mediaPauseOutcome: mediaPauseOutcome,
-            duckingLevelPercent: configuredDuckingLevelPercent
+            duckingLevelPercent: configuredDuckingLevelPercent,
         ) {
         case .none:
             return
@@ -177,7 +177,7 @@ extension AudioRecorder {
             AppLogger.warning(
                 "Skipping output ducking: output device is the same as input device",
                 category: .recordingManager,
-                extra: ["deviceID": outID, "deviceName": deviceManager.getDeviceName(for: outID) ?? "Unknown"]
+                extra: ["deviceID": outID, "deviceName": deviceManager.getDeviceName(for: outID) ?? "Unknown"],
             )
             return
         }
@@ -189,7 +189,7 @@ extension AudioRecorder {
     static func makeOutputInterruptionPlan(
         mode: AppSettingsStore.RecordingMediaHandlingMode,
         mediaPauseOutcome: MediaPlaybackPauseOutcome,
-        duckingLevelPercent: Int
+        duckingLevelPercent: Int,
     ) -> OutputInterruptionPlan {
         switch mode {
         case .none:

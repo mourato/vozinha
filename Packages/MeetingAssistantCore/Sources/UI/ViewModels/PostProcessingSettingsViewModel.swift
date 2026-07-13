@@ -73,7 +73,7 @@ public class PostProcessingSettingsViewModel: ObservableObject {
             isActive: prompt.isActive,
             icon: prompt.icon,
             description: prompt.description,
-            isPredefined: false
+            isPredefined: false,
         )
         editingPrompt = newPrompt
         showPromptEditor = true

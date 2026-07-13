@@ -30,7 +30,7 @@ public struct EnhancementsModelSelectionSheet: View {
         options: [EnhancementsProviderModelOption],
         isSelected: @escaping (EnhancementsProviderModelOption) -> Bool,
         onSelect: @escaping (EnhancementsProviderModelOption) -> Void,
-        onCancel: @escaping () -> Void
+        onCancel: @escaping () -> Void,
     ) {
         self.options = options
         self.isSelected = isSelected
@@ -107,7 +107,7 @@ public struct EnhancementsModelSelectionSheet: View {
             let key = ProviderGroup.Key(
                 provider: option.provider,
                 registrationID: option.registrationID,
-                title: option.registrationName ?? option.provider.displayName
+                title: option.registrationName ?? option.provider.displayName,
             )
 
             if groupsByKey[key] == nil {
@@ -125,7 +125,7 @@ public struct EnhancementsModelSelectionSheet: View {
 
             return ProviderGroup(
                 key: key,
-                options: groupedOptions
+                options: groupedOptions,
             )
         }
     }
@@ -156,7 +156,7 @@ public struct EnhancementsModelSelectionSheet: View {
                 .foregroundStyle(.secondary)
             TextField(
                 "settings.enhancements.model_selector.search_placeholder".localized,
-                text: $searchText
+                text: $searchText,
             )
             .textFieldStyle(.plain)
         }
@@ -182,7 +182,7 @@ public struct EnhancementsModelSelectionSheet: View {
             option.modelID == "gpt-4o"
         },
         onSelect: { _ in },
-        onCancel: {}
+        onCancel: {},
     )
     .frame(width: 560, height: 440)
 }

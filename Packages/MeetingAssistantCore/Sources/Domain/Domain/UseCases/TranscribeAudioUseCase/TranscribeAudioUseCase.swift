@@ -36,7 +36,7 @@ public final class TranscribeAudioUseCase: Sendable {
         transcriptionRepository: TranscriptionRepository,
         transcriptionStorageRepository: TranscriptionStorageRepository,
         postProcessingRepository: PostProcessingRepository? = nil,
-        transcriptPreprocessor: TranscriptIntelligencePreprocessor = .init()
+        transcriptPreprocessor: TranscriptIntelligencePreprocessor = .init(),
     ) {
         self.transcriptionRepository = transcriptionRepository
         self.transcriptionStorageRepository = transcriptionStorageRepository
@@ -61,7 +61,7 @@ public final class TranscribeAudioUseCase: Sendable {
             providerDisplayName: "Unknown",
             modelID: "unknown",
             modelDisplayName: "Unknown",
-            runtimeKind: .unknown
+            runtimeKind: .unknown,
         ),
         inputSource: String? = nil,
         contextItems: [TranscriptionContextItem] = [],
@@ -77,7 +77,7 @@ public final class TranscribeAudioUseCase: Sendable {
         kernelMode: IntelligenceKernelMode = .meeting,
         dictationStructuredPostProcessingEnabled: Bool = false,
         onPhaseChange: PhaseChangeHandler? = nil,
-        onTranscriptionProgress: TranscriptionProgressHandler? = nil
+        onTranscriptionProgress: TranscriptionProgressHandler? = nil,
     ) async throws -> TranscriptionEntity {
         onPhaseChange?(.preparing)
 
@@ -91,24 +91,24 @@ public final class TranscribeAudioUseCase: Sendable {
                         audioURL: audioURL,
                         onProgress: onTranscriptionProgress,
                         diarizationEnabledOverride: diarizationEnabledOverride,
-                        capturePurpose: meeting.capturePurpose
+                        capturePurpose: meeting.capturePurpose,
                     )
                 } else if let diarizationAwareRepository = transcriptionRepository as? any TranscriptionRepositoryDiarizationOverride {
                     response = try await diarizationAwareRepository.transcribe(
                         audioURL: audioURL,
                         onProgress: onTranscriptionProgress,
-                        diarizationEnabledOverride: diarizationEnabledOverride
+                        diarizationEnabledOverride: diarizationEnabledOverride,
                     )
                 } else if let capturePurposeAwareRepository = transcriptionRepository as? any TranscriptionRepositoryPurposeAware {
                     response = try await capturePurposeAwareRepository.transcribe(
                         audioURL: audioURL,
                         onProgress: onTranscriptionProgress,
-                        capturePurpose: meeting.capturePurpose
+                        capturePurpose: meeting.capturePurpose,
                     )
                 } else {
                     response = try await transcriptionRepository.transcribe(
                         audioURL: audioURL,
-                        onProgress: onTranscriptionProgress
+                        onProgress: onTranscriptionProgress,
                     )
                 }
             } catch {
@@ -137,7 +137,7 @@ public final class TranscribeAudioUseCase: Sendable {
                 transcriptionDuration: transcriptionDuration,
                 transcriptionStartedAt: transcriptionStartTime,
                 transcriptionCompletedAt: transcriptionCompletedAt,
-                onPhaseChange: onPhaseChange
+                onPhaseChange: onPhaseChange,
             )
         } catch {
             onPhaseChange?(.failed)
@@ -154,7 +154,7 @@ public final class TranscribeAudioUseCase: Sendable {
             providerDisplayName: "Unknown",
             modelID: "unknown",
             modelDisplayName: "Unknown",
-            runtimeKind: .unknown
+            runtimeKind: .unknown,
         ),
         inputSource: String? = nil,
         contextItems: [TranscriptionContextItem] = [],
@@ -171,18 +171,18 @@ public final class TranscribeAudioUseCase: Sendable {
         transcriptionDuration: Double,
         transcriptionStartedAt: Date = Date(),
         transcriptionCompletedAt: Date = Date(),
-        onPhaseChange: PhaseChangeHandler? = nil
+        onPhaseChange: PhaseChangeHandler? = nil,
     ) async throws -> TranscriptionEntity {
         do {
             let (replacedTranscriptionText, replacedSegments, qualityProfile) = processTranscriptionResult(
                 response: response,
-                vocabularyReplacementRules: vocabularyReplacementRules
+                vocabularyReplacementRules: vocabularyReplacementRules,
             )
             try ensureNonEmptyTranscriptionText(replacedTranscriptionText)
             logValidatedTranscriptMetrics(
                 text: replacedTranscriptionText,
                 segmentCount: replacedSegments.count,
-                durationSeconds: response.durationSeconds
+                durationSeconds: response.durationSeconds,
             )
 
             let resolvedPostProcessingContext = PostProcessingSystemContextMetadata.augment(postProcessingContext)
@@ -192,7 +192,7 @@ public final class TranscribeAudioUseCase: Sendable {
                 qualityProfile: qualityProfile,
                 context: resolvedPostProcessingContext,
                 meetingNotes: contextItems.first(where: { $0.source == .meetingNotes })?.text,
-                includeQualityMetadata: kernelMode == .meeting
+                includeQualityMetadata: kernelMode == .meeting,
             )
 
             let postProcessingConfig = PostProcessingConfiguration(
@@ -204,7 +204,7 @@ public final class TranscribeAudioUseCase: Sendable {
                 kernelMode: kernelMode,
                 dictationStructuredPostProcessingEnabled: dictationStructuredPostProcessingEnabled,
                 postProcessingContext: resolvedPostProcessingContext,
-                postProcessingModelID: postProcessingIdentity?.modelID
+                postProcessingModelID: postProcessingIdentity?.modelID,
             )
             let shouldAttemptPostProcessing = postProcessingConfig.shouldRunPostProcessing(postProcessingRepository: postProcessingRepository)
 
@@ -217,7 +217,7 @@ public final class TranscribeAudioUseCase: Sendable {
                 postProcessingInput: postProcessingInput,
                 postProcessingRepository: postProcessingRepository,
                 config: postProcessingConfig,
-                qualityProfile: qualityProfile
+                qualityProfile: qualityProfile,
             )
             let postProcessingDuration = Date().timeIntervalSince(postProcessingStartTime)
             let postProcessingCompletedAt = Date()
@@ -244,9 +244,9 @@ public final class TranscribeAudioUseCase: Sendable {
                         postProcessingModel: postProcessingIdentity?.modelID,
                         requestSystemPrompt: postProcessingResult.requestSystemPrompt,
                         requestUserPrompt: postProcessingResult.requestUserPrompt,
-                        postProcessingFailureReason: postProcessingResult.failureReason
-                    )
-                )
+                        postProcessingFailureReason: postProcessingResult.failureReason,
+                    ),
+                ),
             )
 
             try await transcriptionStorageRepository.saveTranscription(transcription)
@@ -266,8 +266,8 @@ public final class TranscribeAudioUseCase: Sendable {
                     postProcessingIdentity: postProcessingIdentity,
                     postProcessingStartedAt: postProcessingStartTime,
                     postProcessingCompletedAt: postProcessingCompletedAt,
-                    postProcessingDuration: postProcessingDuration
-                )
+                    postProcessingDuration: postProcessingDuration,
+                ),
             )
             onPhaseChange?(.completed)
             return transcription
@@ -281,20 +281,20 @@ public final class TranscribeAudioUseCase: Sendable {
 
     private func processTranscriptionResult(
         response: DomainTranscriptionResponse,
-        vocabularyReplacementRules: [VocabularyReplacementRule]
+        vocabularyReplacementRules: [VocabularyReplacementRule],
     ) -> (String, [DomainTranscriptionSegment], TranscriptionQualityProfile) {
         let replacedTranscriptionText = VocabularyReplacementRule.apply(
             rules: vocabularyReplacementRules,
-            to: response.text
+            to: response.text,
         )
         let replacedSegments = VocabularyReplacementRule.apply(
             rules: vocabularyReplacementRules,
-            to: response.segments
+            to: response.segments,
         )
         let qualityProfile = transcriptPreprocessor.preprocess(
             transcriptionText: replacedTranscriptionText,
             segments: replacedSegments,
-            asrConfidenceScore: response.confidenceScore
+            asrConfidenceScore: response.confidenceScore,
         )
         return (replacedTranscriptionText, replacedSegments, qualityProfile)
     }
@@ -302,7 +302,7 @@ public final class TranscribeAudioUseCase: Sendable {
     private func ensureNonEmptyTranscriptionText(_ text: String) throws {
         guard !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
             throw DomainTranscriptionError.transcriptionFailed(
-                PostProcessingError.emptyTranscription.localizedDescription
+                PostProcessingError.emptyTranscription.localizedDescription,
             )
         }
     }
@@ -310,7 +310,7 @@ public final class TranscribeAudioUseCase: Sendable {
     private func logValidatedTranscriptMetrics(
         text: String,
         segmentCount: Int,
-        durationSeconds: Double
+        durationSeconds: Double,
     ) {
         let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
         let wordCount = trimmed.split { $0.isWhitespace || $0.isNewline }.count
@@ -322,7 +322,7 @@ public final class TranscribeAudioUseCase: Sendable {
                 "words": String(wordCount),
                 "segments": String(segmentCount),
                 "durationSeconds": String(durationSeconds),
-            ]
+            ],
         )
     }
 
@@ -366,10 +366,10 @@ public final class TranscribeAudioUseCase: Sendable {
                     speaker: segment.speaker,
                     text: segment.text,
                     startTime: segment.startTime,
-                    endTime: segment.endTime
+                    endTime: segment.endTime,
                 )
             },
-            language: input.response.language
+            language: input.response.language,
         )
         if let transcriptionID = input.transcriptionID {
             config.id = transcriptionID
@@ -393,7 +393,7 @@ public final class TranscribeAudioUseCase: Sendable {
     }
 
     private func persistModelPerformanceAttempts(
-        using input: ModelPerformanceAttemptPersistenceInput
+        using input: ModelPerformanceAttemptPersistenceInput,
     ) async {
         let transcriptionAttempt = ModelPerformanceAttempt(
             transcriptionID: input.transcriptionID,
@@ -409,7 +409,7 @@ public final class TranscribeAudioUseCase: Sendable {
             inputUTF8Bytes: 0,
             inputCharacterCount: 0,
             outputCharacterCount: input.transcriptionText.count,
-            failureReason: nil
+            failureReason: nil,
         )
 
         do {
@@ -425,7 +425,7 @@ public final class TranscribeAudioUseCase: Sendable {
             providerDisplayName: "Unknown",
             modelID: "unknown",
             modelDisplayName: "Unknown",
-            runtimeKind: .unknown
+            runtimeKind: .unknown,
         )
         let postProcessingAttempt = ModelPerformanceAttempt(
             transcriptionID: input.transcriptionID,
@@ -441,7 +441,7 @@ public final class TranscribeAudioUseCase: Sendable {
             inputUTF8Bytes: input.postProcessingInput.lengthOfBytes(using: .utf8),
             inputCharacterCount: input.postProcessingInput.count,
             outputCharacterCount: input.postProcessingResult.processedContent?.count ?? 0,
-            failureReason: input.postProcessingResult.failureReason
+            failureReason: input.postProcessingResult.failureReason,
         )
 
         do {
@@ -456,7 +456,7 @@ public final class TranscribeAudioUseCase: Sendable {
         qualityProfile: TranscriptionQualityProfile,
         context: String?,
         meetingNotes: String?,
-        includeQualityMetadata: Bool
+        includeQualityMetadata: Bool,
     ) -> String {
         var blocks = [transcriptionText]
         if includeQualityMetadata {
@@ -473,7 +473,7 @@ public final class TranscribeAudioUseCase: Sendable {
                     <MEETING_NOTES>
                     \(sanitizedMeetingNotes)
                     </MEETING_NOTES>
-                    """
+                    """,
                 )
             }
         }
@@ -488,7 +488,7 @@ public final class TranscribeAudioUseCase: Sendable {
                     <CONTEXT_METADATA>
                     \(sanitizedContext)
                     </CONTEXT_METADATA>
-                    """
+                    """,
                 )
             }
         }
@@ -518,7 +518,7 @@ public final class TranscribeAudioUseCase: Sendable {
 
     private func meetingWithResolvedTitle(
         _ meeting: MeetingEntity,
-        postProcessingResult: PostProcessingResult
+        postProcessingResult: PostProcessingResult,
     ) -> MeetingEntity {
         guard meeting.supportsMeetingConversation else {
             return meeting.sanitizedForPersistence()

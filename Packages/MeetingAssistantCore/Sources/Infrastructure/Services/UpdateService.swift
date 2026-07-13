@@ -30,7 +30,7 @@ public final class UpdateService {
         updaterController = SPUStandardUpdaterController(
             startingUpdater: true,
             updaterDelegate: nil,
-            userDriverDelegate: nil
+            userDriverDelegate: nil,
         )
     }
 

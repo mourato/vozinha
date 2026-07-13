@@ -27,7 +27,7 @@ public struct DictationContextSourcePolicy: Codable, Hashable, Sendable {
         includeClipboard: Bool,
         includeWindowOCR: Bool,
         includeAccessibilityText: Bool,
-        redactSensitiveData: Bool
+        redactSensitiveData: Bool,
     ) {
         self.includeClipboard = isEnabled && includeClipboard
         self.includeWindowOCR = isEnabled && includeWindowOCR
@@ -39,7 +39,7 @@ public struct DictationContextSourcePolicy: Codable, Hashable, Sendable {
         includeClipboard: Bool,
         includeWindowOCR: Bool,
         includeAccessibilityText: Bool,
-        redactSensitiveData: Bool
+        redactSensitiveData: Bool,
     ) {
         self.includeClipboard = includeClipboard
         self.includeWindowOCR = includeWindowOCR
@@ -193,7 +193,7 @@ public struct DictationStyle: Identifiable, Codable, Hashable, Sendable {
         targets: [DictationStyleTarget],
         contextSourcePolicy: DictationContextSourcePolicy? = nil,
         enhancementsSelection: EnhancementsAISelection? = nil,
-        isDefault: Bool = false
+        isDefault: Bool = false,
     ) {
         self.id = id
         self.name = name.trimmingCharacters(in: .whitespacesAndNewlines)

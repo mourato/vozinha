@@ -33,7 +33,7 @@ public struct TranscriptionCardView: View {
         isPostProcessing: Bool = false,
         postProcessingErrorMessage: String? = nil,
         onToggleExpand: @escaping () -> Void,
-        onAction: @escaping (TranscriptionAction) -> Void
+        onAction: @escaping (TranscriptionAction) -> Void,
     ) {
         self.transcription = transcription
         self.transcriptionDetail = transcriptionDetail
@@ -97,7 +97,7 @@ public struct TranscriptionCardView: View {
     public var body: some View {
         DSCard(
             cornerRadius: AppDesignSystem.Layout.largeCornerRadius,
-            padding: isExpanded ? 16 : 12
+            padding: isExpanded ? 16 : 12,
         ) {
             if isExpanded {
                 expandedContent
@@ -562,7 +562,7 @@ public struct TranscriptionCardView: View {
                 TextField(
                     "",
                     text: $draftMeetingTitle,
-                    prompt: Text(sourceDisplayName)
+                    prompt: Text(sourceDisplayName),
                 )
                 .textFieldStyle(.roundedBorder)
                 .font(.title3.weight(.semibold))
@@ -630,7 +630,7 @@ public struct TranscriptionCardView: View {
                 bundleIdentifier: transcription.appBundleIdentifier,
                 fallbackSystemName: appSource.icon,
                 size: 18,
-                cornerRadius: 4
+                cornerRadius: 4,
             )
             Text(text)
                 .font(.caption)
@@ -655,12 +655,12 @@ private struct TranscriptionCardPreviewContainer: View {
                 RetryTranscriptionOption(
                     selection: TranscriptionProviderSelection(
                         provider: .local,
-                        selectedModel: LocalTranscriptionModel.parakeetTdt06BV3.rawValue
-                    )
+                        selectedModel: LocalTranscriptionModel.parakeetTdt06BV3.rawValue,
+                    ),
                 ),
             ],
             onToggleExpand: { isExpanded.toggle() },
-            onAction: { _ in }
+            onAction: { _ in },
         )
         .padding()
         .frame(width: 760)
@@ -684,7 +684,7 @@ private extension TranscriptionMetadata {
             isPostProcessed: true,
             duration: 540,
             audioFilePath: nil,
-            inputSource: "microphone"
+            inputSource: "microphone",
         )
     }
 }
@@ -698,7 +698,7 @@ private extension Transcription {
                 state: .completed,
                 startTime: Date().addingTimeInterval(-1_200),
                 endTime: Date().addingTimeInterval(-600),
-                audioFilePath: nil
+                audioFilePath: nil,
             ),
             segments: [
                 .init(speaker: "Speaker 1", text: "Finalizamos o fluxo principal do processamento.", startTime: 0, endTime: 12),
@@ -708,7 +708,7 @@ private extension Transcription {
             rawText: "finalizamos fluxo principal processamento proximo passo revisar previews componentes",
             processedContent: "Finalizamos o fluxo principal do processamento. O próximo passo é revisar os previews dos componentes.",
             postProcessingPromptTitle: "Clean transcription",
-            language: "pt"
+            language: "pt",
         )
     }
 }
@@ -728,18 +728,18 @@ private extension Transcription {
             RetryTranscriptionOption(
                 selection: TranscriptionProviderSelection(
                     provider: .local,
-                    selectedModel: LocalTranscriptionModel.parakeetTdt06BV3.rawValue
-                )
+                    selectedModel: LocalTranscriptionModel.parakeetTdt06BV3.rawValue,
+                ),
             ),
             RetryTranscriptionOption(
                 selection: TranscriptionProviderSelection(
                     provider: .groq,
-                    selectedModel: TranscriptionProvider.groqPresetModelIDs[0]
-                )
+                    selectedModel: TranscriptionProvider.groqPresetModelIDs[0],
+                ),
             ),
         ],
         onToggleExpand: {},
-        onAction: { _ in }
+        onAction: { _ in },
     )
     .padding()
     .frame(width: 760)

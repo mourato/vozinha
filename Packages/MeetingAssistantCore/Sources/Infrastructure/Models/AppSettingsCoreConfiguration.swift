@@ -101,7 +101,7 @@ public enum ShortcutActivationMode: String, CaseIterable, Codable, Sendable {
 func normalizedInHouseShortcutDefinition(
     _ definition: ShortcutDefinition,
     activationMode: ShortcutActivationMode,
-    allowReturnOrEnter: Bool = true
+    allowReturnOrEnter: Bool = true,
 ) -> ShortcutDefinition? {
     _ = activationMode
     guard let primaryKey = definition.primaryKey else {
@@ -117,13 +117,13 @@ func normalizedInHouseShortcutDefinition(
     let normalized = ShortcutDefinition(
         modifiers: canonicalModifiers,
         primaryKey: primaryKey,
-        trigger: .singleTap
+        trigger: .singleTap,
     )
     return normalized.isValid ? normalized : nil
 }
 
 func canonicalSimpleOrIntermediateModifiers(
-    _ modifiers: [ModifierShortcutKey]
+    _ modifiers: [ModifierShortcutKey],
 ) -> [ModifierShortcutKey] {
     let mapped = modifiers.map { key -> ModifierShortcutKey in
         switch key {

@@ -13,13 +13,13 @@ final class MeetingNotesRichTextControllerTests: XCTestCase {
         let baseFont = NSFont.systemFont(ofSize: 14)
         let boldFont = NSFontManager.shared.convert(baseFont, toHaveTrait: .boldFontMask)
         textView.textStorage?.setAttributedString(
-            NSAttributedString(string: text, attributes: [.font: boldFont])
+            NSAttributedString(string: text, attributes: [.font: boldFont]),
         )
         textView.setSelectedRange(range)
         controller.textView = textView
 
         let targetFamily = try XCTUnwrap(
-            familySupporting(trait: .boldFontMask, excluding: boldFont.familyName, from: controller.fontFamilies)
+            familySupporting(trait: .boldFontMask, excluding: boldFont.familyName, from: controller.fontFamilies),
         )
         controller.applyFontFamily(key: targetFamily)
 
@@ -37,13 +37,13 @@ final class MeetingNotesRichTextControllerTests: XCTestCase {
         let baseFont = NSFont.systemFont(ofSize: 14)
         let italicFont = NSFontManager.shared.convert(baseFont, toHaveTrait: .italicFontMask)
         textView.textStorage?.setAttributedString(
-            NSAttributedString(string: text, attributes: [.font: italicFont])
+            NSAttributedString(string: text, attributes: [.font: italicFont]),
         )
         textView.setSelectedRange(range)
         controller.textView = textView
 
         let targetFamily = try XCTUnwrap(
-            familySupporting(trait: .italicFontMask, excluding: italicFont.familyName, from: controller.fontFamilies)
+            familySupporting(trait: .italicFontMask, excluding: italicFont.familyName, from: controller.fontFamilies),
         )
         controller.applyFontFamily(key: targetFamily)
 
@@ -76,7 +76,7 @@ final class MeetingNotesRichTextControllerTests: XCTestCase {
 
         controller.applyGlobalTypography(
             familyKey: targetFamily,
-            size: 24
+            size: 24,
         )
 
         let attributed = try XCTUnwrap(textView.textStorage)
@@ -160,7 +160,7 @@ final class MeetingNotesRichTextControllerTests: XCTestCase {
 
         let handled = controller.handleTextMutation(
             affectedRange: NSRange(location: 1, length: 0),
-            replacementString: " "
+            replacementString: " ",
         )
 
         XCTAssertTrue(handled)
@@ -176,7 +176,7 @@ final class MeetingNotesRichTextControllerTests: XCTestCase {
 
         let handled = controller.handleTextMutation(
             affectedRange: NSRange(location: 3, length: 0),
-            replacementString: " "
+            replacementString: " ",
         )
 
         XCTAssertTrue(handled)
@@ -192,7 +192,7 @@ final class MeetingNotesRichTextControllerTests: XCTestCase {
 
         let handled = controller.handleTextMutation(
             affectedRange: NSRange(location: 3, length: 0),
-            replacementString: " "
+            replacementString: " ",
         )
 
         XCTAssertTrue(handled)
@@ -208,7 +208,7 @@ final class MeetingNotesRichTextControllerTests: XCTestCase {
 
         let handled = controller.handleTextMutation(
             affectedRange: NSRange(location: 2, length: 0),
-            replacementString: " "
+            replacementString: " ",
         )
 
         XCTAssertTrue(handled)
@@ -224,7 +224,7 @@ final class MeetingNotesRichTextControllerTests: XCTestCase {
 
         let handled = controller.handleTextMutation(
             affectedRange: NSRange(location: 3, length: 0),
-            replacementString: " "
+            replacementString: " ",
         )
 
         XCTAssertTrue(handled)
@@ -242,7 +242,7 @@ final class MeetingNotesRichTextControllerTests: XCTestCase {
 
         let handled = controller.handleTextMutation(
             affectedRange: NSRange(location: 1, length: 0),
-            replacementString: " "
+            replacementString: " ",
         )
 
         XCTAssertTrue(handled)
@@ -259,7 +259,7 @@ final class MeetingNotesRichTextControllerTests: XCTestCase {
 
         let handled = controller.handleTextMutation(
             affectedRange: NSRange(location: 1, length: 0),
-            replacementString: " "
+            replacementString: " ",
         )
 
         XCTAssertTrue(handled)
@@ -276,7 +276,7 @@ final class MeetingNotesRichTextControllerTests: XCTestCase {
 
         let handled = controller.handleTextMutation(
             affectedRange: NSRange(location: 7, length: 0),
-            replacementString: "\n"
+            replacementString: "\n",
         )
 
         XCTAssertTrue(handled)
@@ -292,7 +292,7 @@ final class MeetingNotesRichTextControllerTests: XCTestCase {
 
         let handled = controller.handleTextMutation(
             affectedRange: NSRange(location: 2, length: 0),
-            replacementString: "\n"
+            replacementString: "\n",
         )
 
         XCTAssertTrue(handled)
@@ -308,7 +308,7 @@ final class MeetingNotesRichTextControllerTests: XCTestCase {
 
         let headingHandled = controller.handleTextMutation(
             affectedRange: NSRange(location: 1, length: 0),
-            replacementString: " "
+            replacementString: " ",
         )
 
         XCTAssertTrue(headingHandled)
@@ -317,7 +317,7 @@ final class MeetingNotesRichTextControllerTests: XCTestCase {
 
         let returnHandled = controller.handleTextMutation(
             affectedRange: textView.selectedRange(),
-            replacementString: "\n"
+            replacementString: "\n",
         )
 
         XCTAssertTrue(returnHandled)
@@ -433,7 +433,7 @@ final class MeetingNotesRichTextControllerTests: XCTestCase {
         textView.textStorage?.addAttribute(
             .meetingNotesHeadingLevel,
             value: 1,
-            range: NSRange(location: 0, length: initialLength)
+            range: NSRange(location: 0, length: initialLength),
         )
         textView.setSelectedRange(NSRange(location: initialLength, length: 0))
         textView.delegate = delegate
@@ -442,7 +442,7 @@ final class MeetingNotesRichTextControllerTests: XCTestCase {
         let shouldApplyDefaultEdit = delegate.textView(
             textView,
             shouldChangeTextIn: textView.selectedRange(),
-            replacementString: "\n"
+            replacementString: "\n",
         )
 
         XCTAssertFalse(shouldApplyDefaultEdit)
@@ -453,7 +453,7 @@ final class MeetingNotesRichTextControllerTests: XCTestCase {
     private func familySupporting(
         trait: NSFontTraitMask,
         excluding excludedFamily: String?,
-        from families: [String]
+        from families: [String],
     ) -> String? {
         for family in families where family != excludedFamily {
             guard let baseFont = NSFont(name: family, size: 14) else { continue }
@@ -491,13 +491,13 @@ private final class InterceptingTextViewDelegate: NSObject, NSTextViewDelegate {
     func textView(
         _: NSTextView,
         shouldChangeTextIn affectedCharRange: NSRange,
-        replacementString: String?
+        replacementString: String?,
     ) -> Bool {
         guard let replacementString else { return true }
 
         if controller.handleTextMutation(
             affectedRange: affectedCharRange,
-            replacementString: replacementString
+            replacementString: replacementString,
         ) {
             return false
         }

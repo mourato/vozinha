@@ -13,7 +13,7 @@ final class CohereTranscribeModelRuntimeTests: XCTestCase {
 
         let vocabulary = try CohereTranscribeModelRuntime.parseVocabularyData(
             data,
-            sourceName: "coreml_manifest.json"
+            sourceName: "coreml_manifest.json",
         )
 
         XCTAssertEqual(vocabulary[0], "<unk>")
@@ -31,7 +31,7 @@ final class CohereTranscribeModelRuntimeTests: XCTestCase {
 
         let vocabulary = try CohereTranscribeModelRuntime.parseVocabularyData(
             data,
-            sourceName: "vocab.json"
+            sourceName: "vocab.json",
         )
 
         XCTAssertEqual(vocabulary[0], "<unk>")
@@ -94,7 +94,7 @@ final class CohereTranscribeModelRuntimeTests: XCTestCase {
         let firstCompiledURL = try CohereTranscribeModelRuntime.compiledModelDirectory(
             for: .encoder,
             artifactURL: encoderURL,
-            modelDirectory: directory
+            modelDirectory: directory,
         )
 
         try Data("v2".utf8).write(to: weightsURL)
@@ -102,7 +102,7 @@ final class CohereTranscribeModelRuntimeTests: XCTestCase {
         let secondCompiledURL = try CohereTranscribeModelRuntime.compiledModelDirectory(
             for: .encoder,
             artifactURL: encoderURL,
-            modelDirectory: directory
+            modelDirectory: directory,
         )
 
         XCTAssertNotEqual(firstCompiledURL, secondCompiledURL)
@@ -135,12 +135,12 @@ final class CohereTranscribeModelRuntimeTests: XCTestCase {
         XCTAssertEqual(
             manager.modelState,
             .loaded,
-            "Expected Cohere model to load successfully. Current state: \(manager.modelState.rawValue), lastError: \(manager.lastError ?? "nil")"
+            "Expected Cohere model to load successfully. Current state: \(manager.modelState.rawValue), lastError: \(manager.lastError ?? "nil")",
         )
         XCTAssertEqual(
             manager.loadedASRLocalModelID,
             LocalTranscriptionModel.cohereTranscribe032026CoreML6Bit.rawValue,
-            "Loaded model ID did not match Cohere selection."
+            "Loaded model ID did not match Cohere selection.",
         )
     }
 

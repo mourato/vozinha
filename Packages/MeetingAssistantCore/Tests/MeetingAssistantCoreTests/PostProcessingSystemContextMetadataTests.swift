@@ -1,6 +1,6 @@
 import Foundation
-import XCTest
 @testable import MeetingAssistantCore
+import XCTest
 
 final class PostProcessingSystemContextMetadataTests: XCTestCase {
     func testAugment_WithExistingContext_AddsRequestedSystemFields() throws {
@@ -19,8 +19,8 @@ final class PostProcessingSystemContextMetadataTests: XCTestCase {
                 now: resolvedDate,
                 timeZone: resolvedTimeZone,
                 locale: Locale(identifier: "en_BR"),
-                fullUserName: "Renato"
-            )
+                fullUserName: "Renato",
+            ),
         )
 
         XCTAssertTrue(enriched.contains("- Current time: 2026-04-11, 19:25"))
@@ -47,8 +47,8 @@ final class PostProcessingSystemContextMetadataTests: XCTestCase {
                 now: resolvedDate,
                 timeZone: resolvedTimeZone,
                 locale: Locale(identifier: "en_BR"),
-                fullUserName: "Renato"
-            )
+                fullUserName: "Renato",
+            ),
         )
 
         XCTAssertEqual(enriched.components(separatedBy: "Time zone:").count - 1, 1)

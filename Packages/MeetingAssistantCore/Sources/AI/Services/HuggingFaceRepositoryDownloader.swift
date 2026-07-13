@@ -27,7 +27,7 @@ enum HuggingFaceRepositoryDownloader {
 
     static func listFilesRecursively(
         repoPath: String,
-        startPath: String = ""
+        startPath: String = "",
     ) async throws -> [RepositoryFile] {
         let apiPath = startPath.isEmpty ? "tree/main" : "tree/main/\(startPath)"
         let url = try ModelRegistry.apiModels(repoPath, apiPath)
@@ -64,7 +64,7 @@ enum HuggingFaceRepositoryDownloader {
     static func downloadFiles(
         repoPath: String,
         files: [RepositoryFile],
-        to rootDirectory: URL
+        to rootDirectory: URL,
     ) async throws {
         for file in files where file.type == "file" {
             try await downloadFile(repoPath: repoPath, file: file, to: rootDirectory)
@@ -74,7 +74,7 @@ enum HuggingFaceRepositoryDownloader {
     private static func downloadFile(
         repoPath: String,
         file: RepositoryFile,
-        to rootDirectory: URL
+        to rootDirectory: URL,
     ) async throws {
         let destinationURL = rootDirectory.appendingPathComponent(file.path)
         if FileManager.default.fileExists(atPath: destinationURL.path) {
@@ -83,7 +83,7 @@ enum HuggingFaceRepositoryDownloader {
 
         try FileManager.default.createDirectory(
             at: destinationURL.deletingLastPathComponent(),
-            withIntermediateDirectories: true
+            withIntermediateDirectories: true,
         )
 
         if file.size == 0 {

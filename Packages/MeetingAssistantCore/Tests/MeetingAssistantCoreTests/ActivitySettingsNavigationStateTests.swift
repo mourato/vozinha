@@ -1,5 +1,5 @@
-@testable import MeetingAssistantCoreUI
 import MeetingAssistantCoreDomain
+@testable import MeetingAssistantCoreUI
 import XCTest
 
 final class ActivitySettingsNavigationStateTests: XCTestCase {
@@ -34,7 +34,7 @@ final class ActivitySettingsNavigationStateTests: XCTestCase {
         history.push(.conversation(conversationID))
         var state = ActivitySettingsNavigationState(
             activeRoute: .history,
-            transcriptionsNavigationHistory: history
+            transcriptionsNavigationHistory: history,
         )
 
         XCTAssertTrue(state.canGoBack)
@@ -50,7 +50,7 @@ final class ActivitySettingsNavigationStateTests: XCTestCase {
         metricsState.open(.performance)
         var state = ActivitySettingsNavigationState(
             activeRoute: .modelPerformance,
-            metricsNavigationState: metricsState
+            metricsNavigationState: metricsState,
         )
 
         XCTAssertTrue(state.canGoBack)
@@ -66,7 +66,7 @@ final class ActivitySettingsNavigationStateTests: XCTestCase {
         metricsState.open(.moreInsights)
         var state = ActivitySettingsNavigationState(
             activeRoute: .moreInsights,
-            metricsNavigationState: metricsState
+            metricsNavigationState: metricsState,
         )
 
         state.goBack()
@@ -81,7 +81,7 @@ final class ActivitySettingsNavigationStateTests: XCTestCase {
         metricsState.open(.performanceRecording(recordingID))
         var state = ActivitySettingsNavigationState(
             activeRoute: .modelPerformance,
-            metricsNavigationState: metricsState
+            metricsNavigationState: metricsState,
         )
 
         state.goBack()
@@ -102,7 +102,7 @@ final class ActivitySettingsNavigationStateTests: XCTestCase {
             endDate: Date().addingTimeInterval(1_800),
             location: nil,
             notes: nil,
-            attendees: []
+            attendees: [],
         )
         var state = ActivitySettingsNavigationState()
 

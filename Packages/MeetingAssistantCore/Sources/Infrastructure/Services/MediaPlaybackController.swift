@@ -173,11 +173,11 @@ private extension AppleScriptMediaPlaybackAutomating {
         let errorMessage = errorInfo[NSAppleScript.errorMessage] as? String ?? "unknown"
         if errorNumber == Self.automationPermissionDeniedErrorCode {
             logger.warning(
-                "AppleScript automation permission denied for \(applicationName, privacy: .public): \(errorMessage, privacy: .public)"
+                "AppleScript automation permission denied for \(applicationName, privacy: .public): \(errorMessage, privacy: .public)",
             )
         } else {
             logger.debug(
-                "AppleScript error for \(applicationName, privacy: .public) [\(errorNumber ?? 0)]: \(errorMessage, privacy: .public)"
+                "AppleScript error for \(applicationName, privacy: .public) [\(errorNumber ?? 0)]: \(errorMessage, privacy: .public)",
             )
         }
     }

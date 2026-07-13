@@ -150,14 +150,14 @@ public extension ShortcutInputEvent {
         keyCode: UInt16,
         modifiers: NSEvent.ModifierFlags = [],
         isRepeat: Bool = false,
-        characters: String? = nil
+        characters: String? = nil,
     ) -> ShortcutInputEvent {
         ShortcutInputEvent(
             kind: .keyDown,
             keyCode: keyCode,
             modifierFlagsRawValue: modifiers.rawValue,
             isRepeat: isRepeat,
-            charactersIgnoringModifiers: characters
+            charactersIgnoringModifiers: characters,
         )
     }
 
@@ -165,27 +165,27 @@ public extension ShortcutInputEvent {
     static func keyUp(
         keyCode: UInt16,
         modifiers: NSEvent.ModifierFlags = [],
-        characters: String? = nil
+        characters: String? = nil,
     ) -> ShortcutInputEvent {
         ShortcutInputEvent(
             kind: .keyUp,
             keyCode: keyCode,
             modifierFlagsRawValue: modifiers.rawValue,
             isRepeat: false,
-            charactersIgnoringModifiers: characters
+            charactersIgnoringModifiers: characters,
         )
     }
 
     /// Creates a flagsChanged event for testing.
     static func flagsChanged(
-        modifiers: NSEvent.ModifierFlags
+        modifiers: NSEvent.ModifierFlags,
     ) -> ShortcutInputEvent {
         ShortcutInputEvent(
             kind: .flagsChanged,
             keyCode: 0,
             modifierFlagsRawValue: modifiers.rawValue,
             isRepeat: false,
-            charactersIgnoringModifiers: nil
+            charactersIgnoringModifiers: nil,
         )
     }
 }

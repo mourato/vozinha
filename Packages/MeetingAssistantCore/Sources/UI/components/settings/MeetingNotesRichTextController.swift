@@ -242,7 +242,9 @@ final class MeetingNotesRichTextController: ObservableObject {
         guard !textView.inLiveResize else { return }
 
         let fullRange = NSRange(location: 0, length: storage.length)
-        if fullRange.length == 0 { return }
+        if fullRange.length == 0 {
+            return
+        }
         let preservedSelection = textView.selectedRange()
 
         storage.beginEditing()

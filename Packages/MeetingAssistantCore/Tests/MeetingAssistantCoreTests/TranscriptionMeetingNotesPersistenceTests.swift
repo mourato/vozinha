@@ -41,7 +41,7 @@ final class MeetingNotesPersistenceTests: XCTestCase {
         markdownStore = MeetingNotesMarkdownDocumentStore(
             userDefaults: userDefaults,
             rootDirectoryURL: markdownRootDirectoryURL,
-            writesAsynchronously: false
+            writesAsynchronously: false,
         )
         recordingManager = RecordingManager(
             micRecorder: mockMic,
@@ -53,7 +53,7 @@ final class MeetingNotesPersistenceTests: XCTestCase {
             captureContextResolver: mockCaptureContextResolver,
             meetingNotesRichTextStore: richTextStore,
             meetingNotesMarkdownStore: markdownStore,
-            apiKeyExists: { _ in true }
+            apiKeyExists: { _ in true },
         )
         viewModel = TranscriptionSettingsViewModel(
             storage: storage,
@@ -61,7 +61,7 @@ final class MeetingNotesPersistenceTests: XCTestCase {
             meetingRepository: meetingRepository,
             meetingQAService: meetingQAService,
             meetingNotesRichTextStore: richTextStore,
-            meetingNotesMarkdownStore: markdownStore
+            meetingNotesMarkdownStore: markdownStore,
         )
     }
 
@@ -95,7 +95,7 @@ final class MeetingNotesPersistenceTests: XCTestCase {
             contextItems: [
                 .init(source: .meetingNotes, text: "Old notes"),
                 .init(source: .clipboard, text: "Clipboard context"),
-            ]
+            ],
         )
         storage.mockTranscriptions = [transcription]
         viewModel.selectedTranscription = transcription
@@ -113,7 +113,7 @@ final class MeetingNotesPersistenceTests: XCTestCase {
         let transcription = makeTranscription(
             contextItems: [
                 .init(source: .activeApp, text: "Zoom"),
-            ]
+            ],
         )
         storage.mockTranscriptions = [transcription]
         viewModel.selectedTranscription = transcription
@@ -132,7 +132,7 @@ final class MeetingNotesPersistenceTests: XCTestCase {
             contextItems: [
                 .init(source: .meetingNotes, text: "Meeting notes"),
                 .init(source: .focusedText, text: "Focused context"),
-            ]
+            ],
         )
         storage.mockTranscriptions = [transcription]
         viewModel.selectedTranscription = transcription
@@ -150,7 +150,7 @@ final class MeetingNotesPersistenceTests: XCTestCase {
                 .init(source: .meetingNotes, text: "Old notes 1"),
                 .init(source: .activeApp, text: "Slack"),
                 .init(source: .meetingNotes, text: "Old notes 2"),
-            ]
+            ],
         )
         storage.mockTranscriptions = [transcription]
         viewModel.selectedTranscription = transcription
@@ -170,7 +170,7 @@ final class MeetingNotesPersistenceTests: XCTestCase {
                 .init(source: .meetingNotes, text: "Old notes"),
                 .init(source: .calendarEvent, text: "Planning sync"),
                 .init(source: .windowTitle, text: "Roadmap"),
-            ]
+            ],
         )
         storage.mockTranscriptions = [transcription]
         viewModel.selectedId = transcription.id
@@ -183,7 +183,7 @@ final class MeetingNotesPersistenceTests: XCTestCase {
         XCTAssertEqual(selected.contextItems.filter { $0.source == .meetingNotes }.count, 1)
         XCTAssertEqual(
             selected.contextItems.first(where: { $0.source == .meetingNotes })?.text,
-            "Refined notes"
+            "Refined notes",
         )
         XCTAssertTrue(selected.contextItems.contains { $0.source == .calendarEvent && $0.text == "Planning sync" })
         XCTAssertTrue(selected.contextItems.contains { $0.source == .windowTitle && $0.text == "Roadmap" })
@@ -193,15 +193,15 @@ final class MeetingNotesPersistenceTests: XCTestCase {
         let transcription = makeTranscription(
             contextItems: [
                 .init(source: .meetingNotes, text: "Old notes"),
-            ]
+            ],
         )
         storage.mockTranscriptions = [transcription]
         viewModel.selectedTranscription = transcription
 
-        let richData = Data([0x7B, 0x5C, 0x72, 0x74, 0x66])
+        let richData = Data([0x7b, 0x5c, 0x72, 0x74, 0x66])
         await viewModel.updateMeetingNotes(
             MeetingNotesContent(plainText: "Rich notes", richTextRTFData: richData),
-            in: transcription.id
+            in: transcription.id,
         )
 
         XCTAssertEqual(richTextStore.transcriptionNotesRTFData(for: transcription.id), richData)
@@ -210,20 +210,20 @@ final class MeetingNotesPersistenceTests: XCTestCase {
         XCTAssertTrue(markdownContent.contains("Rich notes"))
     }
 
-    func testUpdateMeetingNotes_ClearsRichTextSidecarWhenNotesAreCleared() async throws {
+    func testUpdateMeetingNotes_ClearsRichTextSidecarWhenNotesAreCleared() async {
         let transcription = makeTranscription(
             contextItems: [
                 .init(source: .meetingNotes, text: "Old notes"),
-            ]
+            ],
         )
         storage.mockTranscriptions = [transcription]
         viewModel.selectedTranscription = transcription
 
-        richTextStore.saveTranscriptionNotesRTFData(Data([0x7B, 0x5C, 0x72, 0x74, 0x66]), for: transcription.id)
+        richTextStore.saveTranscriptionNotesRTFData(Data([0x7b, 0x5c, 0x72, 0x74, 0x66]), for: transcription.id)
 
         await viewModel.updateMeetingNotes(
             MeetingNotesContent(plainText: "   ", richTextRTFData: Data([0x01, 0x02])),
-            in: transcription.id
+            in: transcription.id,
         )
 
         XCTAssertNil(richTextStore.transcriptionNotesRTFData(for: transcription.id))
@@ -235,17 +235,17 @@ final class MeetingNotesPersistenceTests: XCTestCase {
             eventIdentifier: eventIdentifier,
             title: "Weekly Sync",
             startDate: Date(),
-            endDate: Date().addingTimeInterval(3_600)
+            endDate: Date().addingTimeInterval(3_600),
         )
         let transcription = makeTranscription(
             contextItems: [.init(source: .meetingNotes, text: "Legacy transcription notes")],
-            linkedCalendarEvent: linkedEvent
+            linkedCalendarEvent: linkedEvent,
         )
         storage.mockTranscriptions = [transcription]
 
         let sharedContent = MeetingNotesContent(
             plainText: "Shared calendar notes",
-            richTextRTFData: Data([0x7B, 0x5C, 0x72, 0x74, 0x66, 0x31])
+            richTextRTFData: Data([0x7b, 0x5c, 0x72, 0x74, 0x66, 0x31]),
         )
         recordingManager.updateCalendarEventNotes(sharedContent, for: eventIdentifier)
 
@@ -253,25 +253,25 @@ final class MeetingNotesPersistenceTests: XCTestCase {
         XCTAssertEqual(loaded, sharedContent)
     }
 
-    func testUpdateMeetingNotes_LinkedMeeting_SyncsMeetingAndCalendarEventStores() async throws {
+    func testUpdateMeetingNotes_LinkedMeeting_SyncsMeetingAndCalendarEventStores() async {
         let eventIdentifier = "calendar-event-xyz"
         let linkedEvent = MeetingCalendarEventSnapshot(
             eventIdentifier: eventIdentifier,
             title: "Planning",
             startDate: Date(),
-            endDate: Date().addingTimeInterval(1_800)
+            endDate: Date().addingTimeInterval(1_800),
         )
         let transcription = makeTranscription(
             contextItems: [.init(source: .meetingNotes, text: "Old notes")],
-            linkedCalendarEvent: linkedEvent
+            linkedCalendarEvent: linkedEvent,
         )
         storage.mockTranscriptions = [transcription]
         viewModel.selectedTranscription = transcription
 
-        let richData = Data([0x7B, 0x5C, 0x72, 0x74, 0x66, 0x32])
+        let richData = Data([0x7b, 0x5c, 0x72, 0x74, 0x66, 0x32])
         await viewModel.updateMeetingNotes(
             MeetingNotesContent(plainText: "Unified notes", richTextRTFData: richData),
-            in: transcription.id
+            in: transcription.id,
         )
 
         XCTAssertEqual(richTextStore.meetingNotesRTFData(for: transcription.meeting.id), richData)
@@ -280,18 +280,18 @@ final class MeetingNotesPersistenceTests: XCTestCase {
         XCTAssertNil(userDefaults.string(forKey: "meetingNotes.event.\(eventIdentifier)"))
     }
 
-    func testUpdateMeetingNotes_WithoutLinkedEvent_DoesNotWriteCalendarEventStore() async throws {
+    func testUpdateMeetingNotes_WithoutLinkedEvent_DoesNotWriteCalendarEventStore() async {
         let transcription = makeTranscription(
             contextItems: [.init(source: .meetingNotes, text: "Initial notes")],
-            linkedCalendarEvent: nil
+            linkedCalendarEvent: nil,
         )
         storage.mockTranscriptions = [transcription]
         viewModel.selectedTranscription = transcription
 
-        let richData = Data([0x7B, 0x5C, 0x72, 0x74, 0x66, 0x33])
+        let richData = Data([0x7b, 0x5c, 0x72, 0x74, 0x66, 0x33])
         await viewModel.updateMeetingNotes(
             MeetingNotesContent(plainText: "Meeting-only notes", richTextRTFData: richData),
-            in: transcription.id
+            in: transcription.id,
         )
 
         XCTAssertEqual(richTextStore.meetingNotesRTFData(for: transcription.meeting.id), richData)
@@ -301,7 +301,7 @@ final class MeetingNotesPersistenceTests: XCTestCase {
     func testMeetingNotesContent_FallsBackToTranscriptionWhenSharedStoresAreEmpty() {
         let transcription = makeTranscription(
             contextItems: [.init(source: .meetingNotes, text: "Transcription fallback notes")],
-            linkedCalendarEvent: nil
+            linkedCalendarEvent: nil,
         )
         storage.mockTranscriptions = [transcription]
 
@@ -309,11 +309,11 @@ final class MeetingNotesPersistenceTests: XCTestCase {
         XCTAssertEqual(loaded.plainText, "Transcription fallback notes")
     }
 
-    func testExecuteDeleteTranscription_RemovesMarkdownDocument() async throws {
+    func testExecuteDeleteTranscription_RemovesMarkdownDocument() async {
         let transcription = makeTranscription(
             contextItems: [
                 .init(source: .meetingNotes, text: "Delete me"),
-            ]
+            ],
         )
         storage.mockTranscriptions = [transcription]
         viewModel.selectedId = transcription.id
@@ -338,7 +338,7 @@ final class MeetingNotesPersistenceTests: XCTestCase {
             isPostProcessed: transcription.isPostProcessed,
             duration: transcription.meeting.duration,
             audioFilePath: transcription.meeting.audioFilePath,
-            inputSource: transcription.inputSource
+            inputSource: transcription.inputSource,
         )
 
         viewModel.confirmDeleteTranscription(metadata)
@@ -349,7 +349,7 @@ final class MeetingNotesPersistenceTests: XCTestCase {
 
     private func makeTranscription(
         contextItems: [TranscriptionContextItem],
-        linkedCalendarEvent: MeetingCalendarEventSnapshot? = nil
+        linkedCalendarEvent: MeetingCalendarEventSnapshot? = nil,
     ) -> Transcription {
         let id = UUID()
         return Transcription(
@@ -359,12 +359,12 @@ final class MeetingNotesPersistenceTests: XCTestCase {
                 app: .zoom,
                 linkedCalendarEvent: linkedCalendarEvent,
                 startTime: Date(),
-                endTime: Date().addingTimeInterval(60)
+                endTime: Date().addingTimeInterval(60),
             ),
             contextItems: contextItems,
             segments: [.init(speaker: "Speaker 1", text: "Content", startTime: 0, endTime: 5)],
             text: "Content",
-            rawText: "Content"
+            rawText: "Content",
         )
     }
 

@@ -16,7 +16,7 @@ struct SummaryBenchmarkRunner {
 
     init(
         parser: CanonicalSummaryResponseParser = .init(),
-        nowProvider: @escaping () -> Date = Date.init
+        nowProvider: @escaping () -> Date = Date.init,
     ) {
         self.parser = parser
         self.nowProvider = nowProvider
@@ -73,7 +73,7 @@ struct SummaryBenchmarkRunner {
     func run(
         fixtureSet: SummaryBenchmarkFixtureSet,
         mode: SummaryBenchmarkGateMode,
-        baseline: SummaryBenchmarkBaseline?
+        baseline: SummaryBenchmarkBaseline?,
     ) -> SummaryBenchmarkResult {
         let rubric = fixtureSet.rubric ?? .v1
         let fixtureCount = Double(fixtureSet.fixtures.count)
@@ -85,19 +85,19 @@ struct SummaryBenchmarkRunner {
             let summaryF1 = fieldF1(predicted: parsedSummary?.summary, expected: fixture.expected.summary)
             let keyPointsF1 = fieldF1(
                 predicted: parsedSummary?.keyPoints.joined(separator: " "),
-                expected: fixture.expected.keyPoints.joined(separator: " ")
+                expected: fixture.expected.keyPoints.joined(separator: " "),
             )
             let decisionsF1 = fieldF1(
                 predicted: parsedSummary?.decisions.joined(separator: " "),
-                expected: fixture.expected.decisions.joined(separator: " ")
+                expected: fixture.expected.decisions.joined(separator: " "),
             )
             let actionItemsTitleF1 = fieldF1(
                 predicted: parsedSummary?.actionItems.map(\.title).joined(separator: " "),
-                expected: fixture.expected.actionItems.map(\.title).joined(separator: " ")
+                expected: fixture.expected.actionItems.map(\.title).joined(separator: " "),
             )
             let openQuestionsF1 = fieldF1(
                 predicted: parsedSummary?.openQuestions.joined(separator: " "),
-                expected: fixture.expected.openQuestions.joined(separator: " ")
+                expected: fixture.expected.openQuestions.joined(separator: " "),
             )
             let trustFlagsAccuracy = trustFlagsAccuracy(predicted: parsedSummary, expected: fixture.expected)
             let hallucinationRate = hallucinationRate(transcript: fixture.transcript, predicted: parsedSummary)
@@ -110,7 +110,7 @@ struct SummaryBenchmarkRunner {
                 actionItemsTitleF1: partialResult.actionItemsTitleF1 + actionItemsTitleF1,
                 openQuestionsF1: partialResult.openQuestionsF1 + openQuestionsF1,
                 trustFlagsAccuracy: partialResult.trustFlagsAccuracy + trustFlagsAccuracy,
-                hallucinationRate: partialResult.hallucinationRate + hallucinationRate
+                hallucinationRate: partialResult.hallucinationRate + hallucinationRate,
             )
         }
 
@@ -122,15 +122,14 @@ struct SummaryBenchmarkRunner {
             actionItemsTitleF1: aggregate.actionItemsTitleF1 / fixtureCount,
             openQuestionsF1: aggregate.openQuestionsF1 / fixtureCount,
             trustFlagsAccuracy: aggregate.trustFlagsAccuracy / fixtureCount,
-            hallucinationRate: aggregate.hallucinationRate / fixtureCount
+            hallucinationRate: aggregate.hallucinationRate / fixtureCount,
         )
 
         let thresholdFailures = thresholdFailures(metrics: averagedMetrics, thresholds: rubric.thresholds)
-        let baselineRegressions: [String]
-        if mode == .enforce, let baseline {
-            baselineRegressions = computeBaselineRegressions(current: averagedMetrics, baseline: baseline.metrics)
+        let baselineRegressions: [String] = if mode == .enforce, let baseline {
+            computeBaselineRegressions(current: averagedMetrics, baseline: baseline.metrics)
         } else {
-            baselineRegressions = []
+            []
         }
 
         return SummaryBenchmarkResult(
@@ -142,7 +141,7 @@ struct SummaryBenchmarkRunner {
             thresholds: rubric.thresholds,
             baseline: baseline?.metrics,
             thresholdFailures: thresholdFailures,
-            baselineRegressions: baselineRegressions
+            baselineRegressions: baselineRegressions,
         )
     }
 
@@ -151,13 +150,13 @@ struct SummaryBenchmarkRunner {
             schemaVersion: CanonicalSummary.currentSchemaVersion,
             generatedAt: nowProvider(),
             source: source,
-            metrics: metrics
+            metrics: metrics,
         )
     }
 
     private func thresholdFailures(
         metrics: SummaryBenchmarkMetricSet,
-        thresholds: SummaryBenchmarkMetricSet
+        thresholds: SummaryBenchmarkMetricSet,
     ) -> [String] {
         var failures: [String] = []
 
@@ -191,7 +190,7 @@ struct SummaryBenchmarkRunner {
 
     private func computeBaselineRegressions(
         current: SummaryBenchmarkMetricSet,
-        baseline: SummaryBenchmarkMetricSet
+        baseline: SummaryBenchmarkMetricSet,
     ) -> [String] {
         var regressions: [String] = []
 

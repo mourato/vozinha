@@ -35,7 +35,7 @@ extension FileSystemStorageService {
         let migrationResult = await migrateLegacyFiles(
             legacyJSONFiles,
             decoder: decoder,
-            archiveDirectory: archiveDirectory
+            archiveDirectory: archiveDirectory,
         )
 
         let remainingJSONFiles = enumerateLegacyJSONFiles(in: legacyDirectory)
@@ -49,7 +49,7 @@ extension FileSystemStorageService {
             extra: [
                 "migratedCount": "\(migrationResult.migratedCount)",
                 "failedCount": "\(migrationResult.failedCount)",
-            ]
+            ],
         )
     }
 
@@ -61,7 +61,7 @@ extension FileSystemStorageService {
             AppLogger.error(
                 "Failed to create legacy JSON archive directory",
                 category: .databaseManager,
-                error: error
+                error: error,
             )
             return false
         }
@@ -78,14 +78,14 @@ extension FileSystemStorageService {
             return try FileManager.default.contentsOfDirectory(
                 at: directory,
                 includingPropertiesForKeys: [.isRegularFileKey],
-                options: [.skipsHiddenFiles]
+                options: [.skipsHiddenFiles],
             )
             .filter { $0.pathExtension.lowercased() == "json" }
         } catch {
             AppLogger.error(
                 "Failed to enumerate legacy transcripts directory",
                 category: .databaseManager,
-                error: error
+                error: error,
             )
             return []
         }
@@ -94,7 +94,7 @@ extension FileSystemStorageService {
     private func migrateLegacyFiles(
         _ files: [URL],
         decoder: JSONDecoder,
-        archiveDirectory: URL
+        archiveDirectory: URL,
     ) async -> (migratedCount: Int, failedCount: Int) {
         var migratedCount = 0
         var failedCount = 0
@@ -104,7 +104,7 @@ extension FileSystemStorageService {
                 try await migrateLegacyFile(
                     at: fileURL,
                     decoder: decoder,
-                    archiveDirectory: archiveDirectory
+                    archiveDirectory: archiveDirectory,
                 )
                 migratedCount += 1
             } catch {
@@ -113,7 +113,7 @@ extension FileSystemStorageService {
                     "Failed to migrate legacy JSON transcription",
                     category: .databaseManager,
                     error: error,
-                    extra: ["filename": fileURL.lastPathComponent]
+                    extra: ["filename": fileURL.lastPathComponent],
                 )
             }
         }
@@ -124,7 +124,7 @@ extension FileSystemStorageService {
     private func migrateLegacyFile(
         at fileURL: URL,
         decoder: JSONDecoder,
-        archiveDirectory: URL
+        archiveDirectory: URL,
     ) async throws {
         let data = try Data(contentsOf: fileURL)
         let legacy = try decoder.decode(Transcription.self, from: data)

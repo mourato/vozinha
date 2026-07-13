@@ -86,7 +86,7 @@ public final class FloatingRecordingIndicatorController: ObservableObject {
     public init(
         audioMonitor: AudioLevelMonitor = AudioLevelMonitor(),
         settingsStore: AppSettingsStore = .shared,
-        processingStateStore: RecordingIndicatorProcessingStateStore = .shared
+        processingStateStore: RecordingIndicatorProcessingStateStore = .shared,
     ) {
         self.audioMonitor = audioMonitor
         self.settingsStore = settingsStore
@@ -121,7 +121,7 @@ public final class FloatingRecordingIndicatorController: ObservableObject {
     public func show(
         mode: FloatingRecordingIndicatorMode = .recording,
         onStop: @escaping @Sendable () -> Void,
-        onCancel: @escaping @Sendable () -> Void
+        onCancel: @escaping @Sendable () -> Void,
     ) {
         guard shouldShowIndicator(for: mode) else { return }
         let renderState = currentRenderState.with(mode: mode)
@@ -145,7 +145,7 @@ public final class FloatingRecordingIndicatorController: ObservableObject {
     public func show(
         renderState: RecordingIndicatorRenderState,
         onStop: @escaping @Sendable () -> Void,
-        onCancel: @escaping @Sendable () -> Void
+        onCancel: @escaping @Sendable () -> Void,
     ) {
         onStopAction = onStop
         onCancelAction = onCancel
@@ -263,7 +263,7 @@ public final class FloatingRecordingIndicatorController: ObservableObject {
             contentRect: contentRect,
             styleMask: [.borderless, .nonactivatingPanel],
             backing: .buffered,
-            defer: false
+            defer: false,
         )
         panel.level = .screenSaver
         panel.ignoresMouseEvents = false
@@ -329,7 +329,7 @@ public final class FloatingRecordingIndicatorController: ObservableObject {
             processingSnapshot: currentProcessingSnapshot,
             isAnimationActive: isVisible && !prefersReducedMotion,
             onStop: onStopAction,
-            onCancel: onCancelAction
+            onCancel: onCancelAction,
         )
         let rootView = AnyView(
             indicatorView
@@ -337,7 +337,7 @@ public final class FloatingRecordingIndicatorController: ObservableObject {
                 // dimensions in response to transient overlay/layout updates.
                 .frame(width: contentWidth, height: contentHeight, alignment: .center)
                 .padding(shadowInset)
-                .frame(width: panelSize.width, height: panelSize.height, alignment: .center)
+                .frame(width: panelSize.width, height: panelSize.height, alignment: .center),
         )
         if let hostingView {
             hostingView.rootView = rootView
@@ -367,7 +367,7 @@ public final class FloatingRecordingIndicatorController: ObservableObject {
 
     private func panelHeight(
         for style: RecordingIndicatorStyle,
-        mode: FloatingRecordingIndicatorMode
+        mode: FloatingRecordingIndicatorMode,
     ) -> CGFloat {
         switch mode {
         case .error:
@@ -381,11 +381,11 @@ public final class FloatingRecordingIndicatorController: ObservableObject {
             case .super:
                 let layout = RecordingIndicatorOverlayLayout.resolve(
                     renderState: currentRenderState.with(mode: mode),
-                    settingsStore: settingsStore
+                    settingsStore: settingsStore,
                 )
                 return FloatingRecordingIndicatorViewUtilities.superCardHeight(
                     layout: layout,
-                    renderState: currentRenderState.with(mode: mode)
+                    renderState: currentRenderState.with(mode: mode),
                 )
             case .none:
                 return Constants.panelHeightMini
@@ -395,7 +395,7 @@ public final class FloatingRecordingIndicatorController: ObservableObject {
 
     private func panelWidth(
         for style: RecordingIndicatorStyle,
-        renderState: RecordingIndicatorRenderState
+        renderState: RecordingIndicatorRenderState,
     ) -> CGFloat {
         switch renderState.mode {
         case .error:
@@ -403,13 +403,13 @@ public final class FloatingRecordingIndicatorController: ObservableObject {
         case .starting, .confirmingAutomaticMeetingStart, .recording, .processing:
             let layout = RecordingIndicatorOverlayLayout.resolve(
                 renderState: renderState,
-                settingsStore: settingsStore
+                settingsStore: settingsStore,
             )
             if style == .super {
                 return FloatingRecordingIndicatorViewUtilities.superCardWidth(
                     layout: layout,
                     renderState: renderState,
-                    processingSnapshot: currentProcessingSnapshot
+                    processingSnapshot: currentProcessingSnapshot,
                 )
             }
             let auxiliaryUnitWidth = auxiliaryUnitWidth(for: style)
@@ -425,7 +425,7 @@ public final class FloatingRecordingIndicatorController: ObservableObject {
             let auxiliaryCount = FloatingRecordingIndicatorViewUtilities.externalAuxiliaryControlCount(
                 for: indicatorSize,
                 renderState: renderState,
-                layout: layout
+                layout: layout,
             )
             return mainOnlyWidth + (CGFloat(auxiliaryCount) * auxiliaryUnitWidth)
         }
@@ -434,7 +434,7 @@ public final class FloatingRecordingIndicatorController: ObservableObject {
     private func panelMainOnlyWidth(
         for style: RecordingIndicatorStyle,
         renderState: RecordingIndicatorRenderState,
-        layout: RecordingIndicatorOverlayLayout
+        layout: RecordingIndicatorOverlayLayout,
     ) -> CGFloat {
         let indicatorSize: FloatingRecordingIndicatorView.IndicatorSize = switch style {
         case .classic:
@@ -450,14 +450,14 @@ public final class FloatingRecordingIndicatorController: ObservableObject {
             renderState: renderState,
             layout: layout,
             expanded: false,
-            processingSnapshot: currentProcessingSnapshot
+            processingSnapshot: currentProcessingSnapshot,
         )
         let expandedWidth = FloatingRecordingIndicatorViewUtilities.mainPillWidth(
             for: indicatorSize,
             renderState: renderState,
             layout: layout,
             expanded: true,
-            processingSnapshot: currentProcessingSnapshot
+            processingSnapshot: currentProcessingSnapshot,
         )
         return max(collapsedWidth, expandedWidth)
     }
@@ -520,7 +520,7 @@ public final class FloatingRecordingIndicatorController: ObservableObject {
     private func animatePanelAlpha(
         _ panel: NSPanel,
         to alphaValue: CGFloat,
-        duration: TimeInterval
+        duration: TimeInterval,
     ) {
         NSAnimationContext.runAnimationGroup { context in
             context.duration = duration
@@ -530,7 +530,7 @@ public final class FloatingRecordingIndicatorController: ObservableObject {
 
     private func panelContentSize(
         for style: RecordingIndicatorStyle,
-        renderState: RecordingIndicatorRenderState
+        renderState: RecordingIndicatorRenderState,
     ) -> NSSize {
         let contentWidth = panelWidth(for: style, renderState: renderState)
         let contentHeight = panelHeight(for: style, mode: renderState.mode)
@@ -568,7 +568,7 @@ public final class FloatingRecordingIndicatorController: ObservableObject {
     private func panelFrame(
         for panel: NSPanel,
         contentSize: NSSize,
-        position: RecordingIndicatorPosition
+        position: RecordingIndicatorPosition,
     ) -> NSRect? {
         guard let screen = activeTargetScreen(for: panel) else { return nil }
         let screenFrame = screen.visibleFrame
@@ -616,7 +616,7 @@ public final class FloatingRecordingIndicatorController: ObservableObject {
     func panelWidthForTesting(
         style: RecordingIndicatorStyle,
         renderState: RecordingIndicatorRenderState,
-        processingSnapshot: RecordingIndicatorProcessingSnapshot? = nil
+        processingSnapshot: RecordingIndicatorProcessingSnapshot? = nil,
     ) -> CGFloat {
         let previousSnapshot = currentProcessingSnapshot
         currentProcessingSnapshot = processingSnapshot
@@ -626,7 +626,7 @@ public final class FloatingRecordingIndicatorController: ObservableObject {
 
     func panelHeightForTesting(
         style: RecordingIndicatorStyle,
-        renderState: RecordingIndicatorRenderState
+        renderState: RecordingIndicatorRenderState,
     ) -> CGFloat {
         let previousRenderState = currentRenderState
         currentRenderState = renderState

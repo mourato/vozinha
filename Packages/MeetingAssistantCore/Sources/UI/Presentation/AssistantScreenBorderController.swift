@@ -74,7 +74,7 @@ public final class AssistantScreenBorderController {
             borderWidth: borderWidth,
             glowRadius: glowRadius,
             borderColor: borderColor,
-            style: borderStyle
+            style: borderStyle,
         )
         window.contentView = NSHostingView(rootView: borderView)
 
@@ -134,7 +134,7 @@ public final class AssistantScreenBorderController {
             contentRect: frame,
             styleMask: .borderless,
             backing: .buffered,
-            defer: false
+            defer: false,
         )
 
         window.level = .screenSaver
@@ -198,7 +198,7 @@ private struct AssistantScreenBorderView: View {
                 Rectangle()
                     .stroke(
                         borderColor.opacity(0.6 - Double(layer) * 0.15),
-                        lineWidth: borderWidth + CGFloat(layer) * spreadStep
+                        lineWidth: borderWidth + CGFloat(layer) * spreadStep,
                     )
                     .blur(radius: CGFloat(layer) * blurStep + 2)
             }
@@ -218,7 +218,7 @@ private struct AssistantScreenBorderView: View {
         borderWidth: 10,
         glowRadius: 20,
         borderColor: .orange,
-        style: .stroke
+        style: .stroke,
     )
     .frame(width: 500, height: 320)
     .background(Color.black.opacity(0.85))
@@ -229,7 +229,7 @@ private struct AssistantScreenBorderView: View {
         borderWidth: 10,
         glowRadius: 20,
         borderColor: .green,
-        style: .glow
+        style: .glow,
     )
     .frame(width: 500, height: 320)
     .background(Color.black.opacity(0.85))

@@ -33,11 +33,11 @@ private final class ContinuationGate<T: Sendable>: @unchecked Sendable {
 
 private func makeXPCProxyErrorHandler(
     context: String,
-    gate: ContinuationGate<some Sendable>
+    gate: ContinuationGate<some Sendable>,
 ) -> @Sendable (Error) -> Void {
     { error in
         meetingAssistantAIClientLogger.error(
-            "XPC Proxy Error (\(context, privacy: .public)): \(error.localizedDescription, privacy: .public)"
+            "XPC Proxy Error (\(context, privacy: .public)): \(error.localizedDescription, privacy: .public)",
         )
         gate.resume(throwing: error)
     }
@@ -83,7 +83,7 @@ public class MeetingAssistantAIClient {
     /// Transcribes an audio file using the XPC Service.
     public func transcribe(
         audioURL: URL,
-        diarizationEnabledOverride: Bool? = nil
+        diarizationEnabledOverride: Bool? = nil,
     ) async throws -> TranscriptionResponse {
         guard FeatureFlags.useXPCService else {
             throw TranscriptionError.serviceUnavailable
@@ -99,7 +99,7 @@ public class MeetingAssistantAIClient {
 
             return try await transcribe(
                 audioURL: audioURL,
-                diarizationEnabledOverride: diarizationEnabledOverride
+                diarizationEnabledOverride: diarizationEnabledOverride,
             )
         }
 
@@ -109,7 +109,7 @@ public class MeetingAssistantAIClient {
             diarization: diarizationEnabledOverride ?? store.isDiarizationEnabled,
             minSpeakers: store.minSpeakers ?? 1,
             maxSpeakers: store.maxSpeakers ?? 10,
-            numSpeakers: store.numSpeakers ?? 0
+            numSpeakers: store.numSpeakers ?? 0,
         )
         let settingsData = try JSONEncoder().encode(settings)
 
@@ -117,7 +117,7 @@ public class MeetingAssistantAIClient {
             let gate = ContinuationGate(continuation)
 
             let proxy = connection.remoteObjectProxyWithErrorHandler(
-                makeXPCProxyErrorHandler(context: "Transcribe", gate: gate)
+                makeXPCProxyErrorHandler(context: "Transcribe", gate: gate),
             ) as? MeetingAssistantXPCProtocol
 
             guard let service = proxy else {
@@ -178,7 +178,7 @@ public class MeetingAssistantAIClient {
             }
 
             let proxy = connection.remoteObjectProxyWithErrorHandler(
-                makeXPCProxyErrorHandler(context: "Status", gate: gate)
+                makeXPCProxyErrorHandler(context: "Status", gate: gate),
             ) as? MeetingAssistantXPCProtocol
 
             guard let service = proxy else {
@@ -235,7 +235,7 @@ public class MeetingAssistantAIClient {
             let gate = ContinuationGate(continuation)
 
             let proxy = connection.remoteObjectProxyWithErrorHandler(
-                makeXPCProxyErrorHandler(context: "Warmup", gate: gate)
+                makeXPCProxyErrorHandler(context: "Warmup", gate: gate),
             ) as? MeetingAssistantXPCProtocol
 
             guard let service = proxy else {

@@ -26,12 +26,12 @@ final class SmartShortcutHandler {
         holdThreshold: TimeInterval = 0.35,
         doubleTapInterval: TimeInterval = 0.25,
         isRecordingProvider: @escaping () -> Bool,
-        actionHandler: @escaping (Action) -> Void
+        actionHandler: @escaping (Action) -> Void,
     ) {
         self.holdThreshold = holdThreshold
         executionEngine = ShortcutExecutionEngine(
             holdThreshold: holdThreshold,
-            doubleTapInterval: doubleTapInterval
+            doubleTapInterval: doubleTapInterval,
         )
         self.isRecordingProvider = isRecordingProvider
         self.actionHandler = actionHandler

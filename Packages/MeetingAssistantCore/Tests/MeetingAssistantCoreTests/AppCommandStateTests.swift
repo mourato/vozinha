@@ -48,7 +48,7 @@ final class AppCommandStateTests: XCTestCase {
     func testAssistantActionIsHiddenWhenCapabilityDisabled() {
         let state = AppCommandState(
             recordingSection: .idle,
-            assistantCapabilityEnabled: false
+            assistantCapabilityEnabled: false,
         )
 
         XCTAssertFalse(state.showsAssistantAction)
@@ -58,11 +58,11 @@ final class AppCommandStateTests: XCTestCase {
         let shortcut = ShortcutDefinition(
             modifiers: [.command],
             primaryKey: .letter("K", keyCode: 0x28),
-            trigger: .singleTap
+            trigger: .singleTap,
         )
         let state = AppCommandState(
             recordingSection: .meetingActive,
-            cancelRecordingShortcutDefinition: shortcut
+            cancelRecordingShortcutDefinition: shortcut,
         )
 
         XCTAssertEqual(state.cancelTitleKey, "menubar.cancel_recording")

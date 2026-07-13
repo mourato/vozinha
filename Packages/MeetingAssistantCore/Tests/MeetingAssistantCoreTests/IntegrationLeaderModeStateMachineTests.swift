@@ -1,5 +1,5 @@
-import XCTest
 @testable import MeetingAssistantCoreInfrastructure
+import XCTest
 
 final class IntegrationLeaderModeStateMachineTests: XCTestCase {
     func testLeaderModeStateMachineTransitionsFromIdleToWaitingForAction() {

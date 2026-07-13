@@ -27,7 +27,7 @@ actor IncrementalMeetingTranscriptionCoordinator {
         storage: any StorageService,
         transcriptionClientBox: RecordingManager.UncheckedTranscriptionServiceBox,
         voiceActivityKernel: any VoiceActivityKernel = RealtimeVoiceActivityWindowAssembler(),
-        callbacks: Callbacks
+        callbacks: Callbacks,
     ) {
         core = IncrementalTranscriptionCoordinatorCore(
             configuration: .init(
@@ -39,8 +39,8 @@ actor IncrementalMeetingTranscriptionCoordinator {
                 voiceActivityKernel: voiceActivityKernel,
                 onPreviewTextChanged: nil,
                 onProcessedDurationChanged: callbacks.onProcessedDurationChanged,
-                fallbackLogMessage: "Meeting incremental transcription degraded; full-file fallback required"
-            )
+                fallbackLogMessage: "Meeting incremental transcription degraded; full-file fallback required",
+            ),
         )
     }
 
@@ -83,7 +83,7 @@ actor IncrementalMeetingTranscriptionCoordinator {
     func finish(
         audioURL: URL,
         diarizationEnabled: Bool,
-        finalDiarizationServiceBox: RecordingManager.UncheckedFinalDiarizationServiceBox?
+        finalDiarizationServiceBox: RecordingManager.UncheckedFinalDiarizationServiceBox?,
     ) async throws -> FinalizedResult {
         try await core.finishAccumulation()
 
@@ -100,7 +100,7 @@ actor IncrementalMeetingTranscriptionCoordinator {
                 let currentSegments = await core.currentSegments
                 finalizedSegments = await finalDiarizationServiceBox.assignSpeakers(
                     to: currentSegments,
-                    using: speakerTimeline
+                    using: speakerTimeline,
                 )
             } catch {
                 await core.markForLegacyFallback(error, reason: .finalDiarizationFailed)
@@ -113,7 +113,7 @@ actor IncrementalMeetingTranscriptionCoordinator {
         return await FinalizedResult(
             response: response,
             checkpointID: core.checkpointID,
-            wallClockDuration: core.wallClockElapsedSeconds
+            wallClockDuration: core.wallClockElapsedSeconds,
         )
     }
 

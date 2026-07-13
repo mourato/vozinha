@@ -30,7 +30,7 @@ public struct AssistantSettingsTab: View {
         SettingsScrollableContent {
             SettingsSectionHeader(
                 title: "settings.section.assistant".localized,
-                description: "settings.assistant.header_desc".localized
+                description: "settings.assistant.header_desc".localized,
             )
             assistantControlsSection
                 .disabled(!settings.isAssistantEnabled)
@@ -58,7 +58,7 @@ public struct AssistantSettingsTab: View {
         }
         .animation(
             SettingsMotion.sectionAnimation(reduceMotion: reduceMotion),
-            value: settings.isAssistantEnabled
+            value: settings.isAssistantEnabled,
         )
     }
 
@@ -77,17 +77,17 @@ public struct AssistantSettingsTab: View {
 
                     DSModifierShortcutEditor(
                         shortcut: $viewModel.assistantShortcutDefinition,
-                        conflictMessage: viewModel.assistantModifierConflictMessage
+                        conflictMessage: viewModel.assistantModifierConflictMessage,
                     )
                 }
-            }
+            },
         )
     }
 
     private var visualFeedbackSection: some View {
         DSGroup(
             "settings.assistant.visual_feedback".localized,
-            icon: "rectangle.inset.filled"
+            icon: "rectangle.inset.filled",
         ) {
             VStack(alignment: .leading, spacing: 16) {
                 HStack(spacing: 8) {
@@ -102,7 +102,7 @@ public struct AssistantSettingsTab: View {
                                 reduceMotion
                                     ? nil
                                     : .easeInOut(duration: 0.8).repeatForever(autoreverses: true),
-                                value: isPreviewRunning
+                                value: isPreviewRunning,
                             )
                     }
 
@@ -143,7 +143,7 @@ public struct AssistantSettingsTab: View {
                     DSThemePicker(
                         selection: $viewModel.borderColor,
                         circleSpacing: 4,
-                        itemFrameSize: 34
+                        itemFrameSize: 34,
                     )
                 }
 
@@ -201,7 +201,7 @@ public struct AssistantSettingsTab: View {
     private var borderWidthSelection: Binding<Double> {
         Binding(
             get: { nearestBorderWidthOption(for: viewModel.borderWidth) },
-            set: { viewModel.borderWidth = $0 }
+            set: { viewModel.borderWidth = $0 },
         )
     }
 
@@ -216,13 +216,13 @@ public struct AssistantSettingsTab: View {
                 } else if digitsOnly.isEmpty {
                     viewModel.glowSize = 0
                 }
-            }
+            },
         )
     }
 
     private func nearestBorderWidthOption(for value: Double) -> Double {
         AssistantShortcutSettingsViewModel.borderWidthOptions.min(
-            by: { abs($0 - value) < abs($1 - value) }
+            by: { abs($0 - value) < abs($1 - value) },
         ) ?? AssistantShortcutSettingsViewModel.borderWidthOptions[1]
     }
 

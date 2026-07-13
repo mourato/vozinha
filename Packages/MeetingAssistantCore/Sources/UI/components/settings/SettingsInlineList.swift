@@ -28,7 +28,7 @@ public struct SettingsInlineList<Item: Identifiable, RowContent: View>: View {
         emptyText: String,
         state: State = .ready,
         containerStyle: ContainerStyle = .card,
-        @ViewBuilder rowContent: @escaping (Item) -> RowContent
+        @ViewBuilder rowContent: @escaping (Item) -> RowContent,
     ) {
         self.items = items
         self.emptyText = emptyText
@@ -86,7 +86,7 @@ public struct SettingsInlineList<Item: Identifiable, RowContent: View>: View {
             SettingsInlineListPreviewItem(title: "Teams"),
             SettingsInlineListPreviewItem(title: "Zoom"),
         ],
-        emptyText: "No items found"
+        emptyText: "No items found",
     ) { item in
         Text(item.title)
             .padding(.horizontal, 12)

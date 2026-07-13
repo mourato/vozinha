@@ -1,5 +1,5 @@
-import XCTest
 @testable import MeetingAssistantCore
+import XCTest
 
 @MainActor
 final class IntegrationSettingsViewModelTests: XCTestCase {
@@ -27,7 +27,7 @@ final class IntegrationSettingsViewModelTests: XCTestCase {
         let shortcut = ShortcutDefinition(
             modifiers: [.option, .command],
             primaryKey: .letter("T", keyCode: 0x11),
-            trigger: .singleTap
+            trigger: .singleTap,
         )
 
         XCTAssertNil(viewModel.setIntegrationShortcutDefinition(shortcut, for: integrationID))
@@ -53,7 +53,7 @@ final class IntegrationSettingsViewModelTests: XCTestCase {
         settings.assistantShortcutDefinition = ShortcutDefinition(
             modifiers: [.command],
             primaryKey: .letter("K", keyCode: 0x28),
-            trigger: .singleTap
+            trigger: .singleTap,
         )
 
         let viewModel = IntegrationSettingsViewModel()
@@ -70,14 +70,14 @@ final class IntegrationSettingsViewModelTests: XCTestCase {
             ShortcutDefinition(
                 modifiers: [.leftCommand],
                 primaryKey: .letter("K", keyCode: 0x28),
-                trigger: .singleTap
+                trigger: .singleTap,
             ),
-            for: integrationID
+            for: integrationID,
         )
 
         XCTAssertEqual(
             message,
-            "settings.shortcuts.modifier.conflict".localized(with: "settings.assistant.toggle_command".localized)
+            "settings.shortcuts.modifier.conflict".localized(with: "settings.assistant.toggle_command".localized),
         )
         XCTAssertNil(viewModel.integration(for: integrationID)?.shortcutDefinition)
     }
@@ -97,9 +97,9 @@ final class IntegrationSettingsViewModelTests: XCTestCase {
             ShortcutDefinition(
                 modifiers: [.rightControl],
                 primaryKey: nil,
-                trigger: .doubleTap
+                trigger: .doubleTap,
             ),
-            for: integrationID
+            for: integrationID,
         )
 
         XCTAssertEqual(message, "settings.shortcuts.modifier.primary_key_required".localized)
@@ -120,7 +120,7 @@ final class IntegrationSettingsViewModelTests: XCTestCase {
         let shortcut = ShortcutDefinition(
             modifiers: [],
             primaryKey: .function(index: 5, keyCode: 0x60),
-            trigger: .singleTap
+            trigger: .singleTap,
         )
 
         let message = viewModel.setIntegrationShortcutDefinition(shortcut, for: integrationID)
@@ -145,9 +145,9 @@ final class IntegrationSettingsViewModelTests: XCTestCase {
             ShortcutDefinition(
                 modifiers: [.command],
                 primaryKey: .symbol("↩", keyCode: 0x24),
-                trigger: .singleTap
+                trigger: .singleTap,
             ),
-            for: integrationID
+            for: integrationID,
         )
 
         XCTAssertEqual(message, "settings.shortcuts.modifier.primary_key_required".localized)

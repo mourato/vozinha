@@ -324,7 +324,7 @@ final class AudioBufferQueueTests: XCTestCase {
             commonFormat: .pcmFormatFloat32,
             sampleRate: 48_000,
             channels: 2,
-            interleaved: false
+            interleaved: false,
         ) else {
             throw NSError(domain: "Test", code: 1, userInfo: [NSLocalizedDescriptionKey: "Failed to create format"])
         }

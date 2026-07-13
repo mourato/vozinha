@@ -10,7 +10,7 @@ extension FloatingRecordingIndicatorView {
             } label: {
                 Label(
                     "recording_indicator.prompt.none".localized,
-                    systemImage: "nosign"
+                    systemImage: "nosign",
                 )
             }
 
@@ -26,7 +26,7 @@ extension FloatingRecordingIndicatorView {
         } label: {
             let promptIcon = FloatingRecordingIndicatorViewUtilities.promptIconImage(
                 symbolName: currentPromptIconName,
-                size: size
+                size: size,
             )
             Image(nsImage: promptIcon)
                 .renderingMode(.original)
@@ -51,7 +51,7 @@ extension FloatingRecordingIndicatorView {
         } label: {
             let flagIcon = FloatingRecordingIndicatorViewUtilities.languageFlagImage(
                 currentDictationOutputLanguage.flagEmoji,
-                size: size
+                size: size,
             )
             Image(nsImage: flagIcon)
                 .renderingMode(.original)
@@ -133,7 +133,7 @@ extension FloatingRecordingIndicatorView {
                 ? "recording_indicator.microphone.enabled.help"
                 : "recording_indicator.microphone.disabled.help",
             keyboardShortcut: nil,
-            style: recordingManager.isMeetingMicrophoneEnabled ? .neutral : .warning
+            style: recordingManager.isMeetingMicrophoneEnabled ? .neutral : .warning,
         ) {
             Task {
                 await recordingManager.toggleMeetingMicrophone()
@@ -148,7 +148,7 @@ extension FloatingRecordingIndicatorView {
                 ? "recording_indicator.meeting_notes.hide.help"
                 : "recording_indicator.meeting_notes.show.help",
             keyboardShortcut: nil,
-            style: .neutral
+            style: .neutral,
         ) {
             Task { @MainActor in
                 recordingManager.toggleMeetingNotesPanel()
@@ -160,7 +160,7 @@ extension FloatingRecordingIndicatorView {
         promptPickerControl(size: size)
             .frame(
                 width: FloatingRecordingIndicatorViewUtilities.promptSize(for: size),
-                height: FloatingRecordingIndicatorViewUtilities.controlHeight(for: size)
+                height: FloatingRecordingIndicatorViewUtilities.controlHeight(for: size),
             )
     }
 
@@ -168,7 +168,7 @@ extension FloatingRecordingIndicatorView {
         languagePickerControl(size: size)
             .frame(
                 width: FloatingRecordingIndicatorViewUtilities.promptSize(for: size),
-                height: FloatingRecordingIndicatorViewUtilities.controlHeight(for: size)
+                height: FloatingRecordingIndicatorViewUtilities.controlHeight(for: size),
             )
     }
 
@@ -196,13 +196,13 @@ extension FloatingRecordingIndicatorView {
         promptPickerControl(size: size)
             .frame(
                 width: FloatingRecordingIndicatorViewUtilities.promptSize(for: size),
-                height: FloatingRecordingIndicatorViewUtilities.controlHeight(for: size)
+                height: FloatingRecordingIndicatorViewUtilities.controlHeight(for: size),
             )
             .background(.ultraThinMaterial)
             .background(AppDesignSystem.Colors.recordingIndicatorAuxiliaryBackground)
             .overlay(
                 Capsule()
-                    .strokeBorder(AppDesignSystem.Colors.recordingIndicatorStroke, lineWidth: 1)
+                    .strokeBorder(AppDesignSystem.Colors.recordingIndicatorStroke, lineWidth: 1),
             )
             .clipShape(Capsule())
             .onHover { hovering in
@@ -214,13 +214,13 @@ extension FloatingRecordingIndicatorView {
         languagePickerControl(size: size)
             .frame(
                 width: FloatingRecordingIndicatorViewUtilities.promptSize(for: size),
-                height: FloatingRecordingIndicatorViewUtilities.controlHeight(for: size)
+                height: FloatingRecordingIndicatorViewUtilities.controlHeight(for: size),
             )
             .background(.ultraThinMaterial)
             .background(AppDesignSystem.Colors.recordingIndicatorAuxiliaryBackground)
             .overlay(
                 Capsule()
-                    .strokeBorder(AppDesignSystem.Colors.recordingIndicatorStroke, lineWidth: 1)
+                    .strokeBorder(AppDesignSystem.Colors.recordingIndicatorStroke, lineWidth: 1),
             )
             .clipShape(Capsule())
             .onHover { hovering in
@@ -263,7 +263,9 @@ extension FloatingRecordingIndicatorView {
     func collapseAfterDelayIfNeeded() {
         guard isRecordingMode else { return }
         guard !isMainRegionHovered else { return }
-        if isPromptRegionHovered, isPromptSessionArmed { return }
+        if isPromptRegionHovered, isPromptSessionArmed {
+            return
+        }
         guard isHovering else { return }
 
         hoverCollapseTask?.cancel()
@@ -271,7 +273,9 @@ extension FloatingRecordingIndicatorView {
             try? await Task.sleep(nanoseconds: 110_000_000)
             guard !Task.isCancelled else { return }
             guard !isMainRegionHovered else { return }
-            if isPromptRegionHovered, isPromptSessionArmed { return }
+            if isPromptRegionHovered, isPromptSessionArmed {
+                return
+            }
 
             if reduceMotion {
                 isHovering = false

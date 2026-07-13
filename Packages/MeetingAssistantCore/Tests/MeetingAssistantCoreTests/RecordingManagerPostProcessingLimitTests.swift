@@ -15,7 +15,7 @@ extension RecordingManagerTests {
             qualityProfile: nil,
             kernelMode: .meeting,
             dictationStructuredPostProcessingEnabled: false,
-            contextMetadata: ""
+            contextMetadata: "",
         )
 
         XCTAssertGreaterThan(longInput.count, 100_000)

@@ -2,7 +2,7 @@ import AVFoundation
 @testable import MeetingAssistantCoreAudio
 import XCTest
 
-final class RealtimeVoiceActivityWindowAssemblerTests: XCTestCase {
+final class VoiceActivityWindowAssemblerTests: XCTestCase {
     func testAppendAndFinish_EmitsWindowWithPrerollAndTail() async throws {
         let assembler = RealtimeVoiceActivityWindowAssembler()
         let samples = makeSamples(segments: [
@@ -13,7 +13,7 @@ final class RealtimeVoiceActivityWindowAssemblerTests: XCTestCase {
         let buffer = try makeBuffer(samples: samples)
 
         let windowsDuringAppend = try await assembler.append(buffer: buffer)
-        let windows = windowsDuringAppend + (try await assembler.finish())
+        let windows = try await windowsDuringAppend + (assembler.finish())
         XCTAssertEqual(windows.count, 1)
 
         let window = try XCTUnwrap(windows.first)
@@ -44,7 +44,7 @@ final class RealtimeVoiceActivityWindowAssemblerTests: XCTestCase {
         let buffer = try XCTUnwrap(AVAudioPCMBuffer(pcmFormat: format, frameCapacity: frameCount))
         buffer.frameLength = frameCount
         guard let channelData = buffer.floatChannelData else {
-            throw NSError(domain: "RealtimeVoiceActivityWindowAssemblerTests", code: 1)
+            throw NSError(domain: "VoiceActivityWindowAssemblerTests", code: 1)
         }
         for (index, sample) in samples.enumerated() {
             channelData[0][index] = sample

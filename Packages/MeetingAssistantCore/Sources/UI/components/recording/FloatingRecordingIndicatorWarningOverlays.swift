@@ -20,13 +20,13 @@ struct RecordingSilenceWarningOverlay: View {
             .clipShape(Capsule())
             .overlay(
                 Capsule()
-                    .strokeBorder(AppDesignSystem.Colors.recordingIndicatorStroke, lineWidth: 1)
+                    .strokeBorder(AppDesignSystem.Colors.recordingIndicatorStroke, lineWidth: 1),
             )
             .shadow(
                 color: .black.opacity(0.2),
                 radius: AppDesignSystem.Layout.shadowRadiusSmall,
                 x: AppDesignSystem.Layout.shadowX,
-                y: AppDesignSystem.Layout.shadowYSmall
+                y: AppDesignSystem.Layout.shadowYSmall,
             )
             .contentShape(Capsule())
             .onTapGesture {
@@ -34,7 +34,7 @@ struct RecordingSilenceWarningOverlay: View {
             }
             .confirmationDialog(
                 "recording_indicator.silence_warning.confirmation.title".localized,
-                isPresented: $isDialogPresented
+                isPresented: $isDialogPresented,
             ) {
                 Button("recording_indicator.silence_warning.action.continue".localized) {
                     onContinue()
@@ -50,7 +50,7 @@ struct RecordingSilenceWarningOverlay: View {
 }
 
 struct RecordingPostProcessingWarningOverlay: View {
-    let descriptor: RecordingIndicatorPostProcessingWarningDescriptor
+    let descriptor: RecordingPostProcessingWarningDescriptor
     let onOpenSettings: (String) -> Void
 
     var body: some View {
@@ -79,13 +79,13 @@ struct RecordingPostProcessingWarningOverlay: View {
         .clipShape(Capsule())
         .overlay(
             Capsule()
-                .strokeBorder(AppDesignSystem.Colors.recordingIndicatorStroke, lineWidth: 1)
+                .strokeBorder(AppDesignSystem.Colors.recordingIndicatorStroke, lineWidth: 1),
         )
         .shadow(
             color: .black.opacity(0.2),
             radius: AppDesignSystem.Layout.shadowRadiusSmall,
             x: AppDesignSystem.Layout.shadowX,
-            y: AppDesignSystem.Layout.shadowYSmall
+            y: AppDesignSystem.Layout.shadowYSmall,
         )
         .accessibilityElement(children: .combine)
         .accessibilityHint("recording_indicator.post_processing_warning.open_settings".localized)
@@ -98,15 +98,15 @@ struct RecordingPostProcessingWarningOverlay: View {
             isDialogPresented: .constant(false),
             onContinue: {},
             onStop: {},
-            onDiscard: {}
+            onDiscard: {},
         )
 
         RecordingPostProcessingWarningOverlay(
-            descriptor: RecordingIndicatorPostProcessingWarningDescriptor(
+            descriptor: RecordingPostProcessingWarningDescriptor(
                 issue: .missingAPIKey,
-                mode: .meeting
+                mode: .meeting,
             ),
-            onOpenSettings: { _ in }
+            onOpenSettings: { _ in },
         )
     }
     .padding()

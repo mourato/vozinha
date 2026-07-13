@@ -1,12 +1,12 @@
-import XCTest
 @testable import MeetingAssistantCoreAudio
+import XCTest
 
 @MainActor
 final class AudioLevelMonitorTests: XCTestCase {
     func testDefaultSamplingInterval_IsApproximatelySixtyHertz() {
         let monitor = AudioLevelMonitor()
 
-        XCTAssertEqual(monitor.effectiveSamplingInterval, 0.017, accuracy: 0.0001)
+        XCTAssertEqual(monitor.effectiveSamplingInterval, 0.017, accuracy: 0.0_001)
     }
 
     func testIngestLevels_NormalizesDecibelsLinearly() {

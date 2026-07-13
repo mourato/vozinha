@@ -17,13 +17,13 @@ public struct AudioKernelProvider: Sendable {
     public init(
         voiceActivityFactory: @escaping @Sendable () -> any VoiceActivityKernel = {
             RealtimeVoiceActivityWindowAssembler()
-        }
+        },
     ) {
         self.init(
             backend: .swift,
             voiceActivityFactory: voiceActivityFactory,
             energyMeterFactory: { SwiftEnergyMeterKernel.shared },
-            silenceAnalysisFactory: { SwiftSilenceAnalysisKernel() }
+            silenceAnalysisFactory: { SwiftSilenceAnalysisKernel() },
         )
     }
 
@@ -31,7 +31,7 @@ public struct AudioKernelProvider: Sendable {
         backend: AudioKernelBackend,
         voiceActivityFactory: @escaping @Sendable () -> any VoiceActivityKernel,
         energyMeterFactory: @escaping @Sendable () -> any EnergyMeterKernel,
-        silenceAnalysisFactory: @escaping @Sendable () -> any SilenceAnalysisKernel
+        silenceAnalysisFactory: @escaping @Sendable () -> any SilenceAnalysisKernel,
     ) {
         self.backend = backend
         self.voiceActivityFactory = voiceActivityFactory
@@ -59,7 +59,7 @@ public struct AudioKernelProvider: Sendable {
             extra: [
                 "backend": provider.backend.diagnosticsValue,
                 "enableRustAudioMathKernels": enableRustAudioMathKernels,
-            ]
+            ],
         )
         return provider
     }
@@ -68,18 +68,18 @@ public struct AudioKernelProvider: Sendable {
         backend: .swift,
         voiceActivityFactory: { RealtimeVoiceActivityWindowAssembler() },
         energyMeterFactory: { SwiftEnergyMeterKernel.shared },
-        silenceAnalysisFactory: { SwiftSilenceAnalysisKernel() }
+        silenceAnalysisFactory: { SwiftSilenceAnalysisKernel() },
     )
 
     private static let rustPilot = AudioKernelProvider(
         backend: .rustPilot,
         voiceActivityFactory: { RustVoiceActivityKernel() },
         energyMeterFactory: { RustEnergyMeterKernel() },
-        silenceAnalysisFactory: { RustSilenceAnalysisKernel() }
+        silenceAnalysisFactory: { RustSilenceAnalysisKernel() },
     )
 
     public static let live = forFeatureFlags(
-        enableRustAudioMathKernels: FeatureFlags.enableRustAudioMathKernels
+        enableRustAudioMathKernels: FeatureFlags.enableRustAudioMathKernels,
     )
 }
 
@@ -131,7 +131,7 @@ struct RustEnergyMeterKernel: EnergyMeterKernel {
 
     func makeMeterSnapshot(
         from buffer: AVAudioPCMBuffer,
-        barCount: Int
+        barCount: Int,
     ) -> AudioRecordingWorker.MeterSnapshot? {
         guard let channelData = buffer.floatChannelData else { return nil }
         let channelCount = Int(buffer.format.channelCount)
@@ -144,7 +144,7 @@ struct RustEnergyMeterKernel: EnergyMeterKernel {
                 .swiftFallback,
                 frameLength: frameLength,
                 barCount: barCount,
-                fallbackReason: .nonMonoInput
+                fallbackReason: .nonMonoInput,
             )
             return SwiftEnergyMeterKernel.shared.makeMeterSnapshot(from: buffer, barCount: barCount)
         }
@@ -154,7 +154,7 @@ struct RustEnergyMeterKernel: EnergyMeterKernel {
                 .swiftFallback,
                 frameLength: frameLength,
                 barCount: barCount,
-                fallbackReason: .ffiUnavailable
+                fallbackReason: .ffiUnavailable,
             )
             return SwiftEnergyMeterKernel.shared.makeMeterSnapshot(from: buffer, barCount: barCount)
         }
@@ -165,7 +165,7 @@ struct RustEnergyMeterKernel: EnergyMeterKernel {
                 .swiftFallback,
                 frameLength: frameLength,
                 barCount: barCount,
-                fallbackReason: .ffiComputationFailed
+                fallbackReason: .ffiComputationFailed,
             )
             return SwiftEnergyMeterKernel.shared.makeMeterSnapshot(from: buffer, barCount: barCount)
         }
@@ -174,7 +174,7 @@ struct RustEnergyMeterKernel: EnergyMeterKernel {
             .rustFFI,
             frameLength: frameLength,
             barCount: barCount,
-            fallbackReason: nil
+            fallbackReason: nil,
         )
 
         let averagePowerDB = SwiftEnergyMeterKernel.powerDB(fromLinear: ffiResult.rmsLinear)
@@ -183,14 +183,14 @@ struct RustEnergyMeterKernel: EnergyMeterKernel {
             channelData: channelData,
             channelCount: channelCount,
             frameLength: frameLength,
-            barCount: max(0, barCount)
+            barCount: max(0, barCount),
         )
 
         return AudioRecordingWorker.MeterSnapshot(
             averagePowerDB: averagePowerDB,
             peakPowerDB: peakPowerDB,
             barPowerDBLevels: barPowerDBLevels,
-            deltaTime: Double(frameLength) / sampleRate
+            deltaTime: Double(frameLength) / sampleRate,
         )
     }
 
@@ -207,7 +207,7 @@ struct RustEnergyMeterKernel: EnergyMeterKernel {
         AppLogger.info(
             "Rust audio kernel loader result",
             category: .audio,
-            extra: extra
+            extra: extra,
         )
     }
 
@@ -215,7 +215,7 @@ struct RustEnergyMeterKernel: EnergyMeterKernel {
         _ runtimePath: RuntimePath,
         frameLength: Int,
         barCount: Int,
-        fallbackReason: FallbackReason?
+        fallbackReason: FallbackReason?,
     ) {
         var extra: [String: Any] = [
             "backend": AudioKernelBackend.rustPilot.diagnosticsValue,
@@ -237,7 +237,7 @@ struct RustEnergyMeterKernel: EnergyMeterKernel {
         AppLogger.debug(
             "Rust audio kernel runtime path",
             category: .audio,
-            extra: extra
+            extra: extra,
         )
     }
 }

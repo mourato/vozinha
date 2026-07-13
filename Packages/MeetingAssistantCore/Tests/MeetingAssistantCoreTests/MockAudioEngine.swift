@@ -15,7 +15,7 @@ protocol MockAudioEngineProtocol {
     func connect(
         _ source: MockAudioNodeProtocol,
         to destination: MockAudioMixerNodeProtocol,
-        format: MockAudioFormatProtocol?
+        format: MockAudioFormatProtocol?,
     )
     func prepare() throws
     func start() throws
@@ -39,7 +39,7 @@ protocol MockAudioMixerNodeProtocol: MockAudioNodeProtocol {
         onBus bus: AVAudioNodeBus,
         bufferSize: AVAudioFrameCount,
         format: MockAudioFormatProtocol?,
-        block: @escaping AVAudioNodeTapBlock
+        block: @escaping AVAudioNodeTapBlock,
     )
     func removeTap(onBus bus: AVAudioNodeBus)
 }
@@ -114,7 +114,7 @@ final class MockAudioEngine: MockAudioEngineProtocol {
     func connect(
         _ source: MockAudioNodeProtocol,
         to destination: MockAudioMixerNodeProtocol,
-        format: MockAudioFormatProtocol?
+        format: MockAudioFormatProtocol?,
     ) {
         connections.append(MockConnection(source: source, destination: destination, format: format))
     }
@@ -124,7 +124,7 @@ final class MockAudioEngine: MockAudioEngineProtocol {
             throw NSError(
                 domain: "MockAudioEngine",
                 code: -1,
-                userInfo: [NSLocalizedDescriptionKey: "Mock prepare failure"]
+                userInfo: [NSLocalizedDescriptionKey: "Mock prepare failure"],
             )
         }
 
@@ -138,7 +138,7 @@ final class MockAudioEngine: MockAudioEngineProtocol {
             throw NSError(
                 domain: "MockAudioEngine",
                 code: -2,
-                userInfo: [NSLocalizedDescriptionKey: "Mock start failure"]
+                userInfo: [NSLocalizedDescriptionKey: "Mock start failure"],
             )
         }
 
@@ -176,7 +176,7 @@ final class MockAudioMixerNode: MockAudioMixerNodeProtocol {
         onBus bus: AVAudioNodeBus,
         bufferSize: AVAudioFrameCount,
         format: MockAudioFormatProtocol?,
-        block: @escaping AVAudioNodeTapBlock
+        block: @escaping AVAudioNodeTapBlock,
     ) {
         taps[bus] = block
     }
@@ -226,7 +226,7 @@ final class MockAudioInputNode: MockAudioInputNodeProtocol {
             sampleRate: inputFormatSampleRate,
             channelCount: inputFormatChannels,
             commonFormat: inputFormatCommonFormat,
-            isInterleaved: false
+            isInterleaved: false,
         )
     }
 }
@@ -244,7 +244,7 @@ final class MockAudioOutputNode: MockAudioOutputNodeProtocol {
             sampleRate: outputFormatSampleRate,
             channelCount: outputFormatChannels,
             commonFormat: .pcmFormatFloat32,
-            isInterleaved: false
+            isInterleaved: false,
         )
     }
 }
@@ -327,7 +327,7 @@ final class MockAudioEngineTests: XCTestCase {
             sampleRate: 48_000,
             channelCount: 2,
             commonFormat: .pcmFormatFloat32,
-            isInterleaved: false
+            isInterleaved: false,
         )
         mockEngine.connect(mockSource, to: mockMixer, format: format)
         // Não há propriedade pública para verificar, mas não deve crash

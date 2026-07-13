@@ -12,7 +12,7 @@ public extension AppSettingsStore {
             includeWindowOCR: contextAwarenessIncludeWindowOCR,
             includeAccessibilityText: contextAwarenessIncludeAccessibilityText,
             redactSensitiveData: contextAwarenessRedactSensitiveData,
-            dictationSelection: enhancementsDictationAISelection
+            dictationSelection: enhancementsDictationAISelection,
         )
     }
 
@@ -118,7 +118,7 @@ public extension AppSettingsStore {
     var effectiveWebTargetBrowserBundleIdentifiers: [String] {
         synchronizedWebTargetBrowsers(
             from: dictationAppRules,
-            legacyBrowsers: webTargetBrowserBundleIdentifiers
+            legacyBrowsers: webTargetBrowserBundleIdentifiers,
         )
     }
 

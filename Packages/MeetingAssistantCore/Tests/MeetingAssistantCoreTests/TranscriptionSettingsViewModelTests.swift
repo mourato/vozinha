@@ -31,7 +31,7 @@ final class TranscriptionSettingsViewModelTests: XCTestCase {
                 self?.readyLocalModels.contains(model) == true
             },
             savePanelProvider: { [weak self] in self?.mockSavePanel ?? NSSavePanel() },
-            summaryExportHelper: mockSummaryExportHelper
+            summaryExportHelper: mockSummaryExportHelper,
         )
         cancellables = []
     }
@@ -54,21 +54,56 @@ final class TestTranscriptionKeychainProvider: KeychainProvider, @unchecked Send
     var readyProviders = Set<TranscriptionProvider>()
 
     func store(_: String, for _: KeychainManager.Key) throws {}
-    func retrieve(for _: KeychainManager.Key) throws -> String? { nil }
+    func retrieve(for _: KeychainManager.Key) throws -> String? {
+        nil
+    }
+
     func delete(for _: KeychainManager.Key) throws {}
-    func exists(for _: KeychainManager.Key) -> Bool { false }
-    func retrieveAPIKey(for _: AIProvider) throws -> String? { nil }
-    func retrieveAPIKeys(for _: [AIProvider]) throws -> [AIProvider: String] { [:] }
-    func existsAPIKey(for _: AIProvider) -> Bool { false }
+    func exists(for _: KeychainManager.Key) -> Bool {
+        false
+    }
+
+    func retrieveAPIKey(for _: AIProvider) throws -> String? {
+        nil
+    }
+
+    func retrieveAPIKeys(for _: [AIProvider]) throws -> [AIProvider: String] {
+        [:]
+    }
+
+    func existsAPIKey(for _: AIProvider) -> Bool {
+        false
+    }
+
     func storeAPIKey(_: String, for _: UUID) throws {}
-    func retrieveAPIKey(for _: UUID) throws -> String? { nil }
-    func retrieveAPIKeys(for _: [UUID]) throws -> [UUID: String] { [:] }
-    func existsAPIKey(for _: UUID) -> Bool { false }
+    func retrieveAPIKey(for _: UUID) throws -> String? {
+        nil
+    }
+
+    func retrieveAPIKeys(for _: [UUID]) throws -> [UUID: String] {
+        [:]
+    }
+
+    func existsAPIKey(for _: UUID) -> Bool {
+        false
+    }
+
     func deleteAPIKey(for _: UUID) throws {}
-    func storeTranscriptionAPIKey(_: String, for provider: TranscriptionProvider) throws { readyProviders.insert(provider) }
-    func retrieveTranscriptionAPIKey(for _: TranscriptionProvider) throws -> String? { nil }
-    func existsTranscriptionAPIKey(for provider: TranscriptionProvider) -> Bool { readyProviders.contains(provider) }
-    func deleteTranscriptionAPIKey(for provider: TranscriptionProvider) throws { readyProviders.remove(provider) }
+    func storeTranscriptionAPIKey(_: String, for provider: TranscriptionProvider) throws {
+        readyProviders.insert(provider)
+    }
+
+    func retrieveTranscriptionAPIKey(for _: TranscriptionProvider) throws -> String? {
+        nil
+    }
+
+    func existsTranscriptionAPIKey(for provider: TranscriptionProvider) -> Bool {
+        readyProviders.contains(provider)
+    }
+
+    func deleteTranscriptionAPIKey(for provider: TranscriptionProvider) throws {
+        readyProviders.remove(provider)
+    }
 }
 
 extension TranscriptionSettingsViewModelTests {
@@ -83,14 +118,14 @@ extension TranscriptionSettingsViewModelTests {
                 meeting: Meeting(id: mockId1, app: .microsoftTeams, startTime: Date(), endTime: Date().addingTimeInterval(60)),
                 segments: [],
                 text: "Text 1",
-                rawText: "Text 1"
+                rawText: "Text 1",
             ),
             Transcription(
                 id: mockId2,
                 meeting: Meeting(id: mockId2, app: .zoom, startTime: Date(), endTime: Date().addingTimeInterval(120)),
                 segments: [],
                 text: "Text 2",
-                rawText: "Text 2"
+                rawText: "Text 2",
             ),
         ]
 
@@ -123,13 +158,13 @@ extension TranscriptionSettingsViewModelTests {
                     id: failedId,
                     app: .unknown,
                     capturePurpose: .dictation,
-                    startTime: Date()
+                    startTime: Date(),
                 ),
                 segments: [],
                 text: "",
                 rawText: "",
                 lifecycleState: .failed,
-                postProcessingFailureReason: "Transcription failed"
+                postProcessingFailureReason: "Transcription failed",
             ),
         ]
 
@@ -149,7 +184,7 @@ extension TranscriptionSettingsViewModelTests {
             meeting: Meeting(id: mockId, app: .microsoftTeams, startTime: Date(), endTime: Date()),
             segments: [Transcription.Segment(id: UUID(), speaker: "A", text: "Hello", startTime: 0, endTime: 5)],
             text: "Hello",
-            rawText: "Hello"
+            rawText: "Hello",
         )
         storage.mockTranscriptions = [fullTranscription]
         await viewModel.loadTranscriptions()
@@ -185,7 +220,7 @@ extension TranscriptionSettingsViewModelTests {
             isPostProcessed: false,
             duration: 60,
             audioFilePath: nil,
-            inputSource: "Microphone"
+            inputSource: "Microphone",
         )
         let metadata2 = TranscriptionMetadata(
             id: mockId2,
@@ -202,7 +237,7 @@ extension TranscriptionSettingsViewModelTests {
             isPostProcessed: false,
             duration: 120,
             audioFilePath: nil,
-            inputSource: "File"
+            inputSource: "File",
         )
 
         viewModel.transcriptions = [metadata1, metadata2]
@@ -233,12 +268,12 @@ extension TranscriptionSettingsViewModelTests {
         let metadata1 = makeMetadata(
             appName: "Zoom",
             appRawValue: MeetingApp.zoom.rawValue,
-            previewText: "Sprint planning"
+            previewText: "Sprint planning",
         )
         let metadata2 = makeMetadata(
             appName: "Microsoft Teams",
             appRawValue: MeetingApp.microsoftTeams.rawValue,
-            previewText: "Roadmap review"
+            previewText: "Roadmap review",
         )
         viewModel.transcriptions = [metadata1, metadata2]
 
@@ -256,12 +291,12 @@ extension TranscriptionSettingsViewModelTests {
         let zoomMetadata = makeMetadata(
             appName: "Zoom",
             appRawValue: MeetingApp.zoom.rawValue,
-            previewText: "Discussed quarterly results"
+            previewText: "Discussed quarterly results",
         )
         let teamsMetadata = makeMetadata(
             appName: "Microsoft Teams",
             appRawValue: MeetingApp.microsoftTeams.rawValue,
-            previewText: "Reunião de planejamento"
+            previewText: "Reunião de planejamento",
         )
         viewModel.transcriptions = [zoomMetadata, teamsMetadata]
 
@@ -286,11 +321,11 @@ extension TranscriptionSettingsViewModelTests {
                     app: .zoom,
                     capturePurpose: .meeting,
                     startTime: now,
-                    endTime: now.addingTimeInterval(60)
+                    endTime: now.addingTimeInterval(60),
                 ),
                 segments: [],
                 text: "Quarterly review",
-                rawText: "Quarterly review"
+                rawText: "Quarterly review",
             ),
             Transcription(
                 id: dictationID,
@@ -299,11 +334,11 @@ extension TranscriptionSettingsViewModelTests {
                     app: .unknown,
                     capturePurpose: .dictation,
                     startTime: now,
-                    endTime: now.addingTimeInterval(30)
+                    endTime: now.addingTimeInterval(30),
                 ),
                 segments: [],
                 text: "Quick dictation",
-                rawText: "Quick dictation"
+                rawText: "Quick dictation",
             ),
         ]
 
@@ -327,14 +362,14 @@ extension TranscriptionSettingsViewModelTests {
             meeting: Meeting(id: UUID(), app: .zoom, startTime: Date()),
             segments: [],
             text: "Zoom notes",
-            rawText: "Zoom notes"
+            rawText: "Zoom notes",
         )
         let teams = Transcription(
             id: UUID(),
             meeting: Meeting(id: UUID(), app: .microsoftTeams, startTime: Date()),
             segments: [],
             text: "Teams notes",
-            rawText: "Teams notes"
+            rawText: "Teams notes",
         )
         storage.mockTranscriptions = [zoom, teams]
         viewModel.appFilterId = "raw:\(MeetingApp.zoom.rawValue)"
@@ -354,11 +389,11 @@ extension TranscriptionSettingsViewModelTests {
                 id: UUID(),
                 app: .zoom,
                 appBundleIdentifier: "com.example.zoom",
-                startTime: Date()
+                startTime: Date(),
             ),
             segments: [],
             text: "Zoom notes",
-            rawText: "Zoom notes"
+            rawText: "Zoom notes",
         )
         storage.mockTranscriptions = [transcription]
         viewModel.appFilterId = "bundle:com.example.zoom"
@@ -375,13 +410,13 @@ extension TranscriptionSettingsViewModelTests {
             appName: "Zoom",
             appRawValue: MeetingApp.zoom.rawValue,
             previewText: "General discussion",
-            meetingTitle: "Quarterly Planning"
+            meetingTitle: "Quarterly Planning",
         )
         let dictationMetadata = makeMetadata(
             appName: "Codex",
             appRawValue: MeetingApp.unknown.rawValue,
             previewText: "General discussion",
-            meetingTitle: "Should not match"
+            meetingTitle: "Should not match",
         )
         viewModel.transcriptions = [meetingMetadata, dictationMetadata]
 
@@ -396,7 +431,7 @@ extension TranscriptionSettingsViewModelTests {
             appName: "Zoom",
             appRawValue: MeetingApp.zoom.rawValue,
             previewText: "Meeting text",
-            capturePurpose: .meeting
+            capturePurpose: .meeting,
         )
         let installedModel = LocalTranscriptionModel.cohereTranscribe032026CoreML6Bit
         readyLocalModels = [installedModel]
@@ -412,7 +447,7 @@ extension TranscriptionSettingsViewModelTests {
             appName: "Prisma",
             appRawValue: MeetingApp.unknown.rawValue,
             previewText: "Dictation text",
-            capturePurpose: .dictation
+            capturePurpose: .dictation,
         )
         let installedModel = LocalTranscriptionModel.parakeetTdt06BV3
         readyLocalModels = [installedModel]
@@ -426,7 +461,7 @@ extension TranscriptionSettingsViewModelTests {
             Array(options.dropFirst().map(\.selection)),
             TranscriptionProvider.groqPresetModelIDs.map {
                 TranscriptionProviderSelection(provider: .groq, selectedModel: $0)
-            }
+            },
         )
     }
 
@@ -440,16 +475,16 @@ extension TranscriptionSettingsViewModelTests {
                 eventIdentifier: "event-1",
                 title: "Calendar Title",
                 startDate: Date(),
-                endDate: Date().addingTimeInterval(60)
+                endDate: Date().addingTimeInterval(60),
             ),
             startTime: Date(),
-            endTime: Date().addingTimeInterval(60)
+            endTime: Date().addingTimeInterval(60),
         )
         let transcription = Transcription(
             id: id,
             meeting: originalMeeting,
             text: "Summary",
-            rawText: "Summary"
+            rawText: "Summary",
         )
         storage.mockTranscriptions = [transcription]
         meetingRepository.meetingsByID[id] = MeetingEntity(
@@ -460,7 +495,7 @@ extension TranscriptionSettingsViewModelTests {
             linkedCalendarEvent: originalMeeting.linkedCalendarEvent,
             startTime: originalMeeting.startTime,
             endTime: originalMeeting.endTime,
-            audioFilePath: originalMeeting.audioFilePath
+            audioFilePath: originalMeeting.audioFilePath,
         )
         meetingRepository.onUpdateMeeting = { [storage] meeting in
             storage?.mockTranscriptions = storage?.mockTranscriptions.map { transcription in
@@ -477,7 +512,7 @@ extension TranscriptionSettingsViewModelTests {
                     state: transcription.meeting.state,
                     startTime: transcription.meeting.startTime,
                     endTime: transcription.meeting.endTime,
-                    audioFilePath: transcription.meeting.audioFilePath
+                    audioFilePath: transcription.meeting.audioFilePath,
                 )
 
                 return Transcription(
@@ -500,7 +535,7 @@ extension TranscriptionSettingsViewModelTests {
                     postProcessingDuration: transcription.postProcessingDuration,
                     postProcessingModel: transcription.postProcessingModel,
                     meetingType: transcription.meetingType,
-                    meetingConversationState: transcription.meetingConversationState
+                    meetingConversationState: transcription.meetingConversationState,
                 )
             } ?? []
         }
@@ -526,7 +561,7 @@ extension TranscriptionSettingsViewModelTests {
             id: id,
             meeting: Meeting(id: id, app: .zoom, title: "Existing", startTime: Date(), endTime: Date().addingTimeInterval(60)),
             text: "Summary",
-            rawText: "Summary"
+            rawText: "Summary",
         )
         storage.mockTranscriptions = [transcription]
         meetingRepository.meetingsByID[id] = MeetingEntity(
@@ -536,7 +571,7 @@ extension TranscriptionSettingsViewModelTests {
             title: "Existing",
             startTime: transcription.meeting.startTime,
             endTime: transcription.meeting.endTime,
-            audioFilePath: transcription.meeting.audioFilePath
+            audioFilePath: transcription.meeting.audioFilePath,
         )
         meetingRepository.onUpdateMeeting = { [storage] meeting in
             storage?.mockTranscriptions = storage?.mockTranscriptions.map { transcription in
@@ -554,7 +589,7 @@ extension TranscriptionSettingsViewModelTests {
                         state: transcription.meeting.state,
                         startTime: transcription.meeting.startTime,
                         endTime: transcription.meeting.endTime,
-                        audioFilePath: transcription.meeting.audioFilePath
+                        audioFilePath: transcription.meeting.audioFilePath,
                     ),
                     contextItems: transcription.contextItems,
                     segments: transcription.segments,
@@ -573,7 +608,7 @@ extension TranscriptionSettingsViewModelTests {
                     postProcessingDuration: transcription.postProcessingDuration,
                     postProcessingModel: transcription.postProcessingModel,
                     meetingType: transcription.meetingType,
-                    meetingConversationState: transcription.meetingConversationState
+                    meetingConversationState: transcription.meetingConversationState,
                 )
             } ?? []
         }
@@ -597,10 +632,10 @@ extension TranscriptionSettingsViewModelTests {
                 app: .unknown,
                 capturePurpose: .meeting,
                 startTime: startTime,
-                endTime: startTime.addingTimeInterval(60)
+                endTime: startTime.addingTimeInterval(60),
             ),
             text: "Summary",
-            rawText: "Summary"
+            rawText: "Summary",
         )
         storage.mockTranscriptions = [transcription]
         meetingRepository.meetingsByID[id] = MeetingEntity(
@@ -609,7 +644,7 @@ extension TranscriptionSettingsViewModelTests {
             capturePurpose: .meeting,
             startTime: transcription.meeting.startTime,
             endTime: transcription.meeting.endTime,
-            audioFilePath: transcription.meeting.audioFilePath
+            audioFilePath: transcription.meeting.audioFilePath,
         )
 
         await viewModel.loadTranscriptions()
@@ -630,10 +665,10 @@ extension TranscriptionSettingsViewModelTests {
                 app: .unknown,
                 capturePurpose: .dictation,
                 startTime: startTime,
-                endTime: startTime.addingTimeInterval(120)
+                endTime: startTime.addingTimeInterval(120),
             ),
             text: "Summary",
-            rawText: "Summary"
+            rawText: "Summary",
         )
         storage.mockTranscriptions = [transcription]
         meetingRepository.meetingsByID[id] = MeetingEntity(
@@ -642,7 +677,7 @@ extension TranscriptionSettingsViewModelTests {
             capturePurpose: .dictation,
             startTime: transcription.meeting.startTime,
             endTime: transcription.meeting.endTime,
-            audioFilePath: transcription.meeting.audioFilePath
+            audioFilePath: transcription.meeting.audioFilePath,
         )
 
         await viewModel.loadTranscriptions()
@@ -664,10 +699,10 @@ extension TranscriptionSettingsViewModelTests {
                 app: .manualMeeting,
                 capturePurpose: .meeting,
                 startTime: startTime,
-                endTime: startTime.addingTimeInterval(120)
+                endTime: startTime.addingTimeInterval(120),
             ),
             text: "Summary",
-            rawText: "Summary"
+            rawText: "Summary",
         )
         storage.mockTranscriptions = [transcription]
         meetingRepository.meetingsByID[id] = MeetingEntity(
@@ -676,7 +711,7 @@ extension TranscriptionSettingsViewModelTests {
             capturePurpose: .meeting,
             startTime: transcription.meeting.startTime,
             endTime: transcription.meeting.endTime,
-            audioFilePath: transcription.meeting.audioFilePath
+            audioFilePath: transcription.meeting.audioFilePath,
         )
 
         await viewModel.loadTranscriptions()
@@ -699,10 +734,10 @@ extension TranscriptionSettingsViewModelTests {
                 capturePurpose: .meeting,
                 title: "Imported call",
                 startTime: startTime,
-                endTime: startTime.addingTimeInterval(120)
+                endTime: startTime.addingTimeInterval(120),
             ),
             text: "Imported meeting",
-            rawText: "Imported meeting"
+            rawText: "Imported meeting",
         )
         storage.mockTranscriptions = [transcription]
         meetingRepository.meetingsByID[id] = MeetingEntity(
@@ -711,7 +746,7 @@ extension TranscriptionSettingsViewModelTests {
             capturePurpose: .meeting,
             title: "Imported call",
             startTime: startTime,
-            endTime: startTime.addingTimeInterval(120)
+            endTime: startTime.addingTimeInterval(120),
         )
 
         await viewModel.loadTranscriptions()
@@ -731,12 +766,12 @@ extension TranscriptionSettingsViewModelTests {
         let codexMetadata = makeMetadata(
             appName: "Codex",
             appRawValue: MeetingApp.unknown.rawValue,
-            previewText: "Discussing refinements"
+            previewText: "Discussing refinements",
         )
         let browserMetadata = makeMetadata(
             appName: "Arc Browser",
             appRawValue: MeetingApp.unknown.rawValue,
-            previewText: "Planning meeting"
+            previewText: "Planning meeting",
         )
         viewModel.transcriptions = [codexMetadata, browserMetadata]
 
@@ -754,12 +789,12 @@ extension TranscriptionSettingsViewModelTests {
         let codexMetadata = makeMetadata(
             appName: "Codex",
             appRawValue: MeetingApp.unknown.rawValue,
-            previewText: "Implemented one two three"
+            previewText: "Implemented one two three",
         )
         let browserMetadata = makeMetadata(
             appName: "Arc Browser",
             appRawValue: MeetingApp.unknown.rawValue,
-            previewText: "General notes"
+            previewText: "General notes",
         )
         viewModel.transcriptions = [codexMetadata, browserMetadata]
         let codexFilterOption = viewModel.appFilterOptions.first(where: { $0.displayName == "Codex" })
@@ -772,12 +807,12 @@ extension TranscriptionSettingsViewModelTests {
         XCTAssertEqual(viewModel.filteredTranscriptions.first?.id, codexMetadata.id)
     }
 
-    private func makeMetadata(
+    func makeMetadata(
         appName: String,
         appRawValue: String,
         previewText: String,
         meetingTitle: String? = nil,
-        capturePurpose: CapturePurpose? = nil
+        capturePurpose: CapturePurpose? = nil,
     ) -> TranscriptionMetadata {
         let id = UUID()
         return TranscriptionMetadata(
@@ -796,503 +831,10 @@ extension TranscriptionSettingsViewModelTests {
             isPostProcessed: false,
             duration: 60,
             audioFilePath: nil,
-            inputSource: "Microphone"
+            inputSource: "Microphone",
         )
     }
 
-    func testSubmitQuestionStoresGroundedAnswer() async {
-        let transcription = Transcription(
-            meeting: Meeting(id: UUID(), app: .googleMeet, startTime: Date(), endTime: Date().addingTimeInterval(60)),
-            segments: [.init(speaker: "Ana", text: "Vamos lançar sexta.", startTime: 12, endTime: 16)],
-            text: "Vamos lançar sexta.",
-            rawText: "vamos lancar sexta"
-        )
-
-        viewModel.qaQuestion = "When are we launching?"
-        meetingQAService.nextResponse = MeetingQAResponse(
-            status: .answered,
-            answer: "The team plans to launch on Friday.",
-            evidence: [
-                MeetingQAEvidence(
-                    speaker: "Ana",
-                    startTime: 12,
-                    endTime: 16,
-                    excerpt: "Vamos lançar sexta."
-                ),
-            ]
-        )
-
-        await viewModel.submitQuestion(for: transcription)
-
-        XCTAssertEqual(meetingQAService.askCallCount, 1)
-        XCTAssertEqual(viewModel.qaResponse?.status, .answered)
-        XCTAssertEqual(viewModel.qaResponse?.evidence.count, 1)
-        XCTAssertNil(viewModel.qaErrorMessage)
-    }
-
-    func testSubmitQuestionWithEmptyInputSetsValidationError() async {
-        let transcription = Transcription(
-            meeting: Meeting(id: UUID(), app: .googleMeet, startTime: Date(), endTime: Date().addingTimeInterval(60)),
-            text: "Resumo",
-            rawText: "Resumo"
-        )
-
-        viewModel.qaQuestion = "   "
-
-        await viewModel.submitQuestion(for: transcription)
-
-        XCTAssertEqual(meetingQAService.askCallCount, 0)
-        XCTAssertEqual(viewModel.qaErrorMessage, "transcription.qa.error.empty_question".localized)
-    }
-
-    func testSubmitQuestionForDictationSetsDisabledErrorAndSkipsService() async {
-        let transcription = Transcription(
-            meeting: Meeting(id: UUID(), app: .unknown, startTime: Date(), endTime: Date().addingTimeInterval(60)),
-            text: "Resumo",
-            rawText: "Resumo"
-        )
-
-        viewModel.qaQuestion = "What did we decide?"
-        await viewModel.submitQuestion(for: transcription)
-
-        XCTAssertEqual(meetingQAService.askCallCount, 0)
-        XCTAssertEqual(viewModel.qaErrorMessage, "transcription.qa.error.disabled".localized)
-    }
-
-    func testSubmitQuestionForMeetingCaptureWithUnknownAppCallsService() async {
-        let transcription = Transcription(
-            meeting: Meeting(
-                id: UUID(),
-                app: .unknown,
-                capturePurpose: .meeting,
-                startTime: Date(),
-                endTime: Date().addingTimeInterval(60)
-            ),
-            text: "Resumo",
-            rawText: "Resumo"
-        )
-
-        viewModel.qaQuestion = "What did we decide?"
-        meetingQAService.nextResponse = MeetingQAResponse(
-            status: .answered,
-            answer: "Action items captured.",
-            evidence: []
-        )
-
-        await viewModel.submitQuestion(for: transcription)
-
-        XCTAssertEqual(meetingQAService.askCallCount, 1)
-        XCTAssertEqual(viewModel.qaResponse?.status, .answered)
-        XCTAssertNil(viewModel.qaErrorMessage)
-    }
-
-    func testRetryLastQuestionAfterTimeoutUsesSameQuestion() async {
-        let transcription = Transcription(
-            meeting: Meeting(id: UUID(), app: .googleMeet, startTime: Date(), endTime: Date().addingTimeInterval(60)),
-            segments: [.init(speaker: "Ana", text: "Vamos lançar sexta.", startTime: 12, endTime: 16)],
-            text: "Vamos lançar sexta.",
-            rawText: "vamos lancar sexta"
-        )
-
-        viewModel.qaQuestion = "When are we launching?"
-        meetingQAService.nextError = .timeout
-
-        await viewModel.submitQuestion(for: transcription)
-        XCTAssertEqual(viewModel.qaErrorMessage, "transcription.qa.error.timeout".localized)
-
-        meetingQAService.nextError = nil
-        meetingQAService.nextResponse = MeetingQAResponse(
-            status: .answered,
-            answer: "Launch is Friday.",
-            evidence: [
-                .init(speaker: "Ana", startTime: 12, endTime: 16, excerpt: "Vamos lançar sexta."),
-            ]
-        )
-
-        await viewModel.retryLastQuestion(for: transcription)
-
-        XCTAssertEqual(meetingQAService.askCallCount, 2)
-        XCTAssertEqual(meetingQAService.lastQuestion, "When are we launching?")
-        XCTAssertEqual(viewModel.qaResponse?.answer, "Launch is Friday.")
-        XCTAssertNil(viewModel.qaErrorMessage)
-        XCTAssertEqual(viewModel.qaHistory(for: transcription.id).count, 2)
-    }
-
-    func testRetryQuestionWithTurnID_ReusesExistingFailedTurnInPlace() async throws {
-        let id = UUID()
-        let transcription = Transcription(
-            id: id,
-            meeting: Meeting(id: id, app: .zoom, startTime: Date(), endTime: Date().addingTimeInterval(60)),
-            text: "Summary",
-            rawText: "Summary"
-        )
-        storage.mockTranscriptions = [transcription]
-        viewModel.selectedTranscription = transcription
-        viewModel.qaQuestion = "What was decided?"
-        meetingQAService.nextError = .timeout
-
-        await viewModel.submitQuestion(for: transcription)
-
-        let failedTurn = try XCTUnwrap(viewModel.qaHistory(for: id).first)
-        let originalTurnID = failedTurn.id
-        let originalCreatedAt = failedTurn.createdAt
-        XCTAssertEqual(viewModel.qaHistory(for: id).count, 1)
-        XCTAssertNotNil(failedTurn.errorMessage)
-        XCTAssertNil(failedTurn.response)
-
-        meetingQAService.nextError = nil
-        meetingQAService.nextResponse = MeetingQAResponse(
-            status: .answered,
-            answer: "Decision captured.",
-            evidence: [.init(speaker: "A", startTime: 0, endTime: 1, excerpt: "Decision captured.")]
-        )
-
-        await viewModel.retryQuestion(failedTurn.question, turnID: failedTurn.id, for: transcription)
-
-        let history = viewModel.qaHistory(for: id)
-        XCTAssertEqual(history.count, 1)
-        let updatedTurn = try XCTUnwrap(history.first)
-        XCTAssertEqual(updatedTurn.id, originalTurnID)
-        XCTAssertEqual(updatedTurn.createdAt, originalCreatedAt)
-        XCTAssertNil(updatedTurn.errorMessage)
-        XCTAssertEqual(updatedTurn.response?.answer, "Decision captured.")
-    }
-
-    func testRetryQuestionWithTurnID_PersistsUpdatedTurnWithoutGrowingConversationHistory() async throws {
-        let id = UUID()
-        let transcription = Transcription(
-            id: id,
-            meeting: Meeting(id: id, app: .zoom, startTime: Date(), endTime: Date().addingTimeInterval(60)),
-            text: "Summary",
-            rawText: "Summary"
-        )
-        storage.mockTranscriptions = [transcription]
-        viewModel.selectedTranscription = transcription
-        viewModel.qaQuestion = "Question 1"
-        meetingQAService.nextError = .networkUnavailable
-
-        await viewModel.submitQuestion(for: transcription)
-        let failedTurn = try XCTUnwrap(viewModel.qaHistory(for: id).first)
-
-        meetingQAService.nextError = .invalidResponse
-        await viewModel.retryQuestion(failedTurn.question, turnID: failedTurn.id, for: transcription)
-
-        let persistedState = try XCTUnwrap(storage.savedTranscriptions.last?.meetingConversationState)
-        XCTAssertEqual(persistedState.turns.count, 1)
-        XCTAssertEqual(persistedState.turns.first?.id, failedTurn.id)
-        XCTAssertEqual(persistedState.turns.first?.question, failedTurn.question)
-        XCTAssertNotNil(persistedState.turns.first?.errorMessage)
-        XCTAssertNil(persistedState.turns.first?.response)
-    }
-
-    func testSubmitQuestion_AppendsHistoryForCurrentTranscription() async {
-        let transcription = Transcription(
-            meeting: Meeting(id: UUID(), app: .googleMeet, startTime: Date(), endTime: Date().addingTimeInterval(60)),
-            text: "Summary",
-            rawText: "Summary"
-        )
-        meetingQAService.nextResponse = MeetingQAResponse(
-            status: .answered,
-            answer: "Captured.",
-            evidence: [.init(speaker: "A", startTime: 0, endTime: 1, excerpt: "Captured.")]
-        )
-        viewModel.qaQuestion = "Question 1"
-
-        await viewModel.submitQuestion(for: transcription)
-
-        let history = viewModel.qaHistory(for: transcription.id)
-        XCTAssertEqual(history.count, 1)
-        XCTAssertEqual(history.first?.question, "Question 1")
-        XCTAssertEqual(history.first?.response?.answer, "Captured.")
-    }
-
-    func testLoadingDifferentTranscriptionResetsQuestionComposer() async {
-        let id1 = UUID()
-        let id2 = UUID()
-        storage.mockTranscriptions = [
-            Transcription(
-                id: id1,
-                meeting: Meeting(id: id1, app: .zoom, startTime: Date(), endTime: Date().addingTimeInterval(60)),
-                text: "One",
-                rawText: "One"
-            ),
-            Transcription(
-                id: id2,
-                meeting: Meeting(id: id2, app: .zoom, startTime: Date(), endTime: Date().addingTimeInterval(60)),
-                text: "Two",
-                rawText: "Two"
-            ),
-        ]
-        await viewModel.loadTranscriptions()
-
-        viewModel.qaQuestion = "Question"
-        viewModel.selectedId = id1
-        await waitUntil { self.viewModel.selectedTranscription?.id == id1 }
-        viewModel.selectedId = id2
-        await waitUntil { self.viewModel.selectedTranscription?.id == id2 }
-
-        XCTAssertEqual(viewModel.qaQuestion, "")
-    }
-
-    func testLoadFullTranscriptionRestoresPersistedConversationState() async {
-        let id = UUID()
-        let transcription = Transcription(
-            id: id,
-            meeting: Meeting(id: id, app: .zoom, startTime: Date(), endTime: Date().addingTimeInterval(60)),
-            text: "Meeting summary",
-            rawText: "Meeting summary",
-            meetingConversationState: MeetingConversationState(
-                turns: [
-                    MeetingConversationTurn(
-                        id: UUID(),
-                        question: "What was decided?",
-                        response: MeetingQAResponse(
-                            status: .answered,
-                            answer: "Ship on Friday.",
-                            evidence: [.init(speaker: "Ana", startTime: 1, endTime: 3, excerpt: "Ship Friday.")]
-                        ),
-                        errorMessage: nil,
-                        createdAt: Date()
-                    ),
-                ],
-                modelSelection: MeetingQAModelSelection(
-                    providerRawValue: AIProvider.anthropic.rawValue,
-                    modelID: "claude-3-7-sonnet"
-                )
-            )
-        )
-        storage.mockTranscriptions = [transcription]
-
-        await viewModel.loadTranscriptions()
-        viewModel.selectedId = id
-        await waitUntil(message: "Persisted conversation state should restore after selection.") {
-            self.viewModel.selectedTranscription?.id == id
-        }
-
-        XCTAssertEqual(viewModel.qaHistory(for: id).count, 1)
-        XCTAssertEqual(viewModel.qaHistory(for: id).first?.question, "What was decided?")
-        XCTAssertEqual(viewModel.qaModelSelectionByTranscription[id]?.providerRawValue, AIProvider.anthropic.rawValue)
-        XCTAssertEqual(viewModel.qaModelSelectionByTranscription[id]?.modelID, "claude-3-7-sonnet")
-    }
-
-    func testSubmitQuestionPersistsConversationState() async {
-        let id = UUID()
-        let transcription = Transcription(
-            id: id,
-            meeting: Meeting(id: id, app: .zoom, startTime: Date(), endTime: Date().addingTimeInterval(60)),
-            text: "Summary",
-            rawText: "Summary"
-        )
-        storage.mockTranscriptions = [transcription]
-        viewModel.selectedTranscription = transcription
-        meetingQAService.nextResponse = MeetingQAResponse(
-            status: .answered,
-            answer: "Captured.",
-            evidence: [.init(speaker: "A", startTime: 0, endTime: 1, excerpt: "Captured.")]
-        )
-        viewModel.qaQuestion = "Question 1"
-
-        await viewModel.submitQuestion(for: transcription)
-
-        XCTAssertEqual(storage.savedTranscriptions.last?.id, id)
-        XCTAssertEqual(storage.savedTranscriptions.last?.meetingConversationState?.turns.count, 1)
-        XCTAssertEqual(storage.savedTranscriptions.last?.meetingConversationState?.turns.first?.question, "Question 1")
-    }
-
-    func testSubmitQuestionUsesConversationModelOverride() async {
-        let id = UUID()
-        let transcription = Transcription(
-            id: id,
-            meeting: Meeting(id: id, app: .zoom, startTime: Date(), endTime: Date().addingTimeInterval(60)),
-            text: "Summary",
-            rawText: "Summary"
-        )
-        storage.mockTranscriptions = [transcription]
-        viewModel.selectedTranscription = transcription
-        await viewModel.updateMeetingQAModelSelection(
-            provider: .anthropic,
-            model: "claude-3-7-sonnet",
-            for: id
-        )
-        viewModel.qaQuestion = "Question 1"
-
-        await viewModel.submitQuestion(for: transcription)
-
-        XCTAssertEqual(meetingQAService.lastRequest?.modelSelectionOverride?.providerRawValue, AIProvider.anthropic.rawValue)
-        XCTAssertEqual(meetingQAService.lastRequest?.modelSelectionOverride?.modelID, "claude-3-7-sonnet")
-    }
-
-    func testUpdatingChatModelSelectionDoesNotMutateEnhancementsDefaults() async {
-        let settings = AppSettingsStore.shared
-        let originalSelection = settings.enhancementsAISelection
-        defer {
-            settings.enhancementsAISelection = originalSelection
-        }
-
-        let id = UUID()
-        let transcription = Transcription(
-            id: id,
-            meeting: Meeting(id: id, app: .zoom, startTime: Date(), endTime: Date().addingTimeInterval(60)),
-            text: "Summary",
-            rawText: "Summary"
-        )
-        storage.mockTranscriptions = [transcription]
-        viewModel.selectedTranscription = transcription
-
-        await viewModel.updateMeetingQAModelSelection(
-            provider: .anthropic,
-            model: "claude-3-7-sonnet",
-            for: id
-        )
-
-        XCTAssertEqual(settings.enhancementsAISelection, originalSelection)
-        XCTAssertEqual(viewModel.qaModelSelectionByTranscription[id]?.providerRawValue, AIProvider.anthropic.rawValue)
-        XCTAssertEqual(viewModel.qaModelSelectionByTranscription[id]?.modelID, "claude-3-7-sonnet")
-    }
-
-    // MARK: - Delete Confirmation Tests
-
-    func testConfirmDeleteTranscriptionOnlyStagesDeletion() {
-        let metadata = makeMetadata(appName: "Test", appRawValue: "test", previewText: "test")
-        viewModel.confirmDeleteTranscription(metadata)
-
-        XCTAssertTrue(viewModel.showDeleteConfirmation)
-        XCTAssertEqual(viewModel.pendingDeleteTranscription?.id, metadata.id)
-    }
-
-    func testCancelDeleteTranscriptionClearsConfirmationStateWithoutDeleting() {
-        let metadata = makeMetadata(appName: "Test", appRawValue: "test", previewText: "test")
-        viewModel.confirmDeleteTranscription(metadata)
-        viewModel.cancelDeleteTranscription()
-
-        XCTAssertFalse(viewModel.showDeleteConfirmation)
-        XCTAssertNil(viewModel.pendingDeleteTranscription)
-    }
-
-    func testExecuteDeleteTranscriptionDeletesItemAndClearsState() async {
-        let id = UUID()
-        let transcription = Transcription(id: id, meeting: Meeting(id: id, app: .zoom), text: "Test", rawText: "Test")
-        storage.mockTranscriptions = [transcription]
-        await viewModel.loadTranscriptions()
-
-        let metadata = makeMetadata(appName: "Test", appRawValue: "test", previewText: "test")
-        let metadataWithId = TranscriptionMetadata(
-            id: id,
-            meetingId: id,
-            appName: metadata.appName,
-            appRawValue: metadata.appRawValue,
-            appBundleIdentifier: nil,
-            startTime: metadata.startTime,
-            createdAt: metadata.createdAt,
-            previewText: metadata.previewText,
-            wordCount: 1,
-            language: "en",
-            isPostProcessed: false,
-            duration: 1,
-            audioFilePath: nil,
-            inputSource: "test"
-        )
-        viewModel.confirmDeleteTranscription(metadataWithId)
-
-        await viewModel.executeDeleteTranscription()
-
-        XCTAssertFalse(viewModel.showDeleteConfirmation)
-        XCTAssertNil(viewModel.pendingDeleteTranscription)
-        XCTAssertTrue(storage.mockTranscriptions.isEmpty)
-    }
-
-    // MARK: - Manual Export Tests
-
-    func testExportSummaryWritesProcessedContentWhenPanelReturnsURL() async throws {
-        let id = UUID()
-        let transcription = Transcription(
-            id: id,
-            meeting: Meeting(id: id, app: .zoom),
-            text: "Processed Export Content",
-            rawText: "Original Export Content",
-            processedContent: "Processed Export Content"
-        )
-        storage.mockTranscriptions = [transcription]
-        await viewModel.loadTranscriptions()
-
-        let metadata = try XCTUnwrap(viewModel.transcriptions.first)
-        let destinationURL = URL(fileURLWithPath: "/tmp/mock_export.md")
-
-        mockSavePanel.mockRunModalResponse = .OK
-        mockSavePanel.mockURL = destinationURL
-
-        await viewModel.exportTranscription(for: metadata, kind: .summary)
-
-        XCTAssertTrue(mockSummaryExportHelper.exportContentManuallyCalled)
-        XCTAssertEqual(mockSummaryExportHelper.exportContentManuallyDestination, destinationURL)
-        XCTAssertEqual(mockSummaryExportHelper.exportedContent, "Processed Export Content")
-        XCTAssertNil(viewModel.operationErrorMessage)
-    }
-
-    func testExportOriginalWritesRawTextWhenPanelReturnsURL() async throws {
-        let id = UUID()
-        let transcription = Transcription(
-            meeting: Meeting(id: id, app: .zoom),
-            text: "Processed Export Content",
-            rawText: "Original Export Content",
-            processedContent: "Processed Export Content"
-        )
-        storage.mockTranscriptions = [transcription]
-        await viewModel.loadTranscriptions()
-
-        let metadata = try XCTUnwrap(viewModel.transcriptions.first)
-        let destinationURL = URL(fileURLWithPath: "/tmp/mock_original_export.md")
-        mockSavePanel.mockRunModalResponse = .OK
-        mockSavePanel.mockURL = destinationURL
-
-        await viewModel.exportTranscription(for: metadata, kind: .original)
-
-        XCTAssertTrue(mockSummaryExportHelper.exportContentManuallyCalled)
-        XCTAssertEqual(mockSummaryExportHelper.exportContentManuallyDestination, destinationURL)
-        XCTAssertEqual(mockSummaryExportHelper.exportedContent, "Original Export Content")
-        XCTAssertNil(viewModel.operationErrorMessage)
-    }
-
-    func testExportTranscriptionDoesNothingOnPanelCancel() async throws {
-        let id = UUID()
-        let transcription = Transcription(meeting: Meeting(id: id, app: .zoom), text: "Export Content", rawText: "Export Content")
-        storage.mockTranscriptions = [transcription]
-        await viewModel.loadTranscriptions()
-
-        let metadata = try XCTUnwrap(viewModel.transcriptions.first)
-        mockSavePanel.mockRunModalResponse = .cancel
-        mockSavePanel.mockURL = nil
-
-        await viewModel.exportTranscription(for: metadata, kind: .summary)
-
-        XCTAssertFalse(mockSummaryExportHelper.exportContentManuallyCalled)
-        XCTAssertNil(viewModel.operationErrorMessage)
-    }
-
-    func testExportTranscriptionSurfacesOperationalErrorWithoutTouchingLoadErrorState() async throws {
-        let id = UUID()
-        let transcription = Transcription(meeting: Meeting(id: id, app: .zoom), text: "Export Content", rawText: "Export Content")
-        storage.mockTranscriptions = [transcription]
-        await viewModel.loadTranscriptions()
-
-        let metadata = try XCTUnwrap(viewModel.transcriptions.first)
-        let destinationURL = URL(fileURLWithPath: "/tmp/mock_export.md")
-
-        mockSavePanel.mockRunModalResponse = .OK
-        mockSavePanel.mockURL = destinationURL
-
-        mockSummaryExportHelper.errorToThrow = NSError(
-            domain: "SummaryExportHelper",
-            code: 2,
-            userInfo: [NSLocalizedDescriptionKey: "Export failed."]
-        )
-
-        await viewModel.exportTranscription(for: metadata, kind: .summary)
-
-        XCTAssertTrue(mockSummaryExportHelper.exportContentManuallyCalled)
-        XCTAssertEqual(viewModel.operationErrorMessage, "Export failed.")
-        XCTAssertNil(viewModel.loadErrorMessage)
-    }
 }
 
 class MockSavePanel: NSSavePanel, @unchecked Sendable {

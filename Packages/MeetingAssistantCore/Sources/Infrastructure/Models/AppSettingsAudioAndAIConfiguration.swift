@@ -179,7 +179,7 @@ public struct AIConfiguration: Codable, Equatable, Sendable {
     public static let `default` = AIConfiguration(
         provider: .openai,
         baseURL: AIProvider.openai.defaultBaseURL,
-        selectedModel: ""
+        selectedModel: "",
     )
 
     public var isValid: Bool {
@@ -219,7 +219,7 @@ public struct EnhancementsAISelection: Codable, Equatable, Hashable, Sendable {
     public static let `default` = EnhancementsAISelection(
         provider: .openai,
         selectedModel: "",
-        registrationID: nil
+        registrationID: nil,
     )
 
     enum CodingKeys: String, CodingKey {
@@ -245,7 +245,7 @@ public struct EnhancementsProviderRegistration: Codable, Identifiable, Equatable
         baseURLOverride: String? = nil,
         iconSystemName: String? = nil,
         createdAt: Date = Date(),
-        updatedAt: Date = Date()
+        updatedAt: Date = Date(),
     ) {
         self.id = id
         self.provider = provider
@@ -295,7 +295,7 @@ public struct EnhancementsProviderRegistration: Codable, Identifiable, Equatable
 }
 
 public extension AIProvider {
-    public var usesRegistrationScopedEnhancementsCredential: Bool {
+    var usesRegistrationScopedEnhancementsCredential: Bool {
         self == .custom
     }
 }
@@ -483,7 +483,7 @@ public struct TranscriptionProviderSelection: Codable, Equatable, Sendable {
 
     public static let `default` = TranscriptionProviderSelection(
         provider: .local,
-        selectedModel: TranscriptionProvider.localModelID
+        selectedModel: TranscriptionProvider.localModelID,
     )
 }
 

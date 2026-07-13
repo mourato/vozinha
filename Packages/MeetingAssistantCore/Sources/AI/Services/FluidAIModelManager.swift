@@ -200,7 +200,7 @@ public class FluidAIModelManager: ObservableObject, AIModelService {
         await loadDiarizationModels(
             minSpeakers: nil,
             maxSpeakers: nil,
-            numSpeakers: nil
+            numSpeakers: nil,
         )
     }
 
@@ -208,7 +208,7 @@ public class FluidAIModelManager: ObservableObject, AIModelService {
     func loadDiarizationModels(
         minSpeakers: Int? = nil,
         maxSpeakers: Int? = nil,
-        numSpeakers: Int? = nil
+        numSpeakers: Int? = nil,
     ) async {
         let min = minSpeakers ?? AppSettingsStore.shared.minSpeakers
         let max = maxSpeakers ?? AppSettingsStore.shared.maxSpeakers
@@ -414,7 +414,7 @@ extension FluidAIModelManager {
         audioURL: URL,
         minSpeakers: Int? = nil,
         maxSpeakers: Int? = nil,
-        numSpeakers: Int? = nil
+        numSpeakers: Int? = nil,
     ) async throws -> [DiarizationSegment] {
         lastDiarizationActivityAt = Date()
         diarizationInFlightOperationCount += 1
@@ -423,7 +423,7 @@ extension FluidAIModelManager {
         await loadDiarizationModels(
             minSpeakers: minSpeakers,
             maxSpeakers: maxSpeakers,
-            numSpeakers: numSpeakers
+            numSpeakers: numSpeakers,
         )
 
         guard let manager = diarizerManager else {
@@ -438,7 +438,7 @@ extension FluidAIModelManager {
             DiarizationSegment(
                 speakerId: String(segment.speakerId),
                 startTime: Double(segment.startTimeSeconds),
-                endTime: Double(segment.endTimeSeconds)
+                endTime: Double(segment.endTimeSeconds),
             )
         }
     }
@@ -460,7 +460,7 @@ extension FluidAIModelManager {
     func transcribe(
         audioURL: URL,
         inputLanguageHintCode: String? = nil,
-        progress: (@Sendable (Double) -> Void)? = nil
+        progress: (@Sendable (Double) -> Void)? = nil,
     ) async throws -> AsrTranscriptionOutput {
         lastASRActivityAt = Date()
         guard modelState == .loaded, let loadedASRLocalModelID else {
@@ -477,7 +477,7 @@ extension FluidAIModelManager {
         case .parakeetTdt06BV3:
             if let inputLanguageHintCode, !inputLanguageHintCode.isEmpty {
                 logger.info(
-                    "ASR language hint requested: \(inputLanguageHintCode) (FluidAudio currently auto-detects language)"
+                    "ASR language hint requested: \(inputLanguageHintCode) (FluidAudio currently auto-detects language)",
                 )
             }
 
@@ -506,20 +506,20 @@ extension FluidAIModelManager {
                 return AsrSegment(
                     text: timing.token,
                     startTime: Double(timing.startTime),
-                    endTime: Double(timing.endTime)
+                    endTime: Double(timing.endTime),
                 )
             }
 
             return AsrTranscriptionOutput(
                 text: result.text,
                 segments: mappedSegments,
-                confidenceScore: Double(result.confidence)
+                confidenceScore: Double(result.confidence),
             )
 
         case .cohereTranscribe032026CoreML6Bit:
             if let inputLanguageHintCode, !inputLanguageHintCode.isEmpty {
                 logger.info(
-                    "ASR language hint requested: \(inputLanguageHintCode) (Cohere runtime currently uses manifest default prompts)"
+                    "ASR language hint requested: \(inputLanguageHintCode) (Cohere runtime currently uses manifest default prompts)",
                 )
             }
 
@@ -537,7 +537,7 @@ extension FluidAIModelManager {
 
     func transcribe(
         samples: [Float],
-        inputLanguageHintCode: String? = nil
+        inputLanguageHintCode: String? = nil,
     ) async throws -> AsrTranscriptionOutput {
         lastASRActivityAt = Date()
         guard modelState == .loaded, let loadedASRLocalModelID else {
@@ -554,7 +554,7 @@ extension FluidAIModelManager {
         case .parakeetTdt06BV3:
             if let inputLanguageHintCode, !inputLanguageHintCode.isEmpty {
                 logger.info(
-                    "ASR language hint requested: \(inputLanguageHintCode) (FluidAudio currently auto-detects language)"
+                    "ASR language hint requested: \(inputLanguageHintCode) (FluidAudio currently auto-detects language)",
                 )
             }
 
@@ -568,20 +568,20 @@ extension FluidAIModelManager {
                 AsrSegment(
                     text: timing.token,
                     startTime: Double(timing.startTime),
-                    endTime: Double(timing.endTime)
+                    endTime: Double(timing.endTime),
                 )
             }
 
             return AsrTranscriptionOutput(
                 text: result.text,
                 segments: mappedSegments,
-                confidenceScore: Double(result.confidence)
+                confidenceScore: Double(result.confidence),
             )
 
         case .cohereTranscribe032026CoreML6Bit:
             if let inputLanguageHintCode, !inputLanguageHintCode.isEmpty {
                 logger.info(
-                    "ASR language hint requested: \(inputLanguageHintCode) (Cohere runtime currently uses manifest default prompts)"
+                    "ASR language hint requested: \(inputLanguageHintCode) (Cohere runtime currently uses manifest default prompts)",
                 )
             }
 
@@ -597,7 +597,7 @@ extension FluidAIModelManager {
     private func convertTo16kHz(buffer: AVAudioPCMBuffer) throws -> AVAudioPCMBuffer {
         guard
             let targetFormat = AVAudioFormat(
-                commonFormat: .pcmFormatFloat32, sampleRate: 16_000, channels: 1, interleaved: false
+                commonFormat: .pcmFormatFloat32, sampleRate: 16_000, channels: 1, interleaved: false,
             )
         else {
             throw FluidError.conversionFailed
@@ -612,12 +612,12 @@ extension FluidAIModelManager {
         }
 
         let targetFrameCapacity = AVAudioFrameCount(
-            Double(buffer.frameLength) * targetFormat.sampleRate / buffer.format.sampleRate
+            Double(buffer.frameLength) * targetFormat.sampleRate / buffer.format.sampleRate,
         )
 
         guard
             let targetBuffer = AVAudioPCMBuffer(
-                pcmFormat: targetFormat, frameCapacity: targetFrameCapacity
+                pcmFormat: targetFormat, frameCapacity: targetFrameCapacity,
             )
         else {
             throw FluidError.conversionFailed

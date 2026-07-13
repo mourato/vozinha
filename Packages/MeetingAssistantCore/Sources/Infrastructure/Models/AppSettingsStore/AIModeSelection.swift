@@ -52,7 +52,7 @@ public extension AppSettingsStore {
         provider: AIProvider,
         displayName: String? = nil,
         baseURLOverride: String? = nil,
-        iconSystemName: String? = nil
+        iconSystemName: String? = nil,
     ) -> EnhancementsProviderRegistration? {
         guard canAddEnhancementsProviderRegistration(provider) else { return nil }
 
@@ -60,7 +60,7 @@ public extension AppSettingsStore {
             provider: provider,
             displayName: displayName ?? defaultRegistrationDisplayName(for: provider),
             baseURLOverride: provider == .custom ? baseURLOverride : nil,
-            iconSystemName: provider == .custom ? iconSystemName : nil
+            iconSystemName: provider == .custom ? iconSystemName : nil,
         )
 
         var updated = enhancementsProviderRegistrations
@@ -290,28 +290,28 @@ public extension AppSettingsStore {
     func updateEnhancementsSelection(
         provider: AIProvider,
         model: String,
-        for mode: IntelligenceKernelMode
+        for mode: IntelligenceKernelMode,
     ) {
         let registrationID = enhancementsRegistration(for: provider)?.id
         updateEnhancementsSelection(
             provider: provider,
             registrationID: registrationID,
             model: model,
-            for: mode
+            for: mode,
         )
     }
 
     func updateEnhancementsSelection(
         registrationID: UUID,
         model: String,
-        for mode: IntelligenceKernelMode
+        for mode: IntelligenceKernelMode,
     ) {
         guard let registration = enhancementsRegistration(for: registrationID) else { return }
         updateEnhancementsSelection(
             provider: registration.provider,
             registrationID: registration.id,
             model: model,
-            for: mode
+            for: mode,
         )
     }
 
@@ -319,7 +319,7 @@ public extension AppSettingsStore {
         provider: AIProvider,
         registrationID: UUID?,
         model: String,
-        for mode: IntelligenceKernelMode
+        for mode: IntelligenceKernelMode,
     ) {
         let normalizedModel = normalizedEnhancementsModelID(model, for: provider)
         switch mode {
@@ -327,13 +327,13 @@ public extension AppSettingsStore {
             enhancementsAISelection = EnhancementsAISelection(
                 provider: provider,
                 selectedModel: normalizedModel,
-                registrationID: registrationID
+                registrationID: registrationID,
             )
         case .dictation, .assistant:
             enhancementsDictationAISelection = EnhancementsAISelection(
                 provider: provider,
                 selectedModel: normalizedModel,
-                registrationID: registrationID
+                registrationID: registrationID,
             )
         }
         setEnhancementsProviderSelectedModel(normalizedModel, for: provider)
@@ -377,7 +377,7 @@ public extension AppSettingsStore {
 
     func isEnhancementsRegistrationSelected(
         _ registration: EnhancementsProviderRegistration,
-        for mode: IntelligenceKernelMode
+        for mode: IntelligenceKernelMode,
     ) -> Bool {
         let selection = enhancementsSelection(for: mode)
         if let selectedRegistrationID = selection.registrationID {
@@ -437,7 +437,7 @@ public extension AppSettingsStore {
         return AIConfiguration(
             provider: provider,
             baseURL: baseURL,
-            selectedModel: selectedModel
+            selectedModel: selectedModel,
         )
     }
 
@@ -454,7 +454,7 @@ public extension AppSettingsStore {
     }
 
     func enhancementsInferenceReadinessIssue(
-        apiKeyExists: ((AIProvider) -> Bool)?
+        apiKeyExists: ((AIProvider) -> Bool)?,
     ) -> EnhancementsInferenceReadinessIssue? {
         enhancementsInferenceReadinessIssue(for: .meeting, apiKeyExists: apiKeyExists)
     }
@@ -462,18 +462,18 @@ public extension AppSettingsStore {
     func enhancementsInferenceReadinessIssue(
         for mode: IntelligenceKernelMode,
         apiKeyExists: ((AIProvider) -> Bool)?,
-        registrationAPIKeyExists: ((UUID) -> Bool)? = nil
+        registrationAPIKeyExists: ((UUID) -> Bool)? = nil,
     ) -> EnhancementsInferenceReadinessIssue? {
         if let issue = checkEnhancementsInferenceReadiness(
             for: mode,
             apiKeyExists: apiKeyExists,
-            registrationAPIKeyExists: registrationAPIKeyExists
+            registrationAPIKeyExists: registrationAPIKeyExists,
         ) {
             let siblingMode = siblingEnhancementsMode(for: mode)
             if let siblingIssue = checkEnhancementsInferenceReadiness(
                 for: siblingMode,
                 apiKeyExists: apiKeyExists,
-                registrationAPIKeyExists: registrationAPIKeyExists
+                registrationAPIKeyExists: registrationAPIKeyExists,
             ) {
                 return issue
             }
@@ -484,31 +484,31 @@ public extension AppSettingsStore {
     func enhancementsInferenceReadinessIssue(
         for selection: EnhancementsAISelection,
         apiKeyExists: ((AIProvider) -> Bool)?,
-        registrationAPIKeyExists: ((UUID) -> Bool)? = nil
+        registrationAPIKeyExists: ((UUID) -> Bool)? = nil,
     ) -> EnhancementsInferenceReadinessIssue? {
         checkEnhancementsInferenceReadiness(
             for: selection,
             apiKeyExists: apiKeyExists,
-            registrationAPIKeyExists: registrationAPIKeyExists
+            registrationAPIKeyExists: registrationAPIKeyExists,
         )
     }
 
     private func checkEnhancementsInferenceReadiness(
         for mode: IntelligenceKernelMode,
         apiKeyExists: ((AIProvider) -> Bool)?,
-        registrationAPIKeyExists: ((UUID) -> Bool)? = nil
+        registrationAPIKeyExists: ((UUID) -> Bool)? = nil,
     ) -> EnhancementsInferenceReadinessIssue? {
         checkEnhancementsInferenceReadiness(
             for: enhancementsSelection(for: mode),
             apiKeyExists: apiKeyExists,
-            registrationAPIKeyExists: registrationAPIKeyExists
+            registrationAPIKeyExists: registrationAPIKeyExists,
         )
     }
 
     private func checkEnhancementsInferenceReadiness(
         for selection: EnhancementsAISelection,
         apiKeyExists: ((AIProvider) -> Bool)?,
-        registrationAPIKeyExists: ((UUID) -> Bool)? = nil
+        registrationAPIKeyExists: ((UUID) -> Bool)? = nil,
     ) -> EnhancementsInferenceReadinessIssue? {
         let config = resolvedEnhancementsAIConfiguration(for: selection)
         let selectedRegistration = enhancementsRegistration(for: selection.registrationID)
@@ -569,7 +569,7 @@ public extension AppSettingsStore {
 
     func backfillEnhancementsSelectionModelsIfNeeded() {
         let normalizedRegistrations = Self.normalizedEnhancementsProviderRegistrationsForBackfill(
-            enhancementsProviderRegistrations
+            enhancementsProviderRegistrations,
         )
         var updatedProviderSelectedModels = enhancementsProviderSelectedModels
         var updatedProviderSelectedModelsByRegistration = enhancementsProviderSelectedModelsByRegistration
@@ -579,14 +579,14 @@ public extension AppSettingsStore {
             providerSelectedModels: &updatedProviderSelectedModels,
             providerSelectedModelsByRegistration: &updatedProviderSelectedModelsByRegistration,
             registrations: normalizedRegistrations,
-            legacyConfiguration: aiConfiguration
+            legacyConfiguration: aiConfiguration,
         )
         let updatedDictationSelection = Self.withBackfilledEnhancementsModel(
             for: enhancementsDictationAISelection,
             providerSelectedModels: &updatedProviderSelectedModels,
             providerSelectedModelsByRegistration: &updatedProviderSelectedModelsByRegistration,
             registrations: normalizedRegistrations,
-            legacyConfiguration: aiConfiguration
+            legacyConfiguration: aiConfiguration,
         )
 
         guard normalizedRegistrations != enhancementsProviderRegistrations
@@ -692,7 +692,7 @@ private extension AppSettingsStore {
         providerSelectedModels: inout [String: String],
         providerSelectedModelsByRegistration: inout [String: String],
         registrations: [EnhancementsProviderRegistration],
-        legacyConfiguration: AIConfiguration
+        legacyConfiguration: AIConfiguration,
     ) -> EnhancementsAISelection {
         let registration = if let registrationID = selection.registrationID {
             registrations.first(where: { $0.id == registrationID })
@@ -704,7 +704,7 @@ private extension AppSettingsStore {
         let providerKey = provider.rawValue
         let normalizedSelectedModel = normalizedEnhancementsModelID(
             selection.selectedModel,
-            for: provider
+            for: provider,
         )
 
         if !normalizedSelectedModel.isEmpty {
@@ -715,7 +715,7 @@ private extension AppSettingsStore {
             return EnhancementsAISelection(
                 provider: provider,
                 selectedModel: normalizedSelectedModel,
-                registrationID: registration?.id
+                registrationID: registration?.id,
             )
         }
 
@@ -729,7 +729,7 @@ private extension AppSettingsStore {
             return EnhancementsAISelection(
                 provider: provider,
                 selectedModel: registrationModel,
-                registrationID: registration.id
+                registrationID: registration.id,
             )
         }
 
@@ -745,13 +745,13 @@ private extension AppSettingsStore {
             return EnhancementsAISelection(
                 provider: provider,
                 selectedModel: providerModel,
-                registrationID: registration?.id
+                registrationID: registration?.id,
             )
         }
 
         let normalizedLegacyModel = normalizedEnhancementsModelID(
             legacyConfiguration.selectedModel,
-            for: provider
+            for: provider,
         )
         if legacyConfiguration.provider == provider,
            !normalizedLegacyModel.isEmpty
@@ -763,7 +763,7 @@ private extension AppSettingsStore {
             return EnhancementsAISelection(
                 provider: provider,
                 selectedModel: normalizedLegacyModel,
-                registrationID: registration?.id
+                registrationID: registration?.id,
             )
         }
 
@@ -774,12 +774,12 @@ private extension AppSettingsStore {
         return EnhancementsAISelection(
             provider: provider,
             selectedModel: "",
-            registrationID: registration?.id
+            registrationID: registration?.id,
         )
     }
 
     static func normalizedEnhancementsProviderRegistrationsForBackfill(
-        _ registrations: [EnhancementsProviderRegistration]
+        _ registrations: [EnhancementsProviderRegistration],
     ) -> [EnhancementsProviderRegistration] {
         var seenIDs = Set<UUID>()
         var seenBuiltInProviders = Set<AIProvider>()

@@ -17,7 +17,7 @@ final class SettingsWindowLayoutStateEvaluatorTests: XCTestCase {
             ],
             visibleScreenFrames: visibleScreenFrames,
             defaultContentSize: defaultContentSize,
-            sidebarWidthRange: sidebarWidthRange
+            sidebarWidthRange: sidebarWidthRange,
         )
 
         XCTAssertFalse(evaluation.shouldResetPersistedLayout)
@@ -32,12 +32,12 @@ final class SettingsWindowLayoutStateEvaluatorTests: XCTestCase {
             splitViewFrameStrings: [],
             visibleScreenFrames: visibleScreenFrames,
             defaultContentSize: defaultContentSize,
-            sidebarWidthRange: sidebarWidthRange
+            sidebarWidthRange: sidebarWidthRange,
         )
 
         XCTAssertEqual(
             evaluation.keysToReset,
-            [SettingsWindowLayoutStateEvaluator.autosaveWindowFrameDefaultsKey]
+            [SettingsWindowLayoutStateEvaluator.autosaveWindowFrameDefaultsKey],
         )
         XCTAssertTrue(evaluation.shouldCenterWindow)
         XCTAssertFalse(evaluation.requiresFrameClamp)
@@ -50,12 +50,12 @@ final class SettingsWindowLayoutStateEvaluatorTests: XCTestCase {
             splitViewFrameStrings: [],
             visibleScreenFrames: visibleScreenFrames,
             defaultContentSize: defaultContentSize,
-            sidebarWidthRange: sidebarWidthRange
+            sidebarWidthRange: sidebarWidthRange,
         )
 
         XCTAssertEqual(
             evaluation.keysToReset,
-            [SettingsWindowLayoutStateEvaluator.autosaveWindowFrameDefaultsKey]
+            [SettingsWindowLayoutStateEvaluator.autosaveWindowFrameDefaultsKey],
         )
         XCTAssertTrue(evaluation.shouldCenterWindow)
         XCTAssertFalse(evaluation.requiresFrameClamp)
@@ -71,12 +71,12 @@ final class SettingsWindowLayoutStateEvaluatorTests: XCTestCase {
             ],
             visibleScreenFrames: visibleScreenFrames,
             defaultContentSize: defaultContentSize,
-            sidebarWidthRange: sidebarWidthRange
+            sidebarWidthRange: sidebarWidthRange,
         )
 
         XCTAssertEqual(
             evaluation.keysToReset,
-            [SettingsWindowLayoutStateEvaluator.splitViewFramesDefaultsKey]
+            [SettingsWindowLayoutStateEvaluator.splitViewFramesDefaultsKey],
         )
         XCTAssertTrue(evaluation.shouldCenterWindow)
         XCTAssertFalse(evaluation.requiresFrameClamp)
@@ -92,12 +92,12 @@ final class SettingsWindowLayoutStateEvaluatorTests: XCTestCase {
             ],
             visibleScreenFrames: visibleScreenFrames,
             defaultContentSize: defaultContentSize,
-            sidebarWidthRange: sidebarWidthRange
+            sidebarWidthRange: sidebarWidthRange,
         )
 
         XCTAssertEqual(
             evaluation.keysToReset,
-            [SettingsWindowLayoutStateEvaluator.splitViewFramesDefaultsKey]
+            [SettingsWindowLayoutStateEvaluator.splitViewFramesDefaultsKey],
         )
         XCTAssertFalse(evaluation.shouldCenterWindow)
         XCTAssertTrue(evaluation.requiresFrameClamp)
@@ -113,12 +113,12 @@ final class SettingsWindowLayoutStateEvaluatorTests: XCTestCase {
             ],
             visibleScreenFrames: visibleScreenFrames,
             defaultContentSize: defaultContentSize,
-            sidebarWidthRange: sidebarWidthRange
+            sidebarWidthRange: sidebarWidthRange,
         )
 
         XCTAssertEqual(
             evaluation.keysToReset,
-            [SettingsWindowLayoutStateEvaluator.splitViewFramesDefaultsKey]
+            [SettingsWindowLayoutStateEvaluator.splitViewFramesDefaultsKey],
         )
         XCTAssertFalse(evaluation.shouldCenterWindow)
         XCTAssertTrue(evaluation.requiresFrameClamp)
@@ -131,7 +131,7 @@ final class SettingsWindowLayoutStateEvaluatorTests: XCTestCase {
             splitViewFrameStrings: [],
             visibleScreenFrames: visibleScreenFrames,
             defaultContentSize: defaultContentSize,
-            sidebarWidthRange: sidebarWidthRange
+            sidebarWidthRange: sidebarWidthRange,
         )
 
         XCTAssertFalse(evaluation.shouldResetPersistedLayout)

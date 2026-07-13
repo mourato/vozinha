@@ -40,7 +40,7 @@ public class LocalTranscriptionClient {
         minSpeakers: Int? = nil,
         maxSpeakers: Int? = nil,
         numSpeakers: Int? = nil,
-        onProgress: (@Sendable (Double) -> Void)? = nil
+        onProgress: (@Sendable (Double) -> Void)? = nil,
     ) async throws -> TranscriptionResponse {
         logger.info("Starting local transcription for: \(audioURL.lastPathComponent)")
         let selectedModel = LocalTranscriptionModel(rawValue: modelID) ?? .parakeetTdt06BV3
@@ -50,13 +50,13 @@ public class LocalTranscriptionClient {
         let startTime = Date()
         let resolvedLanguageCode = normalizedLanguageCode(
             inputLanguageHintCode,
-            fallbackHint: AppSettingsStore.shared.transcriptionInputLanguageHint.languageCode
+            fallbackHint: AppSettingsStore.shared.transcriptionInputLanguageHint.languageCode,
         )
 
         let asrOutput = try await manager.transcribe(
             audioURL: audioURL,
             inputLanguageHintCode: resolvedLanguageCode,
-            progress: onProgress
+            progress: onProgress,
         )
 
         let context = TranscriptionRunContext(
@@ -65,13 +65,13 @@ public class LocalTranscriptionClient {
             audioURL: audioURL,
             minSpeakers: minSpeakers,
             maxSpeakers: maxSpeakers,
-            numSpeakers: numSpeakers
+            numSpeakers: numSpeakers,
         )
 
         let segments = await resolveSegmentsWithOptionalDiarization(
             context: context,
             isDiarizationEnabled: isDiarizationEnabled,
-            model: selectedModel
+            model: selectedModel,
         )
 
         let duration = Date().timeIntervalSince(startTime)
@@ -84,13 +84,13 @@ public class LocalTranscriptionClient {
             durationSeconds: duration,
             model: selectedModel.rawValue,
             processedAt: processedAt,
-            confidenceScore: asrOutput.confidenceScore
+            confidenceScore: asrOutput.confidenceScore,
         )
     }
 
     public func transcribe(
         samples: [Float],
-        inputLanguageHintCode: String? = nil
+        inputLanguageHintCode: String? = nil,
     ) async throws -> TranscriptionResponse {
         logger.info("Starting local in-memory transcription for \(samples.count) samples")
 
@@ -102,11 +102,11 @@ public class LocalTranscriptionClient {
         let startTime = Date()
         let resolvedLanguageCode = normalizedLanguageCode(
             inputLanguageHintCode,
-            fallbackHint: AppSettingsStore.shared.transcriptionInputLanguageHint.languageCode
+            fallbackHint: AppSettingsStore.shared.transcriptionInputLanguageHint.languageCode,
         )
         let asrOutput = try await manager.transcribe(
             samples: samples,
-            inputLanguageHintCode: resolvedLanguageCode
+            inputLanguageHintCode: resolvedLanguageCode,
         )
         let duration = Date().timeIntervalSince(startTime)
         let processedAt = ISO8601DateFormatter().string(from: Date())
@@ -116,7 +116,7 @@ public class LocalTranscriptionClient {
                 speaker: Transcription.unknownSpeaker,
                 text: segment.text,
                 startTime: segment.startTime,
-                endTime: segment.endTime
+                endTime: segment.endTime,
             )
         }
 
@@ -127,7 +127,7 @@ public class LocalTranscriptionClient {
             durationSeconds: duration,
             model: selectedModel.rawValue,
             processedAt: processedAt,
-            confidenceScore: asrOutput.confidenceScore
+            confidenceScore: asrOutput.confidenceScore,
         )
     }
 
@@ -154,7 +154,7 @@ public class LocalTranscriptionClient {
     private func resolveSegmentsWithOptionalDiarization(
         context: TranscriptionRunContext,
         isDiarizationEnabled: Bool?,
-        model: LocalTranscriptionModel
+        model: LocalTranscriptionModel,
     ) async -> [Transcription.Segment] {
         let diarizationSetting = isDiarizationEnabled ?? AppSettingsStore.shared.isDiarizationEnabled
         let diarizationEnabled = diarizationSetting && FeatureFlags.enableDiarization && model.supportsDiarization
@@ -165,18 +165,18 @@ public class LocalTranscriptionClient {
 
         guard diarizationEnabled else {
             logger.info(
-                "Diarization disabled for this run (setting=\(diarizationSetting, privacy: .public), flag=\(FeatureFlags.enableDiarization, privacy: .public))."
+                "Diarization disabled for this run (setting=\(diarizationSetting, privacy: .public), flag=\(FeatureFlags.enableDiarization, privacy: .public)).",
             )
             return []
         }
 
         return await diarizedSegments(
-            context: context
+            context: context,
         )
     }
 
     private func diarizedSegments(
-        context: TranscriptionRunContext
+        context: TranscriptionRunContext,
     ) async -> [Transcription.Segment] {
         logger.info("Diarization enabled. Processing with automatic speaker count...")
 
@@ -185,7 +185,7 @@ public class LocalTranscriptionClient {
                 audioURL: context.audioURL,
                 minSpeakers: context.minSpeakers,
                 maxSpeakers: context.maxSpeakers,
-                numSpeakers: context.numSpeakers
+                numSpeakers: context.numSpeakers,
             )
             logger.info("Diarization produced \(diarizationSegments.count) segments")
 
@@ -197,7 +197,7 @@ public class LocalTranscriptionClient {
             let merged = merge(
                 text: context.text,
                 asrSegments: context.asrSegments,
-                speakers: diarizationSegments
+                speakers: diarizationSegments,
             )
             if merged.isEmpty {
                 logger.info("Merged segments empty. Falling back to diarization-only segmentation.")
@@ -216,14 +216,14 @@ public class LocalTranscriptionClient {
             SpeakerTimelineSegment(
                 speaker: segment.speakerId,
                 startTime: segment.startTime,
-                endTime: segment.endTime
+                endTime: segment.endTime,
             )
         }
     }
 
     public func assignSpeakers(
         to segments: [Transcription.Segment],
-        using speakerTimeline: [SpeakerTimelineSegment]
+        using speakerTimeline: [SpeakerTimelineSegment],
     ) -> [Transcription.Segment] {
         guard !segments.isEmpty, !speakerTimeline.isEmpty else { return segments }
 
@@ -259,7 +259,7 @@ public class LocalTranscriptionClient {
     private func merge(
         text _: String,
         asrSegments: [FluidAIModelManager.AsrSegment],
-        speakers: [FluidAIModelManager.DiarizationSegment]
+        speakers: [FluidAIModelManager.DiarizationSegment],
     ) -> [Transcription.Segment] {
         guard !asrSegments.isEmpty, !speakers.isEmpty else { return [] }
 
@@ -268,7 +268,7 @@ public class LocalTranscriptionClient {
                 speaker: Transcription.unknownSpeaker,
                 text: segment.text,
                 startTime: segment.startTime,
-                endTime: segment.endTime
+                endTime: segment.endTime,
             )
         }
 
@@ -276,7 +276,7 @@ public class LocalTranscriptionClient {
             SpeakerTimelineSegment(
                 speaker: segment.speakerId,
                 startTime: segment.startTime,
-                endTime: segment.endTime
+                endTime: segment.endTime,
             )
         }
 
@@ -285,7 +285,7 @@ public class LocalTranscriptionClient {
 
     private func fallbackSegments(
         text: String,
-        speakers: [FluidAIModelManager.DiarizationSegment]
+        speakers: [FluidAIModelManager.DiarizationSegment],
     ) -> [Transcription.Segment] {
         let sortedSpeakers = speakers.sorted { $0.startTime < $1.startTime }
         let words = text.split(whereSeparator: \.isWhitespace)
@@ -328,8 +328,8 @@ public class LocalTranscriptionClient {
                     speaker: speaker.speakerId,
                     text: segmentText,
                     startTime: speaker.startTime,
-                    endTime: speaker.endTime
-                )
+                    endTime: speaker.endTime,
+                ),
             )
         }
 
@@ -341,7 +341,7 @@ public class LocalTranscriptionClient {
                 speaker: last.speaker,
                 text: "\(last.text) \(remainder)".trimmingCharacters(in: .whitespaces),
                 startTime: last.startTime,
-                endTime: last.endTime
+                endTime: last.endTime,
             )
             result[result.count - 1] = updated
         }
@@ -351,7 +351,7 @@ public class LocalTranscriptionClient {
 
     private func makeAssignedSegment(
         from batch: [Transcription.Segment],
-        speaker: String
+        speaker: String,
     ) -> Transcription.Segment? {
         guard !batch.isEmpty else { return nil }
 
@@ -365,7 +365,7 @@ public class LocalTranscriptionClient {
             speaker: speaker.isEmpty ? Transcription.unknownSpeaker : speaker,
             text: segmentText,
             startTime: batch.first?.startTime ?? 0,
-            endTime: batch.last?.endTime ?? 0
+            endTime: batch.last?.endTime ?? 0,
         )
     }
 }

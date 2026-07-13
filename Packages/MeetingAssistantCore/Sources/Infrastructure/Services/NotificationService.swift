@@ -21,11 +21,11 @@ public final class NotificationService {
         }
 
         UNUserNotificationCenter.current().requestAuthorization(
-            options: [.alert, .sound]
+            options: [.alert, .sound],
         ) { [weak self] granted, error in
             if let error {
                 self?.logger.error(
-                    "Notification authorization failed: \(error.localizedDescription)"
+                    "Notification authorization failed: \(error.localizedDescription)",
                 )
             } else if !granted {
                 self?.logger.warning("Notification authorization denied by user")
@@ -63,7 +63,7 @@ public final class NotificationService {
         let request = UNNotificationRequest(
             identifier: UUID().uuidString,
             content: content,
-            trigger: nil
+            trigger: nil,
         )
 
         UNUserNotificationCenter.current().add(request) { [weak self] error in

@@ -51,7 +51,7 @@ public extension ModelPerformanceAttemptMO {
                 providerDisplayName: providerDisplayName,
                 modelID: modelID,
                 modelDisplayName: modelDisplayName,
-                runtimeKind: ModelPerformanceRuntimeKind(rawValue: runtimeKindRawValue) ?? .unknown
+                runtimeKind: ModelPerformanceRuntimeKind(rawValue: runtimeKindRawValue) ?? .unknown,
             ),
             status: ModelPerformanceAttemptStatus(rawValue: statusRawValue) ?? .succeeded,
             startedAt: startedAt,
@@ -61,7 +61,7 @@ public extension ModelPerformanceAttemptMO {
             inputUTF8Bytes: Int(inputUTF8Bytes),
             inputCharacterCount: Int(inputCharacterCount),
             outputCharacterCount: Int(outputCharacterCount),
-            failureReason: failureReason
+            failureReason: failureReason,
         )
     }
 
@@ -91,11 +91,11 @@ public extension ModelPerformanceAttemptMO {
     static func create(
         from attempt: ModelPerformanceAttempt,
         transcription: TranscriptionMO,
-        in context: NSManagedObjectContext
+        in context: NSManagedObjectContext,
     ) -> ModelPerformanceAttemptMO {
         let managedObject = ModelPerformanceAttemptMO(
             entity: resolvedEntityDescription(named: "ModelPerformanceAttemptMO", in: context),
-            insertInto: context
+            insertInto: context,
         )
         managedObject.update(from: attempt, transcription: transcription)
         return managedObject

@@ -1,8 +1,8 @@
-import XCTest
 @testable import MeetingAssistantCore
+import XCTest
 
 @MainActor
-final class RecordingCancelShortcutSettingsViewModelTests: XCTestCase {
+final class RecordingCancelShortcutVMTests: XCTestCase {
     private var settings: AppSettingsStore!
 
     override func setUp() async throws {
@@ -20,7 +20,7 @@ final class RecordingCancelShortcutSettingsViewModelTests: XCTestCase {
         let shortcut = ShortcutDefinition(
             modifiers: [.command, .option],
             primaryKey: .letter("K", keyCode: 0x28),
-            trigger: .singleTap
+            trigger: .singleTap,
         )
 
         viewModel.cancelRecordingShortcutDefinition = shortcut
@@ -35,7 +35,7 @@ final class RecordingCancelShortcutSettingsViewModelTests: XCTestCase {
         let shortcut = ShortcutDefinition(
             modifiers: [.command, .option],
             primaryKey: .letter("K", keyCode: 0x28),
-            trigger: .singleTap
+            trigger: .singleTap,
         )
 
         viewModel.cancelRecordingShortcutDefinition = shortcut
@@ -54,7 +54,7 @@ final class RecordingCancelShortcutSettingsViewModelTests: XCTestCase {
         let shortcut = ShortcutDefinition(
             modifiers: [.fn, .command],
             primaryKey: .letter("K", keyCode: 0x28),
-            trigger: .singleTap
+            trigger: .singleTap,
         )
 
         viewModel.cancelRecordingShortcutDefinition = shortcut
@@ -64,7 +64,7 @@ final class RecordingCancelShortcutSettingsViewModelTests: XCTestCase {
         XCTAssertNil(viewModel.cancelRecordingShortcutDefinition)
         XCTAssertEqual(
             viewModel.cancelRecordingShortcutConflictMessage,
-            "settings.general.cancel_recording_shortcut_unsupported".localized
+            "settings.general.cancel_recording_shortcut_unsupported".localized,
         )
     }
 
@@ -73,7 +73,7 @@ final class RecordingCancelShortcutSettingsViewModelTests: XCTestCase {
         let shortcut = ShortcutDefinition(
             modifiers: [],
             primaryKey: .function(index: 18, keyCode: 0x4f),
-            trigger: .singleTap
+            trigger: .singleTap,
         )
 
         viewModel.cancelRecordingShortcutDefinition = shortcut
@@ -88,7 +88,7 @@ final class RecordingCancelShortcutSettingsViewModelTests: XCTestCase {
         let conflictingShortcut = ShortcutDefinition(
             modifiers: [.control],
             primaryKey: .letter("J", keyCode: 0x26),
-            trigger: .singleTap
+            trigger: .singleTap,
         )
 
         settings.dictationShortcutDefinition = conflictingShortcut
@@ -103,11 +103,11 @@ final class RecordingCancelShortcutSettingsViewModelTests: XCTestCase {
         XCTAssertNotNil(viewModel.cancelRecordingShortcutConflictMessage)
     }
 
-    func testConfiguredShortcutBindingsIncludesCancelRecordingShortcut() async {
+    func testConfiguredShortcutBindingsIncludesCancelRecordingShortcut() {
         let shortcut = ShortcutDefinition(
             modifiers: [.command, .shift],
             primaryKey: .letter("C", keyCode: 0x08),
-            trigger: .singleTap
+            trigger: .singleTap,
         )
 
         settings.cancelRecordingShortcutDefinition = shortcut
@@ -115,7 +115,7 @@ final class RecordingCancelShortcutSettingsViewModelTests: XCTestCase {
         XCTAssertTrue(
             settings.configuredShortcutBindings.contains(where: { binding in
                 binding.actionID == .cancelActiveRecording && binding.shortcut == shortcut
-            })
+            }),
         )
     }
 }

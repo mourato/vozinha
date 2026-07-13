@@ -48,7 +48,7 @@ struct RustAudioKernelFFI: @unchecked Sendable {
     typealias ComputeRmsPeakFunction = @convention(c) (
         UnsafePointer<Float>?,
         Int,
-        UnsafeMutableRawPointer?
+        UnsafeMutableRawPointer?,
     ) -> Int32
 
     private let versionImpl: VersionFunction
@@ -56,7 +56,7 @@ struct RustAudioKernelFFI: @unchecked Sendable {
 
     init(
         versionImpl: @escaping VersionFunction,
-        computeRmsPeakImpl: @escaping ComputeRmsPeakFunction
+        computeRmsPeakImpl: @escaping ComputeRmsPeakFunction,
     ) {
         self.versionImpl = versionImpl
         self.computeRmsPeakImpl = computeRmsPeakImpl
@@ -88,7 +88,7 @@ struct RustAudioKernelFFI: @unchecked Sendable {
 
         return RmsPeakResult(
             rmsLinear: ffiResult.rms_linear,
-            peakLinear: ffiResult.peak_linear
+            peakLinear: ffiResult.peak_linear,
         )
     }
 }
@@ -104,7 +104,7 @@ extension RustAudioKernelFFI {
             return .init(
                 ffi: ffi,
                 source: .processSymbols,
-                libraryPath: nil
+                libraryPath: nil,
             )
         }
 
@@ -115,7 +115,7 @@ extension RustAudioKernelFFI {
         return .init(
             ffi: nil,
             source: .unavailable,
-            libraryPath: nil
+            libraryPath: nil,
         )
     }
 
@@ -135,7 +135,7 @@ extension RustAudioKernelFFI {
 
         return RustAudioKernelFFI(
             versionImpl: versionImpl,
-            computeRmsPeakImpl: computeRmsPeakImpl
+            computeRmsPeakImpl: computeRmsPeakImpl,
         )
     }
 
@@ -154,7 +154,7 @@ extension RustAudioKernelFFI {
             return .init(
                 ffi: ffi,
                 source: candidate.source,
-                libraryPath: candidate.path
+                libraryPath: candidate.path,
             )
         }
 
@@ -174,8 +174,8 @@ extension RustAudioKernelFFI {
             candidates.append(
                 LibraryCandidate(
                     path: frameworksURL.appendingPathComponent(libraryName).path,
-                    source: .bundledFrameworks
-                )
+                    source: .bundledFrameworks,
+                ),
             )
         }
 
@@ -187,8 +187,8 @@ extension RustAudioKernelFFI {
             candidates.append(
                 LibraryCandidate(
                     path: frameworkURL.path,
-                    source: .bundledFrameworks
-                )
+                    source: .bundledFrameworks,
+                ),
             )
         }
 

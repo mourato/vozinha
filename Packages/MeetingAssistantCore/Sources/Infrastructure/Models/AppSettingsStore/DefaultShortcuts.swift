@@ -5,7 +5,7 @@ public extension AppSettingsStore {
         ShortcutDefinition(
             modifiers: [.option, .command],
             primaryKey: .letter("D", keyCode: 0x02),
-            trigger: .singleTap
+            trigger: .singleTap,
         )
     }
 
@@ -13,7 +13,7 @@ public extension AppSettingsStore {
         ShortcutDefinition(
             modifiers: [.option, .command],
             primaryKey: .letter("A", keyCode: 0x00),
-            trigger: .singleTap
+            trigger: .singleTap,
         )
     }
 
@@ -21,7 +21,7 @@ public extension AppSettingsStore {
         ShortcutDefinition(
             modifiers: [.option, .command],
             primaryKey: .letter("M", keyCode: 0x2e),
-            trigger: .singleTap
+            trigger: .singleTap,
         )
     }
 }

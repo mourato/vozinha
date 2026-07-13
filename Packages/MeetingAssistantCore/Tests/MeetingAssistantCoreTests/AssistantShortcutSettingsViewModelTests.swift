@@ -1,5 +1,5 @@
-import XCTest
 @testable import MeetingAssistantCore
+import XCTest
 
 @MainActor
 final class AssistantShortcutSettingsViewModelTests: XCTestCase {
@@ -22,7 +22,7 @@ final class AssistantShortcutSettingsViewModelTests: XCTestCase {
         let shortcut = ShortcutDefinition(
             modifiers: [.command],
             primaryKey: .letter("A", keyCode: 0x00),
-            trigger: .singleTap
+            trigger: .singleTap,
         )
 
         viewModel.assistantShortcutDefinition = shortcut
@@ -43,7 +43,7 @@ final class AssistantShortcutSettingsViewModelTests: XCTestCase {
         let enterShortcut = ShortcutDefinition(
             modifiers: [.command],
             primaryKey: .symbol("↩", keyCode: 0x24),
-            trigger: .singleTap
+            trigger: .singleTap,
         )
 
         viewModel.assistantShortcutDefinition = enterShortcut
@@ -52,7 +52,7 @@ final class AssistantShortcutSettingsViewModelTests: XCTestCase {
         XCTAssertEqual(settings.assistantShortcutDefinition, AppSettingsStore.defaultAssistantShortcutDefinition)
         XCTAssertEqual(
             viewModel.assistantModifierConflictMessage,
-            "settings.shortcuts.modifier.primary_key_required".localized
+            "settings.shortcuts.modifier.primary_key_required".localized,
         )
     }
 
@@ -67,7 +67,7 @@ final class AssistantShortcutSettingsViewModelTests: XCTestCase {
             requiresGlobalCapture: true,
             accessibilityTrusted: true,
             eventTapExpected: true,
-            eventTapActive: false
+            eventTapActive: false,
         )
         await Task.yield()
 
@@ -84,10 +84,10 @@ final class AssistantShortcutSettingsViewModelTests: XCTestCase {
             shortcutDefinition: ShortcutDefinition(
                 modifiers: [.command],
                 primaryKey: .letter("R", keyCode: 0x0f),
-                trigger: .singleTap
+                trigger: .singleTap,
             ),
             shortcutPresetKey: .custom,
-            shortcutActivationMode: .toggle
+            shortcutActivationMode: .toggle,
         )
         settings.assistantIntegrations = [integration]
 
@@ -96,14 +96,14 @@ final class AssistantShortcutSettingsViewModelTests: XCTestCase {
         viewModel.assistantShortcutDefinition = ShortcutDefinition(
             modifiers: [.command],
             primaryKey: .letter("R", keyCode: 0x0f),
-            trigger: .singleTap
+            trigger: .singleTap,
         )
         await Task.yield()
 
         XCTAssertEqual(settings.assistantShortcutDefinition, AppSettingsStore.defaultAssistantShortcutDefinition)
         XCTAssertEqual(
             viewModel.assistantModifierConflictMessage,
-            "settings.shortcuts.modifier.conflict".localized(with: integration.name)
+            "settings.shortcuts.modifier.conflict".localized(with: integration.name),
         )
     }
 }

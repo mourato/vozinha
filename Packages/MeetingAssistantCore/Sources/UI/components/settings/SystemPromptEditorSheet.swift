@@ -25,7 +25,7 @@ struct SystemPromptEditorSheet: View {
         initialPrompt: String,
         onSave: @escaping (String) -> Void,
         onCancel: @escaping () -> Void,
-        onRestoreDefault: @escaping () -> Void
+        onRestoreDefault: @escaping () -> Void,
     ) {
         _systemPrompt = State(initialValue: initialPrompt)
         self.onSave = onSave
@@ -96,7 +96,7 @@ struct SystemPromptEditorSheet: View {
             .clipShape(RoundedRectangle(cornerRadius: AppDesignSystem.Layout.smallCornerRadius))
             .overlay(
                 RoundedRectangle(cornerRadius: AppDesignSystem.Layout.smallCornerRadius)
-                    .stroke(AppDesignSystem.Colors.separator, lineWidth: 1)
+                    .stroke(AppDesignSystem.Colors.separator, lineWidth: 1),
             )
     }
 
@@ -129,6 +129,6 @@ struct SystemPromptEditorSheet: View {
         initialPrompt: "Analise a transcrição e gere notas de reunião...",
         onSave: { _ in },
         onCancel: {},
-        onRestoreDefault: {}
+        onRestoreDefault: {},
     )
 }

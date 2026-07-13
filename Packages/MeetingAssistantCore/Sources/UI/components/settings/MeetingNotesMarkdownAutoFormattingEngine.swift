@@ -56,14 +56,14 @@ enum MeetingNotesMarkdownAutoFormattingEngine {
             let markerRange = NSRange(location: lineBodyRange.location + markerOffset, length: unorderedMarker.count)
             let contentRange = NSRange(
                 location: markerRange.location + markerRange.length,
-                length: max(0, NSMaxRange(lineBodyRange) - (markerRange.location + markerRange.length))
+                length: max(0, NSMaxRange(lineBodyRange) - (markerRange.location + markerRange.length)),
             )
             return MeetingNotesMarkdownLineMatch(
                 lineRange: lineRange,
                 bodyRange: contentRange,
                 markerRange: markerRange,
                 listKind: .unordered,
-                indent: indent
+                indent: indent,
             )
         }
 
@@ -72,32 +72,32 @@ enum MeetingNotesMarkdownAutoFormattingEngine {
             let markerRange = NSRange(location: lineBodyRange.location + markerOffset, length: marker.count)
             let contentRange = NSRange(
                 location: markerRange.location + markerRange.length,
-                length: max(0, NSMaxRange(lineBodyRange) - (markerRange.location + markerRange.length))
+                length: max(0, NSMaxRange(lineBodyRange) - (markerRange.location + markerRange.length)),
             )
             return MeetingNotesMarkdownLineMatch(
                 lineRange: lineRange,
                 bodyRange: contentRange,
                 markerRange: markerRange,
                 listKind: .task(isChecked: marker == checkedTaskMarker),
-                indent: indent
+                indent: indent,
             )
         }
 
         if let ordered = orderedListMatch(in: rest) {
             let markerRange = NSRange(
                 location: lineBodyRange.location + markerOffset + ordered.markerLocalRange.location,
-                length: ordered.markerLocalRange.length
+                length: ordered.markerLocalRange.length,
             )
             let contentRange = NSRange(
                 location: markerRange.location + markerRange.length,
-                length: max(0, NSMaxRange(lineBodyRange) - (markerRange.location + markerRange.length))
+                length: max(0, NSMaxRange(lineBodyRange) - (markerRange.location + markerRange.length)),
             )
             return MeetingNotesMarkdownLineMatch(
                 lineRange: lineRange,
                 bodyRange: contentRange,
                 markerRange: markerRange,
                 listKind: .ordered(number: ordered.number),
-                indent: indent
+                indent: indent,
             )
         }
 
@@ -106,7 +106,7 @@ enum MeetingNotesMarkdownAutoFormattingEngine {
             bodyRange: lineBodyRange,
             markerRange: nil,
             listKind: nil,
-            indent: indent
+            indent: indent,
         )
     }
 
@@ -207,8 +207,8 @@ enum MeetingNotesMarkdownAutoFormattingEngine {
                 replacements.append(
                     MeetingNotesOrderedListReplacement(
                         range: replacementRange,
-                        replacement: String(nextNumber)
-                    )
+                        replacement: String(nextNumber),
+                    ),
                 )
             case .unordered, .task:
                 countersByDepth.removeAll()
@@ -303,7 +303,7 @@ enum MeetingNotesMarkdownAutoFormattingEngine {
 
         return (
             number,
-            NSRange(location: 0, length: digits.count + 2)
+            NSRange(location: 0, length: digits.count + 2),
         )
     }
 }

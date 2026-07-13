@@ -1,6 +1,6 @@
 @preconcurrency import CoreML
-@preconcurrency import FluidAudio
 import CryptoKit
+@preconcurrency import FluidAudio
 import Foundation
 import MeetingAssistantCoreCommon
 import MeetingAssistantCoreInfrastructure
@@ -9,7 +9,7 @@ import os.log
 enum CohereTranscribeModelRuntime {
     private static let logger = Logger(
         subsystem: AppIdentity.logSubsystem,
-        category: "CohereTranscribeModelRuntime"
+        category: "CohereTranscribeModelRuntime",
     )
 
     /// Try the public FluidVoice-compatible source first, then fallback to the
@@ -101,7 +101,7 @@ enum CohereTranscribeModelRuntime {
     static func defaultCacheDirectory() -> URL {
         let appSupport = FileManager.default.urls(
             for: .applicationSupportDirectory,
-            in: .userDomainMask
+            in: .userDomainMask,
         ).first!
 
         return appSupport
@@ -109,7 +109,7 @@ enum CohereTranscribeModelRuntime {
             .appendingPathComponent("Models", isDirectory: true)
             .appendingPathComponent(
                 LocalTranscriptionModel.cohereTranscribe032026CoreML6Bit.rawValue,
-                isDirectory: true
+                isDirectory: true,
             )
     }
 
@@ -151,7 +151,7 @@ enum CohereTranscribeModelRuntime {
                 try await HuggingFaceRepositoryDownloader.downloadFiles(
                     repoPath: repoPath,
                     files: filteredFiles,
-                    to: targetDirectory
+                    to: targetDirectory,
                 )
 
                 let missing = missingComponents(under: targetDirectory)
@@ -198,19 +198,19 @@ enum CohereTranscribeModelRuntime {
 
         let preprocessorURL = try findDirectory(
             matchingAnyOf: ModelComponent.preprocessor.artifactCandidates,
-            under: directory
+            under: directory,
         )
         let encoderURL = try findDirectory(
             matchingAnyOf: ModelComponent.encoder.artifactCandidates,
-            under: directory
+            under: directory,
         )
         let decoderURL = try findDirectory(
             matchingAnyOf: ModelComponent.decoder.artifactCandidates,
-            under: directory
+            under: directory,
         )
         let jointURL = try findDirectory(
             matchingAnyOf: ModelComponent.joint.artifactCandidates,
-            under: directory
+            under: directory,
         )
         let tokenVocabularyURL = try findVocabularyFile(under: directory)
 
@@ -222,25 +222,25 @@ enum CohereTranscribeModelRuntime {
             component: .encoder,
             from: encoderURL,
             modelDirectory: directory,
-            configuration: config
+            configuration: config,
         )
         let preprocessorModel = try loadModel(
             component: .preprocessor,
             from: preprocessorURL,
             modelDirectory: directory,
-            configuration: preprocessorConfig
+            configuration: preprocessorConfig,
         )
         let decoderModel = try loadModel(
             component: .decoder,
             from: decoderURL,
             modelDirectory: directory,
-            configuration: config
+            configuration: config,
         )
         let jointModel = try loadModel(
             component: .joint,
             from: jointURL,
             modelDirectory: directory,
-            configuration: config
+            configuration: config,
         )
 
         let modelVocabulary = try loadTokenVocabulary(from: tokenVocabularyURL)
@@ -252,7 +252,7 @@ enum CohereTranscribeModelRuntime {
             joint: jointModel,
             configuration: config,
             vocabulary: modelVocabulary,
-            version: .v3
+            version: .v3,
         )
     }
 
@@ -260,7 +260,7 @@ enum CohereTranscribeModelRuntime {
         component: ModelComponent,
         from artifactURL: URL,
         modelDirectory: URL,
-        configuration: MLModelConfiguration
+        configuration: MLModelConfiguration,
     ) throws -> MLModel {
         // Public Cohere repos commonly ship .mlpackage artifacts. Compile them
         // on-device before loading to avoid "not a valid .mlmodelc" runtime failures.
@@ -268,7 +268,7 @@ enum CohereTranscribeModelRuntime {
             let compiledURL = try resolveCompiledModelURL(
                 for: component,
                 artifactURL: artifactURL,
-                modelDirectory: modelDirectory
+                modelDirectory: modelDirectory,
             )
 
             do {
@@ -279,7 +279,7 @@ enum CohereTranscribeModelRuntime {
                     component: component,
                     artifactURL: artifactURL,
                     compiledURL: compiledURL,
-                    extra: ["failure": error.localizedDescription]
+                    extra: ["failure": error.localizedDescription],
                 )
                 let fileManager = FileManager.default
                 try? fileManager.removeItem(at: compiledURL)
@@ -288,7 +288,7 @@ enum CohereTranscribeModelRuntime {
                     artifactURL: artifactURL,
                     modelDirectory: modelDirectory,
                     destinationURL: compiledURL,
-                    fileManager: fileManager
+                    fileManager: fileManager,
                 )
                 return try MLModel(contentsOf: rebuiltURL, configuration: configuration)
             }
@@ -313,7 +313,7 @@ enum CohereTranscribeModelRuntime {
 
     static func persistedCompiledModelDirectories(
         at modelDirectory: URL = defaultCacheDirectory(),
-        fileManager: FileManager = .default
+        fileManager: FileManager = .default,
     ) -> [URL] {
         let rootDirectory = compiledArtifactsRootDirectory(baseDirectory: modelDirectory)
         guard fileManager.fileExists(atPath: rootDirectory.path) else { return [] }
@@ -322,14 +322,14 @@ enum CohereTranscribeModelRuntime {
         let componentDirectories = (try? fileManager.contentsOfDirectory(
             at: rootDirectory,
             includingPropertiesForKeys: resourceKeys,
-            options: [.skipsHiddenFiles]
+            options: [.skipsHiddenFiles],
         )) ?? []
 
         return componentDirectories.flatMap { componentDirectory in
             ((try? fileManager.contentsOfDirectory(
                 at: componentDirectory,
                 includingPropertiesForKeys: resourceKeys,
-                options: [.skipsHiddenFiles]
+                options: [.skipsHiddenFiles],
             )) ?? []).filter { candidate in
                 let values = try? candidate.resourceValues(forKeys: Set(resourceKeys))
                 return values?.isDirectory == true && candidate.pathExtension == "mlmodelc"
@@ -340,7 +340,7 @@ enum CohereTranscribeModelRuntime {
     static func compiledModelDirectory(
         for component: ModelComponent,
         artifactURL: URL,
-        modelDirectory: URL = defaultCacheDirectory()
+        modelDirectory: URL = defaultCacheDirectory(),
     ) throws -> URL {
         let fingerprint = try modelArtifactFingerprint(for: artifactURL)
         return compiledArtifactsRootDirectory(baseDirectory: modelDirectory)
@@ -352,7 +352,7 @@ enum CohereTranscribeModelRuntime {
         for component: ModelComponent,
         keeping keepDirectory: URL,
         in modelDirectory: URL = defaultCacheDirectory(),
-        fileManager: FileManager = .default
+        fileManager: FileManager = .default,
     ) {
         let componentDirectory = compiledArtifactsRootDirectory(baseDirectory: modelDirectory)
             .appendingPathComponent(component.rawValue, isDirectory: true)
@@ -361,7 +361,7 @@ enum CohereTranscribeModelRuntime {
         let entries = (try? fileManager.contentsOfDirectory(
             at: componentDirectory,
             includingPropertiesForKeys: [.isDirectoryKey],
-            options: [.skipsHiddenFiles]
+            options: [.skipsHiddenFiles],
         )) ?? []
 
         for entry in entries where entry.standardizedFileURL != keepDirectory.standardizedFileURL {
@@ -403,7 +403,7 @@ enum CohereTranscribeModelRuntime {
             let enumerator = FileManager.default.enumerator(
                 at: rootDirectory,
                 includingPropertiesForKeys: keys,
-                options: [.skipsHiddenFiles]
+                options: [.skipsHiddenFiles],
             )
         else {
             throw RuntimeError.missingRequiredArtifacts([targetName])
@@ -426,7 +426,7 @@ enum CohereTranscribeModelRuntime {
             let enumerator = FileManager.default.enumerator(
                 at: rootDirectory,
                 includingPropertiesForKeys: keys,
-                options: [.skipsHiddenFiles]
+                options: [.skipsHiddenFiles],
             )
         else {
             throw RuntimeError.tokenVocabularyNotFound
@@ -452,7 +452,7 @@ enum CohereTranscribeModelRuntime {
     private static func resolveCompiledModelURL(
         for component: ModelComponent,
         artifactURL: URL,
-        modelDirectory: URL
+        modelDirectory: URL,
     ) throws -> URL {
         let compiledURL = try compiledModelDirectory(for: component, artifactURL: artifactURL, modelDirectory: modelDirectory)
         let fileManager = FileManager.default
@@ -463,7 +463,7 @@ enum CohereTranscribeModelRuntime {
                 component: component,
                 artifactURL: artifactURL,
                 compiledURL: compiledURL,
-                extra: [:]
+                extra: [:],
             )
             return compiledURL
         }
@@ -473,7 +473,7 @@ enum CohereTranscribeModelRuntime {
             artifactURL: artifactURL,
             modelDirectory: modelDirectory,
             destinationURL: compiledURL,
-            fileManager: fileManager
+            fileManager: fileManager,
         )
     }
 
@@ -482,11 +482,11 @@ enum CohereTranscribeModelRuntime {
         artifactURL: URL,
         modelDirectory: URL,
         destinationURL: URL,
-        fileManager: FileManager
+        fileManager: FileManager,
     ) throws -> URL {
         try fileManager.createDirectory(
             at: destinationURL.deletingLastPathComponent(),
-            withIntermediateDirectories: true
+            withIntermediateDirectories: true,
         )
 
         if fileManager.fileExists(atPath: destinationURL.path) {
@@ -504,12 +504,12 @@ enum CohereTranscribeModelRuntime {
             component: component,
             artifactURL: artifactURL,
             compiledURL: destinationURL,
-            extra: ["compile_duration_ms": String(max(compileDurationMs, 0))]
+            extra: ["compile_duration_ms": String(max(compileDurationMs, 0))],
         )
         PerformanceMonitor.shared.reportMetric(
             name: "cohere_compiled_model_compile_duration_ms",
             value: Double(max(compileDurationMs, 0)),
-            unit: "ms"
+            unit: "ms",
         )
         return destinationURL
     }
@@ -519,7 +519,7 @@ enum CohereTranscribeModelRuntime {
         component: ModelComponent,
         artifactURL: URL,
         compiledURL: URL,
-        extra: [String: String]
+        extra: [String: String],
     ) {
         var payload: [String: Any] = [
             "event": name,
@@ -535,7 +535,7 @@ enum CohereTranscribeModelRuntime {
         AppLogger.info(
             "Cohere compiled model lifecycle",
             category: .transcription,
-            extra: payload
+            extra: payload,
         )
     }
 
@@ -549,21 +549,23 @@ enum CohereTranscribeModelRuntime {
             guard let enumerator = fileManager.enumerator(
                 at: artifactURL,
                 includingPropertiesForKeys: [.isDirectoryKey],
-                options: [.skipsHiddenFiles]
+                options: [.skipsHiddenFiles],
             ) else {
                 return stableFingerprint(for: records)
             }
 
             for case let candidateURL as URL in enumerator {
                 let candidateValues = try candidateURL.resourceValues(forKeys: resourceKeys)
-                if candidateValues.isDirectory == true { continue }
+                if candidateValues.isDirectory == true {
+                    continue
+                }
                 let relativePath = candidateURL.path.replacingOccurrences(of: artifactURL.path + "/", with: "")
-                let contentHash = SHA256.hash(data: try Data(contentsOf: candidateURL))
+                let contentHash = try SHA256.hash(data: Data(contentsOf: candidateURL))
                 let contentHex = contentHash.compactMap { String(format: "%02x", $0) }.joined()
                 records.append("\(relativePath)|\(contentHex)")
             }
         } else {
-            let contentHash = SHA256.hash(data: try Data(contentsOf: artifactURL))
+            let contentHash = try SHA256.hash(data: Data(contentsOf: artifactURL))
             let contentHex = contentHash.compactMap { String(format: "%02x", $0) }.joined()
             records.append("\(artifactURL.lastPathComponent)|\(contentHex)")
         }

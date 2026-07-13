@@ -42,7 +42,7 @@ public struct DictationStyleEditorSheet: View {
         onRefreshModelOptions: @escaping () -> Void,
         providerDisplayName: @escaping (EnhancementsAISelection) -> String,
         onSave: @escaping (DictationStyleEditorDraft) -> Void,
-        onCancel: @escaping () -> Void
+        onCancel: @escaping () -> Void,
     ) {
         self.appCatalog = appCatalog
         self.isLoadingAppCatalog = isLoadingAppCatalog
@@ -152,9 +152,9 @@ public struct DictationStyleEditorSheet: View {
                             enhancementsSelection = EnhancementsAISelection(
                                 provider: option.provider,
                                 selectedModel: option.modelID,
-                                registrationID: option.registrationID
+                                registrationID: option.registrationID,
                             )
-                        }
+                        },
                     )
                 }
 
@@ -209,7 +209,7 @@ public struct DictationStyleEditorSheet: View {
                 appCatalog: appCatalog,
                 isLoading: isLoadingAppCatalog,
                 selectedBundleIdentifiers: selectedAppBundleIdentifiers,
-                onAdd: addAppTarget
+                onAdd: addAppTarget,
             )
 
             HStack(spacing: 8) {
@@ -386,11 +386,11 @@ public struct DictationStyleEditorSheet: View {
                     includeClipboard: includeClipboard,
                     includeWindowOCR: includeWindowOCR,
                     includeAccessibilityText: includeAccessibilityText,
-                    redactSensitiveData: redactSensitiveData
+                    redactSensitiveData: redactSensitiveData,
                 ),
                 enhancementsSelection: enhancementsSelection,
-                isDefault: isDefault
-            )
+                isDefault: isDefault,
+            ),
         )
     }
 
@@ -438,7 +438,7 @@ public struct DictationStyleEditorSheet: View {
                 bundleIdentifier: bundleIdentifier,
                 fallbackSystemName: "app.fill",
                 size: 24,
-                cornerRadius: 6
+                cornerRadius: 6,
             )
         case .website:
             Image(systemName: "globe")
@@ -500,10 +500,10 @@ private struct CheckboxRow: View {
                 includeClipboard: true,
                 includeWindowOCR: false,
                 includeAccessibilityText: true,
-                redactSensitiveData: true
+                redactSensitiveData: true,
             ),
             enhancementsSelection: .default,
-            isDefault: false
+            isDefault: false,
         ),
         appCatalog: [
             InstalledApplicationRecord(bundleIdentifier: "com.tinyspeck.slackmacgap", displayName: "Slack"),
@@ -517,6 +517,6 @@ private struct CheckboxRow: View {
         onRefreshModelOptions: {},
         providerDisplayName: { $0.provider.displayName },
         onSave: { _ in },
-        onCancel: {}
+        onCancel: {},
     )
 }

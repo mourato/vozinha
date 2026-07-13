@@ -1,9 +1,9 @@
-import XCTest
 @testable import MeetingAssistantCore
 @testable import MeetingAssistantCoreAudio
+import XCTest
 
 @MainActor
-final class RecordingIndicatorSuperConfigurationTests: XCTestCase {
+final class RecordingIndicatorConfigurationTests: XCTestCase {
     private var settings: AppSettingsStore!
 
     override func setUp() async throws {
@@ -19,16 +19,16 @@ final class RecordingIndicatorSuperConfigurationTests: XCTestCase {
     }
 
     func testRecordingIndicatorStyle_PersistsSuperRawValueInUserDefaults() {
-        settings.recordingIndicatorStyle = .`super`
+        settings.recordingIndicatorStyle = .super
 
         XCTAssertEqual(
             UserDefaults.standard.string(forKey: "recordingIndicatorStyle"),
-            RecordingIndicatorStyle.`super`.rawValue
+            RecordingIndicatorStyle.super.rawValue,
         )
     }
 
     func testRecordingIndicatorStyle_ResetToDefaultsRestoresMini() {
-        settings.recordingIndicatorStyle = .`super`
+        settings.recordingIndicatorStyle = .super
 
         settings.resetToDefaults()
 
@@ -36,6 +36,6 @@ final class RecordingIndicatorSuperConfigurationTests: XCTestCase {
     }
 
     func testWaveformBarCount_ForSuper_IsEighty() {
-        XCTAssertEqual(AudioRecorder.waveformBarCount(for: .`super`), 80)
+        XCTAssertEqual(AudioRecorder.waveformBarCount(for: .super), 80)
     }
 }

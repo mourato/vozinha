@@ -26,7 +26,7 @@ public struct AppSearchSheet: View {
         addButtonKey: String,
         searchPlaceholderKey: String = "settings.styles.editor.app_search",
         loadingKey: String = "settings.styles.editor.loading_apps",
-        emptyResultsKey: String = "settings.styles.editor.app_results_empty"
+        emptyResultsKey: String = "settings.styles.editor.app_results_empty",
     ) {
         self.viewModel = viewModel
         _isPresented = isPresented
@@ -66,7 +66,7 @@ public struct AppSearchSheet: View {
                 SettingsStateBlock(
                     kind: .loading,
                     title: loadingKey.localized,
-                    message: nil
+                    message: nil,
                 )
             } else if filteredCatalog.isEmpty {
                 Text(emptyResultsKey.localized)
@@ -98,7 +98,7 @@ public struct AppSearchSheet: View {
         let selectedKeys = Set(
             viewModel.installedApps.map {
                 $0.bundleIdentifier.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
-            }
+            },
         )
 
         let candidates = appCatalog.filter { app in
@@ -118,7 +118,7 @@ public struct AppSearchSheet: View {
                 bundleIdentifier: app.bundleIdentifier,
                 fallbackSystemName: "app.fill",
                 size: 24,
-                cornerRadius: 6
+                cornerRadius: 6,
             )
 
             VStack(alignment: .leading, spacing: 1) {

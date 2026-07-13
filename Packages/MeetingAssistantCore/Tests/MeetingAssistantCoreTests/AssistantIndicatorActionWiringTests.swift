@@ -33,14 +33,14 @@ final class AssistantIndicatorActionWiringTests: XCTestCase {
 
     func testAssistantIndicatorCancelActionInvokesAssistantCancellationPath() async {
         settings.recordingIndicatorEnabled = true
-        settings.recordingIndicatorStyle = .`super`
+        settings.recordingIndicatorStyle = .super
 
         let recorder = MockAssistantAudioRecorder()
         let indicator = FloatingRecordingIndicatorController(settingsStore: settings)
         let service = AssistantVoiceCommandService(
             audioRecorder: recorder,
             indicator: indicator,
-            settings: settings
+            settings: settings,
         )
 
         await service.startRecording(flow: .assistantMode)
@@ -57,7 +57,7 @@ final class AssistantIndicatorActionWiringTests: XCTestCase {
 
     func testAssistantIndicatorStopActionInvokesAssistantStopAndProcessPath() async {
         settings.recordingIndicatorEnabled = true
-        settings.recordingIndicatorStyle = .`super`
+        settings.recordingIndicatorStyle = .super
 
         let recorder = MockAssistantAudioRecorder()
         recorder.nextStopURL = nil
@@ -65,7 +65,7 @@ final class AssistantIndicatorActionWiringTests: XCTestCase {
         let service = AssistantVoiceCommandService(
             audioRecorder: recorder,
             indicator: indicator,
-            settings: settings
+            settings: settings,
         )
 
         settings.isAssistantIntegrationsEnabled = true
@@ -92,7 +92,7 @@ final class AssistantIndicatorActionWiringTests: XCTestCase {
         let service = AssistantVoiceCommandService(
             audioRecorder: recorder,
             indicator: indicator,
-            settings: settings
+            settings: settings,
         )
 
         await service.startRecording(flow: .assistantMode)
@@ -114,7 +114,7 @@ final class AssistantIndicatorActionWiringTests: XCTestCase {
         let service = AssistantVoiceCommandService(
             audioRecorder: recorder,
             indicator: indicator,
-            settings: settings
+            settings: settings,
         )
 
         await service.startRecording(flow: .assistantMode)
@@ -131,7 +131,7 @@ final class AssistantIndicatorActionWiringTests: XCTestCase {
         let service = AssistantVoiceCommandService(
             audioRecorder: recorder,
             indicator: indicator,
-            settings: settings
+            settings: settings,
         )
 
         await service.startRecording(flow: .integrationDispatch)

@@ -72,7 +72,7 @@ extension FileSystemStorageService {
             AppLogger.warning(
                 "Path traversal attempt blocked in recording path",
                 category: .databaseManager,
-                extra: ["path": path]
+                extra: ["path": path],
             )
             throw PathValidationError.pathTraversalDetected(path)
         }
@@ -88,7 +88,7 @@ extension FileSystemStorageService {
             AppLogger.warning(
                 "Recording path outside user-accessible location blocked",
                 category: .databaseManager,
-                extra: ["path": path, "resolved": resolvedPath, "home": home]
+                extra: ["path": path, "resolved": resolvedPath, "home": home],
             )
             throw PathValidationError.outsideContainer(path)
         }

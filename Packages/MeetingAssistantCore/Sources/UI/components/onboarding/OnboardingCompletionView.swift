@@ -9,7 +9,7 @@ public struct OnboardingCompletionView: View {
 
     public init(
         readiness: OnboardingMeetingRecordingReadiness,
-        onStartUsing: @escaping () -> Void
+        onStartUsing: @escaping () -> Void,
     ) {
         self.readiness = readiness
         self.onStartUsing = onStartUsing
@@ -67,9 +67,9 @@ public struct OnboardingCompletionView: View {
             screenRecordingGranted: true,
             transcriptionModelReady: true,
             isMeetingRecordingEnabled: true,
-            wasSkipped: false
+            wasSkipped: false,
         ),
-        onStartUsing: {}
+        onStartUsing: {},
     )
     .frame(width: 600, height: 500)
 }

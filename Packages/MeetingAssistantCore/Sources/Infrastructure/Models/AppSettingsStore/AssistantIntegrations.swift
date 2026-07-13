@@ -25,7 +25,7 @@ public extension AppSettingsStore {
             explicitGesture: dictationModifierShortcutGesture,
             legacyPresetKey: dictationSelectedPresetKey,
             activationMode: dictationShortcutActivationMode,
-            allowReturnOrEnter: false
+            allowReturnOrEnter: false,
         )
 
         appendResolvedShortcutBinding(
@@ -36,7 +36,7 @@ public extension AppSettingsStore {
             explicitGesture: assistantModifierShortcutGesture,
             legacyPresetKey: assistantSelectedPresetKey,
             activationMode: assistantShortcutActivationMode,
-            allowReturnOrEnter: false
+            allowReturnOrEnter: false,
         )
 
         appendResolvedShortcutBinding(
@@ -46,7 +46,7 @@ public extension AppSettingsStore {
             shortcut: meetingShortcutDefinition,
             explicitGesture: meetingModifierShortcutGesture,
             legacyPresetKey: meetingSelectedPresetKey,
-            activationMode: shortcutActivationMode
+            activationMode: shortcutActivationMode,
         )
 
         if let cancelRecordingShortcutDefinition,
@@ -57,8 +57,8 @@ public extension AppSettingsStore {
                 ShortcutBinding(
                     actionID: .cancelActiveRecording,
                     actionDisplayName: "settings.general.cancel_recording_shortcut".localized,
-                    shortcut: cancelRecordingShortcutDefinition
-                )
+                    shortcut: cancelRecordingShortcutDefinition,
+                ),
             )
         }
 
@@ -68,7 +68,7 @@ public extension AppSettingsStore {
                     normalizedInHouseShortcutDefinition(
                         $0,
                         activationMode: integration.shortcutActivationMode,
-                        allowReturnOrEnter: false
+                        allowReturnOrEnter: false,
                     )
                 } ??
                 integration.modifierShortcutGesture
@@ -76,7 +76,7 @@ public extension AppSettingsStore {
                     normalizedInHouseShortcutDefinition(
                         $0.asShortcutDefinition,
                         activationMode: integration.shortcutActivationMode,
-                        allowReturnOrEnter: false
+                        allowReturnOrEnter: false,
                     )
                 } ??
                 integration.shortcutPresetKey
@@ -85,7 +85,7 @@ public extension AppSettingsStore {
                     normalizedInHouseShortcutDefinition(
                         $0.asShortcutDefinition,
                         activationMode: integration.shortcutActivationMode,
-                        allowReturnOrEnter: false
+                        allowReturnOrEnter: false,
                     )
                 }
 
@@ -97,8 +97,8 @@ public extension AppSettingsStore {
                 ShortcutBinding(
                     actionID: .assistantIntegration(integration.id),
                     actionDisplayName: integration.name,
-                    shortcut: resolvedShortcut
-                )
+                    shortcut: resolvedShortcut,
+                ),
             )
         }
 
@@ -112,23 +112,23 @@ public extension AppSettingsStore {
                 conflicting: ShortcutBinding(
                     actionID: .systemReserved,
                     actionDisplayName: "macOS",
-                    shortcut: candidate.shortcut
+                    shortcut: candidate.shortcut,
                 ),
-                reason: .systemReserved
+                reason: .systemReserved,
             )
         }
 
         return ModifierShortcutConflictService.conflict(
             for: candidate,
             in: configuredShortcutBindings,
-            context: ShortcutConflictContext()
+            context: ShortcutConflictContext(),
         )
     }
 
     var shortcutConflicts: [ShortcutConflict] {
         ModifierShortcutConflictService.allConflicts(
             in: configuredShortcutBindings,
-            context: ShortcutConflictContext()
+            context: ShortcutConflictContext(),
         )
     }
 
@@ -221,13 +221,13 @@ extension AppSettingsStore {
         explicitGesture: ModifierShortcutGesture?,
         legacyPresetKey: PresetShortcutKey,
         activationMode: ShortcutActivationMode,
-        allowReturnOrEnter: Bool = true
+        allowReturnOrEnter: Bool = true,
     ) -> ShortcutDefinition? {
         if let explicitGesture {
             return normalizedInHouseShortcutDefinition(
                 explicitGesture.asShortcutDefinition,
                 activationMode: activationMode,
-                allowReturnOrEnter: allowReturnOrEnter
+                allowReturnOrEnter: allowReturnOrEnter,
             )
         }
 
@@ -238,7 +238,7 @@ extension AppSettingsStore {
         return normalizedInHouseShortcutDefinition(
             legacyGesture.asShortcutDefinition,
             activationMode: activationMode,
-            allowReturnOrEnter: allowReturnOrEnter
+            allowReturnOrEnter: allowReturnOrEnter,
         )
     }
 
@@ -250,14 +250,14 @@ extension AppSettingsStore {
         explicitGesture: ModifierShortcutGesture?,
         legacyPresetKey: PresetShortcutKey,
         activationMode: ShortcutActivationMode,
-        allowReturnOrEnter: Bool = true
+        allowReturnOrEnter: Bool = true,
     ) {
         let resolvedShortcut = shortcut ??
             Self.resolveShortcutDefinition(
                 explicitGesture: explicitGesture,
                 legacyPresetKey: legacyPresetKey,
                 activationMode: activationMode,
-                allowReturnOrEnter: allowReturnOrEnter
+                allowReturnOrEnter: allowReturnOrEnter,
             )
         guard let resolvedShortcut, !resolvedShortcut.isEmpty else {
             return
@@ -267,8 +267,8 @@ extension AppSettingsStore {
             ShortcutBinding(
                 actionID: actionID,
                 actionDisplayName: actionDisplayName,
-                shortcut: resolvedShortcut
-            )
+                shortcut: resolvedShortcut,
+            ),
         )
     }
 
@@ -287,7 +287,7 @@ extension AppSettingsStore {
                     normalizedInHouseShortcutDefinition(
                         $0,
                         activationMode: normalized.shortcutActivationMode,
-                        allowReturnOrEnter: false
+                        allowReturnOrEnter: false,
                     )
                 } ??
                 normalized.modifierShortcutGesture
@@ -295,7 +295,7 @@ extension AppSettingsStore {
                     normalizedInHouseShortcutDefinition(
                         $0.asShortcutDefinition,
                         activationMode: normalized.shortcutActivationMode,
-                        allowReturnOrEnter: false
+                        allowReturnOrEnter: false,
                     )
                 } ??
                 normalized.shortcutPresetKey
@@ -304,7 +304,7 @@ extension AppSettingsStore {
                     normalizedInHouseShortcutDefinition(
                         $0.asShortcutDefinition,
                         activationMode: normalized.shortcutActivationMode,
-                        allowReturnOrEnter: false
+                        allowReturnOrEnter: false,
                     )
                 }
             normalized.shortcutDefinition = normalizedShortcut

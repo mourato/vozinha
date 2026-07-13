@@ -20,7 +20,7 @@ extension RecordingManagerTests {
             postProcessingPromptId: nil,
             postProcessingPromptTitle: nil,
             language: "en",
-            modelName: "test-model"
+            modelName: "test-model",
         )
 
         await manager.retryTranscription(for: transcription)
@@ -28,7 +28,7 @@ extension RecordingManagerTests {
         XCTAssertTrue(
             mockStorage.savedModelPerformanceAttempts.contains {
                 $0.attemptKind == .retry && $0.stage == .transcription
-            }
+            },
         )
     }
 

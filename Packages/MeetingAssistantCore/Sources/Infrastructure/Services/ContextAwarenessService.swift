@@ -22,7 +22,7 @@ public struct ContextAwarenessCaptureOptions: Sendable {
         includeAccessibilityText: Bool,
         protectSensitiveApps: Bool,
         redactSensitiveData: Bool,
-        excludedBundleIDs: [String]
+        excludedBundleIDs: [String],
     ) {
         self.includeActiveApp = includeActiveApp
         self.includeClipboard = includeClipboard
@@ -50,7 +50,7 @@ public struct ContextAwarenessSnapshot: Sendable {
         activeWindowTitle: String?,
         activeAccessibilityText: String?,
         clipboardText: String?,
-        activeWindowOCRText: String?
+        activeWindowOCRText: String?,
     ) {
         self.activeAppName = activeAppName
         self.activeWindowTitle = activeWindowTitle
@@ -94,14 +94,14 @@ public final class ContextAwarenessService: ContextAwarenessServiceProtocol {
                 extra: [
                     "reasonCode": "context.sensitive_app_blocked",
                     "bundleID": frontmostBundleID,
-                ]
+                ],
             )
             return ContextAwarenessSnapshot(
                 activeAppName: nil,
                 activeWindowTitle: nil,
                 activeAccessibilityText: nil,
                 clipboardText: nil,
-                activeWindowOCRText: nil
+                activeWindowOCRText: nil,
             )
         }
 
@@ -125,7 +125,7 @@ public final class ContextAwarenessService: ContextAwarenessServiceProtocol {
             activeWindowTitle: nonEmpty(limited(windowTitle, maxCharacters: Constants.maxWindowTitleCharacters)),
             activeAccessibilityText: nonEmpty(limited(accessibilityText, maxCharacters: Constants.maxAccessibilityCharacters)),
             clipboardText: nonEmpty(clipboard),
-            activeWindowOCRText: nonEmpty(ocrText)
+            activeWindowOCRText: nonEmpty(ocrText),
         )
     }
 
@@ -170,7 +170,7 @@ public final class ContextAwarenessService: ContextAwarenessServiceProtocol {
         let focusedWindowResult = AXUIElementCopyAttributeValue(
             appElement,
             kAXFocusedWindowAttribute as CFString,
-            &focusedWindow
+            &focusedWindow,
         )
 
         guard focusedWindowResult == .success, let focusedWindow else {
@@ -186,7 +186,7 @@ public final class ContextAwarenessService: ContextAwarenessServiceProtocol {
         let titleResult = AXUIElementCopyAttributeValue(
             windowElement,
             kAXTitleAttribute as CFString,
-            &titleValue
+            &titleValue,
         )
 
         guard titleResult == .success else { return nil }
@@ -202,7 +202,7 @@ public final class ContextAwarenessService: ContextAwarenessServiceProtocol {
         let focusedElementResult = AXUIElementCopyAttributeValue(
             appElement,
             kAXFocusedUIElementAttribute as CFString,
-            &focusedElementRef
+            &focusedElementRef,
         )
 
         guard focusedElementResult == .success, let focusedElementRef else { return nil }
@@ -267,7 +267,7 @@ public final class ContextAwarenessService: ContextAwarenessServiceProtocol {
             AppLogger.warning(
                 "OCR capture skipped: screen recording permission not granted",
                 category: .recordingManager,
-                extra: ["reasonCode": "ocr.permission_denied"]
+                extra: ["reasonCode": "ocr.permission_denied"],
             )
             return nil
         }
@@ -276,7 +276,7 @@ public final class ContextAwarenessService: ContextAwarenessServiceProtocol {
             AppLogger.debug(
                 "OCR capture skipped: no active app",
                 category: .recordingManager,
-                extra: ["reasonCode": "ocr.no_active_app"]
+                extra: ["reasonCode": "ocr.no_active_app"],
             )
             return nil
         }
@@ -289,7 +289,7 @@ public final class ContextAwarenessService: ContextAwarenessServiceProtocol {
                     "reasonCode": "ocr.no_frontmost_window",
                     "bundleID": app.bundleIdentifier ?? "unknown",
                     "pid": app.processIdentifier,
-                ]
+                ],
             )
             return nil
         }
@@ -300,7 +300,7 @@ public final class ContextAwarenessService: ContextAwarenessServiceProtocol {
             AppLogger.debug(
                 "OCR capture skipped: failed to capture window image",
                 category: .recordingManager,
-                extra: ["reasonCode": "ocr.image_capture_failed"]
+                extra: ["reasonCode": "ocr.image_capture_failed"],
             )
             return nil
         }
@@ -310,7 +310,7 @@ public final class ContextAwarenessService: ContextAwarenessServiceProtocol {
             AppLogger.debug(
                 "OCR capture finished with empty text",
                 category: .recordingManager,
-                extra: ["reasonCode": "ocr.empty_text"]
+                extra: ["reasonCode": "ocr.empty_text"],
             )
         }
         return text
@@ -327,7 +327,7 @@ public final class ContextAwarenessService: ContextAwarenessServiceProtocol {
                     extra: [
                         "reasonCode": "ocr.window_unavailable",
                         "windowID": windowID,
-                    ]
+                    ],
                 )
                 return nil
             }
@@ -339,7 +339,7 @@ public final class ContextAwarenessService: ContextAwarenessServiceProtocol {
 
             return try await SCScreenshotManager.captureImage(
                 contentFilter: filter,
-                configuration: config
+                configuration: config,
             )
         } catch {
             AppLogger.warning(
@@ -348,7 +348,7 @@ public final class ContextAwarenessService: ContextAwarenessServiceProtocol {
                 extra: [
                     "reasonCode": "ocr.screencapturekit_error",
                     "windowID": windowID,
-                ]
+                ],
             )
             return nil
         }
@@ -357,7 +357,7 @@ public final class ContextAwarenessService: ContextAwarenessServiceProtocol {
     private func frontmostWindowID(for processIdentifier: pid_t) -> CGWindowID? {
         guard let windowList = CGWindowListCopyWindowInfo(
             [.optionOnScreenOnly, .excludeDesktopElements],
-            kCGNullWindowID
+            kCGNullWindowID,
         ) as? [[String: Any]] else {
             return nil
         }
@@ -370,10 +370,14 @@ public final class ContextAwarenessService: ContextAwarenessServiceProtocol {
             }
 
             let layer = info[kCGWindowLayer as String] as? Int ?? 0
-            if layer != 0 { continue }
+            if layer != 0 {
+                continue
+            }
 
             let alpha = info[kCGWindowAlpha as String] as? Double ?? 1
-            if alpha <= 0 { continue }
+            if alpha <= 0 {
+                continue
+            }
 
             if let idNumber = info[kCGWindowNumber as String] as? NSNumber {
                 return CGWindowID(idNumber.uint32Value)
@@ -398,7 +402,7 @@ public final class ContextAwarenessService: ContextAwarenessServiceProtocol {
                 extra: [
                     "reasonCode": "ocr.vision_request_failed",
                     "error": error.localizedDescription,
-                ]
+                ],
             )
             return nil
         }

@@ -86,7 +86,7 @@ public final class NavigationService {
         alert.alertStyle = .informational
         alert.icon = NSImage(
             systemSymbolName: "waveform.circle.fill",
-            accessibilityDescription: "about.title".localized
+            accessibilityDescription: "about.title".localized,
         )
         alert.addButton(withTitle: "common.ok".localized)
 

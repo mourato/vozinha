@@ -30,7 +30,7 @@ final class AppSettingsDictationStylesTests: XCTestCase {
                 targets: [
                     sharedTarget,
                     .website(url: "https://docs.example.com"),
-                ]
+                ],
             ),
             DictationStyle(
                 id: UUID(),
@@ -43,7 +43,7 @@ final class AppSettingsDictationStylesTests: XCTestCase {
                 targets: [
                     sharedTarget,
                     .website(url: "https://api.example.com"),
-                ]
+                ],
             ),
         ]
 
@@ -70,7 +70,7 @@ final class AppSettingsDictationStylesTests: XCTestCase {
                     .app(bundleIdentifier: " com.microsoft.vscode "),
                     .website(url: "   "),
                     .website(url: "https://docs.example.com"),
-                ]
+                ],
             ),
         ]
 
@@ -80,7 +80,7 @@ final class AppSettingsDictationStylesTests: XCTestCase {
             [
                 .app(bundleIdentifier: "com.microsoft.VSCode"),
                 .website(url: "https://docs.example.com"),
-            ]
+            ],
         )
     }
 
@@ -123,7 +123,7 @@ final class AppSettingsDictationStylesTests: XCTestCase {
                 forceMarkdownOutput: true,
                 replaceBasePrompt: false,
                 targets: [.app(bundleIdentifier: "com.apple.TextEdit")],
-                isDefault: true
+                isDefault: true,
             ),
         ]
 
@@ -143,14 +143,14 @@ final class AppSettingsDictationStylesTests: XCTestCase {
                 replaceBasePrompt: false,
                 targets: [],
                 enhancementsSelection: selection,
-                isDefault: true
+                isDefault: true,
             ),
             DictationStyle(
                 name: "Safari",
                 promptInstructions: "Safari instructions",
                 forceMarkdownOutput: false,
                 replaceBasePrompt: false,
-                targets: [.app(bundleIdentifier: "com.apple.Safari")]
+                targets: [.app(bundleIdentifier: "com.apple.Safari")],
             ),
         ]
 
@@ -187,7 +187,7 @@ final class AppSettingsDictationStylesTests: XCTestCase {
             includeClipboard: false,
             includeWindowOCR: false,
             includeAccessibilityText: false,
-            redactSensitiveData: true
+            redactSensitiveData: true,
         )
 
         XCTAssertEqual(policy.isEnabled, false)

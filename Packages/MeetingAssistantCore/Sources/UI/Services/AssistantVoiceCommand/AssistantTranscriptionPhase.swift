@@ -10,7 +10,7 @@ protocol AssistantCommandTranscribing: AnyObject {
         audioURL: URL,
         onProgress: (@Sendable (Double) -> Void)?,
         executionMode: TranscriptionExecutionMode,
-        diarizationEnabledOverride: Bool?
+        diarizationEnabledOverride: Bool?,
     ) async throws -> TranscriptionResponse
 }
 
@@ -32,21 +32,21 @@ public struct AssistantTranscriptionPhase: @unchecked Sendable {
         vocabularyReplacementRules: [VocabularyReplacementRule],
         executionFlow: AssistantExecutionFlow,
         isAssistantIntegrationsEnabled: Bool,
-        assistantSelectedIntegration: AssistantIntegrationConfig?
+        assistantSelectedIntegration: AssistantIntegrationConfig?,
     ) async throws -> (
         command: String,
         executionFlow: AssistantExecutionFlow,
-        selectedIntegration: AssistantIntegrationConfig?
+        selectedIntegration: AssistantIntegrationConfig?,
     ) {
         let transcription = try await transcriptionClient.transcribe(
             audioURL: recordingURL,
             onProgress: nil,
             executionMode: .assistant,
-            diarizationEnabledOverride: false
+            diarizationEnabledOverride: false,
         )
         let command = normalizedAssistantTranscription(
             transcription.text,
-            vocabularyReplacementRules: vocabularyReplacementRules
+            vocabularyReplacementRules: vocabularyReplacementRules,
         )
 
         logPayloadIfNeeded("Assistant transcription payload", [
@@ -62,7 +62,7 @@ public struct AssistantTranscriptionPhase: @unchecked Sendable {
         let selectedIntegration = resolveSelectedIntegration(
             executionFlow: executionFlow,
             isAssistantIntegrationsEnabled: isAssistantIntegrationsEnabled,
-            assistantSelectedIntegration: assistantSelectedIntegration
+            assistantSelectedIntegration: assistantSelectedIntegration,
         )
 
         AppLogger.info(
@@ -72,7 +72,7 @@ public struct AssistantTranscriptionPhase: @unchecked Sendable {
                 "integration": selectedIntegration?.name ?? "assistantMode",
                 "executionFlow": executionFlow == .integrationDispatch ? "integrationDispatch" : "assistantMode",
                 "commandLength": command.count,
-            ]
+            ],
         )
 
         return (command, executionFlow, selectedIntegration)
@@ -80,7 +80,7 @@ public struct AssistantTranscriptionPhase: @unchecked Sendable {
 
     public func normalizedAssistantTranscription(
         _ text: String,
-        vocabularyReplacementRules: [VocabularyReplacementRule]
+        vocabularyReplacementRules: [VocabularyReplacementRule],
     ) -> String {
         VocabularyReplacementRule
             .apply(rules: vocabularyReplacementRules, to: text)
@@ -90,7 +90,7 @@ public struct AssistantTranscriptionPhase: @unchecked Sendable {
     public func resolveSelectedIntegration(
         executionFlow: AssistantExecutionFlow,
         isAssistantIntegrationsEnabled: Bool,
-        assistantSelectedIntegration: AssistantIntegrationConfig?
+        assistantSelectedIntegration: AssistantIntegrationConfig?,
     ) -> AssistantIntegrationConfig? {
         guard executionFlow == .integrationDispatch,
               isAssistantIntegrationsEnabled,

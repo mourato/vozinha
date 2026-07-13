@@ -156,15 +156,15 @@ public enum AIPromptTemplates {
         selectedModel: String?,
         baseSystemPrompt: String? = nil,
         contextMetadata: String? = nil,
-        promptContentTransformer: ((String) -> String)? = nil
+        promptContentTransformer: ((String) -> String)? = nil,
     ) -> RequestPrompts {
         if shouldUseSimpleDictationStrategy(mode: mode, selectedModel: selectedModel, prompt: prompt) {
             return RequestPrompts(
                 systemPrompt: simpleModelDictationSystemPrompt,
                 userPrompt: simpleDictationUserMessage(
                     transcription: transcription,
-                    contextMetadata: contextMetadata
-                )
+                    contextMetadata: contextMetadata,
+                ),
             )
         }
 
@@ -172,13 +172,13 @@ public enum AIPromptTemplates {
         let cleanPrompt = promptContentTransformer?(extracted.cleanPrompt) ?? extracted.cleanPrompt
         let systemMessage = systemPrompt(
             basePrompt: resolvedBaseSystemPrompt(mode: mode, override: baseSystemPrompt),
-            priorityInstructions: extracted.priorityInstructions
+            priorityInstructions: extracted.priorityInstructions,
         )
         let userContent = userMessage(
             transcription: transcription,
             prompt: cleanPrompt,
             priorityInstructions: nil,
-            contextMetadata: contextMetadata
+            contextMetadata: contextMetadata,
         )
         return RequestPrompts(systemPrompt: systemMessage, userPrompt: userContent)
     }
@@ -186,7 +186,7 @@ public enum AIPromptTemplates {
     private static func shouldUseSimpleDictationStrategy(
         mode: IntelligenceKernelMode,
         selectedModel: String?,
-        prompt: PostProcessingPrompt
+        prompt: PostProcessingPrompt,
     ) -> Bool {
         guard mode == .dictation,
               let selectedModel,
@@ -329,7 +329,7 @@ public enum AIPromptTemplates {
     public static func systemPrompt(withUserInstructions userInstructions: String) -> String {
         systemPromptTemplate.replacingOccurrences(
             of: "{{USER_INSTRUCTIONS}}",
-            with: userInstructions
+            with: userInstructions,
         )
     }
 }

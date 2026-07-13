@@ -24,7 +24,7 @@ final class MetricsAggregatorTests: XCTestCase {
                 isPostProcessed: false,
                 duration: 60,
                 audioFilePath: nil,
-                inputSource: "Microphone"
+                inputSource: "Microphone",
             ),
             TranscriptionMetadata(
                 id: UUID(),
@@ -40,7 +40,7 @@ final class MetricsAggregatorTests: XCTestCase {
                 isPostProcessed: false,
                 duration: 30,
                 audioFilePath: nil,
-                inputSource: "Microphone"
+                inputSource: "Microphone",
             ),
         ]
 
@@ -79,7 +79,7 @@ final class MetricsAggregatorTests: XCTestCase {
                 isPostProcessed: false,
                 duration: 10,
                 audioFilePath: nil,
-                inputSource: "Microphone"
+                inputSource: "Microphone",
             ),
             TranscriptionMetadata(
                 id: UUID(),
@@ -95,7 +95,7 @@ final class MetricsAggregatorTests: XCTestCase {
                 isPostProcessed: false,
                 duration: 10,
                 audioFilePath: nil,
-                inputSource: "Microphone"
+                inputSource: "Microphone",
             ),
         ]
 
@@ -125,7 +125,7 @@ final class MetricsAggregatorTests: XCTestCase {
         let buckets = MetricsAggregator.computeTopAppUsageBuckets(
             metadata: metadata,
             topLimit: 6,
-            otherLabel: "Other Apps"
+            otherLabel: "Other Apps",
         )
 
         XCTAssertEqual(buckets.count, 7)
@@ -151,7 +151,7 @@ final class MetricsAggregatorTests: XCTestCase {
         let buckets = MetricsAggregator.computeTopAppUsageBuckets(
             metadata: metadata,
             topLimit: 6,
-            otherLabel: "Other Apps"
+            otherLabel: "Other Apps",
         )
 
         XCTAssertEqual(buckets.count, 2)
@@ -183,7 +183,7 @@ final class MetricsAggregatorTests: XCTestCase {
                 isPostProcessed: false,
                 duration: 60,
                 audioFilePath: nil,
-                inputSource: "Microphone"
+                inputSource: "Microphone",
             )
         }
     }

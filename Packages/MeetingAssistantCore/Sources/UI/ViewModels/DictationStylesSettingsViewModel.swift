@@ -27,7 +27,7 @@ public struct DictationStyleEditorDraft: Equatable, Sendable {
         targets: [DictationStyleTarget],
         contextSourcePolicy: DictationContextSourcePolicy?,
         enhancementsSelection: EnhancementsAISelection?,
-        isDefault: Bool
+        isDefault: Bool,
     ) {
         self.id = id
         self.name = name
@@ -78,7 +78,7 @@ public final class DictationStylesSettingsViewModel: ObservableObject {
             targets: [],
             contextSourcePolicy: settings.currentDefaultDictationStyle().contextSourcePolicy,
             enhancementsSelection: settings.enhancementsDictationAISelection,
-            isDefault: false
+            isDefault: false,
         )
         showEditor = true
         ensureAppCatalogLoaded()
@@ -96,7 +96,7 @@ public final class DictationStylesSettingsViewModel: ObservableObject {
             targets: style.targets,
             contextSourcePolicy: style.contextSourcePolicy,
             enhancementsSelection: style.enhancementsSelection,
-            isDefault: style.isDefault
+            isDefault: style.isDefault,
         )
         showEditor = true
         ensureAppCatalogLoaded()
@@ -119,7 +119,7 @@ public final class DictationStylesSettingsViewModel: ObservableObject {
             targets: draft.isDefault ? [] : Self.normalizedTargets(draft.targets),
             contextSourcePolicy: draft.contextSourcePolicy,
             enhancementsSelection: draft.enhancementsSelection,
-            isDefault: draft.isDefault
+            isDefault: draft.isDefault,
         )
 
         var updatedStyles = settings.dictationStyles

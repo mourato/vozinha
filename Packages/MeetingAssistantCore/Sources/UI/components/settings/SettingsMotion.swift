@@ -24,7 +24,7 @@ extension View {
     func settingsAnimated(
         reduceMotion: Bool,
         animation: Animation = SettingsMotion.sectionAnimation,
-        value: some Equatable
+        value: some Equatable,
     ) -> some View {
         self.animation(reduceMotion ? AppleMotion.reduceMotionFade : animation, value: value)
     }
@@ -33,7 +33,7 @@ extension View {
     func settingsPulseSymbolEffect(
         value: some Equatable,
         reduceMotion: Bool,
-        options: SymbolEffectOptions = .repeating
+        options: SymbolEffectOptions = .repeating,
     ) -> some View {
         if reduceMotion {
             self
@@ -45,7 +45,7 @@ extension View {
     @ViewBuilder
     func settingsPulseSymbolEffect(
         isActive: Bool,
-        reduceMotion: Bool
+        reduceMotion: Bool,
     ) -> some View {
         if reduceMotion {
             self

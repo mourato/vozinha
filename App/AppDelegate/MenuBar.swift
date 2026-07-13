@@ -24,7 +24,7 @@ extension AppDelegate {
         if let button = statusItem?.button {
             let image = makeStatusBarImage(
                 isRecording: false,
-                accessibilityDescription: "about.title".localized
+                accessibilityDescription: "about.title".localized,
             )
             button.image = image
             button.title = image == nil ? String(AppIdentity.displayName.prefix(1)) : ""
@@ -43,7 +43,7 @@ extension AppDelegate {
         let dictateItem = createMenuItem(
             key: "menubar.dictate",
             action: #selector(toggleRecordingFromMenu),
-            shortcutName: .dictationToggle
+            shortcutName: .dictationToggle,
         )
         dictateMenuItem = dictateItem
         contextMenu?.addItem(dictateItem)
@@ -52,7 +52,7 @@ extension AppDelegate {
         let meetingItem = createMenuItem(
             key: "menubar.record_meeting",
             action: #selector(startMeetingFromMenu),
-            shortcutName: .meetingToggle
+            shortcutName: .meetingToggle,
         )
         recordMeetingMenuItem = meetingItem
         contextMenu?.addItem(meetingItem)
@@ -61,14 +61,14 @@ extension AppDelegate {
         let assistantItem = createMenuItem(
             key: "menubar.assistant",
             action: #selector(startAssistantFromMenu),
-            shortcutName: .assistantCommand
+            shortcutName: .assistantCommand,
         )
         assistantMenuItem = assistantItem
         contextMenu?.addItem(assistantItem)
 
         let cancelItem = createMenuItem(
             key: "menubar.cancel_recording",
-            action: #selector(cancelRecordingFromMenu)
+            action: #selector(cancelRecordingFromMenu),
         )
         cancelRecordingMenuItem = cancelItem
         cancelItem.isHidden = true
@@ -79,7 +79,7 @@ extension AppDelegate {
         contextMenu?.addItem(createMenuItem(
             key: "menubar.history",
             action: #selector(openHistory),
-            systemImage: SettingsSection.transcriptions.icon
+            systemImage: SettingsSection.transcriptions.icon,
         ))
 
         contextMenu?.addItem(NSMenuItem.separator())
@@ -87,20 +87,20 @@ extension AppDelegate {
         contextMenu?.addItem(createMenuItem(
             key: "menubar.settings",
             action: #selector(openSettings),
-            keyEquivalent: ","
+            keyEquivalent: ",",
         ))
         contextMenu?.addItem(createMenuItem(
             key: "menubar.onboarding",
-            action: #selector(openOnboarding)
+            action: #selector(openOnboarding),
         ))
         contextMenu?.addItem(createMenuItem(
             key: "menubar.check_updates",
-            action: #selector(checkForUpdates)
+            action: #selector(checkForUpdates),
         ))
         contextMenu?.addItem(createMenuItem(
             key: "menubar.quit",
             action: #selector(quitApp),
-            keyEquivalent: "q"
+            keyEquivalent: "q",
         ))
     }
 
@@ -110,7 +110,7 @@ extension AppDelegate {
         action: Selector,
         keyEquivalent: String = "",
         shortcutName: KeyboardShortcuts.Name? = nil,
-        systemImage: String? = nil
+        systemImage: String? = nil,
     ) -> NSMenuItem {
         let title = key.localized
         let item = NSMenuItem(title: title, action: action, keyEquivalent: keyEquivalent)
@@ -118,7 +118,7 @@ extension AppDelegate {
         if let systemImage {
             item.image = NSImage(
                 systemSymbolName: systemImage,
-                accessibilityDescription: title
+                accessibilityDescription: title,
             )
             item.image?.isTemplate = true
         }
@@ -159,7 +159,7 @@ extension AppDelegate {
         updateMenuItem(
             cancelRecordingMenuItem,
             key: state.cancelTitleKey,
-            shortcutDefinition: state.cancelRecordingShortcutDefinition
+            shortcutDefinition: state.cancelRecordingShortcutDefinition,
         )
 
         dictateMenuItem?.isHidden = !state.showsDictationAction
@@ -199,7 +199,7 @@ extension AppDelegate {
     private func applyShortcutDefinition(
         _ shortcutDefinition: ShortcutDefinition?,
         to item: NSMenuItem,
-        title: String
+        title: String,
     ) {
         guard let shortcutDefinition else {
             item.title = title
@@ -217,26 +217,26 @@ extension AppDelegate {
 
     private func resolveShortcutDisplaySource(
         for shortcutName: KeyboardShortcuts.Name,
-        settings: AppSettingsStore
+        settings: AppSettingsStore,
     ) -> ShortcutDisplaySource {
         switch shortcutName {
         case .dictationToggle:
             resolveShortcutDisplaySource(
                 definition: settings.dictationShortcutDefinition,
                 hasModifierShortcut: settings.dictationModifierShortcutGesture != nil,
-                selectedPresetKey: settings.dictationSelectedPresetKey
+                selectedPresetKey: settings.dictationSelectedPresetKey,
             )
         case .assistantCommand:
             resolveShortcutDisplaySource(
                 definition: settings.assistantShortcutDefinition,
                 hasModifierShortcut: settings.assistantModifierShortcutGesture != nil,
-                selectedPresetKey: settings.assistantSelectedPresetKey
+                selectedPresetKey: settings.assistantSelectedPresetKey,
             )
         case .meetingToggle:
             resolveShortcutDisplaySource(
                 definition: settings.meetingShortcutDefinition,
                 hasModifierShortcut: settings.meetingModifierShortcutGesture != nil,
-                selectedPresetKey: settings.meetingSelectedPresetKey
+                selectedPresetKey: settings.meetingSelectedPresetKey,
             )
         default:
             .custom
@@ -246,7 +246,7 @@ extension AppDelegate {
     private func resolveShortcutDisplaySource(
         definition: ShortcutDefinition?,
         hasModifierShortcut: Bool,
-        selectedPresetKey: PresetShortcutKey
+        selectedPresetKey: PresetShortcutKey,
     ) -> ShortcutDisplaySource {
         if let definition {
             return .inHouse(definition)
@@ -263,7 +263,7 @@ extension AppDelegate {
     private func applyCustomShortcut(
         _ shortcut: KeyboardShortcuts.Shortcut,
         to item: NSMenuItem,
-        title: String
+        title: String,
     ) {
         item.title = title
         let normalizedKey = normalizedShortcutKey(from: shortcut.description)
@@ -313,7 +313,7 @@ extension AppDelegate {
     private func applyShortcutDefinition(
         _ shortcut: ShortcutDefinition,
         to item: NSMenuItem,
-        title: String
+        title: String,
     ) -> Bool {
         guard shortcut.trigger == .singleTap,
               let primaryKey = shortcut.primaryKey,
@@ -444,7 +444,7 @@ extension AppDelegate {
                 } else if self.recordingManager.isRecording || self.recordingManager.isStartingRecording {
                     AppLogger.info(
                         "Assistant menu start blocked by active recording capture",
-                        category: .assistant
+                        category: .assistant,
                     )
                     self.floatingIndicatorController.showError("assistant.error.recording_in_progress".localized)
                 } else {

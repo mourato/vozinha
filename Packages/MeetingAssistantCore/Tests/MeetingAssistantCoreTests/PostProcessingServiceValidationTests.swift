@@ -1,5 +1,5 @@
-import MeetingAssistantCoreDomain
 @testable import MeetingAssistantCoreAI
+import MeetingAssistantCoreDomain
 import XCTest
 
 @MainActor

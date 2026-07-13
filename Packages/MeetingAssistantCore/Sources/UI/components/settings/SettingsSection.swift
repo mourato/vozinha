@@ -10,7 +10,7 @@ public struct SettingsDestination: Equatable, Sendable {
         section: SettingsSection,
         activityRoute: ActivitySettingsRoute? = nil,
         dictationRoute: DictationSettingsRoute? = nil,
-        systemRoute: SystemSettingsRoute? = nil
+        systemRoute: SystemSettingsRoute? = nil,
     ) {
         self.section = section
         self.activityRoute = activityRoute

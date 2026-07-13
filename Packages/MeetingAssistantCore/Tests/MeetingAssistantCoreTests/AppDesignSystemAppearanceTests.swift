@@ -3,14 +3,14 @@ import AppKit
 import XCTest
 
 final class AppDesignSystemAppearanceTests: XCTestCase {
-    func testIsDarkAppearanceRecognizesAquaVariants() {
-        XCTAssertFalse(AppDesignSystem.Colors.isDarkAppearance(NSAppearance(named: .aqua)!))
-        XCTAssertTrue(AppDesignSystem.Colors.isDarkAppearance(NSAppearance(named: .darkAqua)!))
+    func testIsDarkAppearanceRecognizesAquaVariants() throws {
+        XCTAssertFalse(try AppDesignSystem.Colors.isDarkAppearance(XCTUnwrap(NSAppearance(named: .aqua))))
+        XCTAssertTrue(try AppDesignSystem.Colors.isDarkAppearance(XCTUnwrap(NSAppearance(named: .darkAqua))))
     }
 
-    func testResolveColorRunsProviderInsideRequestedAppearance() {
-        let darkAppearance = NSAppearance(named: .darkAqua)!
-        let lightAppearance = NSAppearance(named: .aqua)!
+    func testResolveColorRunsProviderInsideRequestedAppearance() throws {
+        let darkAppearance = try XCTUnwrap(NSAppearance(named: .darkAqua))
+        let lightAppearance = try XCTUnwrap(NSAppearance(named: .aqua))
 
         let darkResolved = AppDesignSystem.Colors.resolveColor(in: darkAppearance) {
             AppDesignSystem.Colors.isDarkAppearance(NSAppearance.currentDrawing())

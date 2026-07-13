@@ -18,7 +18,7 @@ public struct MetricsDashboardSummary: Equatable, Sendable {
         timeSaved: TimeInterval,
         baselineTypingWordsPerMinute: Double,
         keystrokesSaved: Int,
-        wordsPerMinute: Double
+        wordsPerMinute: Double,
     ) {
         self.sessionsRecorded = sessionsRecorded
         self.wordsDictated = wordsDictated
@@ -87,7 +87,7 @@ public struct MetricsAppUsageBucket: Equatable, Identifiable, Sendable {
         appRawValue: String,
         appName: String,
         sessions: Int,
-        isOther: Bool
+        isOther: Bool,
     ) {
         self.appRawValue = appRawValue
         self.appName = appName
@@ -101,7 +101,7 @@ public enum MetricsAggregator {
 
     public static func computeSummary(
         metadata: [TranscriptionMetadata],
-        baselineTypingWordsPerMinute: Double
+        baselineTypingWordsPerMinute: Double,
     ) -> MetricsDashboardSummary {
         let sessionsRecorded = metadata.count
         let wordsDictated = metadata.reduce(0) { $0 + $1.wordCount }
@@ -125,13 +125,13 @@ public enum MetricsAggregator {
             timeSaved: timeSaved,
             baselineTypingWordsPerMinute: baselineTypingWordsPerMinute,
             keystrokesSaved: keystrokesSaved,
-            wordsPerMinute: wordsPerMinute
+            wordsPerMinute: wordsPerMinute,
         )
     }
 
     public static func computeWeekdayBuckets(
         metadata: [TranscriptionMetadata],
-        calendar: Calendar = .current
+        calendar: Calendar = .current,
     ) -> [MetricsWeekdayBucket] {
         var wordCounts: [Int: Int] = [:]
         wordCounts.reserveCapacity(7)
@@ -159,7 +159,7 @@ public enum MetricsAggregator {
 
     public static func computeHourlyBuckets(
         metadata: [TranscriptionMetadata],
-        calendar: Calendar = .current
+        calendar: Calendar = .current,
     ) -> [MetricsHourlyBucket] {
         var hourCounts: [Int: Int] = [:]
         hourCounts.reserveCapacity(24)
@@ -177,7 +177,7 @@ public enum MetricsAggregator {
     public static func computeDailyBuckets(
         metadata: [TranscriptionMetadata],
         days: Int = 365,
-        calendar: Calendar = .current
+        calendar: Calendar = .current,
     ) -> [MetricsDailyBucket] {
         guard days > 0 else { return [] }
 
@@ -207,7 +207,7 @@ public enum MetricsAggregator {
     public static func computeTopAppUsageBuckets(
         metadata: [TranscriptionMetadata],
         topLimit: Int = 6,
-        otherLabel: String = "Other"
+        otherLabel: String = "Other",
     ) -> [MetricsAppUsageBucket] {
         guard topLimit > 0 else { return [] }
 
@@ -228,7 +228,7 @@ public enum MetricsAggregator {
             } else {
                 appUsage[normalizedRawValue] = AppUsageAccumulator(
                     appName: normalizedName,
-                    sessions: 1
+                    sessions: 1,
                 )
             }
         }
@@ -247,7 +247,7 @@ public enum MetricsAggregator {
                 appRawValue: app.appRawValue,
                 appName: app.appName,
                 sessions: app.sessions,
-                isOther: false
+                isOther: false,
             )
         }
 
@@ -264,7 +264,7 @@ public enum MetricsAggregator {
                 appRawValue: "other",
                 appName: otherLabel,
                 sessions: remainingSessions,
-                isOther: true
+                isOther: true,
             ),
         ]
     }

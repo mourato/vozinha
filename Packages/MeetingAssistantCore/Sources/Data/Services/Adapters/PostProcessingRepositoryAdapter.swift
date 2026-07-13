@@ -22,14 +22,14 @@ public final class PostProcessingRepositoryAdapter: PostProcessingRepository {
 
     public func processTranscription(
         _ transcription: String,
-        mode: IntelligenceKernelMode
+        mode: IntelligenceKernelMode,
     ) async throws -> String {
         if let prompt = selectedPrompt(for: mode) {
             return try await postProcessingService.processTranscription(
                 transcription,
                 with: prompt,
                 mode: mode,
-                systemPromptOverride: nil
+                systemPromptOverride: nil,
             )
         }
 
@@ -38,14 +38,14 @@ public final class PostProcessingRepositoryAdapter: PostProcessingRepository {
 
     public func processTranscription(
         _ transcription: String,
-        with prompt: DomainPostProcessingPrompt
+        with prompt: DomainPostProcessingPrompt,
     ) async throws -> String {
         // Converter DomainPostProcessingPrompt para PostProcessingPrompt (legado)
         let legacyPrompt = PostProcessingPrompt(
             id: prompt.id,
             title: prompt.title,
             promptText: prompt.content,
-            isActive: true
+            isActive: true,
         )
         return try await postProcessingService.processTranscription(transcription, with: legacyPrompt)
     }
@@ -53,19 +53,19 @@ public final class PostProcessingRepositoryAdapter: PostProcessingRepository {
     public func processTranscription(
         _ transcription: String,
         with prompt: DomainPostProcessingPrompt,
-        mode: IntelligenceKernelMode
+        mode: IntelligenceKernelMode,
     ) async throws -> String {
         let legacyPrompt = PostProcessingPrompt(
             id: prompt.id,
             title: prompt.title,
             promptText: prompt.content,
-            isActive: true
+            isActive: true,
         )
         return try await postProcessingService.processTranscription(
             transcription,
             with: legacyPrompt,
             mode: mode,
-            systemPromptOverride: nil
+            systemPromptOverride: nil,
         )
     }
 
@@ -75,13 +75,13 @@ public final class PostProcessingRepositoryAdapter: PostProcessingRepository {
 
     public func processTranscriptionStructured(
         _ transcription: String,
-        mode: IntelligenceKernelMode
+        mode: IntelligenceKernelMode,
     ) async throws -> DomainPostProcessingResult {
         if let prompt = selectedPrompt(for: mode) {
             return try await postProcessingService.processTranscriptionStructured(
                 transcription,
                 with: prompt,
-                mode: mode
+                mode: mode,
             )
         }
 
@@ -90,13 +90,13 @@ public final class PostProcessingRepositoryAdapter: PostProcessingRepository {
 
     public func processTranscriptionStructured(
         _ transcription: String,
-        with prompt: DomainPostProcessingPrompt
+        with prompt: DomainPostProcessingPrompt,
     ) async throws -> DomainPostProcessingResult {
         let legacyPrompt = PostProcessingPrompt(
             id: prompt.id,
             title: prompt.title,
             promptText: prompt.content,
-            isActive: true
+            isActive: true,
         )
         return try await postProcessingService.processTranscriptionStructured(transcription, with: legacyPrompt)
     }
@@ -104,18 +104,18 @@ public final class PostProcessingRepositoryAdapter: PostProcessingRepository {
     public func processTranscriptionStructured(
         _ transcription: String,
         with prompt: DomainPostProcessingPrompt,
-        mode: IntelligenceKernelMode
+        mode: IntelligenceKernelMode,
     ) async throws -> DomainPostProcessingResult {
         let legacyPrompt = PostProcessingPrompt(
             id: prompt.id,
             title: prompt.title,
             promptText: prompt.content,
-            isActive: true
+            isActive: true,
         )
         return try await postProcessingService.processTranscriptionStructured(
             transcription,
             with: legacyPrompt,
-            mode: mode
+            mode: mode,
         )
     }
 

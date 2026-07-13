@@ -36,7 +36,7 @@ final class MetricsDashboardViewModelTests: XCTestCase {
         let notification = Notification(
             name: .meetingAssistantTranscriptionSaved,
             object: nil,
-            userInfo: [AppNotifications.UserInfoKey.transcriptionId: second.id.uuidString]
+            userInfo: [AppNotifications.UserInfoKey.transcriptionId: second.id.uuidString],
         )
         await viewModel.handleTranscriptionSaved(notification)
 
@@ -85,12 +85,12 @@ final class MetricsDashboardViewModelTests: XCTestCase {
         XCTAssertTrue(
             viewModel.appUsageBuckets.contains {
                 $0.appRawValue == MeetingApp.zoom.rawValue && $0.sessions == 2
-            }
+            },
         )
         XCTAssertTrue(
             viewModel.appUsageBuckets.contains {
                 $0.appRawValue == MeetingApp.microsoftTeams.rawValue && $0.sessions == 2
-            }
+            },
         )
         XCTAssertTrue(viewModel.appUsageBuckets.last?.isOther ?? false)
         XCTAssertEqual(viewModel.appUsageBuckets.last?.sessions, 1)
@@ -104,7 +104,7 @@ final class MetricsDashboardViewModelTests: XCTestCase {
             id: UUID(),
             app: app,
             startTime: start,
-            endTime: end
+            endTime: end,
         )
 
         return Transcription(
@@ -112,7 +112,7 @@ final class MetricsDashboardViewModelTests: XCTestCase {
             meeting: meeting,
             text: words,
             rawText: words,
-            createdAt: start
+            createdAt: start,
         )
     }
 }

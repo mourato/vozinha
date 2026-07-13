@@ -4,7 +4,7 @@ import AVFoundation
 import XCTest
 
 @MainActor
-final class IncrementalMeetingTranscriptionCoordinatorTests: XCTestCase {
+final class IncrementalMeetingCoordinatorTests: XCTestCase {
     func testFinish_WithFinalDiarizationAssignsSpeakersAndPersistsFinalizingCheckpoint() async throws {
         let storage = MockStorageService()
         let transcriptionClient = MockTranscriptionClient()
@@ -16,14 +16,14 @@ final class IncrementalMeetingTranscriptionCoordinatorTests: XCTestCase {
                 speaker: Transcription.unknownSpeaker,
                 text: "meeting partial",
                 startTime: 0,
-                endTime: 1.0
+                endTime: 1.0,
             ),
         ]
         transcriptionClient.mockSpeakerTimeline = [
             SpeakerTimelineSegment(
                 speaker: "Speaker 1",
                 startTime: 0,
-                endTime: 10.0
+                endTime: 10.0,
             ),
         ]
 
@@ -35,21 +35,21 @@ final class IncrementalMeetingTranscriptionCoordinatorTests: XCTestCase {
             storage: storage,
             transcriptionClientBox: transcriptionClientBox,
             callbacks: .init(
-                onProcessedDurationChanged: { processedDurationRecorder.values.append($0) }
-            )
+                onProcessedDurationChanged: { processedDurationRecorder.values.append($0) },
+            ),
         )
 
         try await coordinator.start()
         try await coordinator.append(
             bufferBox: RecordingManager.SendableIncrementalAudioBufferBox(
-                buffer: makeBuffer(segments: [.tone(1.0, amplitude: 0.25)])
-            )
+                buffer: makeBuffer(segments: [.tone(1.0, amplitude: 0.25)]),
+            ),
         )
 
         let result = try await coordinator.finish(
             audioURL: URL(fileURLWithPath: "/tmp/meeting-test.wav"),
             diarizationEnabled: true,
-            finalDiarizationServiceBox: finalDiarizationServiceBox
+            finalDiarizationServiceBox: finalDiarizationServiceBox,
         )
 
         XCTAssertEqual(transcriptionClient.fileTranscribeCallCount, 0)
@@ -80,22 +80,22 @@ final class IncrementalMeetingTranscriptionCoordinatorTests: XCTestCase {
             storage: storage,
             transcriptionClientBox: transcriptionClientBox,
             callbacks: .init(
-                onProcessedDurationChanged: { _ in }
-            )
+                onProcessedDurationChanged: { _ in },
+            ),
         )
 
         try await coordinator.start()
         try await coordinator.append(
             bufferBox: RecordingManager.SendableIncrementalAudioBufferBox(
-                buffer: makeBuffer(segments: [.tone(1.0, amplitude: 0.25)])
-            )
+                buffer: makeBuffer(segments: [.tone(1.0, amplitude: 0.25)]),
+            ),
         )
 
         do {
             _ = try await coordinator.finish(
                 audioURL: URL(fileURLWithPath: "/tmp/meeting-test.wav"),
                 diarizationEnabled: true,
-                finalDiarizationServiceBox: finalDiarizationServiceBox
+                finalDiarizationServiceBox: finalDiarizationServiceBox,
             )
             XCTFail("Expected finish to throw")
         } catch {}
@@ -122,8 +122,8 @@ final class IncrementalMeetingTranscriptionCoordinatorTests: XCTestCase {
             storage: storage,
             transcriptionClientBox: transcriptionClientBox,
             callbacks: .init(
-                onProcessedDurationChanged: { _ in }
-            )
+                onProcessedDurationChanged: { _ in },
+            ),
         )
 
         try await coordinator.start()
@@ -132,7 +132,7 @@ final class IncrementalMeetingTranscriptionCoordinatorTests: XCTestCase {
             _ = try await coordinator.finish(
                 audioURL: URL(fileURLWithPath: "/tmp/meeting-test.wav"),
                 diarizationEnabled: true,
-                finalDiarizationServiceBox: finalDiarizationServiceBox
+                finalDiarizationServiceBox: finalDiarizationServiceBox,
             )
             XCTFail("Expected finish to throw")
         } catch let error as TranscriptionError {
@@ -165,7 +165,7 @@ final class IncrementalMeetingTranscriptionCoordinatorTests: XCTestCase {
                 speaker: Transcription.unknownSpeaker,
                 text: "meeting partial",
                 startTime: 0,
-                endTime: 1.0
+                endTime: 1.0,
             ),
         ]
         transcriptionClient.shouldFailDiarization = true
@@ -177,22 +177,22 @@ final class IncrementalMeetingTranscriptionCoordinatorTests: XCTestCase {
             storage: storage,
             transcriptionClientBox: transcriptionClientBox,
             callbacks: .init(
-                onProcessedDurationChanged: { _ in }
-            )
+                onProcessedDurationChanged: { _ in },
+            ),
         )
 
         try await coordinator.start()
         try await coordinator.append(
             bufferBox: RecordingManager.SendableIncrementalAudioBufferBox(
-                buffer: makeBuffer(segments: [.tone(1.0, amplitude: 0.25)])
-            )
+                buffer: makeBuffer(segments: [.tone(1.0, amplitude: 0.25)]),
+            ),
         )
 
         do {
             _ = try await coordinator.finish(
                 audioURL: URL(fileURLWithPath: "/tmp/meeting-test.wav"),
                 diarizationEnabled: true,
-                finalDiarizationServiceBox: finalDiarizationServiceBox
+                finalDiarizationServiceBox: finalDiarizationServiceBox,
             )
             XCTFail("Expected finish to throw")
         } catch {}
@@ -214,7 +214,7 @@ final class IncrementalMeetingTranscriptionCoordinatorTests: XCTestCase {
             app: .unknown,
             capturePurpose: .meeting,
             title: "Meeting Test",
-            audioFilePath: "/tmp/meeting-test.wav"
+            audioFilePath: "/tmp/meeting-test.wav",
         )
     }
 
@@ -231,7 +231,7 @@ final class IncrementalMeetingTranscriptionCoordinatorTests: XCTestCase {
         let buffer = try XCTUnwrap(AVAudioPCMBuffer(pcmFormat: format, frameCapacity: frameCount))
         buffer.frameLength = frameCount
         guard let channelData = buffer.floatChannelData else {
-            throw NSError(domain: "IncrementalMeetingTranscriptionCoordinatorTests", code: 1)
+            throw NSError(domain: "IncrementalMeetingCoordinatorTests", code: 1)
         }
 
         for (index, sample) in samples.enumerated() {

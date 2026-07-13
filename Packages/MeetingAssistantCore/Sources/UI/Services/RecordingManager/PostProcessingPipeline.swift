@@ -28,7 +28,7 @@ extension RecordingManager {
                 model: nil,
                 requestSystemPrompt: nil,
                 requestUserPrompt: nil,
-                failureReason: nil
+                failureReason: nil,
             )
         }
 
@@ -41,7 +41,7 @@ extension RecordingManager {
             model: String? = nil,
             requestSystemPrompt: String? = nil,
             requestUserPrompt: String? = nil,
-            failureReason: String? = nil
+            failureReason: String? = nil,
         ) {
             self.processedContent = processedContent
             self.canonicalSummary = canonicalSummary
@@ -59,14 +59,14 @@ extension RecordingManager {
         postProcessingInput: String,
         meeting: Meeting?,
         qualityProfile: TranscriptionQualityProfile?,
-        capturePurposeOverride: CapturePurpose? = nil
+        capturePurposeOverride: CapturePurpose? = nil,
     ) async -> PostProcessingResult {
         transcriptionStatus.updateProgress(phase: .postProcessing, percentage: Constants.postProcessingProgress)
         RecordingIndicatorProcessingStateStore.shared.update(
             snapshot: RecordingIndicatorProcessingSnapshot(
                 step: .postProcessing,
-                progressPercent: Constants.postProcessingProgress
-            )
+                progressPercent: Constants.postProcessingProgress,
+            ),
         )
 
         let settings = AppSettingsStore.shared
@@ -75,7 +75,7 @@ extension RecordingManager {
         }
         let kernelMode = postProcessingKernelMode(
             for: meeting,
-            capturePurposeOverride: capturePurposeOverride
+            capturePurposeOverride: capturePurposeOverride,
         )
         let isDictation = kernelMode == .dictation
         let dictationSelectionOverride = isDictation
@@ -90,7 +90,7 @@ extension RecordingManager {
             AppLogger.info(
                 "Post-processing skipped: enhancements configuration not ready",
                 category: .recordingManager,
-                extra: ["reasonCode": reasonCode]
+                extra: ["reasonCode": reasonCode],
             )
             return PostProcessingResult(failureReason: "recording_indicator.post_processing_warning.missing_config".localized)
         }
@@ -104,15 +104,15 @@ extension RecordingManager {
             RecordingIndicatorProcessingStateStore.shared.update(
                 snapshot: RecordingIndicatorProcessingSnapshot(
                     step: .detectingMeetingType,
-                    progressPercent: Constants.postProcessingProgress
-                )
+                    progressPercent: Constants.postProcessingProgress,
+                ),
             )
         }
         let prompt = await resolvePostProcessingPrompt(
             rawText: postProcessingInput,
             isDictation: isDictation,
             meetingType: type,
-            settings: settings
+            settings: settings,
         )
 
         // Construct context metadata
@@ -132,8 +132,8 @@ extension RecordingManager {
         RecordingIndicatorProcessingStateStore.shared.update(
             snapshot: RecordingIndicatorProcessingSnapshot(
                 step: .postProcessing,
-                progressPercent: Constants.aiProcessingProgress
-            )
+                progressPercent: Constants.aiProcessingProgress,
+            ),
         )
         return await runPostProcessing(
             postProcessingInput: postProcessingInput,
@@ -143,7 +143,7 @@ extension RecordingManager {
             kernelMode: kernelMode,
             selectionOverride: dictationSelectionOverride,
             dictationStructuredPostProcessingEnabled: settings.dictationStructuredPostProcessingEnabled,
-            contextMetadata: contextMetadata
+            contextMetadata: contextMetadata,
         )
     }
 
@@ -155,7 +155,7 @@ extension RecordingManager {
         kernelMode: IntelligenceKernelMode,
         selectionOverride: EnhancementsAISelection? = nil,
         dictationStructuredPostProcessingEnabled: Bool,
-        contextMetadata: String
+        contextMetadata: String,
     ) async -> PostProcessingResult {
         let requestConfig = selectionOverride.map {
             settings.resolvedEnhancementsAIConfiguration(for: $0)
@@ -166,7 +166,7 @@ extension RecordingManager {
             transcription: postProcessingInput,
             mode: kernelMode,
             selectedModel: requestConfig.selectedModel,
-            contextMetadata: contextMetadata
+            contextMetadata: contextMetadata,
         )
 
         do {
@@ -182,13 +182,13 @@ extension RecordingManager {
                         postProcessingInput,
                         with: prompt,
                         mode: kernelMode,
-                        selectionOverride: selectionOverride
+                        selectionOverride: selectionOverride,
                     )
                 } else {
                     try await postProcessingService.processTranscriptionStructured(
                         postProcessingInput,
                         with: prompt,
-                        mode: kernelMode
+                        mode: kernelMode,
                     )
                 }
                 processedContent = structuredResult.processedText
@@ -203,7 +203,7 @@ extension RecordingManager {
                         "pipeline": pipeline,
                         "prompt": prompt.title,
                         "output_state": structuredResult.outputState.rawValue,
-                    ]
+                    ],
                 )
             } else {
                 processedContent = if let selectionOverride {
@@ -212,14 +212,14 @@ extension RecordingManager {
                         with: prompt,
                         mode: kernelMode,
                         selectionOverride: selectionOverride,
-                        systemPromptOverride: nil
+                        systemPromptOverride: nil,
                     )
                 } else {
                     try await postProcessingService.processTranscription(
                         postProcessingInput,
                         with: prompt,
                         mode: kernelMode,
-                        systemPromptOverride: nil
+                        systemPromptOverride: nil,
                     )
                 }
                 canonicalSummary = nil
@@ -230,14 +230,14 @@ extension RecordingManager {
                         "mode": kernelMode.rawValue,
                         "pipeline": pipeline,
                         "prompt": prompt.title,
-                    ]
+                    ],
                 )
             }
 
             let duration = Date().timeIntervalSince(startTime)
             let model = requestConfig.selectedModel
             RecordingIndicatorProcessingStateStore.shared.update(
-                snapshot: RecordingIndicatorProcessingSnapshot(step: .finalizingResult, progressPercent: 100)
+                snapshot: RecordingIndicatorProcessingSnapshot(step: .finalizingResult, progressPercent: 100),
             )
             return PostProcessingResult(
                 processedContent: processedContent,
@@ -247,12 +247,12 @@ extension RecordingManager {
                 duration: duration,
                 model: model,
                 requestSystemPrompt: requestSystemPrompt,
-                requestUserPrompt: requestUserPrompt
+                requestUserPrompt: requestUserPrompt,
             )
         } catch {
             AppLogger.error("Post-processing failed, using raw transcription", category: .recordingManager, error: error)
             RecordingIndicatorProcessingStateStore.shared.update(
-                snapshot: RecordingIndicatorProcessingSnapshot(step: .postProcessingFailed, progressPercent: nil)
+                snapshot: RecordingIndicatorProcessingSnapshot(step: .postProcessingFailed, progressPercent: nil),
             )
             return PostProcessingResult(failureReason: error.localizedDescription)
         }
@@ -262,7 +262,7 @@ extension RecordingManager {
         rawText: String,
         isDictation: Bool,
         meetingType: MeetingType,
-        settings: AppSettingsStore
+        settings: AppSettingsStore,
     ) async -> PostProcessingPrompt {
         if isDictation {
             return settings.selectedDictationPrompt ?? .defaultPrompt
@@ -310,7 +310,7 @@ extension RecordingManager {
             Allowed values: standup, presentation, design_review, one_on_one, planning, general.
             """,
             icon: "sparkles",
-            isPredefined: false
+            isPredefined: false,
         )
     }
 
@@ -369,7 +369,7 @@ extension RecordingManager {
         transcription: String,
         mode: IntelligenceKernelMode,
         selectedModel: String?,
-        contextMetadata: String
+        contextMetadata: String,
     ) -> (systemPrompt: String, userPrompt: String) {
         let snapshotPrompt = PostProcessingPrompt(
             id: prompt.id,
@@ -378,14 +378,14 @@ extension RecordingManager {
             isActive: prompt.isActive,
             icon: prompt.icon,
             description: prompt.description,
-            isPredefined: prompt.isPredefined
+            isPredefined: prompt.isPredefined,
         )
         let requestPrompts = AIPromptTemplates.requestPrompts(
             transcription: transcription,
             prompt: snapshotPrompt,
             mode: mode,
             selectedModel: selectedModel,
-            contextMetadata: contextMetadata
+            contextMetadata: contextMetadata,
         )
         return (requestPrompts.systemPrompt, requestPrompts.userPrompt)
     }

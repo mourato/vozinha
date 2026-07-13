@@ -1,7 +1,7 @@
-import XCTest
 @testable import MeetingAssistantCore
 @testable import MeetingAssistantCoreInfrastructure
 @testable import MeetingAssistantCoreUI
+import XCTest
 
 @MainActor
 final class AssistantDispatchPhaseTests: XCTestCase {
@@ -14,7 +14,7 @@ final class AssistantDispatchPhaseTests: XCTestCase {
         phase = AssistantDispatchPhase(
             raycastIntegrationService: mockRecorder,
             textSelectionService: AssistantTextSelectionService(),
-            normalizationPhase: AssistantNormalizationPhase()
+            normalizationPhase: AssistantNormalizationPhase(),
         )
     }
 
@@ -23,7 +23,7 @@ final class AssistantDispatchPhaseTests: XCTestCase {
     func testCaptureSourceText_IntegrationDispatch_ReturnsCommandAsSource() async throws {
         let (sourceText, result) = try await phase.captureSourceText(
             executionFlow: .integrationDispatch,
-            command: "test command"
+            command: "test command",
         )
         XCTAssertEqual(sourceText, "test command")
         XCTAssertNil(result)
@@ -33,7 +33,7 @@ final class AssistantDispatchPhaseTests: XCTestCase {
 
     func testExecuteDispatch_IntegrationDispatch_CallsRaycast() async throws {
         let integration = makeIntegrationConfig(
-            deepLink: "test://{{assistant_text}}"
+            deepLink: "test://{{assistant_text}}",
         )
 
         try await phase.executeDispatch(
@@ -42,7 +42,7 @@ final class AssistantDispatchPhaseTests: XCTestCase {
             command: "original",
             processedCommand: "processed",
             selectedIntegration: integration,
-            selectedTextResult: nil
+            selectedTextResult: nil,
         )
 
         XCTAssertEqual(mockRecorder.lastCommand, "final result")
@@ -51,7 +51,7 @@ final class AssistantDispatchPhaseTests: XCTestCase {
 
     func testExecuteDispatch_IntegrationDispatch_ResolvesShortcodes() async throws {
         let integration = makeIntegrationConfig(
-            deepLink: "test://{{assistant_text_urlencoded}}"
+            deepLink: "test://{{assistant_text_urlencoded}}",
         )
 
         try await phase.executeDispatch(
@@ -60,7 +60,7 @@ final class AssistantDispatchPhaseTests: XCTestCase {
             command: "original",
             processedCommand: "processed",
             selectedIntegration: integration,
-            selectedTextResult: nil
+            selectedTextResult: nil,
         )
 
         XCTAssertEqual(mockRecorder.lastDeepLink, "test://hello%20%26%20world")
@@ -74,7 +74,7 @@ final class AssistantDispatchPhaseTests: XCTestCase {
                 command: "test",
                 processedCommand: "test",
                 selectedIntegration: nil,
-                selectedTextResult: nil
+                selectedTextResult: nil,
             )
             XCTFail("Expected error")
         } catch let error as AssistantVoiceCommandError {
@@ -92,7 +92,7 @@ final class AssistantDispatchPhaseTests: XCTestCase {
                 command: "test",
                 processedCommand: "test",
                 selectedIntegration: nil,
-                selectedTextResult: nil
+                selectedTextResult: nil,
             )
             XCTFail("Expected error")
         } catch let error as AssistantVoiceCommandError {
@@ -119,7 +119,7 @@ final class AssistantDispatchPhaseTests: XCTestCase {
             modifierShortcutGesture: nil,
             advancedScript: nil,
             showsPromptSelectorInOverlay: false,
-            showsLanguageSelectorInOverlay: false
+            showsLanguageSelectorInOverlay: false,
         )
     }
 }

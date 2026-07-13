@@ -29,7 +29,7 @@ public extension AppSettingsStore {
                 includeWindowOCR: false,
                 includeAccessibilityText: true,
                 redactSensitiveData: true,
-                dictationSelection: .default
+                dictationSelection: .default,
             ),
         ]
     }
@@ -63,19 +63,19 @@ public extension AppSettingsStore {
             app: .googleMeet,
             displayName: "Google Meet",
             urlPatterns: ["meet.google.com"],
-            browserBundleIdentifiers: ["com.apple.Safari", "com.google.Chrome", "com.microsoft.edgemac"]
+            browserBundleIdentifiers: ["com.apple.Safari", "com.google.Chrome", "com.microsoft.edgemac"],
         ),
         WebMeetingTarget(
             app: .microsoftTeams,
             displayName: "Microsoft Teams",
             urlPatterns: ["teams.microsoft.com"],
-            browserBundleIdentifiers: ["com.apple.Safari", "com.google.Chrome", "com.microsoft.edgemac"]
+            browserBundleIdentifiers: ["com.apple.Safari", "com.google.Chrome", "com.microsoft.edgemac"],
         ),
         WebMeetingTarget(
             app: .zoom,
             displayName: "Zoom",
             urlPatterns: ["zoom.us/j", "zoom.us/wc"],
-            browserBundleIdentifiers: ["com.apple.Safari", "com.google.Chrome", "com.microsoft.edgemac"]
+            browserBundleIdentifiers: ["com.apple.Safari", "com.google.Chrome", "com.microsoft.edgemac"],
         ),
     ]
 

@@ -12,14 +12,14 @@ final class AppleMotionTests: XCTestCase {
     func testTransitionStyleUsesOpacityForReduceMotion() {
         XCTAssertEqual(
             AppleMotion.transitionStyle(reduceMotion: true, edge: .top),
-            .opacity
+            .opacity,
         )
     }
 
     func testTransitionStyleUsesMoveAndOpacityForDefaultMotion() {
         XCTAssertEqual(
             AppleMotion.transitionStyle(reduceMotion: false, edge: .bottom),
-            .moveAndOpacity(edge: .bottom)
+            .moveAndOpacity(edge: .bottom),
         )
     }
 
@@ -27,8 +27,8 @@ final class AppleMotionTests: XCTestCase {
         XCTAssertNil(
             AppleMotion.animation(
                 reduceMotion: true,
-                reduceMotionAnimation: .none
-            )
+                reduceMotionAnimation: .none,
+            ),
         )
     }
 

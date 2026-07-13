@@ -69,9 +69,15 @@ public final class PermissionStatusManager: ObservableObject {
 
     public var grantedCount: Int {
         var count = 0
-        if microphonePermission.state.isAuthorized { count += 1 }
-        if screenRecordingPermission.state.isAuthorized { count += 1 }
-        if accessibilityPermission.state.isAuthorized { count += 1 }
+        if microphonePermission.state.isAuthorized {
+            count += 1
+        }
+        if screenRecordingPermission.state.isAuthorized {
+            count += 1
+        }
+        if accessibilityPermission.state.isAuthorized {
+            count += 1
+        }
         return count
     }
 

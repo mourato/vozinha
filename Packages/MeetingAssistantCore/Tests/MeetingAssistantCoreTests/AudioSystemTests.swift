@@ -36,7 +36,7 @@ final class AudioSystemTests: XCTestCase {
         recordingManager = RecordingManager(
             transcriptionClient: mockTranscription,
             postProcessingService: mockPostProcessing,
-            storage: mockStorage
+            storage: mockStorage,
         )
     }
 
@@ -176,7 +176,7 @@ final class AudioSystemTests: XCTestCase {
         XCTAssertTrue(try FileManager.default.fileExists(atPath: XCTUnwrap(finalURL?.path)))
 
         // Verificar se arquivo tem conteúdo
-        let asset = AVURLAsset(url: try XCTUnwrap(finalURL))
+        let asset = try AVURLAsset(url: XCTUnwrap(finalURL))
         let duration = try await asset.load(.duration)
         XCTAssertGreaterThan(duration.seconds, 0)
     }
@@ -320,6 +320,7 @@ final class AudioSystemTests: XCTestCase {
     }
 
     // MARK: - Performance Tests
+
     // Performance tests have been moved to AudioSystemPerformanceTests.swift
     // Run with: swift test --filter "AudioSystemPerformanceTests"
 
@@ -390,7 +391,7 @@ final class AudioSystemTests: XCTestCase {
             commonFormat: .pcmFormatFloat32,
             sampleRate: 48_000,
             channels: 2,
-            interleaved: false
+            interleaved: false,
         ) else {
             throw NSError(domain: "Test", code: 1, userInfo: [NSLocalizedDescriptionKey: "Failed to create format"])
         }

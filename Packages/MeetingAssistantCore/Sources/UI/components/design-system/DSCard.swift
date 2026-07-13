@@ -19,7 +19,7 @@ public struct DSCard<Content: View>: View {
         settingsSurfaceIntensity: AppDesignSystem.SettingsSurfaceIntensity = .subtle,
         cornerRadius: CGFloat = AppDesignSystem.Layout.cardCornerRadius,
         padding: CGFloat = AppDesignSystem.Layout.cardPadding,
-        @ViewBuilder content: () -> Content
+        @ViewBuilder content: () -> Content,
     ) {
         self.style = style
         self.settingsSurfaceIntensity = settingsSurfaceIntensity
@@ -55,8 +55,8 @@ public struct DSCard<Content: View>: View {
                     .fill(
                         AppDesignSystem.Colors.settingsMaterialCardFill(
                             reduceTransparency: true,
-                            intensity: settingsSurfaceIntensity
-                        )
+                            intensity: settingsSurfaceIntensity,
+                        ),
                     )
                     .overlay {
                         shape.stroke(settingsCardStroke, lineWidth: settingsCardStrokeWidth)
@@ -68,8 +68,8 @@ public struct DSCard<Content: View>: View {
                         shape.fill(
                             AppDesignSystem.Colors.settingsMaterialCardFill(
                                 reduceTransparency: false,
-                                intensity: settingsSurfaceIntensity
-                            )
+                                intensity: settingsSurfaceIntensity,
+                            ),
                         )
                     }
                     .overlay {
@@ -81,7 +81,7 @@ public struct DSCard<Content: View>: View {
 
     private var settingsCardStroke: Color {
         AppDesignSystem.Colors.settingsMaterialCardStroke(
-            increaseContrast: AppDesignSystem.Accessibility.increaseContrast
+            increaseContrast: AppDesignSystem.Accessibility.increaseContrast,
         )
     }
 

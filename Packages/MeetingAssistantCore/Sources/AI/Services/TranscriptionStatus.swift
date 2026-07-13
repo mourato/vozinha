@@ -140,7 +140,7 @@ public class TranscriptionStatus: ObservableObject {
     public func updateProgress(
         phase: TranscriptionPhase,
         percentage: Double? = nil,
-        processedSeconds: Double? = nil
+        processedSeconds: Double? = nil,
     ) {
         self.phase = phase
 

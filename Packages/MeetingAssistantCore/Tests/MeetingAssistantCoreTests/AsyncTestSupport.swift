@@ -8,7 +8,7 @@ extension XCTestCase {
         message: String = "Timed out waiting for condition.",
         file: StaticString = #filePath,
         line: UInt = #line,
-        _ condition: () -> Bool
+        _ condition: () -> Bool,
     ) async {
         let clock = ContinuousClock()
         let deadline = clock.now.advanced(by: timeout)

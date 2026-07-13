@@ -9,32 +9,32 @@ final class AutoMeetingConfirmationPolicyTests: XCTestCase {
             AutoMeetingConfirmationPolicy.isIdleForAutomaticMeetingStart(
                 currentCapturePurpose: nil,
                 isRecording: false,
-                isStartingRecording: false
-            )
+                isStartingRecording: false,
+            ),
         )
 
         XCTAssertFalse(
             AutoMeetingConfirmationPolicy.isIdleForAutomaticMeetingStart(
                 currentCapturePurpose: .meeting,
                 isRecording: true,
-                isStartingRecording: false
-            )
+                isStartingRecording: false,
+            ),
         )
 
         XCTAssertFalse(
             AutoMeetingConfirmationPolicy.isIdleForAutomaticMeetingStart(
                 currentCapturePurpose: .meeting,
                 isRecording: false,
-                isStartingRecording: true
-            )
+                isStartingRecording: true,
+            ),
         )
 
         XCTAssertFalse(
             AutoMeetingConfirmationPolicy.isIdleForAutomaticMeetingStart(
                 currentCapturePurpose: .dictation,
                 isRecording: false,
-                isStartingRecording: false
-            )
+                isStartingRecording: false,
+            ),
         )
     }
 }

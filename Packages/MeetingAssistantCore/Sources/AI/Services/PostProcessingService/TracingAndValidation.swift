@@ -18,7 +18,7 @@ extension PostProcessingService {
 
     func profile(
         for mode: IntelligenceKernelMode,
-        prefersStructuredPipeline: Bool
+        prefersStructuredPipeline: Bool,
     ) -> RequestProfile {
         switch mode {
         case .meeting:
@@ -28,7 +28,7 @@ extension PostProcessingService {
                 retryCount: Constants.meetingRetryCount,
                 useStructuredPipeline: prefersStructuredPipeline,
                 useRepair: prefersStructuredPipeline,
-                pipeline: prefersStructuredPipeline ? "structured" : "fast"
+                pipeline: prefersStructuredPipeline ? "structured" : "fast",
             )
         case .dictation, .assistant:
             let canUseStructured = prefersStructuredPipeline && settings.dictationStructuredPostProcessingEnabled
@@ -38,7 +38,7 @@ extension PostProcessingService {
                 retryCount: 0,
                 useStructuredPipeline: canUseStructured,
                 useRepair: false,
-                pipeline: canUseStructured ? "structured" : "fast"
+                pipeline: canUseStructured ? "structured" : "fast",
             )
         }
     }
@@ -50,7 +50,7 @@ extension PostProcessingService {
             retryCount: 0,
             useStructuredPipeline: false,
             useRepair: false,
-            pipeline: "fast"
+            pipeline: "fast",
         )
     }
 
@@ -59,7 +59,7 @@ extension PostProcessingService {
         provider: AIProvider,
         model: String,
         prompt: PostProcessingPrompt,
-        pipeline: String
+        pipeline: String,
     ) -> RequestTraceContext {
         RequestTraceContext(
             mode: mode,
@@ -67,7 +67,7 @@ extension PostProcessingService {
             model: model,
             promptId: prompt.id.uuidString,
             promptTitle: prompt.title,
-            pipeline: pipeline
+            pipeline: pipeline,
         )
     }
 
@@ -75,7 +75,7 @@ extension PostProcessingService {
         from context: RequestTraceContext,
         attempt: Int,
         elapsedMilliseconds: Double?,
-        extra: [String: Any] = [:]
+        extra: [String: Any] = [:],
     ) -> [String: Any] {
         var payload: [String: Any] = [
             "mode": context.mode.rawValue,
@@ -108,7 +108,7 @@ extension PostProcessingService {
 
     func shouldTriggerDictationTimeoutFallback(
         for mode: IntelligenceKernelMode,
-        error: PostProcessingError
+        error: PostProcessingError,
     ) -> Bool {
         mode == .dictation && isTimeoutError(error)
     }
@@ -124,14 +124,14 @@ extension PostProcessingService {
 
     func reportDictationPostProcessingDurationIfNeeded(
         mode: IntelligenceKernelMode,
-        startedAt: Date
+        startedAt: Date,
     ) {
         guard mode == .dictation else { return }
 
         PerformanceMonitor.shared.reportMetric(
             name: "dictation_post_processing_ms",
             value: Date().timeIntervalSince(startedAt) * 1_000,
-            unit: "ms"
+            unit: "ms",
         )
     }
 }

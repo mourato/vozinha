@@ -19,7 +19,7 @@ struct SettingsSearchField: View {
         NativeSearchField(
             text: $text,
             placeholder: placeholder,
-            style: nativeStyle
+            style: nativeStyle,
         )
         .frame(height: fieldHeight)
     }
@@ -49,12 +49,12 @@ struct SettingsSearchField: View {
     return VStack(spacing: 12) {
         SettingsSearchField(
             text: $searchText,
-            placeholder: "settings.search.placeholder".localized
+            placeholder: "settings.search.placeholder".localized,
         )
 
         SettingsSearchField(
             text: .constant("Transcript"),
-            placeholder: "settings.transcriptions.search_placeholder".localized
+            placeholder: "settings.transcriptions.search_placeholder".localized,
         )
     }
     .padding(16)

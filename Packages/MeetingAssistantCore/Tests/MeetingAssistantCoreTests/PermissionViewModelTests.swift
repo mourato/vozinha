@@ -1,5 +1,5 @@
-import XCTest
 @testable import MeetingAssistantCore
+import XCTest
 
 @MainActor
 final class PermissionViewModelTests: XCTestCase {
@@ -52,7 +52,7 @@ final class PermissionViewModelTests: XCTestCase {
             openMicrophoneSettings: {},
             openScreenSettings: {},
             requestAccessibility: {},
-            openAccessibilitySettings: {}
+            openAccessibilitySettings: {},
         )
     }
 }

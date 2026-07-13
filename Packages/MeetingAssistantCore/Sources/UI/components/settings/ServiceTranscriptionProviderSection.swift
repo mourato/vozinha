@@ -29,8 +29,8 @@ public struct ServiceTranscriptionProviderSection: View {
                         "",
                         selection: Binding(
                             get: { viewModel.selectedDictationProviderRawValue },
-                            set: { viewModel.updateDictationProvider(rawValue: $0) }
-                        )
+                            set: { viewModel.updateDictationProvider(rawValue: $0) },
+                        ),
                     ) {
                         ForEach(viewModel.availableDictationProviders, id: \.rawValue) { provider in
                             Text(viewModel.displayName(for: provider)).tag(provider.rawValue)
@@ -57,8 +57,8 @@ public struct ServiceTranscriptionProviderSection: View {
                     DSMenuPicker(
                         selection: Binding(
                             get: { viewModel.selectedInputLanguageHintRawValue },
-                            set: { viewModel.updateTranscriptionInputLanguageHint(rawValue: $0) }
-                        )
+                            set: { viewModel.updateTranscriptionInputLanguageHint(rawValue: $0) },
+                        ),
                     ) {
                         ForEach(viewModel.availableInputLanguageHints, id: \.rawValue) { hint in
                             Text(hint.displayName).tag(hint.rawValue)

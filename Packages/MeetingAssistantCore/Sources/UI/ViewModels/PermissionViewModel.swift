@@ -43,7 +43,7 @@ public class PermissionViewModel: ObservableObject {
         openMicrophoneSettings: @escaping () -> Void,
         openScreenSettings: @escaping () -> Void,
         requestAccessibility: @escaping () -> Void,
-        openAccessibilitySettings: @escaping () -> Void
+        openAccessibilitySettings: @escaping () -> Void,
     ) {
         permissionManager = manager
         requestMicrophoneAction = requestMicrophone

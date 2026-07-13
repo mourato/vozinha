@@ -10,7 +10,7 @@ final class ModelPerformanceAggregatorTests: XCTestCase {
 
         let analysis = ModelPerformanceAggregator.computeAnalysis(
             attempts: attempts,
-            stage: .transcription
+            stage: .transcription,
         )
 
         XCTAssertEqual(analysis.summary.distinctModels, 2)
@@ -28,13 +28,13 @@ final class ModelPerformanceAggregatorTests: XCTestCase {
                 wallClockSeconds: 2,
                 audioSeconds: 600,
                 inputUTF8Bytes: 4_000,
-                inputCharacterCount: 1_000
+                inputCharacterCount: 1_000,
             ),
         ]
 
         let analysis = ModelPerformanceAggregator.computeAnalysis(
             attempts: attempts,
-            stage: .postProcessing
+            stage: .postProcessing,
         )
 
         let entry = try XCTUnwrap(analysis.leaderboard.first)
@@ -57,7 +57,7 @@ final class ModelPerformanceAggregatorTests: XCTestCase {
 
         let analysis = ModelPerformanceAggregator.computeAnalysis(
             attempts: reliableAttempts + flakyAttempts,
-            stage: .transcription
+            stage: .transcription,
         )
 
         let first = try XCTUnwrap(analysis.leaderboard.first)
@@ -80,7 +80,7 @@ final class ModelPerformanceAggregatorTests: XCTestCase {
 
         let analysis = ModelPerformanceAggregator.computeAnalysis(
             attempts: lowSample + sufficientSample,
-            stage: .transcription
+            stage: .transcription,
         )
 
         let lowSampleEntry = try XCTUnwrap(analysis.leaderboard.first { $0.identity.modelID == "model-a" })
@@ -99,7 +99,7 @@ final class ModelPerformanceAggregatorTests: XCTestCase {
         wallClockSeconds: Double = 10,
         audioSeconds: Double = 60,
         inputUTF8Bytes: Int = 0,
-        inputCharacterCount: Int = 0
+        inputCharacterCount: Int = 0,
     ) -> ModelPerformanceAttempt {
         let now = Date(timeIntervalSince1970: 1_700_000_000)
         return ModelPerformanceAttempt(
@@ -112,7 +112,7 @@ final class ModelPerformanceAggregatorTests: XCTestCase {
                 providerDisplayName: providerName,
                 modelID: modelID,
                 modelDisplayName: modelID,
-                runtimeKind: .remote
+                runtimeKind: .remote,
             ),
             status: status,
             startedAt: now,
@@ -122,7 +122,7 @@ final class ModelPerformanceAggregatorTests: XCTestCase {
             inputUTF8Bytes: inputUTF8Bytes,
             inputCharacterCount: inputCharacterCount,
             outputCharacterCount: 100,
-            failureReason: status == .failed ? "failed" : nil
+            failureReason: status == .failed ? "failed" : nil,
         )
     }
 }

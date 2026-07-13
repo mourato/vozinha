@@ -1,5 +1,5 @@
-import XCTest
 @testable import MeetingAssistantCore
+import XCTest
 
 @MainActor
 final class AppSettingsStorePromptManagementTests: XCTestCase {
@@ -22,7 +22,7 @@ final class AppSettingsStorePromptManagementTests: XCTestCase {
             promptText: "Edited text",
             icon: "text.badge.checkmark",
             description: "Edited description",
-            isPredefined: false
+            isPredefined: false,
         )
 
         settings.upsertDictationPrompt(editedPrompt)
@@ -56,7 +56,7 @@ final class AppSettingsStorePromptManagementTests: XCTestCase {
             promptText: "Custom standup instructions",
             icon: "figure.stand",
             description: "Custom description",
-            isPredefined: false
+            isPredefined: false,
         )
 
         settings.upsertMeetingPrompt(editedPrompt)
@@ -96,7 +96,7 @@ final class AppSettingsStorePromptManagementTests: XCTestCase {
             promptText: "Summarize this meeting.",
             icon: "doc.text",
             description: "Custom description",
-            isPredefined: false
+            isPredefined: false,
         )
         settings.upsertMeetingPrompt(customPrompt)
         let viewModel = MeetingSettingsViewModel(settings: settings)

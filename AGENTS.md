@@ -85,7 +85,7 @@ Full lane:
 
 - Use a new feature branch and atomic commits.
 - Run targeted checks and narrow builds during iteration.
-- Before push/merge, run `make lint` and `make build-test`.
+- Before push/merge, run `make lint-strict` and `make build-test`.
 - Changes to `scripts/`, `Makefile`, build/test infrastructure, or broad architecture require the full gate even when mapping appears narrow.
 - Full code review uses the thermo-nuclear semaforo: fix all Critical and Medium findings before merge.
 
@@ -108,7 +108,7 @@ Use targeted tests before narrow builds, and scope-specific checks only when rel
 - `make build`, `make build-agent`, `make build-test`
 - `make test`, `make test-agent`, `make test-full`, `make test-smoke`
 - `make scope-check`, `make scope-check-agent`
-- `make lint`, `make lint-agent`, `make lint-fix`
+- `make lint`, `make lint-agent`, `make lint-strict`, `make lint-strict-agent`, `make lint-fix`
 - `make arch-check`, `make preview-check`, `make guidance-check`
 - `make preflight`, `make preflight-agent`, `make deliverable-gate`
 - `make dmg` for distribution; it auto-detects the configured local signing identity

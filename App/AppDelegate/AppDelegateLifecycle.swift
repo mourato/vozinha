@@ -96,7 +96,7 @@ extension AppDelegate {
             },
             openAccessibilitySettings: { [weak self] in
                 self?.recordingManager.openAccessibilitySettings()
-            }
+            },
         )
 
         let shortcutViewModel = ShortcutSettingsViewModel()
@@ -113,7 +113,7 @@ extension AppDelegate {
             refreshPermissions: { [weak self] in
                 await self?.recordingManager.checkPermission()
             },
-            completion: completion
+            completion: completion,
         )
     }
 
@@ -228,8 +228,8 @@ extension AppDelegate {
                 },
                 quit: { [weak self] in
                     self?.quitApp()
-                }
-            )
+                },
+            ),
         )
     }
 
@@ -287,7 +287,7 @@ extension AppDelegate {
             settingsStore.$cancelRecordingShortcutDefinition.map { _ in () }.eraseToAnyPublisher(),
             settingsStore.$isMeetingTranscriptionEnabled.map { _ in () }.eraseToAnyPublisher(),
             settingsStore.$isAssistantEnabled.map { _ in () }.eraseToAnyPublisher(),
-            settingsStore.$isAssistantIntegrationsEnabled.map { _ in () }.eraseToAnyPublisher()
+            settingsStore.$isAssistantIntegrationsEnabled.map { _ in () }.eraseToAnyPublisher(),
         )
         // @Published emits in willSet; schedule refresh so re-reads observe committed values.
         .receive(on: DispatchQueue.main)
@@ -311,7 +311,7 @@ extension AppDelegate {
                 let message = notification.userInfo?[AppNotifications.UserInfoKey.transcriptionErrorMessage] as? String
                 self?.floatingIndicatorController.showError(
                     message ?? "notification.transcription_failed".localized,
-                    autoHideAfter: 4.0
+                    autoHideAfter: 4.0,
                 )
             }
             .store(in: &cancellables)
@@ -354,11 +354,11 @@ extension AppDelegate {
                 isRecordingManagerActive: isRecording || isStarting || isTranscribing,
                 recordingSource: recordingManager.recordingSource,
                 capturePurpose: recordingManager.currentCapturePurpose,
-                isAssistantRecording: isAssistantRecording || isAssistantOwnedOverlayVisible
+                isAssistantRecording: isAssistantRecording || isAssistantOwnedOverlayVisible,
             ),
             cancelRecordingShortcutDefinition: settingsStore.cancelRecordingShortcutDefinition,
             meetingCapabilityEnabled: settingsStore.isMeetingTranscriptionEnabled,
-            assistantCapabilityEnabled: settingsStore.isAssistantEnabled
+            assistantCapabilityEnabled: settingsStore.isAssistantEnabled,
         )
         let renderState = RecordingUIRenderState(
             isRecording: isRecording,
@@ -368,7 +368,7 @@ extension AppDelegate {
             isAssistantProcessing: isAssistantProcessing,
             automaticMeetingRecordingConfirmation: automaticMeetingConfirmation,
             meetingTypeRawValue: currentMeetingType?.rawValue,
-            isMeetingNotesPanelVisible: recordingManager.isMeetingNotesPanelVisible
+            isMeetingNotesPanelVisible: recordingManager.isMeetingNotesPanelVisible,
         )
 
         lastAppCommandState = commandState
@@ -391,7 +391,7 @@ extension AppDelegate {
                 automaticMeetingConfirmation: automaticMeetingConfirmation,
                 capturePurpose: recordingManager.currentCapturePurpose,
                 recordingSource: recordingManager.recordingSource,
-                meetingType: currentMeetingType
+                meetingType: currentMeetingType,
             )
         }
         updateMeetingNotesPanel(isRecording: isRecording, capturePurpose: recordingManager.currentCapturePurpose)
@@ -424,7 +424,7 @@ extension AppDelegate {
     func recordingCancelShortcutStateSnapshot() -> RecordingCancelShortcutState {
         RecordingCancelShortcutState(
             isRecordingManagerCaptureActive: recordingManager.isRecording || recordingManager.isStartingRecording,
-            isAssistantCaptureActive: assistantVoiceCommandService.isRecording
+            isAssistantCaptureActive: assistantVoiceCommandService.isRecording,
         )
     }
 
@@ -435,7 +435,7 @@ extension AppDelegate {
         if purpose == .meeting, !settingsStore.isMeetingTranscriptionEnabled {
             AppLogger.info(
                 "Meeting capture start blocked because meeting transcription capability is disabled",
-                category: .uiController
+                category: .uiController,
             )
             floatingIndicatorController.showError("recording.error.meeting_transcription_disabled".localized)
             return
@@ -455,7 +455,7 @@ extension AppDelegate {
                 extra: [
                     "requestedPurpose": purpose == .dictation ? "dictation" : "meeting",
                     "activePurpose": recordingManager.currentCapturePurpose?.rawValue ?? "assistant",
-                ]
+                ],
             )
             floatingIndicatorController.showError("recording.error.mode_switch_blocked".localized)
             return
@@ -465,7 +465,7 @@ extension AppDelegate {
         await recordingManager.startCapture(
             purpose: purpose,
             requestedAt: Date(),
-            triggerLabel: triggerLabel
+            triggerLabel: triggerLabel,
         )
     }
 
@@ -559,7 +559,7 @@ extension AppDelegate {
 
     private func applyAutomaticMeetingRecordingState() {
         recordingManager.setAutomaticMeetingRecordingEnabled(
-            settingsStore.isMeetingTranscriptionEnabled && settingsStore.autoStartRecording
+            settingsStore.isMeetingTranscriptionEnabled && settingsStore.autoStartRecording,
         )
     }
 

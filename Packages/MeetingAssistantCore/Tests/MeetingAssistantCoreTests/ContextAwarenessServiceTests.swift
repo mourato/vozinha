@@ -7,7 +7,7 @@ final class ContextAwarenessServiceTests: XCTestCase {
     func testIsCaptureBlocked_ReturnsTrueForDefaultSensitiveBundleID() {
         let blocked = ContextAwarenessPrivacy.isCaptureBlocked(
             bundleIdentifier: "com.1password.1password",
-            excludedBundleIDs: []
+            excludedBundleIDs: [],
         )
 
         XCTAssertTrue(blocked)
@@ -16,7 +16,7 @@ final class ContextAwarenessServiceTests: XCTestCase {
     func testIsCaptureBlocked_ReturnsTrueForCustomExcludedBundleID() {
         let blocked = ContextAwarenessPrivacy.isCaptureBlocked(
             bundleIdentifier: "com.example.secureapp",
-            excludedBundleIDs: ["com.example.secureapp"]
+            excludedBundleIDs: ["com.example.secureapp"],
         )
 
         XCTAssertTrue(blocked)
@@ -25,7 +25,7 @@ final class ContextAwarenessServiceTests: XCTestCase {
     func testIsCaptureBlocked_ReturnsFalseForRegularBundleID() {
         let blocked = ContextAwarenessPrivacy.isCaptureBlocked(
             bundleIdentifier: "com.apple.safari",
-            excludedBundleIDs: []
+            excludedBundleIDs: [],
         )
 
         XCTAssertFalse(blocked)

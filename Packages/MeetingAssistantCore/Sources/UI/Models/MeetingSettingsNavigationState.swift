@@ -13,7 +13,7 @@ public struct MeetingSettingsNavigationState: Equatable {
 
     public init(
         currentRoute: MeetingSettingsNavigationRoute = .root,
-        forwardRoute: MeetingSettingsNavigationRoute? = nil
+        forwardRoute: MeetingSettingsNavigationRoute? = nil,
     ) {
         self.currentRoute = currentRoute
         self.forwardRoute = forwardRoute

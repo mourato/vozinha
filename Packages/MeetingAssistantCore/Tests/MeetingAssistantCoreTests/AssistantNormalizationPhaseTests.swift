@@ -1,5 +1,5 @@
-import XCTest
 @testable import MeetingAssistantCoreUI
+import XCTest
 
 @MainActor
 final class AssistantNormalizationPhaseTests: XCTestCase {
@@ -12,7 +12,7 @@ final class AssistantNormalizationPhaseTests: XCTestCase {
             processedCommand: "  ",
             command: "fallback command",
             executionFlow: .assistantMode,
-            sourceText: "source text"
+            sourceText: "source text",
         )
         XCTAssertEqual(result, "fallback command")
     }
@@ -22,7 +22,7 @@ final class AssistantNormalizationPhaseTests: XCTestCase {
             processedCommand: "  ",
             command: "  ",
             executionFlow: .assistantMode,
-            sourceText: "source text"
+            sourceText: "source text",
         )
         XCTAssertEqual(result, "source text")
     }
@@ -32,7 +32,7 @@ final class AssistantNormalizationPhaseTests: XCTestCase {
             processedCommand: "processed result",
             command: "ignored",
             executionFlow: .assistantMode,
-            sourceText: "ignored"
+            sourceText: "ignored",
         )
         XCTAssertEqual(result, "processed result")
     }
@@ -42,7 +42,7 @@ final class AssistantNormalizationPhaseTests: XCTestCase {
             processedCommand: "  ",
             command: "original command",
             executionFlow: .integrationDispatch,
-            sourceText: "ignored"
+            sourceText: "ignored",
         )
         XCTAssertEqual(result, "")
     }
@@ -52,7 +52,7 @@ final class AssistantNormalizationPhaseTests: XCTestCase {
             processedCommand: "integration output",
             command: "original command",
             executionFlow: .integrationDispatch,
-            sourceText: "ignored"
+            sourceText: "ignored",
         )
         XCTAssertEqual(result, "integration output")
     }

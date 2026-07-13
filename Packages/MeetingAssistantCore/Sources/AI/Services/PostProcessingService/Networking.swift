@@ -47,7 +47,7 @@ extension PostProcessingService {
             transcription: context.transcription,
             prompt: context.prompt,
             systemPromptOverride: context.systemPromptOverride,
-            mode: context.mode
+            mode: context.mode,
         )
 
         AppLogger.debug(
@@ -57,8 +57,8 @@ extension PostProcessingService {
                 from: context.traceContext,
                 attempt: context.attempt,
                 elapsedMilliseconds: nil,
-                extra: ["url": sanitizedURLForLogging(url)]
-            )
+                extra: ["url": sanitizedURLForLogging(url)],
+            ),
         )
 
         let (data, response) = try await URLSession.shared.data(for: request)
@@ -71,8 +71,8 @@ extension PostProcessingService {
             extra: traceExtra(
                 from: context.traceContext,
                 attempt: context.attempt,
-                elapsedMilliseconds: Date().timeIntervalSince(requestStartedAt) * 1_000
-            )
+                elapsedMilliseconds: Date().timeIntervalSince(requestStartedAt) * 1_000,
+            ),
         )
         return output
     }
@@ -93,7 +93,7 @@ extension PostProcessingService {
             for: &request,
             config: config,
             systemMessage: context.systemPrompt,
-            userContent: context.userContent
+            userContent: context.userContent,
         )
 
         let (data, response) = try await URLSession.shared.data(for: request)
@@ -106,8 +106,8 @@ extension PostProcessingService {
             extra: traceExtra(
                 from: context.traceContext,
                 attempt: context.attempt,
-                elapsedMilliseconds: Date().timeIntervalSince(requestStartedAt) * 1_000
-            )
+                elapsedMilliseconds: Date().timeIntervalSince(requestStartedAt) * 1_000,
+            ),
         )
         return output
     }
@@ -143,7 +143,7 @@ extension PostProcessingService {
     func getAPIKey(
         selectionOverride: EnhancementsAISelection?,
         mode: IntelligenceKernelMode,
-        provider: AIProvider
+        provider: AIProvider,
     ) throws -> String {
         if let selectionOverride,
            let modeKey = settings.enhancementsAPIKey(for: selectionOverride),
@@ -166,7 +166,7 @@ extension PostProcessingService {
         let endpoint = try buildEndpoint(
             for: config.provider,
             baseURL: config.baseURL,
-            model: config.selectedModel
+            model: config.selectedModel,
         )
         guard var components = URLComponents(string: endpoint) else {
             throw PostProcessingError.invalidURL
@@ -186,7 +186,7 @@ extension PostProcessingService {
     func configureAuthHeaders(
         for request: inout URLRequest,
         provider: AIProvider,
-        apiKey: String
+        apiKey: String,
     ) {
         switch provider {
         case .anthropic:
@@ -205,7 +205,7 @@ extension PostProcessingService {
         transcription: String,
         prompt: PostProcessingPrompt,
         systemPromptOverride: String?,
-        mode: IntelligenceKernelMode
+        mode: IntelligenceKernelMode,
     ) throws {
         let requestPrompts = AIPromptTemplates.requestPrompts(
             transcription: transcription,
@@ -218,14 +218,14 @@ extension PostProcessingService {
                     return cleanPrompt
                 }
                 return self.applyMeetingLanguagePreferenceIfNeeded(to: cleanPrompt, mode: mode)
-            }
+            },
         )
 
         try setCustomRequestBody(
             for: &request,
             config: config,
             systemMessage: requestPrompts.systemPrompt,
-            userContent: requestPrompts.userPrompt
+            userContent: requestPrompts.userPrompt,
         )
     }
 
@@ -240,7 +240,7 @@ extension PostProcessingService {
 
     private func shouldApplyMeetingLanguagePreference(
         mode: IntelligenceKernelMode,
-        prompt: PostProcessingPrompt
+        prompt: PostProcessingPrompt,
     ) -> Bool {
         guard mode == .meeting else { return false }
         return !prompt.promptText.contains("<INTERNAL_MEETING_TYPE_CLASSIFIER>")
@@ -250,7 +250,7 @@ extension PostProcessingService {
         for request: inout URLRequest,
         config: AIConfiguration,
         systemMessage: String,
-        userContent: String
+        userContent: String,
     ) throws {
         let encoder = JSONEncoder()
 
@@ -261,14 +261,14 @@ extension PostProcessingService {
                     model: config.selectedModel,
                     maxTokens: Constants.maxTokens,
                     system: systemMessage,
-                    messages: [AIChatMessage(role: "user", content: userContent)]
+                    messages: [AIChatMessage(role: "user", content: userContent)],
                 )
                 request.httpBody = try encoder.encode(payload)
             case .google:
                 let payload = GeminiGenerateContentRequest(
                     systemInstruction: GeminiSystemInstruction(parts: [GeminiPart(text: systemMessage)]),
                     contents: [GeminiContent(role: "user", parts: [GeminiPart(text: userContent)])],
-                    generationConfig: GeminiGenerationConfig(maxOutputTokens: Constants.maxTokens)
+                    generationConfig: GeminiGenerationConfig(maxOutputTokens: Constants.maxTokens),
                 )
                 request.httpBody = try encoder.encode(payload)
             case .openai, .groq, .custom:
@@ -279,7 +279,7 @@ extension PostProcessingService {
                 let payload = OpenAIChatRequest(
                     model: config.selectedModel,
                     messages: messages,
-                    maxTokens: Constants.maxTokens
+                    maxTokens: Constants.maxTokens,
                 )
                 request.httpBody = try encoder.encode(payload)
             }
@@ -291,7 +291,7 @@ extension PostProcessingService {
 
     private func applyMeetingLanguagePreferenceIfNeeded(
         to prompt: String,
-        mode: IntelligenceKernelMode
+        mode: IntelligenceKernelMode,
     ) -> String {
         guard mode == .meeting else { return prompt }
 

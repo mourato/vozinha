@@ -12,7 +12,7 @@ public struct SettingsRowClickSurface<Content: View>: View {
     public init(
         onSingleClick: (() -> Void)? = nil,
         onDoubleClick: (() -> Void)? = nil,
-        @ViewBuilder content: @escaping () -> Content
+        @ViewBuilder content: @escaping () -> Content,
     ) {
         self.onSingleClick = onSingleClick
         self.onDoubleClick = onDoubleClick
@@ -22,7 +22,7 @@ public struct SettingsRowClickSurface<Content: View>: View {
     public init(
         onSingleClick: (() -> Void)? = nil,
         onDoubleClick: (() -> Void)? = nil,
-        @ViewBuilder content: @escaping (Bool) -> Content
+        @ViewBuilder content: @escaping (Bool) -> Content,
     ) {
         self.onSingleClick = onSingleClick
         self.onDoubleClick = onDoubleClick
@@ -36,13 +36,13 @@ public struct SettingsRowClickSurface<Content: View>: View {
             .opacity(isPressed ? 0.9 : 1)
             .animation(
                 AppleMotion.animation(reduceMotion: reduceMotion, kind: .press),
-                value: isPressed
+                value: isPressed,
             )
             .overlay {
                 SettingsRowClickCaptureRepresentable(
                     onSingleClick: onSingleClick,
                     onDoubleClick: onDoubleClick,
-                    isPressed: $isPressed
+                    isPressed: $isPressed,
                 )
             }
     }
@@ -145,7 +145,7 @@ private final class SettingsRowClickCaptureView: NSView {
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding()
                 .background(.quaternary)
-        }
+        },
     )
     .frame(width: 320)
     .padding()

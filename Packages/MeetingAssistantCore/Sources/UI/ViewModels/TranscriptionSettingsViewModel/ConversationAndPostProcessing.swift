@@ -35,7 +35,7 @@ public extension TranscriptionSettingsViewModel {
 
     static func manualExportSuggestedFilename(
         baseFilename: String,
-        kind: ManualTranscriptionExportKind
+        kind: ManualTranscriptionExportKind,
     ) -> String {
         guard let suffixKey = kind.filenameSuffixKey else {
             return "\(baseFilename).md"
@@ -88,7 +88,7 @@ public extension TranscriptionSettingsViewModel {
     private func askQuestion(
         _ question: String,
         for transcription: Transcription,
-        retryTurnID: UUID? = nil
+        retryTurnID: UUID? = nil,
     ) async {
         guard transcription.supportsMeetingConversation else {
             qaErrorMessage = localizedQuestionError(for: .disabled, transcriptionID: transcription.id)
@@ -108,7 +108,7 @@ public extension TranscriptionSettingsViewModel {
                 mode: .meeting,
                 question: question,
                 transcription: transcription,
-                modelSelectionOverride: qaModelSelectionByTranscription[transcription.id]
+                modelSelectionOverride: qaModelSelectionByTranscription[transcription.id],
             )
             let response = try await meetingQAService.ask(request)
             qaResponse = response
@@ -118,10 +118,10 @@ public extension TranscriptionSettingsViewModel {
                     question: question,
                     response: response,
                     errorMessage: nil,
-                    createdAt: turnCreationDate(for: retryTurnID, transcriptionID: transcription.id)
+                    createdAt: turnCreationDate(for: retryTurnID, transcriptionID: transcription.id),
                 ),
                 transcriptionID: transcription.id,
-                replacingTurnID: retryTurnID
+                replacingTurnID: retryTurnID,
             )
             await persistMeetingConversationState(for: transcription.id)
         } catch let error as MeetingQAError {
@@ -132,10 +132,10 @@ public extension TranscriptionSettingsViewModel {
                     question: question,
                     response: nil,
                     errorMessage: qaErrorMessage,
-                    createdAt: turnCreationDate(for: retryTurnID, transcriptionID: transcription.id)
+                    createdAt: turnCreationDate(for: retryTurnID, transcriptionID: transcription.id),
                 ),
                 transcriptionID: transcription.id,
-                replacingTurnID: retryTurnID
+                replacingTurnID: retryTurnID,
             )
             await persistMeetingConversationState(for: transcription.id)
         } catch {
@@ -146,10 +146,10 @@ public extension TranscriptionSettingsViewModel {
                     question: question,
                     response: nil,
                     errorMessage: qaErrorMessage,
-                    createdAt: turnCreationDate(for: retryTurnID, transcriptionID: transcription.id)
+                    createdAt: turnCreationDate(for: retryTurnID, transcriptionID: transcription.id),
                 ),
                 transcriptionID: transcription.id,
-                replacingTurnID: retryTurnID
+                replacingTurnID: retryTurnID,
             )
             await persistMeetingConversationState(for: transcription.id)
         }
@@ -192,7 +192,7 @@ public extension TranscriptionSettingsViewModel {
     private func upsertQATurn(
         _ turn: QATurn,
         transcriptionID: UUID,
-        replacingTurnID: UUID?
+        replacingTurnID: UUID?,
     ) {
         var turns = qaHistoryByTranscription[transcriptionID] ?? []
         if let replacingTurnID,
@@ -254,7 +254,7 @@ public extension TranscriptionSettingsViewModel {
             transcriptionAPIKeyExists: { [keychain] provider in
                 keychain.existsTranscriptionAPIKey(for: provider)
             },
-            isLocalModelReady: isLocalModelReady
+            isLocalModelReady: isLocalModelReady,
         )
         .map(RetryTranscriptionOption.init)
     }
@@ -273,35 +273,19 @@ public extension TranscriptionSettingsViewModel {
         do {
             let processedText = try await PostProcessingService.shared.processTranscription(
                 postProcessingInput,
-                with: prompt
+                with: prompt,
             )
 
             let duration = Date().timeIntervalSince(startTime)
             let config = AppSettingsStore.shared.resolvedEnhancementsAIConfiguration
             let modelUsed = config.selectedModel
 
-            let sortedSegments = sortedSegments(transcription.segments)
-            let updatedTranscription = Transcription(
-                id: transcription.id,
-                meeting: transcription.meeting,
-                contextItems: transcription.contextItems,
-                segments: sortedSegments,
-                text: transcription.text,
-                rawText: transcription.rawText,
-                processedContent: processedText,
-                canonicalSummary: transcription.canonicalSummary,
-                qualityProfile: transcription.qualityProfile,
-                postProcessingPromptId: prompt.id,
-                postProcessingPromptTitle: prompt.title,
-                language: transcription.language,
-                createdAt: transcription.createdAt,
-                modelName: transcription.modelName,
-                inputSource: transcription.inputSource,
-                transcriptionDuration: transcription.transcriptionDuration,
-                postProcessingDuration: duration,
-                postProcessingModel: modelUsed,
-                meetingType: transcription.meetingType,
-                meetingConversationState: transcription.meetingConversationState
+            let updatedTranscription = makePostProcessedTranscription(
+                from: transcription,
+                prompt: prompt,
+                processedText: processedText,
+                duration: duration,
+                modelUsed: modelUsed,
             )
 
             try await storage.saveTranscription(updatedTranscription)
@@ -320,7 +304,7 @@ public extension TranscriptionSettingsViewModel {
                 inputUTF8Bytes: postProcessingInput.lengthOfBytes(using: .utf8),
                 inputCharacterCount: postProcessingInput.count,
                 outputCharacterCount: processedText.count,
-                failureReason: nil
+                failureReason: nil,
             )
             try? await storage.saveModelPerformanceAttempt(attempt)
 
@@ -348,7 +332,7 @@ public extension TranscriptionSettingsViewModel {
                 inputUTF8Bytes: postProcessingInput.lengthOfBytes(using: .utf8),
                 inputCharacterCount: postProcessingInput.count,
                 outputCharacterCount: 0,
-                failureReason: error.localizedDescription
+                failureReason: error.localizedDescription,
             )
             try? await storage.saveModelPerformanceAttempt(attempt)
             let message = error.localizedDescription
@@ -371,7 +355,7 @@ public extension TranscriptionSettingsViewModel {
                 inputUTF8Bytes: postProcessingInput.lengthOfBytes(using: .utf8),
                 inputCharacterCount: postProcessingInput.count,
                 outputCharacterCount: 0,
-                failureReason: error.localizedDescription
+                failureReason: error.localizedDescription,
             )
             try? await storage.saveModelPerformanceAttempt(attempt)
             let message = "transcription.post_processing.error".localized
@@ -380,10 +364,41 @@ public extension TranscriptionSettingsViewModel {
         }
     }
 
+    private func makePostProcessedTranscription(
+        from transcription: Transcription,
+        prompt: PostProcessingPrompt,
+        processedText: String,
+        duration: TimeInterval,
+        modelUsed: String,
+    ) -> Transcription {
+        Transcription(
+            id: transcription.id,
+            meeting: transcription.meeting,
+            contextItems: transcription.contextItems,
+            segments: sortedSegments(transcription.segments),
+            text: transcription.text,
+            rawText: transcription.rawText,
+            processedContent: processedText,
+            canonicalSummary: transcription.canonicalSummary,
+            qualityProfile: transcription.qualityProfile,
+            postProcessingPromptId: prompt.id,
+            postProcessingPromptTitle: prompt.title,
+            language: transcription.language,
+            createdAt: transcription.createdAt,
+            modelName: transcription.modelName,
+            inputSource: transcription.inputSource,
+            transcriptionDuration: transcription.transcriptionDuration,
+            postProcessingDuration: duration,
+            postProcessingModel: modelUsed,
+            meetingType: transcription.meetingType,
+            meetingConversationState: transcription.meetingConversationState,
+        )
+    }
+
     func renameSpeaker(
         from originalSpeaker: String,
         to updatedSpeaker: String,
-        in transcriptionID: UUID
+        in transcriptionID: UUID,
     ) async {
         let oldValue = originalSpeaker.trimmingCharacters(in: .whitespacesAndNewlines)
         let newValue = updatedSpeaker.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -417,11 +432,11 @@ public extension TranscriptionSettingsViewModel {
 
         let fallbackLegacyContent = MeetingNotesContent(
             plainText: transcription.contextItems.first(where: { $0.source == .meetingNotes })?.text ?? "",
-            richTextRTFData: meetingNotesRichTextStore.transcriptionNotesRTFData(for: transcription.id)
+            richTextRTFData: meetingNotesRichTextStore.transcriptionNotesRTFData(for: transcription.id),
         )
         return meetingNotesMarkdownStore.loadTranscriptionNotesContent(
             for: transcription.id,
-            legacyContent: fallbackLegacyContent
+            legacyContent: fallbackLegacyContent,
         )
     }
 
@@ -477,7 +492,7 @@ public extension TranscriptionSettingsViewModel {
 
     func exportTranscription(
         for metadata: TranscriptionMetadata,
-        kind: ManualTranscriptionExportKind
+        kind: ManualTranscriptionExportKind,
     ) async {
         operationErrorMessage = nil
         do {
@@ -510,7 +525,7 @@ public extension TranscriptionSettingsViewModel {
 
     func retryTranscription(
         for metadata: TranscriptionMetadata,
-        selectionOverride: TranscriptionProviderSelection
+        selectionOverride: TranscriptionProviderSelection,
     ) async {
         guard !recordingManager.isTranscribing else {
             return
@@ -556,7 +571,7 @@ public extension TranscriptionSettingsViewModel {
                 metadata: metadata,
                 app: existing?.app ?? (DomainMeetingApp(rawValue: metadata.appRawValue) ?? .unknown),
                 capturePurpose: existing?.capturePurpose ?? metadata.capturePurpose,
-                title: normalizedTitle
+                title: normalizedTitle,
             )
 
             try await meetingRepository.updateMeeting(updatedMeeting)
@@ -591,7 +606,7 @@ public extension TranscriptionSettingsViewModel {
                 app: targetApp,
                 capturePurpose: capturePurpose,
                 title: capturePurpose == .meeting ? existing?.title ?? metadata.meetingTitle : nil,
-                fallbackEndTime: endTime
+                fallbackEndTime: endTime,
             )
 
             try await meetingRepository.updateMeeting(updatedMeeting)
@@ -615,7 +630,7 @@ public extension TranscriptionSettingsViewModel {
 
     private func contentForManualExport(
         transcription: Transcription,
-        kind: ManualTranscriptionExportKind
+        kind: ManualTranscriptionExportKind,
     ) -> String {
         switch kind {
         case .summary:
@@ -627,7 +642,7 @@ public extension TranscriptionSettingsViewModel {
 
     private func suggestedExportFilename(
         for transcription: Transcription,
-        kind: ManualTranscriptionExportKind
+        kind: ManualTranscriptionExportKind,
     ) -> String {
         let baseFilename = summaryExportHelper.defaultExportFilename(for: transcription)
         return Self.manualExportSuggestedFilename(baseFilename: baseFilename, kind: kind)
@@ -639,7 +654,7 @@ public extension TranscriptionSettingsViewModel {
         app: DomainMeetingApp,
         capturePurpose: CapturePurpose,
         title: String?,
-        fallbackEndTime: Date? = nil
+        fallbackEndTime: Date? = nil,
     ) -> MeetingEntity {
         MeetingEntity(
             id: metadata.meetingId,
@@ -651,7 +666,7 @@ public extension TranscriptionSettingsViewModel {
             linkedCalendarEvent: existing?.linkedCalendarEvent,
             startTime: existing?.startTime ?? metadata.startTime,
             endTime: existing?.endTime ?? fallbackEndTime,
-            audioFilePath: existing?.audioFilePath ?? metadata.audioFilePath
+            audioFilePath: existing?.audioFilePath ?? metadata.audioFilePath,
         )
     }
 
@@ -670,7 +685,7 @@ public extension TranscriptionSettingsViewModel {
         in transcription: inout Transcription,
         from oldValue: String,
         to newValue: String,
-        selectedID: UUID
+        selectedID: UUID,
     ) async throws {
         let renamedSegments = transcription.segments.map { segment in
             guard segment.speaker == oldValue else { return segment }
@@ -679,7 +694,7 @@ public extension TranscriptionSettingsViewModel {
                 speaker: newValue,
                 text: segment.text,
                 startTime: segment.startTime,
-                endTime: segment.endTime
+                endTime: segment.endTime,
             )
         }
 
@@ -705,7 +720,7 @@ public extension TranscriptionSettingsViewModel {
             postProcessingDuration: transcription.postProcessingDuration,
             postProcessingModel: transcription.postProcessingModel,
             meetingType: transcription.meetingType,
-            meetingConversationState: transcription.meetingConversationState
+            meetingConversationState: transcription.meetingConversationState,
         )
 
         try await storage.saveTranscription(updatedTranscription)
@@ -717,7 +732,7 @@ public extension TranscriptionSettingsViewModel {
     private func updateMeetingNotes(
         in transcription: inout Transcription,
         content: MeetingNotesContent,
-        selectedID: UUID
+        selectedID: UUID,
     ) async throws {
         let notes = content.plainText
         let trimmedNotes = notes.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -765,7 +780,7 @@ public extension TranscriptionSettingsViewModel {
             postProcessingDuration: transcription.postProcessingDuration,
             postProcessingModel: transcription.postProcessingModel,
             meetingType: transcription.meetingType,
-            meetingConversationState: transcription.meetingConversationState
+            meetingConversationState: transcription.meetingConversationState,
         )
 
         try await storage.saveTranscription(updatedTranscription)
@@ -779,7 +794,7 @@ public extension TranscriptionSettingsViewModel {
     private func persistMeetingNotesSideEffects(
         _ content: MeetingNotesContent,
         trimmedNotes: String,
-        for transcription: Transcription
+        for transcription: Transcription,
     ) {
         if transcription.supportsMeetingConversation {
             recordingManager.saveSharedMeetingNotesContent(content, for: transcription.meeting)

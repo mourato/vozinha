@@ -7,7 +7,7 @@ This document provides comprehensive CLI and workflow reference for building, te
 Choose commands by lane:
 
 - Fast lane merge gate: `make scope-check`
-- Full lane merge gate: `make lint` + `make build-test`
+- Full lane merge gate: `make lint-strict` + `make build-test`
 - Optional comprehensive validation: `make preflight`
 
 Agent default loop: preview with `make scope-check-agent ARGS="--dry-run --base main"` when needed, run the smallest changed-path check, let the staged pre-commit hook enforce Swift lint/format, then let pre-push run compact scoped validation. Do not run tests before every commit by default; use targeted tests and the lane gates for behavioral confidence.
@@ -72,6 +72,7 @@ make test-agent         # Tests only (machine-readable output)
 make scope-check-agent  # Scoped validation in compact agent mode
 make test-ci-strict     # Strict xcodebuild run (no fallback/retry)
 make lint-agent         # Lint with compact reporting
+make lint-strict-agent  # Strict lint with compact reporting
 make preflight-agent    # Full validation (agent-optimized)
 make preflight-agent-fast # Fast validation (agent-optimized)
 ```
@@ -83,10 +84,10 @@ make preflight-agent-fast # Fast validation (agent-optimized)
 build → test → lint → summary-benchmark
 ```
 
-**Strict lint baseline check (not currently a merge gate):**
+**Strict lint gate:**
 ```bash
-STRICT_LINT=1 make preflight
-# This currently fails on the repository-wide lint baseline; retire that baseline before making strict lint mandatory.
+make lint-strict-agent
+# Strict aliases fail on SwiftLint/SwiftFormat errors while keeping advisory warnings visible.
 ```
 
 **Fast mode (local feedback only):**
@@ -265,12 +266,12 @@ On failure, scripts print compact excerpts to terminal while keeping full logs o
 
 **Before push/merge (mandatory):**
 - ✓ Fast lane: `make scope-check`
-- ✓ Full lane: `make lint` + `make build-test`
+- ✓ Full lane: `make lint-strict` + `make build-test`
 - ✓ Guidance changes (`AGENTS.md`, `.agents/`, command docs): `make guidance-check`
 
 **Recommended before merge:**
 - ✓ `make preflight` — full validation
-- ✓ `make lint` — code quality checks
+- ✓ `make lint-strict` — code quality checks
 - ✓ `make ci-release-parity` — Sparkle release build/archive parity
 
 **Pre-release:**

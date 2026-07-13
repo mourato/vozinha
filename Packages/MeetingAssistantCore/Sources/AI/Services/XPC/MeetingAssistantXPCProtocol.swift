@@ -14,7 +14,7 @@ public protocol MeetingAssistantXPCProtocol {
     func transcribe(
         audioURL: URL,
         settingsData: Data,
-        withReply reply: @escaping @Sendable (Data?, Error?) -> Void
+        withReply reply: @escaping @Sendable (Data?, Error?) -> Void,
     )
 
     /// Fetches the current status of the AI service.

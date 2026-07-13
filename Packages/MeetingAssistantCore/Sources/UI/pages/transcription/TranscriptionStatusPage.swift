@@ -70,37 +70,36 @@ public struct TranscriptionStatusView: View {
                 .font(.system(size: 14, weight: .semibold))
                 .foregroundStyle(statusIconColor)
         }
-            .accessibilityHidden(true)
+        .accessibilityHidden(true)
     }
 
+    @ViewBuilder
     private var statusIconImage: some View {
-        Group {
-            switch (viewModel.serviceState, viewModel.modelState, viewModel.phase) {
-            case (.disconnected, _, _), (.error, _, _):
-                Image(systemName: "xmark.circle.fill")
-            case (.connecting, _, _):
-                ProgressView()
-                    .controlSize(.small)
-            case (.connected, .downloading, _):
-                ProgressView()
-                    .controlSize(.small)
-            case (.connected, .loading, _):
-                ProgressView()
-                    .controlSize(.small)
-            case (.connected, .error, _):
-                Image(systemName: "exclamationmark.triangle.fill")
-            case (.connected, .unloaded, _):
-                Image(systemName: "circle.dashed")
-            case (_, _, .processing), (_, _, .preparing):
-                ProgressView()
-                    .controlSize(.small)
-            case (_, _, .completed):
-                Image(systemName: "checkmark.circle.fill")
-            case (_, _, .failed):
-                Image(systemName: "xmark.circle.fill")
-            default:
-                Image(systemName: "checkmark.circle.fill")
-            }
+        switch (viewModel.serviceState, viewModel.modelState, viewModel.phase) {
+        case (.disconnected, _, _), (.error, _, _):
+            Image(systemName: "xmark.circle.fill")
+        case (.connecting, _, _):
+            ProgressView()
+                .controlSize(.small)
+        case (.connected, .downloading, _):
+            ProgressView()
+                .controlSize(.small)
+        case (.connected, .loading, _):
+            ProgressView()
+                .controlSize(.small)
+        case (.connected, .error, _):
+            Image(systemName: "exclamationmark.triangle.fill")
+        case (.connected, .unloaded, _):
+            Image(systemName: "circle.dashed")
+        case (_, _, .processing), (_, _, .preparing):
+            ProgressView()
+                .controlSize(.small)
+        case (_, _, .completed):
+            Image(systemName: "checkmark.circle.fill")
+        case (_, _, .failed):
+            Image(systemName: "xmark.circle.fill")
+        default:
+            Image(systemName: "checkmark.circle.fill")
         }
     }
 
@@ -120,9 +119,9 @@ public struct TranscriptionStatusView: View {
                         .fill(progressGradient)
                         .frame(
                             width: max(
-                                0, geometry.size.width * (viewModel.progressPercentage / 100.0)
+                                0, geometry.size.width * (viewModel.progressPercentage / 100.0),
                             ),
-                            height: 4
+                            height: 4,
                         )
                 }
             }
@@ -271,7 +270,7 @@ public struct TranscriptionStatusView: View {
         LinearGradient(
             colors: [AppDesignSystem.Colors.accent, AppDesignSystem.Colors.secondaryAccent],
             startPoint: .leading,
-            endPoint: .trailing
+            endPoint: .trailing,
         )
     }
 

@@ -71,7 +71,7 @@ public extension AppSettingsStore {
         recordingIndicatorStyle = .mini
         recordingIndicatorPosition = .bottom
         recordingIndicatorAnimationSpeed = .normal
-        automaticMeetingRecordingConfirmationDelay = .seconds3
+        automaticAutomaticMeetingRecordingConfirmationDelay = .seconds3
         autoDeleteTranscriptions = false
         autoDeletePeriodDays = 30
         appAccentColor = .system
@@ -91,16 +91,7 @@ public extension AppSettingsStore {
         meetingQnAEnabled = true
         markdownTargetBundleIdentifiers = Self.defaultMarkdownTargetBundleIdentifiers
         dictationAppRules = Self.defaultDictationAppRules
-        dictationStyles = [
-            Self.defaultDictationStyle(
-                contextAwarenessEnabled: contextAwarenessEnabled,
-                includeClipboard: contextAwarenessIncludeClipboard,
-                includeWindowOCR: contextAwarenessIncludeWindowOCR,
-                includeAccessibilityText: contextAwarenessIncludeAccessibilityText,
-                redactSensitiveData: contextAwarenessRedactSensitiveData,
-                dictationSelection: enhancementsDictationAISelection
-            ),
-        ]
+        dictationStyles = [defaultDictationStyle()]
         vocabularyReplacementRules = []
         markdownWebTargets = Self.defaultMarkdownWebTargets
         webTargetBrowserBundleIdentifiers = Self.defaultWebTargetBrowserBundleIdentifiers
@@ -108,5 +99,16 @@ public extension AppSettingsStore {
         webMeetingTargets = Self.defaultWebMeetingTargets
 
         UserDefaults.standard.removeObject(forKey: Keys.muteOutputDuringRecording)
+    }
+
+    private func defaultDictationStyle() -> DictationStyle {
+        Self.defaultDictationStyle(
+            contextAwarenessEnabled: contextAwarenessEnabled,
+            includeClipboard: contextAwarenessIncludeClipboard,
+            includeWindowOCR: contextAwarenessIncludeWindowOCR,
+            includeAccessibilityText: contextAwarenessIncludeAccessibilityText,
+            redactSensitiveData: contextAwarenessRedactSensitiveData,
+            dictationSelection: enhancementsDictationAISelection,
+        )
     }
 }

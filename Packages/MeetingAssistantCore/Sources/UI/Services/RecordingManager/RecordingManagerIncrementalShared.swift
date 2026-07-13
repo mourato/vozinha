@@ -52,7 +52,7 @@ extension RecordingManager {
         @MainActor
         func assignSpeakers(
             to segments: [Transcription.Segment],
-            using speakerTimeline: [SpeakerTimelineSegment]
+            using speakerTimeline: [SpeakerTimelineSegment],
         ) -> [Transcription.Segment] {
             value.assignSpeakers(to: segments, using: speakerTimeline)
         }
@@ -96,7 +96,7 @@ extension RecordingManager {
 
         init(
             handler: @escaping @Sendable (SendableIncrementalAudioBufferBox) async -> Void,
-            onLoadStateChanged: (@Sendable (Bool) -> Void)? = nil
+            onLoadStateChanged: (@Sendable (Bool) -> Void)? = nil,
         ) {
             self.onLoadStateChanged = onLoadStateChanged
 
@@ -162,7 +162,7 @@ extension RecordingManager {
     func supportsIncrementalCapture(
         _ config: IncrementalCaptureSupportConfig,
         actualPurpose: CapturePurpose,
-        actualSource: RecordingSource
+        actualSource: RecordingSource,
     ) -> Bool {
         guard actualPurpose == config.expectedPurpose, actualSource == config.expectedSource else { return false }
         guard config.incrementalFeatureEnabled else { return false }
@@ -209,13 +209,13 @@ extension RecordingManager {
     func installIncrementalBufferForwarder(
         on recorder: AudioRecorder,
         handler: @escaping @Sendable (SendableIncrementalAudioBufferBox) async -> Void,
-        onLoadStateChanged: (@Sendable (Bool) -> Void)? = nil
+        onLoadStateChanged: (@Sendable (Bool) -> Void)? = nil,
     ) {
         clearIncrementalBufferForwarder(on: recorder)
 
         let forwarder = IncrementalBufferForwarder(
             handler: handler,
-            onLoadStateChanged: onLoadStateChanged
+            onLoadStateChanged: onLoadStateChanged,
         )
         incrementalBufferForwarder = forwarder
         recorder.onMixedAudioBuffer = { [weak forwarder] buffer in
@@ -225,14 +225,14 @@ extension RecordingManager {
 
     func beginIncrementalFinalizationUI(
         audioURL: URL,
-        sessionID: UUID
+        sessionID: UUID,
     ) async -> Double? {
         let audioDuration = await getAudioDuration(from: audioURL)
         beginVisibleTranscriptionStatus(audioDuration: audioDuration, sessionID: sessionID)
         updateVisibleTranscriptionProgress(
             phase: .processing,
             percentage: Constants.processingProgress,
-            sessionID: sessionID
+            sessionID: sessionID,
         )
         return audioDuration
     }
@@ -242,13 +242,13 @@ extension RecordingManager {
         checkpointID: UUID,
         session: TranscriptionSessionSnapshot,
         audioDuration: Double?,
-        transcriptionDuration: Double
+        transcriptionDuration: Double,
     ) async throws -> Transcription {
         let settings = AppSettingsStore.shared
         let meetingEntity = makeMeetingEntity(meeting: session.meeting, audioDuration: audioDuration)
         let config = makeUseCaseConfig(session: session, settings: settings)
         let transcriptionIdentity = resolvedTranscriptionPerformanceIdentity(
-            capturePurpose: session.meeting.capturePurpose
+            capturePurpose: session.meeting.capturePurpose,
         )
         let transcriptionCompletedAt = Date()
         let transcriptionStartedAt = transcriptionCompletedAt.addingTimeInterval(-max(0, transcriptionDuration))
@@ -281,13 +281,13 @@ extension RecordingManager {
                 Task { @MainActor [weak self] in
                     self?.handleUseCasePhaseChange(phase, meeting: session.meeting, sessionID: session.id)
                 }
-            }
+            },
         )
 
         return convertToModel(
             transcriptionEntity,
             audioDuration: audioDuration,
-            transcriptionStart: session.meeting.startTime
+            transcriptionStart: session.meeting.startTime,
         )
     }
 }

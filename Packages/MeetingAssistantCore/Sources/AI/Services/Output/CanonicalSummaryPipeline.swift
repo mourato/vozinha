@@ -57,7 +57,7 @@ struct CanonicalSummaryRepairComposer {
     func userMessage(
         malformedOutput: String,
         transcription: String,
-        originalPrompt: String
+        originalPrompt: String,
     ) -> String {
         """
         Repair the malformed output below into valid canonical summary JSON.
@@ -201,8 +201,8 @@ struct DeterministicSummaryFallbackBuilder {
                 isGroundedInTranscript: false,
                 containsSpeculation: true,
                 isHumanReviewed: false,
-                confidenceScore: Constants.fallbackConfidenceScore
-            )
+                confidenceScore: Constants.fallbackConfidenceScore,
+            ),
         )
 
         let validatedSummary: CanonicalSummary = if (try? fallbackSummary.validate()) != nil {
@@ -215,15 +215,15 @@ struct DeterministicSummaryFallbackBuilder {
                     isGroundedInTranscript: false,
                     containsSpeculation: true,
                     isHumanReviewed: false,
-                    confidenceScore: Constants.fallbackConfidenceScore
-                )
+                    confidenceScore: Constants.fallbackConfidenceScore,
+                ),
             )
         }
 
         return DomainPostProcessingResult(
             processedText: renderer.render(validatedSummary),
             canonicalSummary: validatedSummary,
-            outputState: .deterministicFallback
+            outputState: .deterministicFallback,
         )
     }
 
@@ -311,7 +311,7 @@ private struct CanonicalSummaryPayload: Decodable {
             decisions: cleanedEntries(decisions),
             actionItems: (actionItems ?? []).map { $0.toActionItem() },
             openQuestions: cleanedEntries(openQuestions),
-            trustFlags: trustFlags?.toTrustFlags() ?? .init()
+            trustFlags: trustFlags?.toTrustFlags() ?? .init(),
         )
     }
 
@@ -331,7 +331,7 @@ private struct CanonicalSummaryActionItemPayload: Decodable {
         CanonicalSummary.ActionItem(
             title: title?.trimmingCharacters(in: .whitespacesAndNewlines) ?? "",
             owner: owner?.trimmingCharacters(in: .whitespacesAndNewlines),
-            dueDate: parseDate(dueDate)
+            dueDate: parseDate(dueDate),
         )
     }
 
@@ -365,7 +365,7 @@ private struct CanonicalSummaryTrustFlagsPayload: Decodable {
             isGroundedInTranscript: isGroundedInTranscript ?? false,
             containsSpeculation: containsSpeculation ?? false,
             isHumanReviewed: isHumanReviewed ?? false,
-            confidenceScore: confidenceScore ?? 0.0
+            confidenceScore: confidenceScore ?? 0.0,
         )
     }
 }

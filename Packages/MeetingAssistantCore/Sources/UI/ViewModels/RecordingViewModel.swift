@@ -73,7 +73,7 @@ public class RecordingViewModel: ObservableObject {
 
     public init(
         recordingManager: some RecordingServiceProtocol,
-        modelManager: some AIModelService = FluidAIModelManager.shared
+        modelManager: some AIModelService = FluidAIModelManager.shared,
     ) {
         self.recordingManager = recordingManager
         self.modelManager = modelManager
@@ -88,7 +88,7 @@ public class RecordingViewModel: ObservableObject {
             openMicrophoneSettings: { recordingManager.openMicrophoneSettings() },
             openScreenSettings: { recordingManager.openPermissionSettings() },
             requestAccessibility: { recordingManager.requestAccessibilityPermission() },
-            openAccessibilitySettings: { recordingManager.openAccessibilitySettings() }
+            openAccessibilitySettings: { recordingManager.openAccessibilitySettings() },
         )
 
         setupBindings()
@@ -173,7 +173,7 @@ public class RecordingViewModel: ObservableObject {
             .map { mic, screen, source in
                 source.requiredPermissionsGranted(
                     microphone: mic,
-                    screenRecording: screen
+                    screenRecording: screen,
                 )
             }
             .receive(on: DispatchQueue.main)

@@ -1,5 +1,5 @@
-import XCTest
 @testable import MeetingAssistantCore
+import XCTest
 
 final class ShortcutCaptureHealthPresentationTests: XCTestCase {
     func testFromReturnsNilWhenResultIsHealthy() {
@@ -10,7 +10,7 @@ final class ShortcutCaptureHealthPresentationTests: XCTestCase {
             requiresGlobalCapture: true,
             accessibilityTrusted: true,
             eventTapExpected: false,
-            eventTapActive: false
+            eventTapActive: false,
         )
 
         XCTAssertNil(ShortcutCaptureHealthPresentation.from(status: status))
@@ -24,7 +24,7 @@ final class ShortcutCaptureHealthPresentationTests: XCTestCase {
             requiresGlobalCapture: true,
             accessibilityTrusted: false,
             eventTapExpected: false,
-            eventTapActive: false
+            eventTapActive: false,
         )
 
         let presentation = ShortcutCaptureHealthPresentation.from(status: status)
@@ -42,7 +42,7 @@ final class ShortcutCaptureHealthPresentationTests: XCTestCase {
             requiresGlobalCapture: true,
             accessibilityTrusted: true,
             eventTapExpected: true,
-            eventTapActive: false
+            eventTapActive: false,
         )
 
         let presentation = ShortcutCaptureHealthPresentation.from(status: status)

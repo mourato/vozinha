@@ -1,5 +1,5 @@
-import XCTest
 @testable import MeetingAssistantCore
+import XCTest
 
 final class PromptServiceTests: XCTestCase {
 
@@ -59,7 +59,7 @@ final class PromptServiceTests: XCTestCase {
     func testSystemPrompt_WithPriorityInstructions_AppendsExplicitPrecedence() {
         let system = AIPromptTemplates.systemPrompt(
             basePrompt: "Base system prompt",
-            priorityInstructions: "Always write in lowercase."
+            priorityInstructions: "Always write in lowercase.",
         )
 
         XCTAssertTrue(system.contains("Base system prompt"))
@@ -71,7 +71,7 @@ final class PromptServiceTests: XCTestCase {
         let userMessage = AIPromptTemplates.userMessage(
             transcription: "hello world",
             prompt: "Summarize",
-            priorityInstructions: "Always write in lowercase."
+            priorityInstructions: "Always write in lowercase.",
         )
 
         XCTAssertTrue(userMessage.contains("<TRANSCRIPTION>"))
@@ -85,7 +85,7 @@ final class PromptServiceTests: XCTestCase {
             transcription: "hello world",
             prompt: "Summarize",
             priorityInstructions: "Always write in lowercase.",
-            contextMetadata: "Active app: VSCode"
+            contextMetadata: "Active app: VSCode",
         )
 
         let instructionsRange = try XCTUnwrap(userMessage.range(of: "<INSTRUCTIONS>"))
@@ -120,7 +120,7 @@ final class PromptServiceTests: XCTestCase {
     func testSimpleDictationUserMessageIncludesContextWhenProvided() {
         let userMessage = AIPromptTemplates.simpleDictationUserMessage(
             transcription: "hello world",
-            contextMetadata: "Active app: VSCode"
+            contextMetadata: "Active app: VSCode",
         )
         XCTAssertTrue(userMessage.contains("<CONTEXT_METADATA>"))
         XCTAssertTrue(userMessage.contains("Active app: VSCode"))
@@ -130,7 +130,7 @@ final class PromptServiceTests: XCTestCase {
     func testSimpleDictationUserMessageDoesNotDuplicateExistingContext() {
         let userMessage = AIPromptTemplates.simpleDictationUserMessage(
             transcription: "hello world\n\n<CONTEXT_METADATA>\nExisting context\n</CONTEXT_METADATA>",
-            contextMetadata: "Active app: VSCode"
+            contextMetadata: "Active app: VSCode",
         )
         let contextTagCount = userMessage.components(separatedBy: "<CONTEXT_METADATA>").count - 1
         XCTAssertEqual(contextTagCount, 1)
@@ -151,7 +151,7 @@ final class PromptServiceTests: XCTestCase {
             prompt: .defaultPrompt,
             mode: .dictation,
             selectedModel: "gpt-oss-120b",
-            contextMetadata: "Active app: VSCode"
+            contextMetadata: "Active app: VSCode",
         )
 
         XCTAssertEqual(requestPrompts.systemPrompt, AIPromptTemplates.simpleModelDictationSystemPrompt)
@@ -165,7 +165,7 @@ final class PromptServiceTests: XCTestCase {
             transcription: "hello world",
             prompt: .flex,
             mode: .dictation,
-            selectedModel: "gpt-oss-120b"
+            selectedModel: "gpt-oss-120b",
         )
 
         XCTAssertEqual(requestPrompts.systemPrompt, AIPromptTemplates.dictationSystemPrompt)
@@ -177,14 +177,14 @@ final class PromptServiceTests: XCTestCase {
     func testRequestPrompts_DictationSimpleModelWithCustomPromptKeepsCustomPrompt() {
         let customPrompt = PostProcessingPrompt(
             title: "Custom",
-            promptText: "Keep every comma."
+            promptText: "Keep every comma.",
         )
 
         let requestPrompts = AIPromptTemplates.requestPrompts(
             transcription: "hello world",
             prompt: customPrompt,
             mode: .dictation,
-            selectedModel: "gpt-oss-120b"
+            selectedModel: "gpt-oss-120b",
         )
 
         XCTAssertEqual(requestPrompts.systemPrompt, AIPromptTemplates.dictationSystemPrompt)
@@ -197,7 +197,7 @@ final class PromptServiceTests: XCTestCase {
             transcription: "decision logged",
             prompt: PromptService.shared.strategy(for: .general).promptObject(),
             mode: .meeting,
-            selectedModel: "gpt-oss-120b"
+            selectedModel: "gpt-oss-120b",
         )
 
         XCTAssertTrue(requestPrompts.systemPrompt.contains("meeting"))
@@ -232,7 +232,7 @@ final class PromptServiceTests: XCTestCase {
             """,
             prompt: "Summarize",
             priorityInstructions: nil,
-            contextMetadata: "Active app: WhatsApp"
+            contextMetadata: "Active app: WhatsApp",
         )
 
         let contextTagCount = userMessage.components(separatedBy: "<CONTEXT_METADATA>").count - 1

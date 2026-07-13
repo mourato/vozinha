@@ -1,6 +1,6 @@
-import XCTest
 @testable import MeetingAssistantCore
 import SwiftUI
+import XCTest
 
 @MainActor
 final class PermissionStatusTests: XCTestCase {

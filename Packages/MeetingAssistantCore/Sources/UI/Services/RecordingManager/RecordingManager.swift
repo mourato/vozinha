@@ -176,7 +176,7 @@ public class RecordingManager: ObservableObject, RecordingServiceProtocol {
             },
             customExcludedBundleIDsProvider: {
                 AppSettingsStore.shared.contextAwarenessExcludedBundleIDs
-            }
+            },
         )
     }
 
@@ -209,7 +209,7 @@ public class RecordingManager: ObservableObject, RecordingServiceProtocol {
             },
             isLocalRetryModelReady: { model in
                 FluidAIModelManager.shared.isASRModelInstalled(localModelID: model.rawValue)
-            }
+            },
         )
     }
 
@@ -273,7 +273,7 @@ public class RecordingManager: ObservableObject, RecordingServiceProtocol {
         },
         isLocalRetryModelReady: @escaping (LocalTranscriptionModel) -> Bool = { model in
             FluidAIModelManager.shared.isASRModelInstalled(localModelID: model.rawValue)
-        }
+        },
     ) {
         self.micRecorder = micRecorder
         self.systemRecorder = systemRecorder
@@ -302,19 +302,19 @@ public class RecordingManager: ObservableObject, RecordingServiceProtocol {
             settings: .shared,
             cleanupTemporaryFiles: { urls in
                 storage.cleanupTemporaryFiles(urls: urls)
-            }
+            },
         )
         self.calendarIntegrationService = calendarIntegrationService ?? MeetingCalendarIntegrationService(
-            calendarEventService: calendarEventService
+            calendarEventService: calendarEventService,
         )
         self.contextCaptureService = contextCaptureService ?? AssistantContextCaptureService(
             contextAwarenessService: contextAwarenessService,
             textContextProvider: self.textContextProvider,
             textContextGuardrails: textContextGuardrails,
-            textContextPolicy: textContextPolicy
+            textContextPolicy: textContextPolicy,
         )
         self.postProcessingConfigurationProvider = postProcessingConfigurationProvider ?? PostProcessingConfigurationProvider(
-            apiKeyExists: apiKeyExists
+            apiKeyExists: apiKeyExists,
         )
         microphoneInputSelectionResolver = MicrophoneInputSelectionResolver(deviceManager: audioDeviceManager)
 
@@ -322,7 +322,7 @@ public class RecordingManager: ObservableObject, RecordingServiceProtocol {
         transcribeAudioUseCase = TranscribeAudioUseCase(
             transcriptionRepository: TranscriptionRepositoryAdapter(transcriptionService: transcriptionClient),
             transcriptionStorageRepository: CoreDataTranscriptionStorageRepository(stack: .shared),
-            postProcessingRepository: PostProcessingRepositoryAdapter(postProcessingService: postProcessingService)
+            postProcessingRepository: PostProcessingRepositoryAdapter(postProcessingService: postProcessingService),
         )
 
         setupBindings()

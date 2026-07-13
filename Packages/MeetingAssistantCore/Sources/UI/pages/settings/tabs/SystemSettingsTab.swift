@@ -35,7 +35,7 @@ public struct SystemSettingsTab: View {
                 openDictionary: { route = .dictionary },
                 openSound: { route = .sound },
                 openProtectedApps: { route = .protectedApps },
-                openPermissions: { route = .permissions }
+                openPermissions: { route = .permissions },
             )
         case .models:
             ModelsSettingsTab()

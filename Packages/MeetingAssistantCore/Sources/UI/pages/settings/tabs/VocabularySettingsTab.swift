@@ -20,7 +20,7 @@ public struct VocabularySettingsTab: View {
             if showsHeader {
                 SettingsSectionHeader(
                     title: "settings.section.vocabulary".localized,
-                    description: "settings.vocabulary.description".localized
+                    description: "settings.vocabulary.description".localized,
                 )
             }
             DSGroup("settings.vocabulary.replacement_rules".localized, icon: "arrow.2.squarepath") {
@@ -32,7 +32,7 @@ public struct VocabularySettingsTab: View {
                     SettingsInlineList(
                         items: viewModel.rules,
                         emptyText: "settings.vocabulary.empty".localized,
-                        containerStyle: .plain
+                        containerStyle: .plain,
                     ) { rule in
                         row(for: rule)
                     }
@@ -58,7 +58,7 @@ public struct VocabularySettingsTab: View {
         }
         .alert(
             "settings.vocabulary.delete_confirm_title".localized,
-            isPresented: $viewModel.showDeleteConfirmation
+            isPresented: $viewModel.showDeleteConfirmation,
         ) {
             Button("common.cancel".localized, role: .cancel) {}
             Button("common.delete".localized, role: .destructive) {
@@ -78,7 +78,7 @@ public struct VocabularySettingsTab: View {
             isSelected: selectedRuleID == rule.id,
             onSelect: { selectRule(rule) },
             onEdit: { editRule(rule) },
-            onDelete: { confirmDelete(rule) }
+            onDelete: { confirmDelete(rule) },
         )
     }
 
@@ -220,7 +220,7 @@ private struct VocabularyRuleRowView: View {
                             .font(.caption)
                             .foregroundStyle(AppDesignSystem.Colors.secondaryTextStyle(isSelected: isSelected))
                     }
-                }
+                },
             )
         }
         .padding(.horizontal, 12)
@@ -252,7 +252,7 @@ private struct VocabularyRuleRowView: View {
                 .fill(AppDesignSystem.Colors.selectionFill)
                 .overlay(
                     RoundedRectangle(cornerRadius: AppDesignSystem.Layout.smallCornerRadius)
-                        .stroke(AppDesignSystem.Colors.selectionStroke, lineWidth: 1)
+                        .stroke(AppDesignSystem.Colors.selectionStroke, lineWidth: 1),
                 )
         } else {
             Color.clear

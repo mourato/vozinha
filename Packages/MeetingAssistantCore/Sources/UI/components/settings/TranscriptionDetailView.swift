@@ -36,7 +36,7 @@ public struct TranscriptionDetailView: View {
         onRetryQuestion: @escaping () -> Void = {},
         qaResponse: MeetingQAResponse? = nil,
         qaErrorMessage: String? = nil,
-        isAnsweringQuestion: Bool = false
+        isAnsweringQuestion: Bool = false,
     ) {
         self.transcription = transcription
         self.isProcessing = isProcessing
@@ -120,7 +120,7 @@ public struct TranscriptionDetailView: View {
                     statusBadge(
                         text: transcription.postProcessingPromptTitle ?? "transcription.processed".localized,
                         color: .orange,
-                        icon: "sparkles"
+                        icon: "sparkles",
                     )
                 }
             }
@@ -182,7 +182,7 @@ public struct TranscriptionDetailView: View {
                 bundleIdentifier: transcription.meeting.appBundleIdentifier,
                 fallbackSystemName: transcription.meeting.appIcon,
                 size: 14,
-                cornerRadius: 3
+                cornerRadius: 3,
             )
             Text(text)
         }
@@ -198,7 +198,7 @@ public struct TranscriptionDetailView: View {
             get: { sourceSelection },
             set: { newValue in
                 onUpdateSource(newValue == .meeting)
-            }
+            },
         )) {
             ForEach(SourceSelection.allCases, id: \.self) { option in
                 Text(option.title).tag(option)
@@ -214,7 +214,7 @@ public struct TranscriptionDetailView: View {
         contentBox(
             title: "transcription.title".localized,
             text: transcription.text,
-            isOriginal: false
+            isOriginal: false,
         )
     }
 
@@ -223,7 +223,7 @@ public struct TranscriptionDetailView: View {
             title: transcription.postProcessingPromptTitle ?? "transcription.processed".localized,
             text: text,
             isOriginal: false,
-            showSparkles: true
+            showSparkles: true,
         )
     }
 
@@ -231,7 +231,7 @@ public struct TranscriptionDetailView: View {
         contentBox(
             title: "transcription.original_title".localized,
             text: transcription.rawText,
-            isOriginal: true
+            isOriginal: true,
         )
     }
 
@@ -267,7 +267,7 @@ public struct TranscriptionDetailView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .background(
                     isOriginal ? AppDesignSystem.Colors.subtleFill2 : AppDesignSystem.Colors.settingsCardBackground,
-                    in: RoundedRectangle(cornerRadius: AppDesignSystem.Layout.smallCornerRadius)
+                    in: RoundedRectangle(cornerRadius: AppDesignSystem.Layout.smallCornerRadius),
                 )
         }
     }
@@ -290,8 +290,8 @@ public struct TranscriptionDetailView: View {
                     "transcription.qa.placeholder".localized,
                     text: Binding(
                         get: { qaQuestion },
-                        set: { onQuestionChange($0) }
-                    )
+                        set: { onQuestionChange($0) },
+                    ),
                 )
                 .textFieldStyle(.roundedBorder)
 
@@ -354,7 +354,7 @@ public struct TranscriptionDetailView: View {
                                     .padding(.vertical, 8)
                                     .background(
                                         AppDesignSystem.Colors.subtleFill,
-                                        in: RoundedRectangle(cornerRadius: AppDesignSystem.Layout.smallCornerRadius)
+                                        in: RoundedRectangle(cornerRadius: AppDesignSystem.Layout.smallCornerRadius),
                                     )
                                 }
                             }
@@ -404,7 +404,7 @@ private extension Transcription {
                 state: .completed,
                 startTime: Date().addingTimeInterval(-1_800),
                 endTime: Date().addingTimeInterval(-600),
-                audioFilePath: nil
+                audioFilePath: nil,
             ),
             segments: [
                 .init(speaker: "Speaker 1", text: "Precisamos consolidar os previews da interface.", startTime: 0, endTime: 9),
@@ -414,7 +414,7 @@ private extension Transcription {
             rawText: "precisamos consolidar previews interface vou priorizar telas com side effects na fase seguinte",
             processedContent: "Precisamos consolidar os previews da interface e priorizar, na sequência, as telas com side effects.",
             postProcessingPromptTitle: "Planning summary",
-            language: "pt"
+            language: "pt",
         )
     }
 }
@@ -433,10 +433,10 @@ private extension Transcription {
                     speaker: "Speaker 2",
                     startTime: 10,
                     endTime: 21,
-                    excerpt: "Vou priorizar as telas com side effects na fase seguinte."
+                    excerpt: "Vou priorizar as telas com side effects na fase seguinte.",
                 ),
-            ]
-        )
+            ],
+        ),
     )
     .frame(width: 860, height: 620)
 }

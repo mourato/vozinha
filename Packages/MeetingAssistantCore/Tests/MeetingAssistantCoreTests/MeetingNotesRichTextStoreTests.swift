@@ -31,7 +31,7 @@ final class MeetingNotesRichTextStoreTests: XCTestCase {
 
     func testMeetingNotesRTFData_SaveLoadAndRemove() {
         let meetingID = UUID()
-        let data = Data([0x7B, 0x5C, 0x72, 0x74, 0x66]) // "{\\rtf"
+        let data = Data([0x7b, 0x5c, 0x72, 0x74, 0x66]) // "{\\rtf"
 
         store.saveMeetingNotesRTFData(data, for: meetingID)
         XCTAssertEqual(store.meetingNotesRTFData(for: meetingID), data)
@@ -42,7 +42,7 @@ final class MeetingNotesRichTextStoreTests: XCTestCase {
 
     func testCalendarEventNotesRTFData_SaveLoadAndRemove() {
         let eventIdentifier = "event-\(UUID().uuidString)"
-        let data = Data([0x7B, 0x5C, 0x72, 0x74, 0x66])
+        let data = Data([0x7b, 0x5c, 0x72, 0x74, 0x66])
 
         store.saveCalendarEventNotesRTFData(data, for: eventIdentifier)
         XCTAssertEqual(store.calendarEventNotesRTFData(for: eventIdentifier), data)
@@ -53,7 +53,7 @@ final class MeetingNotesRichTextStoreTests: XCTestCase {
 
     func testTranscriptionNotesRTFData_SaveLoadAndRemove() {
         let transcriptionID = UUID()
-        let data = Data([0x7B, 0x5C, 0x72, 0x74, 0x66])
+        let data = Data([0x7b, 0x5c, 0x72, 0x74, 0x66])
 
         store.saveTranscriptionNotesRTFData(data, for: transcriptionID)
         XCTAssertEqual(store.transcriptionNotesRTFData(for: transcriptionID), data)

@@ -40,7 +40,7 @@ public final class MeetingQAService: ObservableObject, MeetingQAServiceProtocol 
         },
         sleepFunction: @escaping SleepFunction = { nanoseconds in
             try await Task.sleep(nanoseconds: nanoseconds)
-        }
+        },
     ) {
         self.settings = settings
         self.session = session
@@ -52,14 +52,14 @@ public final class MeetingQAService: ObservableObject, MeetingQAServiceProtocol 
         try await ask(
             question: question,
             transcription: transcription,
-            modelSelectionOverride: nil
+            modelSelectionOverride: nil,
         )
     }
 
     private func ask(
         question: String,
         transcription: Transcription,
-        modelSelectionOverride: MeetingQAModelSelection?
+        modelSelectionOverride: MeetingQAModelSelection?,
     ) async throws -> MeetingQAResponse {
         guard settings.isIntelligenceKernelModeEnabled(.meeting) else {
             throw MeetingQAError.disabled
@@ -83,7 +83,7 @@ public final class MeetingQAService: ObservableObject, MeetingQAServiceProtocol 
             AppLogger.info(
                 "Meeting Q&A blocked: enhancements configuration not ready",
                 category: .transcriptionEngine,
-                extra: ["reasonCode": readinessIssue.rawValue]
+                extra: ["reasonCode": readinessIssue.rawValue],
             )
             throw meetingQAError(for: readinessIssue)
         }
@@ -96,7 +96,7 @@ public final class MeetingQAService: ObservableObject, MeetingQAServiceProtocol 
             return try await askWithRetry(
                 question: trimmedQuestion,
                 transcription: transcription,
-                configuration: requestConfig
+                configuration: requestConfig,
             )
         } catch let error as MeetingQAError {
             lastError = error
@@ -129,7 +129,7 @@ public final class MeetingQAService: ObservableObject, MeetingQAServiceProtocol 
             return try await ask(
                 question: request.question,
                 transcription: request.transcription,
-                modelSelectionOverride: request.modelSelectionOverride
+                modelSelectionOverride: request.modelSelectionOverride,
             )
         case .dictation, .assistant:
             throw MeetingQAError.disabled
@@ -139,7 +139,7 @@ public final class MeetingQAService: ObservableObject, MeetingQAServiceProtocol 
     private func askWithRetry(
         question: String,
         transcription: Transcription,
-        configuration: AIConfiguration
+        configuration: AIConfiguration,
     ) async throws -> MeetingQAResponse {
         var lastThrownError: Error?
 
@@ -148,7 +148,7 @@ public final class MeetingQAService: ObservableObject, MeetingQAServiceProtocol 
                 let rawOutput = try await performRequest(
                     question: question,
                     transcription: transcription,
-                    configuration: configuration
+                    configuration: configuration,
                 )
                 return try parseModelOutput(rawOutput)
             } catch {
@@ -163,7 +163,7 @@ public final class MeetingQAService: ObservableObject, MeetingQAServiceProtocol 
                 AppLogger.warning(
                     "Meeting Q&A request failed, retrying",
                     category: .transcriptionEngine,
-                    extra: ["attempt": attempt + 1]
+                    extra: ["attempt": attempt + 1],
                 )
                 try await sleepFunction(Constants.retryDelayNanoseconds)
             }
@@ -175,7 +175,7 @@ public final class MeetingQAService: ObservableObject, MeetingQAServiceProtocol 
     private func performRequest(
         question: String,
         transcription: Transcription,
-        configuration config: AIConfiguration
+        configuration config: AIConfiguration,
     ) async throws -> String {
         let apiKey = try getAPIKey(for: config.provider)
         let url = try buildURL(for: config, apiKey: apiKey)
@@ -194,7 +194,7 @@ public final class MeetingQAService: ObservableObject, MeetingQAServiceProtocol 
                 model: config.selectedModel,
                 maxTokens: Constants.maxTokens,
                 system: systemPrompt,
-                messages: [AIChatMessage(role: "user", content: userPrompt)]
+                messages: [AIChatMessage(role: "user", content: userPrompt)],
             )
             request.httpBody = try JSONEncoder().encode(payload)
 
@@ -202,7 +202,7 @@ public final class MeetingQAService: ObservableObject, MeetingQAServiceProtocol 
             let payload = GeminiGenerateContentRequest(
                 systemInstruction: GeminiSystemInstruction(parts: [GeminiPart(text: systemPrompt)]),
                 contents: [GeminiContent(role: "user", parts: [GeminiPart(text: userPrompt)])],
-                generationConfig: GeminiGenerationConfig(maxOutputTokens: Constants.maxTokens)
+                generationConfig: GeminiGenerationConfig(maxOutputTokens: Constants.maxTokens),
             )
             request.httpBody = try JSONEncoder().encode(payload)
 
@@ -214,7 +214,7 @@ public final class MeetingQAService: ObservableObject, MeetingQAServiceProtocol 
                     AIChatMessage(role: "system", content: systemPrompt),
                     AIChatMessage(role: "user", content: userPrompt),
                 ],
-                maxTokens: Constants.maxTokens
+                maxTokens: Constants.maxTokens,
             )
             request.httpBody = try JSONEncoder().encode(payload)
         }
@@ -240,7 +240,7 @@ public final class MeetingQAService: ObservableObject, MeetingQAServiceProtocol 
                     }
                     return lhs.id.uuidString < rhs.id.uuidString
                 }
-                .prefix(Constants.maxSegmentsInPrompt)
+                .prefix(Constants.maxSegmentsInPrompt),
         )
         let transcriptBlock: String = if evidenceSegments.isEmpty {
             transcription.rawText.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -447,7 +447,7 @@ public final class MeetingQAService: ObservableObject, MeetingQAServiceProtocol 
 
         let normalizedModel = settings.normalizedEnhancementsModelID(
             overrideSelection.modelID,
-            for: provider
+            for: provider,
         )
         guard !normalizedModel.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
             return base

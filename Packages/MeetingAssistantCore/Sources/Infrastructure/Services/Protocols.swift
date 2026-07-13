@@ -52,12 +52,12 @@ public protocol TranscriptionService: ObservableObject {
     /// Transcribe an audio file.
     func transcribe(
         audioURL: URL,
-        onProgress: (@Sendable (Double) -> Void)?
+        onProgress: (@Sendable (Double) -> Void)?,
     ) async throws -> TranscriptionResponse
 
     /// Transcribe a window of mono 16kHz PCM float samples.
     func transcribe(
-        samples: [Float]
+        samples: [Float],
     ) async throws -> TranscriptionResponse
 }
 
@@ -66,7 +66,7 @@ public protocol TranscriptionServiceDiarizationOverride: ObservableObject {
     func transcribe(
         audioURL: URL,
         onProgress: (@Sendable (Double) -> Void)?,
-        diarizationEnabledOverride: Bool?
+        diarizationEnabledOverride: Bool?,
     ) async throws -> TranscriptionResponse
 }
 
@@ -75,7 +75,7 @@ public protocol TranscriptionServicePurposeAware: ObservableObject {
     func transcribe(
         audioURL: URL,
         onProgress: (@Sendable (Double) -> Void)?,
-        capturePurpose: CapturePurpose
+        capturePurpose: CapturePurpose,
     ) async throws -> TranscriptionResponse
 }
 
@@ -85,7 +85,7 @@ public protocol TranscriptionServicePurposeDiarized: ObservableObject {
         audioURL: URL,
         onProgress: (@Sendable (Double) -> Void)?,
         diarizationEnabledOverride: Bool?,
-        capturePurpose: CapturePurpose
+        capturePurpose: CapturePurpose,
     ) async throws -> TranscriptionResponse
 }
 
@@ -94,7 +94,7 @@ public protocol TranscriptionServiceFinalDiarization: ObservableObject {
     func diarize(audioURL: URL) async throws -> [SpeakerTimelineSegment]
     func assignSpeakers(
         to segments: [Transcription.Segment],
-        using speakerTimeline: [SpeakerTimelineSegment]
+        using speakerTimeline: [SpeakerTimelineSegment],
     ) -> [Transcription.Segment]
 }
 
@@ -117,7 +117,7 @@ public protocol PostProcessingServiceProtocol: ObservableObject {
         _ transcription: String,
         with prompt: PostProcessingPrompt,
         mode: IntelligenceKernelMode,
-        systemPromptOverride: String?
+        systemPromptOverride: String?,
     ) async throws -> String
 
     /// Process a raw transcription using a specific prompt and an explicit enhancements model selection.
@@ -126,7 +126,7 @@ public protocol PostProcessingServiceProtocol: ObservableObject {
         with prompt: PostProcessingPrompt,
         mode: IntelligenceKernelMode,
         selectionOverride: EnhancementsAISelection,
-        systemPromptOverride: String?
+        systemPromptOverride: String?,
     ) async throws -> String
 
     /// Process transcription using hardened structured summary pipeline.
@@ -135,14 +135,14 @@ public protocol PostProcessingServiceProtocol: ObservableObject {
     /// Process transcription using hardened structured summary pipeline and a specific prompt.
     func processTranscriptionStructured(
         _ transcription: String,
-        with prompt: PostProcessingPrompt
+        with prompt: PostProcessingPrompt,
     ) async throws -> DomainPostProcessingResult
 
     /// Process transcription using hardened structured summary pipeline and a specific prompt with mode-aware configuration.
     func processTranscriptionStructured(
         _ transcription: String,
         with prompt: PostProcessingPrompt,
-        mode: IntelligenceKernelMode
+        mode: IntelligenceKernelMode,
     ) async throws -> DomainPostProcessingResult
 
     /// Process transcription using hardened structured summary pipeline with an explicit enhancements model selection.
@@ -150,7 +150,7 @@ public protocol PostProcessingServiceProtocol: ObservableObject {
         _ transcription: String,
         with prompt: PostProcessingPrompt,
         mode: IntelligenceKernelMode,
-        selectionOverride: EnhancementsAISelection
+        selectionOverride: EnhancementsAISelection,
     ) async throws -> DomainPostProcessingResult
 }
 
@@ -160,11 +160,11 @@ public extension PostProcessingServiceProtocol {
         with prompt: PostProcessingPrompt,
         mode _: IntelligenceKernelMode,
         selectionOverride _: EnhancementsAISelection,
-        systemPromptOverride _: String?
+        systemPromptOverride _: String?,
     ) async throws -> String {
         try await processTranscription(
             transcription,
-            with: prompt
+            with: prompt,
         )
     }
 
@@ -172,22 +172,11 @@ public extension PostProcessingServiceProtocol {
         _ transcription: String,
         with prompt: PostProcessingPrompt,
         mode _: IntelligenceKernelMode,
-        systemPromptOverride: String?
+        systemPromptOverride: String?,
     ) async throws -> String {
         try await processTranscription(
             transcription,
-            with: prompt
-        )
-    }
-
-    func processTranscriptionStructured(
-        _ transcription: String,
-        with prompt: PostProcessingPrompt,
-        mode _: IntelligenceKernelMode
-    ) async throws -> DomainPostProcessingResult {
-        try await processTranscriptionStructured(
-            transcription,
-            with: prompt
+            with: prompt,
         )
     }
 
@@ -195,11 +184,22 @@ public extension PostProcessingServiceProtocol {
         _ transcription: String,
         with prompt: PostProcessingPrompt,
         mode _: IntelligenceKernelMode,
-        selectionOverride _: EnhancementsAISelection
     ) async throws -> DomainPostProcessingResult {
         try await processTranscriptionStructured(
             transcription,
-            with: prompt
+            with: prompt,
+        )
+    }
+
+    func processTranscriptionStructured(
+        _ transcription: String,
+        with prompt: PostProcessingPrompt,
+        mode _: IntelligenceKernelMode,
+        selectionOverride _: EnhancementsAISelection,
+    ) async throws -> DomainPostProcessingResult {
+        try await processTranscriptionStructured(
+            transcription,
+            with: prompt,
         )
     }
 }
@@ -223,8 +223,8 @@ public extension IntelligenceKernelServiceProtocol {
             IntelligenceKernelQuestionRequest(
                 mode: .meeting,
                 question: question,
-                transcription: transcription
-            )
+                transcription: transcription,
+            ),
         )
     }
 }

@@ -3,20 +3,20 @@
 import XCTest
 
 @MainActor
-final class MetricsDashboardPerformanceViewModelTests: XCTestCase {
+final class PerformanceViewModelTests: XCTestCase {
     func testLoad_BuildsProviderOptionsAndOrdersHistoryNewestFirst() async {
         let storage = MockStorageService()
         let older = makeAttempt(
             providerID: "local",
             providerName: "Local",
             modelID: "whisper-a",
-            startedAt: Date(timeIntervalSince1970: 1_700_000_000)
+            startedAt: Date(timeIntervalSince1970: 1_700_000_000),
         )
         let newer = makeAttempt(
             providerID: "groq",
             providerName: "Groq",
             modelID: "whisper-b",
-            startedAt: Date(timeIntervalSince1970: 1_700_000_100)
+            startedAt: Date(timeIntervalSince1970: 1_700_000_100),
         )
         storage.savedModelPerformanceAttempts = [older, newer]
 
@@ -70,7 +70,7 @@ final class MetricsDashboardPerformanceViewModelTests: XCTestCase {
                 providerID: "local",
                 providerName: "Local",
                 modelID: "whisper-\(index)",
-                startedAt: baseDate.addingTimeInterval(Double(index))
+                startedAt: baseDate.addingTimeInterval(Double(index)),
             )
         }
 
@@ -87,7 +87,7 @@ final class MetricsDashboardPerformanceViewModelTests: XCTestCase {
         providerName: String,
         modelID: String,
         status: ModelPerformanceAttemptStatus = .succeeded,
-        startedAt: Date = Date()
+        startedAt: Date = Date(),
     ) -> ModelPerformanceAttempt {
         ModelPerformanceAttempt(
             transcriptionID: UUID(),
@@ -99,7 +99,7 @@ final class MetricsDashboardPerformanceViewModelTests: XCTestCase {
                 providerDisplayName: providerName,
                 modelID: modelID,
                 modelDisplayName: modelID,
-                runtimeKind: .remote
+                runtimeKind: .remote,
             ),
             status: status,
             startedAt: startedAt,
@@ -109,7 +109,7 @@ final class MetricsDashboardPerformanceViewModelTests: XCTestCase {
             inputUTF8Bytes: 0,
             inputCharacterCount: 0,
             outputCharacterCount: 100,
-            failureReason: status == .failed ? "failed" : nil
+            failureReason: status == .failed ? "failed" : nil,
         )
     }
 }

@@ -56,7 +56,7 @@ final class KeychainManagerBatchRetrievalTests: XCTestCase {
 
         XCTAssertEqual(
             KeychainManager.registrationAPIKeyAccount(for: registrationID),
-            "ai_api_key_registration_9e6f0db4-7b48-4599-a7c5-47cb7c2f368a"
+            "ai_api_key_registration_9e6f0db4-7b48-4599-a7c5-47cb7c2f368a",
         )
     }
 
@@ -67,7 +67,7 @@ final class KeychainManagerBatchRetrievalTests: XCTestCase {
     func testTranscriptionAPIKeyKey_UsesElevenLabsTranscriptionKey() {
         XCTAssertEqual(
             KeychainManager.transcriptionAPIKeyKey(for: .elevenLabs),
-            .transcriptionAPIKeyElevenLabs
+            .transcriptionAPIKeyElevenLabs,
         )
     }
 

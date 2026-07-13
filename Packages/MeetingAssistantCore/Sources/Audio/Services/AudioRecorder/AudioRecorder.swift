@@ -135,7 +135,7 @@ public class AudioRecorder: ObservableObject, AudioRecordingService {
     init(
         kernelProvider: AudioKernelProvider = .live,
         muteController: any OutputDuckingControlling = SystemAudioMuteController.shared,
-        mediaPlaybackController: any MediaPlaybackControlling = MediaPlaybackController.shared
+        mediaPlaybackController: any MediaPlaybackControlling = MediaPlaybackController.shared,
     ) {
         worker = AudioRecordingWorker(energyMeterKernel: kernelProvider.makeEnergyMeterKernel())
         self.muteController = muteController
@@ -148,7 +148,7 @@ public class AudioRecorder: ObservableObject, AudioRecordingService {
                 self?.publishMeterSnapshot(
                     averagePower: avg,
                     peakPower: peak,
-                    barPowerLevels: barPowerLevels
+                    barPowerLevels: barPowerLevels,
                 )
             }
         }
@@ -193,13 +193,13 @@ public class AudioRecorder: ObservableObject, AudioRecordingService {
                 AppLogger.error(
                     "System audio recorder failed during active session",
                     category: .recordingManager,
-                    error: error
+                    error: error,
                 )
                 self.error = error
-                self.onRecordingError?(error)
+                onRecordingError?(error)
 
-                if self.isRecording {
-                    _ = await self.stopRecording()
+                if isRecording {
+                    _ = await stopRecording()
                 }
             }
         }
@@ -245,7 +245,7 @@ public class AudioRecorder: ObservableObject, AudioRecordingService {
                 writingTo: outputURL,
                 source: source,
                 retryCount: retryCount,
-                sampleRate: targetSampleRate
+                sampleRate: targetSampleRate,
             )
 
             // Start ScreenCaptureKit after AVAudioEngine is stable.
@@ -267,7 +267,7 @@ public class AudioRecorder: ObservableObject, AudioRecordingService {
                 AppLogger.warning(
                     "Retrying recording start after transient engine failure",
                     category: .recordingManager,
-                    extra: ["code": code, "attempt": retryCount + 1, "max": Constants.maxRetries]
+                    extra: ["code": code, "attempt": retryCount + 1, "max": Constants.maxRetries],
                 )
                 try await Task.sleep(nanoseconds: Constants.retryDelay)
                 try await startRecording(to: outputURL, source: source, retryCount: retryCount + 1)
@@ -297,7 +297,7 @@ public class AudioRecorder: ObservableObject, AudioRecordingService {
             throw AudioRecorderError.failedToStartEngine(NSError(
                 domain: "AudioRecorder",
                 code: -1,
-                userInfo: [NSLocalizedDescriptionKey: "AVAudioRecorder failed to start"]
+                userInfo: [NSLocalizedDescriptionKey: "AVAudioRecorder failed to start"],
             ))
         }
 
@@ -308,12 +308,12 @@ public class AudioRecorder: ObservableObject, AudioRecordingService {
         // Periodic metering for UI power updates
         simpleMeterTimer = Timer.scheduledTimer(withTimeInterval: Constants.simpleMeterUpdateInterval, repeats: true) { [weak self] _ in
             Task { @MainActor [weak self] in
-                guard let self, let rec = self.simpleRecorder else { return }
+                guard let self, let rec = simpleRecorder else { return }
                 rec.updateMeters()
-                self.publishMeterSnapshot(
+                publishMeterSnapshot(
                     averagePower: rec.averagePower(forChannel: 0),
                     peakPower: rec.peakPower(forChannel: 0),
-                    barPowerLevels: []
+                    barPowerLevels: [],
                 )
             }
         }
@@ -321,7 +321,7 @@ public class AudioRecorder: ObservableObject, AudioRecordingService {
         AppLogger.info(
             "Simple mic recording started (AVAudioRecorder)",
             category: .recordingManager,
-            extra: ["path": outputURL.path]
+            extra: ["path": outputURL.path],
         )
     }
 
@@ -340,7 +340,7 @@ public class AudioRecorder: ObservableObject, AudioRecordingService {
         AppLogger.info(
             "Simple mic recording stopped",
             category: .recordingManager,
-            extra: ["path": url.path, "duration": recorder.currentTime]
+            extra: ["path": url.path, "duration": recorder.currentTime],
         )
         return url
     }
@@ -412,7 +412,7 @@ public class AudioRecorder: ObservableObject, AudioRecordingService {
             AppLogger.warning(
                 "System audio frames dropped during session",
                 category: .recordingManager,
-                extra: ["droppedFrames": queueStats.dropped, "buffersRemaining": queueStats.count]
+                extra: ["droppedFrames": queueStats.dropped, "buffersRemaining": queueStats.count],
             )
         }
 
@@ -470,7 +470,7 @@ public class AudioRecorder: ObservableObject, AudioRecordingService {
         publishMeterSnapshot(
             averagePower: recorder.averagePower(forChannel: 0),
             peakPower: recorder.peakPower(forChannel: 0),
-            barPowerLevels: []
+            barPowerLevels: [],
         )
     }
 
@@ -478,7 +478,7 @@ public class AudioRecorder: ObservableObject, AudioRecordingService {
     func publishMeterSnapshot(
         averagePower: Float,
         peakPower: Float,
-        barPowerLevels: [Float]
+        barPowerLevels: [Float],
     ) {
         currentAveragePower = averagePower
         currentPeakPower = peakPower
@@ -495,7 +495,7 @@ public class AudioRecorder: ObservableObject, AudioRecordingService {
             averagePowerDB: averagePower,
             peakPowerDB: peakPower,
             barPowerDBLevels: barPowerLevels,
-            deltaTime: deltaTime
+            deltaTime: deltaTime,
         )
     }
 

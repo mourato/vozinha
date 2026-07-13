@@ -111,7 +111,7 @@ public struct MeetingEntity: Identifiable, Codable, Hashable, Sendable {
         linkedCalendarEvent: MeetingCalendarEventSnapshot? = nil,
         startTime: Date = Date(),
         endTime: Date? = nil,
-        audioFilePath: String? = nil
+        audioFilePath: String? = nil,
     ) {
         self.id = id
         self.app = app
@@ -191,7 +191,7 @@ public struct MeetingEntity: Identifiable, Codable, Hashable, Sendable {
 
         return "export.header.meeting_title".localized(
             with: app.displayName,
-            formatter.string(from: startTime)
+            formatter.string(from: startTime),
         )
     }
 }

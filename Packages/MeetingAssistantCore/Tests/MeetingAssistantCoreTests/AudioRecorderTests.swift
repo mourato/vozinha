@@ -17,6 +17,7 @@ final class AudioRecorderTests: XCTestCase {
         }
         set { _audioRecorder = newValue }
     }
+
     var mockEngine: MockAudioEngine?
     var mockWorker: MockAudioRecordingWorker?
 
@@ -88,21 +89,21 @@ final class AudioRecorderTests: XCTestCase {
     }
 
     /*
-    func testStartRecordingEngineFailure() async throws {
-        try XCTSkipIf(true, "Requires hardware permissions - integration test")
-        guard let audioRecorder, let mockEngine else { return XCTFail("Components not initialized") }
-        mockEngine.shouldFailStart = true
-        let outputURL = createTemporaryURL()
+     func testStartRecordingEngineFailure() async throws {
+         try XCTSkipIf(true, "Requires hardware permissions - integration test")
+         guard let audioRecorder, let mockEngine else { return XCTFail("Components not initialized") }
+         mockEngine.shouldFailStart = true
+         let outputURL = createTemporaryURL()
 
-        do {
-            try await audioRecorder.startRecording(to: outputURL, source: .microphone, retryCount: 0)
-            XCTFail("Expected start recording to fail")
-        } catch {
-            XCTAssertNotNil(audioRecorder.error)
-            XCTAssertFalse(audioRecorder.isRecording)
-        }
-    }
-    */
+         do {
+             try await audioRecorder.startRecording(to: outputURL, source: .microphone, retryCount: 0)
+             XCTFail("Expected start recording to fail")
+         } catch {
+             XCTAssertNotNil(audioRecorder.error)
+             XCTAssertFalse(audioRecorder.isRecording)
+         }
+     }
+     */
 
     // MARK: - Testes de Stop Recording
 

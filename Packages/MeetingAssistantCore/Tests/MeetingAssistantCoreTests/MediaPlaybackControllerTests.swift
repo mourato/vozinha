@@ -63,11 +63,11 @@ private final class MockAppleScriptMediaPlayer: AppleScriptMediaPlaybackAutomati
 
     init(
         target: MediaPlaybackTarget = .music,
-        result: AppleScriptMediaPlaybackResult
+        result: AppleScriptMediaPlaybackResult,
     ) {
         self.target = target
-        self.applicationName = target.rawValue
-        self.bundleIdentifier = target.rawValue
+        applicationName = target.rawValue
+        bundleIdentifier = target.rawValue
         self.result = result
     }
 

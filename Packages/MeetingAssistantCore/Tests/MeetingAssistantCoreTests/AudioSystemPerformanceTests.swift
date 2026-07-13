@@ -65,7 +65,7 @@ final class AudioSystemPerformanceTests: XCTestCase {
     func testPerformance_ConcurrentOperations() throws {
         let buffer = try createTestBuffer(frameCount: 512)
         let iterations = 100
-        let queue = bufferQueue! // Capture local reference
+        let queue = try XCTUnwrap(bufferQueue) // Capture local reference
 
         measure {
             let group = DispatchGroup()
@@ -119,7 +119,7 @@ final class AudioSystemPerformanceTests: XCTestCase {
     }
 
     /// Tests buffer creation performance (baseline)
-    func testPerformance_BufferCreation() throws {
+    func testPerformance_BufferCreation() {
 
         measure {
             for _ in 0..<100 {
@@ -135,7 +135,7 @@ final class AudioSystemPerformanceTests: XCTestCase {
             commonFormat: .pcmFormatFloat32,
             sampleRate: 48_000,
             channels: 2,
-            interleaved: false
+            interleaved: false,
         ) else {
             throw NSError(domain: "Test", code: 1, userInfo: [NSLocalizedDescriptionKey: "Failed to create format"])
         }

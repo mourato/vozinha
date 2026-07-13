@@ -17,7 +17,7 @@ public struct UserPromptsSettingsTab: View {
         SettingsScrollableContent {
             SettingsSectionHeader(
                 title: "settings.dictation.user_prompts.title".localized,
-                description: "settings.dictation.user_prompts.description".localized
+                description: "settings.dictation.user_prompts.description".localized,
             )
 
             DSGroup("settings.dictation.user_prompts.title".localized, icon: "sparkles") {
@@ -35,7 +35,7 @@ public struct UserPromptsSettingsTab: View {
                         } label: {
                             Label(
                                 "settings.post_processing.new_prompt".localized,
-                                systemImage: "plus"
+                                systemImage: "plus",
                             )
                         }
                         .buttonStyle(.bordered)
@@ -55,7 +55,7 @@ public struct UserPromptsSettingsTab: View {
             PromptEditorSheet(
                 prompt: viewModel.editingPrompt,
                 onSave: viewModel.handleSavePrompt,
-                onCancel: { viewModel.showPromptEditor = false }
+                onCancel: { viewModel.showPromptEditor = false },
             )
         }
         .alert("settings.post_processing.delete_confirm_title".localized, isPresented: $viewModel.showDeleteConfirmation) {
@@ -86,7 +86,7 @@ public struct UserPromptsSettingsTab: View {
             onDoubleClick: {
                 openPromptEditor(for: prompt)
             },
-            menuAccessibilityLabel: "transcription.ai_actions".localized
+            menuAccessibilityLabel: "transcription.ai_actions".localized,
         ) {
             promptMenuContent(prompt: prompt, isSelected: isSelected)
         }
@@ -136,7 +136,7 @@ public struct UserPromptsSettingsTab: View {
             },
             showMenu: false,
             preserveMenuSpacing: true,
-            menuAccessibilityLabel: "transcription.ai_actions".localized
+            menuAccessibilityLabel: "transcription.ai_actions".localized,
         ) {
             EmptyView()
         }

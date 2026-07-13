@@ -38,7 +38,7 @@ public enum AppDesignSystem {
 
         static func resolveColor(
             in appearance: NSAppearance,
-            _ provider: () -> NSColor
+            _ provider: () -> NSColor,
         ) -> NSColor {
             var resolvedColor: NSColor?
             appearance.performAsCurrentDrawingAppearance {
@@ -49,7 +49,7 @@ public enum AppDesignSystem {
 
         private static func dynamicNSColor(
             light: @escaping @autoclosure () -> NSColor,
-            dark: @escaping @autoclosure () -> NSColor
+            dark: @escaping @autoclosure () -> NSColor,
         ) -> NSColor {
             NSColor(name: nil) { appearance in
                 resolveColor(in: appearance) {
@@ -86,14 +86,14 @@ public enum AppDesignSystem {
         public static let aiGradient = LinearGradient(
             colors: [Color.orange, Color.red],
             startPoint: .topLeading,
-            endPoint: .bottomTrailing
+            endPoint: .bottomTrailing,
         )
 
         public static var dashboardHeroGradient: LinearGradient {
             LinearGradient(
                 colors: [accent.opacity(0.8), accent],
                 startPoint: .topLeading,
-                endPoint: .bottomTrailing
+                endPoint: .bottomTrailing,
             )
         }
 
@@ -138,7 +138,7 @@ public enum AppDesignSystem {
 
         public static func settingsMaterialCardFill(
             reduceTransparency: Bool,
-            intensity: AppDesignSystem.SettingsSurfaceIntensity = .subtle
+            intensity: AppDesignSystem.SettingsSurfaceIntensity = .subtle,
         ) -> Color {
             if reduceTransparency {
                 return settingsCardBackground(intensity: intensity)
@@ -187,7 +187,7 @@ public enum AppDesignSystem {
         }
 
         static func settingsCardBackgroundNSColor(
-            intensity: AppDesignSystem.SettingsSurfaceIntensity = .subtle
+            intensity: AppDesignSystem.SettingsSurfaceIntensity = .subtle,
         ) -> NSColor {
             switch intensity {
             case .subtle:
@@ -200,13 +200,13 @@ public enum AppDesignSystem {
         }
 
         public static func settingsCardBackground(
-            intensity: AppDesignSystem.SettingsSurfaceIntensity = .subtle
+            intensity: AppDesignSystem.SettingsSurfaceIntensity = .subtle,
         ) -> Color {
             Color(nsColor: settingsCardBackgroundNSColor(intensity: intensity))
         }
 
         public static func settingsInlineBackground(
-            intensity: AppDesignSystem.SettingsSurfaceIntensity = .subtle
+            intensity: AppDesignSystem.SettingsSurfaceIntensity = .subtle,
         ) -> Color {
             switch intensity {
             case .subtle:

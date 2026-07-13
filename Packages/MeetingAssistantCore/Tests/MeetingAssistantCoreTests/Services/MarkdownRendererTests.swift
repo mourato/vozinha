@@ -1,5 +1,5 @@
-import XCTest
 @testable import MeetingAssistantCore
+import XCTest
 
 final class MarkdownRendererTests: XCTestCase {
 
@@ -7,7 +7,7 @@ final class MarkdownRendererTests: XCTestCase {
         let meeting = Meeting(
             app: .googleMeet,
             type: .standup,
-            startTime: Date(timeIntervalSince1970: 1_698_372_000) // 2023-10-27 10:00:00 UTC
+            startTime: Date(timeIntervalSince1970: 1_698_372_000), // 2023-10-27 10:00:00 UTC
         )
 
         // Mock segments
@@ -21,7 +21,7 @@ final class MarkdownRendererTests: XCTestCase {
             segments: segments,
             text: "Hello team. Hi Alice.",
             rawText: "Hello team. Hi Alice.",
-            processedContent: "Alice and Bob greeted each other."
+            processedContent: "Alice and Bob greeted each other.",
         )
 
         let renderer = MarkdownRenderer()
@@ -43,7 +43,7 @@ final class MarkdownRendererTests: XCTestCase {
         let transcription = Transcription(
             meeting: meeting,
             text: "Raw text only.",
-            rawText: "Raw text only."
+            rawText: "Raw text only.",
         )
 
         let renderer = MarkdownRenderer()

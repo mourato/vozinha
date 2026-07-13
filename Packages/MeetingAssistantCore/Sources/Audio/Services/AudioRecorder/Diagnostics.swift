@@ -10,12 +10,12 @@ extension AudioRecorder {
         on inputNode: AVAudioInputNode,
         format: AVAudioFormat,
         peakBits: ManagedAtomic<UInt32>,
-        probeWorker: AudioRecordingWorker?
+        probeWorker: AudioRecordingWorker?,
     ) {
         inputNode.installTap(
             onBus: Constants.tapBusNumber,
             bufferSize: 1_024,
-            format: format
+            format: format,
         ) { @Sendable buffer, _ in
             guard let channelData = buffer.floatChannelData else { return }
             let channelCount = Int(buffer.format.channelCount)
@@ -27,7 +27,9 @@ extension AudioRecorder {
                 let channel = channelData[ch]
                 for frame in stride(from: 0, to: frameLength, by: 4) {
                     let sample = abs(channel[frame])
-                    if sample > peak { peak = sample }
+                    if sample > peak {
+                        peak = sample
+                    }
                 }
             }
 
@@ -42,7 +44,7 @@ extension AudioRecorder {
                     updated = peakBits.compareExchange(
                         expected: currentBits,
                         desired: peak.bitPattern,
-                        ordering: .relaxed
+                        ordering: .relaxed,
                     ).exchanged
                 }
             }
@@ -92,7 +94,7 @@ extension AudioRecorder {
         micDiagnosticsTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
             Task { @MainActor [weak self] in
                 guard let self else { return }
-                let peakBits = self.micDiagnosticsPeakBits.exchange(0, ordering: .relaxed)
+                let peakBits = micDiagnosticsPeakBits.exchange(0, ordering: .relaxed)
                 let peak = Float(bitPattern: peakBits)
                 let db = 20.0 * log10(max(peak, 1e-6))
 
@@ -102,7 +104,7 @@ extension AudioRecorder {
                 ]
 
                 // Include device identity for diagnosing wrong-device scenarios
-                if let inputUnit = self.audioEngine?.inputNode.audioUnit {
+                if let inputUnit = audioEngine?.inputNode.audioUnit {
                     var deviceID: AudioObjectID = 0
                     var size = UInt32(MemoryLayout<AudioObjectID>.size)
                     let status = AudioUnitGetProperty(
@@ -111,20 +113,24 @@ extension AudioRecorder {
                         kAudioUnitScope_Global,
                         0,
                         &deviceID,
-                        &size
+                        &size,
                     )
                     if status == noErr {
                         extra["deviceID"] = deviceID
-                        extra["deviceName"] = self.deviceManager.getDeviceName(for: deviceID) ?? "Unknown"
-                        if let vol = self.deviceManager.getInputVolume(for: deviceID) { extra["volume"] = vol }
-                        if let muted = self.deviceManager.getInputMute(for: deviceID) { extra["muted"] = muted }
+                        extra["deviceName"] = deviceManager.getDeviceName(for: deviceID) ?? "Unknown"
+                        if let vol = deviceManager.getInputVolume(for: deviceID) {
+                            extra["volume"] = vol
+                        }
+                        if let muted = deviceManager.getInputMute(for: deviceID) {
+                            extra["muted"] = muted
+                        }
                     }
                 }
 
                 AppLogger.debug(
                     "Mic input diagnostic",
                     category: .recordingManager,
-                    extra: extra
+                    extra: extra,
                 )
             }
         }
@@ -154,7 +160,7 @@ extension AudioRecorder {
         AppLogger.info(
             "Mic probe recording started",
             category: .recordingManager,
-            extra: ["path": fileURL.path]
+            extra: ["path": fileURL.path],
         )
 
         Task {
@@ -189,7 +195,7 @@ extension AudioRecorder {
                 AppLogger.info(
                     "Mic probe recording saved",
                     category: .recordingManager,
-                    extra: ["path": url.path]
+                    extra: ["path": url.path],
                 )
             }
         }
@@ -229,7 +235,7 @@ extension AudioRecorder {
             AppLogger.info(
                 "Mic recorder probe started",
                 category: .recordingManager,
-                extra: ["path": url.path]
+                extra: ["path": url.path],
             )
 
             // Sample meters periodically so we can detect if AVAudioRecorder
@@ -251,7 +257,7 @@ extension AudioRecorder {
                                 "averagePower": avg,
                                 "peakPower": peak,
                                 "isSilent": peak < -100,
-                            ]
+                            ],
                         )
                     }
                 }
@@ -281,7 +287,7 @@ extension AudioRecorder {
         AppLogger.info(
             "Mic recorder probe saved",
             category: .recordingManager,
-            extra: ["path": url.path, "duration": duration, "bytes": size]
+            extra: ["path": url.path, "duration": duration, "bytes": size],
         )
     }
 }

@@ -19,7 +19,7 @@ public final class AXTextContextProvider: TextContextProvider {
         markdownConverter: RichTextMarkdownConverter = RichTextMarkdownConverter(),
         customExcludedBundleIDsProvider: @escaping () -> [String] = { [] },
         cache: TextContextCache = TextContextCache(),
-        failureTracker: TextContextFailureTracker = TextContextFailureTracker()
+        failureTracker: TextContextFailureTracker = TextContextFailureTracker(),
     ) {
         self.activeAppProvider = activeAppProvider
         self.exclusionPolicyProvider = exclusionPolicyProvider
@@ -39,7 +39,7 @@ public final class AXTextContextProvider: TextContextProvider {
 
         if exclusionPolicy.isExcluded(
             bundleIdentifier: appContext.bundleIdentifier,
-            customExcludedBundleIDs: customExcludedBundleIDs
+            customExcludedBundleIDs: customExcludedBundleIDs,
         ) {
             recordFailure(appContext: appContext, reason: .excludedApp)
             throw ContextAcquisitionError.excludedApp
@@ -63,7 +63,7 @@ public final class AXTextContextProvider: TextContextProvider {
                 let snapshot = TextContextSnapshot(
                     text: text,
                     source: .accessibility,
-                    appContext: appContext
+                    appContext: appContext,
                 )
                 cache.insert(snapshot, for: cacheKey)
                 return snapshot
@@ -74,7 +74,7 @@ public final class AXTextContextProvider: TextContextProvider {
                 let snapshot = TextContextSnapshot(
                     text: text,
                     source: .visibleOnly,
-                    appContext: appContext
+                    appContext: appContext,
                 )
                 cache.insert(snapshot, for: cacheKey)
                 return snapshot
@@ -99,7 +99,7 @@ public final class AXTextContextProvider: TextContextProvider {
         let result = AXUIElementCopyAttributeValue(
             appElement,
             kAXFocusedUIElementAttribute as CFString,
-            &focusedElementRef
+            &focusedElementRef,
         )
 
         guard result == .success else {
@@ -123,7 +123,7 @@ public final class AXTextContextProvider: TextContextProvider {
         let rangeResult = AXUIElementCopyAttributeValue(
             element,
             textMarkerRangeAttribute,
-            &markerRangeRef
+            &markerRangeRef,
         )
 
         guard rangeResult == .success, let markerRangeRef else { return nil }
@@ -133,7 +133,7 @@ public final class AXTextContextProvider: TextContextProvider {
             element,
             kAXAttributedStringForRangeParameterizedAttribute as CFString,
             markerRangeRef,
-            &attributedTextRef
+            &attributedTextRef,
         )
 
         guard paramResult == .success else { return nil }
@@ -145,7 +145,7 @@ public final class AXTextContextProvider: TextContextProvider {
         let rangeResult = AXUIElementCopyAttributeValue(
             element,
             kAXVisibleCharacterRangeAttribute as CFString,
-            &visibleRangeRef
+            &visibleRangeRef,
         )
 
         guard rangeResult == .success, let visibleRangeRef else { return nil }
@@ -155,7 +155,7 @@ public final class AXTextContextProvider: TextContextProvider {
             element,
             kAXAttributedStringForRangeParameterizedAttribute as CFString,
             visibleRangeRef,
-            &attributedTextRef
+            &attributedTextRef,
         )
 
         guard paramResult == .success else { return nil }

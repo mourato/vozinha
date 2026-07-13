@@ -1,31 +1,31 @@
-import XCTest
 @testable import MeetingAssistantCore
+import XCTest
 
 final class AssistantShortcutSuppressionPolicyTests: XCTestCase {
     func testShouldSuppressEnterStopWhileRecordingRequiresToggleAndRecording() {
         XCTAssertFalse(
             AssistantShortcutSuppressionPolicy.shouldSuppressEnterStopWhileRecording(
                 assistantUseEnterToStopRecording: false,
-                isAssistantRecording: false
-            )
+                isAssistantRecording: false,
+            ),
         )
         XCTAssertFalse(
             AssistantShortcutSuppressionPolicy.shouldSuppressEnterStopWhileRecording(
                 assistantUseEnterToStopRecording: false,
-                isAssistantRecording: true
-            )
+                isAssistantRecording: true,
+            ),
         )
         XCTAssertFalse(
             AssistantShortcutSuppressionPolicy.shouldSuppressEnterStopWhileRecording(
                 assistantUseEnterToStopRecording: true,
-                isAssistantRecording: false
-            )
+                isAssistantRecording: false,
+            ),
         )
         XCTAssertTrue(
             AssistantShortcutSuppressionPolicy.shouldSuppressEnterStopWhileRecording(
                 assistantUseEnterToStopRecording: true,
-                isAssistantRecording: true
-            )
+                isAssistantRecording: true,
+            ),
         )
     }
 
@@ -34,8 +34,8 @@ final class AssistantShortcutSuppressionPolicyTests: XCTestCase {
             AssistantShortcutSuppressionPolicy.shouldSuppressKeyDownEvents(
                 shouldUseAssistantShortcutLayer: true,
                 isShortcutLayerArmed: true,
-                shouldSuppressEnterStopWhileRecording: false
-            )
+                shouldSuppressEnterStopWhileRecording: false,
+            ),
         )
     }
 
@@ -44,8 +44,8 @@ final class AssistantShortcutSuppressionPolicyTests: XCTestCase {
             AssistantShortcutSuppressionPolicy.shouldSuppressKeyDownEvents(
                 shouldUseAssistantShortcutLayer: false,
                 isShortcutLayerArmed: false,
-                shouldSuppressEnterStopWhileRecording: true
-            )
+                shouldSuppressEnterStopWhileRecording: true,
+            ),
         )
     }
 
@@ -54,8 +54,8 @@ final class AssistantShortcutSuppressionPolicyTests: XCTestCase {
             AssistantShortcutSuppressionPolicy.shouldSuppressKeyDownEvents(
                 shouldUseAssistantShortcutLayer: false,
                 isShortcutLayerArmed: false,
-                shouldSuppressEnterStopWhileRecording: false
-            )
+                shouldSuppressEnterStopWhileRecording: false,
+            ),
         )
     }
 }

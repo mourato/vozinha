@@ -33,7 +33,7 @@ final class CoreDataRepositoryTests: XCTestCase {
             id: UUID(),
             app: .slack,
             startTime: Date(),
-            audioFilePath: "/tmp/test.wav"
+            audioFilePath: "/tmp/test.wav",
         )
 
         // When
@@ -86,9 +86,9 @@ final class CoreDataRepositoryTests: XCTestCase {
                 endDate: Date().addingTimeInterval(3_600),
                 location: "Room",
                 notes: "Notes",
-                attendees: ["Alice"]
+                attendees: ["Alice"],
             ),
-            startTime: Date()
+            startTime: Date(),
         )
 
         try await meetingRepo.saveMeeting(meeting)
@@ -105,7 +105,7 @@ final class CoreDataRepositoryTests: XCTestCase {
             app: .importedFile,
             capturePurpose: .meeting,
             title: "Imported planning call",
-            startTime: Date()
+            startTime: Date(),
         )
 
         try await meetingRepo.saveMeeting(meeting)
@@ -127,7 +127,7 @@ final class CoreDataRepositoryTests: XCTestCase {
             }
             let meeting = MeetingMO(
                 entity: entityDescription,
-                insertInto: context
+                insertInto: context,
             )
             meeting.id = meetingID
             meeting.appRawValue = DomainMeetingApp.importedFile.rawValue
@@ -138,8 +138,8 @@ final class CoreDataRepositoryTests: XCTestCase {
                     title: "Legacy calendar title",
                     startDate: Date(),
                     endDate: Date().addingTimeInterval(3_600),
-                    attendees: []
-                )
+                    attendees: [],
+                ),
             )
             meeting.startTime = Date()
             try context.save()
@@ -163,7 +163,7 @@ final class CoreDataRepositoryTests: XCTestCase {
 
         var config = TranscriptionEntity.Configuration(
             text: TranscriptionMO.mockArtifactDefaultText,
-            rawText: TranscriptionMO.mockArtifactDefaultText
+            rawText: TranscriptionMO.mockArtifactDefaultText,
         )
         config.modelName = TranscriptionMO.mockArtifactDefaultModel
         let transcription = TranscriptionEntity(meeting: meeting, config: config)
@@ -192,7 +192,7 @@ final class CoreDataRepositoryTests: XCTestCase {
             rawText: "Hi",
             segments: [
                 TranscriptionEntity.Segment(speaker: "A", text: "Hi", startTime: 0, endTime: 1),
-            ]
+            ],
         )
         let transcription = TranscriptionEntity(meeting: meeting, config: config)
 
@@ -211,7 +211,7 @@ final class CoreDataRepositoryTests: XCTestCase {
     func testLoadMetadata_AppliesNewestSortAndLimit() async throws {
         let storage = FileSystemStorageService(
             honorsConfiguredRecordingDirectory: false,
-            coreDataStack: stack
+            coreDataStack: stack,
         )
         let now = Date()
 
@@ -219,26 +219,26 @@ final class CoreDataRepositoryTests: XCTestCase {
             let meeting = MeetingEntity(
                 app: .zoom,
                 capturePurpose: .meeting,
-                startTime: now.addingTimeInterval(TimeInterval(-offset * 60))
+                startTime: now.addingTimeInterval(TimeInterval(-offset * 60)),
             )
             try await meetingRepo.saveMeeting(meeting)
 
             var configuration = TranscriptionEntity.Configuration(
                 text: "Transcription " + String(offset),
-                rawText: "Transcription " + String(offset)
+                rawText: "Transcription " + String(offset),
             )
             configuration.createdAt = now.addingTimeInterval(TimeInterval(-offset * 60))
             try await transcriptionRepo.saveTranscription(
-                TranscriptionEntity(meeting: meeting, config: configuration)
+                TranscriptionEntity(meeting: meeting, config: configuration),
             )
         }
 
         let results = try await storage.loadMetadata(
-            matching: TranscriptionMetadataQuery(limit: 2)
+            matching: TranscriptionMetadataQuery(limit: 2),
         )
 
         XCTAssertEqual(results.count, 2)
-        XCTAssertEqual(results.map { $0.previewText }, ["Transcription 0", "Transcription 1"])
+        XCTAssertEqual(results.map(\.previewText), ["Transcription 0", "Transcription 1"])
         XCTAssertGreaterThanOrEqual(results[0].createdAt, results[1].createdAt)
     }
 
@@ -258,8 +258,8 @@ final class CoreDataRepositoryTests: XCTestCase {
                 isGroundedInTranscript: true,
                 containsSpeculation: false,
                 isHumanReviewed: true,
-                confidenceScore: 0.92
-            )
+                confidenceScore: 0.92,
+            ),
         )
 
         var config = TranscriptionEntity.Configuration(text: "Raw text", rawText: "Raw text")
@@ -283,7 +283,7 @@ final class CoreDataRepositoryTests: XCTestCase {
 
         var config = TranscriptionEntity.Configuration(
             text: "Processed text",
-            rawText: "Raw text"
+            rawText: "Raw text",
         )
         config.postProcessingPromptId = UUID()
         config.postProcessingPromptTitle = "Dictation Prompt"
@@ -307,7 +307,7 @@ final class CoreDataRepositoryTests: XCTestCase {
 
         var config = TranscriptionEntity.Configuration(
             text: "Processed text",
-            rawText: "Raw text"
+            rawText: "Raw text",
         )
         config.modelName = "legacy-transcriber"
         config.transcriptionDuration = 42
@@ -320,10 +320,10 @@ final class CoreDataRepositoryTests: XCTestCase {
         await stack.backfillModelPerformanceAttemptsIfNeeded(checkpointKey: checkpointKey)
 
         let transcriptionAttempts = try await transcriptionRepo.fetchModelPerformanceAttempts(
-            matching: ModelPerformanceAttemptQuery(stage: .transcription)
+            matching: ModelPerformanceAttemptQuery(stage: .transcription),
         )
         let postProcessingAttempts = try await transcriptionRepo.fetchModelPerformanceAttempts(
-            matching: ModelPerformanceAttemptQuery(stage: .postProcessing)
+            matching: ModelPerformanceAttemptQuery(stage: .postProcessing),
         )
 
         XCTAssertEqual(transcriptionAttempts.count, 1)
@@ -340,7 +340,7 @@ final class CoreDataRepositoryTests: XCTestCase {
 
         var config = TranscriptionEntity.Configuration(
             text: "Raw text",
-            rawText: "Raw text"
+            rawText: "Raw text",
         )
         config.modelName = "test-model"
         let transcription = TranscriptionEntity(meeting: meeting, config: config)
@@ -352,28 +352,28 @@ final class CoreDataRepositoryTests: XCTestCase {
                 transcriptionID: transcription.id,
                 providerID: "local",
                 modelID: "model-a",
-                startedAt: baseDate
-            )
+                startedAt: baseDate,
+            ),
         )
         try await transcriptionRepo.saveModelPerformanceAttempt(
             makeAttempt(
                 transcriptionID: transcription.id,
                 providerID: "local",
                 modelID: "model-a",
-                startedAt: baseDate.addingTimeInterval(10)
-            )
+                startedAt: baseDate.addingTimeInterval(10),
+            ),
         )
         try await transcriptionRepo.saveModelPerformanceAttempt(
             makeAttempt(
                 transcriptionID: transcription.id,
                 providerID: "local",
                 modelID: "model-a",
-                startedAt: baseDate.addingTimeInterval(20)
-            )
+                startedAt: baseDate.addingTimeInterval(20),
+            ),
         )
 
         let attempts = try await transcriptionRepo.fetchModelPerformanceAttempts(
-            matching: ModelPerformanceAttemptQuery(stage: .transcription, limit: 2)
+            matching: ModelPerformanceAttemptQuery(stage: .transcription, limit: 2),
         )
 
         XCTAssertEqual(attempts.count, 2)
@@ -390,15 +390,15 @@ final class CoreDataRepositoryTests: XCTestCase {
                 title: "Calendar fallback",
                 startDate: Date(),
                 endDate: Date().addingTimeInterval(3_600),
-                attendees: []
+                attendees: [],
             ),
-            startTime: Date()
+            startTime: Date(),
         )
         try await meetingRepo.saveMeeting(meeting)
 
         let transcription = TranscriptionEntity(
             meeting: meeting,
-            config: .init(text: "Imported transcript", rawText: "Imported transcript")
+            config: .init(text: "Imported transcript", rawText: "Imported transcript"),
         )
 
         try await transcriptionRepo.saveTranscription(transcription)
@@ -440,7 +440,7 @@ final class CoreDataRepositoryTests: XCTestCase {
             schemaVersion: 0,
             title: "",
             summary: "",
-            trustFlags: .init(confidenceScore: 1.2)
+            trustFlags: .init(confidenceScore: 1.2),
         )
 
         var config = TranscriptionEntity.Configuration(text: "Raw text", rawText: "Raw text")
@@ -460,7 +460,7 @@ final class CoreDataRepositoryTests: XCTestCase {
         transcriptionID: UUID,
         providerID: String,
         modelID: String,
-        startedAt: Date
+        startedAt: Date,
     ) -> ModelPerformanceAttempt {
         ModelPerformanceAttempt(
             transcriptionID: transcriptionID,
@@ -472,7 +472,7 @@ final class CoreDataRepositoryTests: XCTestCase {
                 providerDisplayName: providerID,
                 modelID: modelID,
                 modelDisplayName: modelID,
-                runtimeKind: .local
+                runtimeKind: .local,
             ),
             status: .succeeded,
             startedAt: startedAt,
@@ -481,7 +481,7 @@ final class CoreDataRepositoryTests: XCTestCase {
             audioSeconds: 60,
             inputUTF8Bytes: 0,
             inputCharacterCount: 0,
-            outputCharacterCount: 100
+            outputCharacterCount: 100,
         )
     }
 }

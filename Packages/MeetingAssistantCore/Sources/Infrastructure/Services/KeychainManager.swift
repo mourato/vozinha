@@ -256,7 +256,7 @@ public enum KeychainManager {
                 if existing.version != ConsolidatedAPIKeys.currentVersion {
                     AppLogger.warning(
                         "Consolidated API keys version mismatch: \(existing.version) != \(ConsolidatedAPIKeys.currentVersion)",
-                        category: .security
+                        category: .security,
                     )
                 }
                 _consolidatedCache = existing
@@ -266,7 +266,7 @@ public enum KeychainManager {
             AppLogger.error(
                 "Failed to decode consolidated API keys blob, will re-migrate",
                 category: .security,
-                error: error
+                error: error,
             )
         }
 
@@ -292,7 +292,7 @@ public enum KeychainManager {
 
     @discardableResult
     private static func mutateConsolidated(
-        _ mutation: (inout ConsolidatedAPIKeys) throws -> Bool
+        _ mutation: (inout ConsolidatedAPIKeys) throws -> Bool,
     ) throws -> Bool {
         cacheLock.lock()
         defer { cacheLock.unlock() }
@@ -348,13 +348,13 @@ public enum KeychainManager {
             if addStatus == errSecDuplicateItem {
                 AppLogger.warning(
                     "Consolidated API keys add hit duplicate item; retrying update",
-                    category: .security
+                    category: .security,
                 )
                 let retryStatus = SecItemUpdate(query as CFDictionary, updateAttributes as CFDictionary)
                 guard retryStatus == errSecSuccess else {
                     AppLogger.error(
                         "Failed to retry consolidated API keys update: \(retryStatus)",
-                        category: .security
+                        category: .security,
                     )
                     throw KeychainError.unexpectedStatus(retryStatus)
                 }
@@ -365,7 +365,7 @@ public enum KeychainManager {
             guard addStatus == errSecSuccess else {
                 AppLogger.error(
                     "Failed to add consolidated API keys blob: \(addStatus)",
-                    category: .security
+                    category: .security,
                 )
                 throw KeychainError.unexpectedStatus(addStatus)
             }
@@ -373,7 +373,7 @@ public enum KeychainManager {
         default:
             AppLogger.error(
                 "Failed to update consolidated API keys blob: \(updateStatus)",
-                category: .security
+                category: .security,
             )
             throw KeychainError.unexpectedStatus(updateStatus)
         }
@@ -608,8 +608,12 @@ public enum KeychainManager {
 
         do {
             let consolidated = try loadConsolidated()
-            if keyValue(in: consolidated, for: providerKey) != nil { return true }
-            if keyValue(in: consolidated, for: .aiAPIKey) != nil { return true }
+            if keyValue(in: consolidated, for: providerKey) != nil {
+                return true
+            }
+            if keyValue(in: consolidated, for: .aiAPIKey) != nil {
+                return true
+            }
         } catch {
             return allServices.contains { exists(account: providerKey.rawValue, serviceIdentifier: $0) }
                 || allServices.contains { exists(account: Key.aiAPIKey.rawValue, serviceIdentifier: $0) }
@@ -744,7 +748,9 @@ public enum KeychainManager {
         let account = registrationAPIKeyAccount(for: registrationID)
         do {
             let consolidated = try loadConsolidated()
-            if consolidated.registrationKeys[account] != nil { return true }
+            if consolidated.registrationKeys[account] != nil {
+                return true
+            }
         } catch {
             return exists(account: account, serviceIdentifier: serviceIdentifier)
                 || legacyServiceIdentifiers.contains {
@@ -778,7 +784,7 @@ public enum KeychainManager {
 
     private static func legacyRegistrationAPIKey(
         for account: String,
-        migratedAccounts: inout [(account: String, serviceIdentifier: String)]
+        migratedAccounts: inout [(account: String, serviceIdentifier: String)],
     ) throws -> String? {
         for serviceId in [serviceIdentifier] + legacyServiceIdentifiers {
             guard let legacyValue = try retrieve(account: account, serviceIdentifier: serviceId),
@@ -864,7 +870,7 @@ public extension KeychainManager {
     @available(*, deprecated, message: "Use retrieveAPIKeys(for:) or retrieveAPIKeysMap(allowedProviders:) instead")
     static func mapAPIKeyItems(
         _ items: [[String: Any]],
-        allowedProviders: [AIProvider]
+        allowedProviders: [AIProvider],
     ) -> [AIProvider: String] {
         let accountToProvider = Dictionary(uniqueKeysWithValues: allowedProviders.map {
             (apiKeyKey(for: $0).rawValue, $0)

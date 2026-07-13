@@ -32,7 +32,7 @@ public struct EnhancementsSettingsTab: View {
         settings: AppSettingsStore = .shared,
         navigationState: Binding<SettingsSubpageNavigationState<EnhancementsSettingsRoute>> = .constant(SettingsSubpageNavigationState()),
         showsHeader: Bool = true,
-        content: EnhancementsSettingsContent = .all
+        content: EnhancementsSettingsContent = .all,
     ) {
         _postProcessingViewModel = StateObject(wrappedValue: PostProcessingSettingsViewModel(settings: settings))
         _sensitiveAppsViewModel = StateObject(
@@ -41,8 +41,8 @@ public struct EnhancementsSettingsTab: View {
                 protectedBundleIdentifiers: TextContextExclusionPolicy.defaultBundleIDs,
                 hasConfigured: { true },
                 loadBundleIdentifiers: { settings.contextAwarenessExcludedBundleIDs },
-                saveBundleIdentifiers: { settings.contextAwarenessExcludedBundleIDs = $0 }
-            )
+                saveBundleIdentifiers: { settings.contextAwarenessExcludedBundleIDs = $0 },
+            ),
         )
         _navigationState = navigationState
         self.showsHeader = showsHeader
@@ -50,13 +50,11 @@ public struct EnhancementsSettingsTab: View {
     }
 
     public var body: some View {
-        Group {
-            switch navigationState.currentRoute {
-            case nil:
-                rootPage
-            case .some(.systemGuidelines):
-                systemGuidelinesPage
-            }
+        switch navigationState.currentRoute {
+        case nil:
+            rootPage
+        case .some(.systemGuidelines):
+            systemGuidelinesPage
         }
     }
 
@@ -67,7 +65,7 @@ public struct EnhancementsSettingsTab: View {
             if showsHeader {
                 SettingsSectionHeader(
                     title: headerTitle,
-                    description: "settings.text_context.description".localized
+                    description: "settings.text_context.description".localized,
                 )
             }
 
@@ -99,12 +97,12 @@ public struct EnhancementsSettingsTab: View {
             DSToggleRow(
                 "settings.post_processing.enabled".localized,
                 description: "settings.post_processing.description".localized,
-                isOn: $postProcessingViewModel.settings.postProcessingEnabled
+                isOn: $postProcessingViewModel.settings.postProcessingEnabled,
             )
 
             SettingsListDrillDownButtonRow(
                 title: "settings.post_processing.edit_system_prompt".localized,
-                accessibilityHint: "settings.post_processing.system_guidelines.accessibility_hint".localized
+                accessibilityHint: "settings.post_processing.system_guidelines.accessibility_hint".localized,
             ) {
                 navigationState.open(.systemGuidelines)
             }
@@ -124,7 +122,7 @@ public struct EnhancementsSettingsTab: View {
                     removeButtonKey: "settings.context_awareness.excluded_apps_remove",
                     protectedBadgeKey: "settings.context_awareness.always_excluded_badge",
                     onAddApp: { showAppSearchSheet = true },
-                    viewModel: sensitiveAppsViewModel
+                    viewModel: sensitiveAppsViewModel,
                 )
             }
         }
@@ -134,7 +132,7 @@ public struct EnhancementsSettingsTab: View {
                 isPresented: $showAppSearchSheet,
                 titleKey: "settings.context_awareness.protect_sensitive_apps",
                 descriptionKey: "settings.context_awareness.protect_sensitive_apps_desc",
-                addButtonKey: "settings.context_awareness.excluded_apps_add"
+                addButtonKey: "settings.context_awareness.excluded_apps_add",
             )
         }
     }
@@ -148,7 +146,7 @@ public struct EnhancementsSettingsTab: View {
                             title: "settings.post_processing.base_instructions".localized,
                             helperMessage: "prompt.instructions_hint".localized,
                             font: .subheadline,
-                            fontWeight: .medium
+                            fontWeight: .medium,
                         )
                         Spacer()
                         Button("settings.post_processing.restore_default".localized) {
@@ -193,7 +191,7 @@ public struct EnhancementsSettingsTab: View {
 
 private extension View {
     func enhancementsEditorSurface(
-        intensity: AppDesignSystem.SettingsSurfaceIntensity = .subtle
+        intensity: AppDesignSystem.SettingsSurfaceIntensity = .subtle,
     ) -> some View {
         padding(AppDesignSystem.Layout.textAreaPadding)
             .background(AppDesignSystem.Colors.settingsInlineBackground(intensity: intensity))

@@ -30,7 +30,7 @@ final class AudioRecordingWorkerMeteringTests: XCTestCase {
 
         XCTAssertLessThan(unwrapped.averagePowerDB, -8.0)
         XCTAssertGreaterThan(unwrapped.averagePowerDB, -12.5)
-        XCTAssertEqual(unwrapped.deltaTime, 8.0 / 48_000.0, accuracy: 0.000001)
+        XCTAssertEqual(unwrapped.deltaTime, 8.0 / 48_000.0, accuracy: 0.000_001)
     }
 
     func testMakeMeterSnapshot_PreservesIndependentBucketsWithoutRMSSmoothing() throws {
@@ -69,7 +69,7 @@ final class AudioRecordingWorkerMeteringTests: XCTestCase {
         XCTAssertTrue(snapshot.barPowerDBLevels.isEmpty)
         XCTAssertLessThan(snapshot.averagePowerDB, 0.0)
         XCTAssertGreaterThan(snapshot.peakPowerDB, -13.0)
-        XCTAssertEqual(snapshot.deltaTime, 4.0 / 48_000.0, accuracy: 0.000001)
+        XCTAssertEqual(snapshot.deltaTime, 4.0 / 48_000.0, accuracy: 0.000_001)
     }
 
     func testMakeMeterSnapshot_WithInvalidSampleRate_ReturnsNil() throws {

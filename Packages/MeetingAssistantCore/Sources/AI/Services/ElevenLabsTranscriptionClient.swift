@@ -15,7 +15,7 @@ public final class ElevenLabsTranscriptionClient {
         audioURL: URL,
         modelID: String,
         inputLanguageCode: String? = nil,
-        onProgress: (@Sendable (Double) -> Void)? = nil
+        onProgress: (@Sendable (Double) -> Void)? = nil,
     ) async throws -> TranscriptionResponse {
         let apiKey = try resolveAPIKey()
         let normalizedModelID = normalizedElevenLabsModelID(modelID)
@@ -23,7 +23,7 @@ public final class ElevenLabsTranscriptionClient {
             audioURL: audioURL,
             modelID: normalizedModelID,
             inputLanguageCode: inputLanguageCode,
-            apiKey: apiKey
+            apiKey: apiKey,
         )
 
         onProgress?(0.1)
@@ -49,7 +49,7 @@ public final class ElevenLabsTranscriptionClient {
         audioURL: URL,
         modelID: String,
         inputLanguageCode: String?,
-        apiKey: String
+        apiKey: String,
     ) throws -> URLRequest {
         guard FileManager.default.fileExists(atPath: audioURL.path) else {
             throw TranscriptionError.transcriptionFailed("Audio file not found")
@@ -73,7 +73,7 @@ public final class ElevenLabsTranscriptionClient {
             fileData: fileData,
             fileName: audioURL.lastPathComponent,
             modelID: modelID,
-            inputLanguageCode: inputLanguageCode
+            inputLanguageCode: inputLanguageCode,
         )
 
         return request
@@ -92,7 +92,7 @@ public final class ElevenLabsTranscriptionClient {
         fileData: Data,
         fileName: String,
         modelID: String,
-        inputLanguageCode: String?
+        inputLanguageCode: String?,
     ) -> Data {
         var body = Data()
 
@@ -101,7 +101,7 @@ public final class ElevenLabsTranscriptionClient {
             fileName: fileName,
             fileData: fileData,
             boundary: boundary,
-            to: &body
+            to: &body,
         )
         appendField("model_id", value: modelID, boundary: boundary, to: &body)
         appendField("temperature", value: "0.0", boundary: boundary, to: &body)
@@ -119,7 +119,7 @@ public final class ElevenLabsTranscriptionClient {
         _ name: String,
         value: String,
         boundary: String,
-        to body: inout Data
+        to body: inout Data,
     ) {
         appendString("--\(boundary)\r\n", to: &body)
         appendString("Content-Disposition: form-data; name=\"\(name)\"\r\n\r\n", to: &body)
@@ -131,12 +131,12 @@ public final class ElevenLabsTranscriptionClient {
         fileName: String,
         fileData: Data,
         boundary: String,
-        to body: inout Data
+        to body: inout Data,
     ) {
         appendString("--\(boundary)\r\n", to: &body)
         appendString(
             "Content-Disposition: form-data; name=\"\(fieldName)\"; filename=\"\(fileName)\"\r\n",
-            to: &body
+            to: &body,
         )
         appendString("Content-Type: \(mimeType(for: fileName))\r\n\r\n", to: &body)
         body.append(fileData)
@@ -185,7 +185,7 @@ public final class ElevenLabsTranscriptionClient {
             }
 
             throw TranscriptionError.transcriptionFailed(
-                "ElevenLabs transcription failed with status \(httpResponse.statusCode)"
+                "ElevenLabs transcription failed with status \(httpResponse.statusCode)",
             )
         }
     }
@@ -201,7 +201,7 @@ public final class ElevenLabsTranscriptionClient {
             durationSeconds: 0,
             model: modelID,
             processedAt: ISO8601DateFormatter().string(from: Date()),
-            confidenceScore: response.languageProbability
+            confidenceScore: response.languageProbability,
         )
     }
 }

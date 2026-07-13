@@ -92,7 +92,7 @@ public final class AudioLevelMonitor: ObservableObject {
     public init(
         audioRecorder: AudioRecorder = .shared,
         samplingInterval: TimeInterval = 0.017,
-        windowDuration: TimeInterval = 0.5
+        windowDuration: TimeInterval = 0.5,
     ) {
         self.audioRecorder = audioRecorder
         self.samplingInterval = samplingInterval
@@ -113,7 +113,7 @@ public final class AudioLevelMonitor: ObservableObject {
                     averageDB: snapshot.averagePowerDB,
                     peakDB: snapshot.peakPowerDB,
                     barLevelsDB: snapshot.barPowerDBLevels,
-                    deltaTime: snapshot.deltaTime
+                    deltaTime: snapshot.deltaTime,
                 )
             }
     }
@@ -139,7 +139,7 @@ public final class AudioLevelMonitor: ObservableObject {
         averageDB: Float,
         peakDB: Float,
         barLevelsDB: [Float] = [],
-        deltaTime: TimeInterval? = nil
+        deltaTime: TimeInterval? = nil,
     ) {
         let effectiveDelta = max(0.001, deltaTime ?? samplingInterval)
         updateSilenceWarning(with: averageDB, deltaTime: effectiveDelta)
@@ -147,12 +147,12 @@ public final class AudioLevelMonitor: ObservableObject {
         let normalizedAverage = normalizeDecibels(
             averageDB,
             minDB: Constants.meterMinDb,
-            maxDB: Constants.meterMaxDb
+            maxDB: Constants.meterMaxDb,
         )
         let normalizedPeak = normalizeDecibels(
             peakDB,
             minDB: Constants.meterMinDb,
-            maxDB: Constants.meterMaxDb
+            maxDB: Constants.meterMaxDb,
         )
         let normalizedBars = barLevelsDB.map {
             Double(normalizeDecibels($0, minDB: Constants.meterMinDb, maxDB: Constants.meterMaxDb))
@@ -160,12 +160,12 @@ public final class AudioLevelMonitor: ObservableObject {
 
         audioMeter = AudioMeter(
             averagePower: Double(normalizedAverage),
-            peakPower: Double(normalizedPeak)
+            peakPower: Double(normalizedPeak),
         )
 
         let blendedTargetLevel = blendedEnvelopeLevel(
             average: Double(normalizedAverage),
-            peak: Double(normalizedPeak)
+            peak: Double(normalizedPeak),
         )
         let sourceLevel = normalizedBars.isEmpty
             ? blendedTargetLevel
@@ -176,8 +176,8 @@ public final class AudioLevelMonitor: ObservableObject {
         canonicalFrames.append(
             CanonicalWaveformFrame(
                 timestamp: waveformClock,
-                normalizedLevel: smoothedLevel
-            )
+                normalizedLevel: smoothedLevel,
+            ),
         )
         trimCanonicalFrames(now: waveformClock)
         rebuildCanonicalEnvelope()
@@ -195,12 +195,12 @@ public final class AudioLevelMonitor: ObservableObject {
         let leftSeed = phasedProjection(
             from: canonicalEnvelopeLevels,
             count: pairCount,
-            phaseOffset: Constants.projectionLeftPhaseOffset
+            phaseOffset: Constants.projectionLeftPhaseOffset,
         )
         let rightSeed = phasedProjection(
             from: canonicalEnvelopeLevels,
             count: pairCount,
-            phaseOffset: Constants.projectionRightPhaseOffset
+            phaseOffset: Constants.projectionRightPhaseOffset,
         )
 
         let mirroredPairs = zip(leftSeed, rightSeed).enumerated().map { index, pair -> (Double, Double) in

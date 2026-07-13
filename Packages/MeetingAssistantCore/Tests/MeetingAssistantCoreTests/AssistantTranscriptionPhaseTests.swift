@@ -1,10 +1,11 @@
-import XCTest
 @testable import MeetingAssistantCore
 @testable import MeetingAssistantCoreInfrastructure
 @testable import MeetingAssistantCoreUI
+import XCTest
 
 @MainActor
 final class AssistantTranscriptionPhaseTests: XCTestCase {
+
     // MARK: - normalizedAssistantTranscription
 
     func testNormalizedAssistantTranscription_AppliesVocabularyRulesBeforeTrimming() {
@@ -14,7 +15,7 @@ final class AssistantTranscriptionPhaseTests: XCTestCase {
             vocabularyReplacementRules: [
                 VocabularyReplacementRule(find: "open ay eye", replace: "OpenAI"),
                 VocabularyReplacementRule(find: "reycast, recast", replace: "Raycast"),
-            ]
+            ],
         )
         XCTAssertEqual(result, "OpenAI summarize this for Raycast")
     }
@@ -25,7 +26,7 @@ final class AssistantTranscriptionPhaseTests: XCTestCase {
             "  ask for status update  ",
             vocabularyReplacementRules: [
                 VocabularyReplacementRule(find: "open ay eye", replace: "OpenAI"),
-            ]
+            ],
         )
         XCTAssertEqual(result, "ask for status update")
     }
@@ -34,7 +35,7 @@ final class AssistantTranscriptionPhaseTests: XCTestCase {
         let phase = makePhase()
         let result = phase.normalizedAssistantTranscription(
             "  ",
-            vocabularyReplacementRules: []
+            vocabularyReplacementRules: [],
         )
         XCTAssertEqual(result, "")
     }
@@ -47,7 +48,7 @@ final class AssistantTranscriptionPhaseTests: XCTestCase {
         let result = phase.resolveSelectedIntegration(
             executionFlow: .integrationDispatch,
             isAssistantIntegrationsEnabled: true,
-            assistantSelectedIntegration: integration
+            assistantSelectedIntegration: integration,
         )
         XCTAssertNotNil(result)
         XCTAssertEqual(result?.name, "test")
@@ -59,7 +60,7 @@ final class AssistantTranscriptionPhaseTests: XCTestCase {
         let result = phase.resolveSelectedIntegration(
             executionFlow: .assistantMode,
             isAssistantIntegrationsEnabled: true,
-            assistantSelectedIntegration: integration
+            assistantSelectedIntegration: integration,
         )
         XCTAssertNil(result)
     }
@@ -70,7 +71,7 @@ final class AssistantTranscriptionPhaseTests: XCTestCase {
         let result = phase.resolveSelectedIntegration(
             executionFlow: .integrationDispatch,
             isAssistantIntegrationsEnabled: false,
-            assistantSelectedIntegration: integration
+            assistantSelectedIntegration: integration,
         )
         XCTAssertNil(result)
     }
@@ -80,7 +81,7 @@ final class AssistantTranscriptionPhaseTests: XCTestCase {
         let result = phase.resolveSelectedIntegration(
             executionFlow: .integrationDispatch,
             isAssistantIntegrationsEnabled: true,
-            assistantSelectedIntegration: nil
+            assistantSelectedIntegration: nil,
         )
         XCTAssertNil(result)
     }
@@ -94,7 +95,7 @@ final class AssistantTranscriptionPhaseTests: XCTestCase {
             language: "pt",
             durationSeconds: 1,
             model: "mock-model",
-            processedAt: Date().ISO8601Format()
+            processedAt: Date().ISO8601Format(),
         )
         let phase = makePhase(transcriber: transcriber)
         let integration = makeIntegrationConfig(name: "Raycast")
@@ -107,7 +108,7 @@ final class AssistantTranscriptionPhaseTests: XCTestCase {
             ],
             executionFlow: .integrationDispatch,
             isAssistantIntegrationsEnabled: true,
-            assistantSelectedIntegration: integration
+            assistantSelectedIntegration: integration,
         )
 
         XCTAssertEqual(result.command, "OpenAI summarize this for Raycast")
@@ -124,7 +125,7 @@ final class AssistantTranscriptionPhaseTests: XCTestCase {
             language: "pt",
             durationSeconds: 1,
             model: "mock-model",
-            processedAt: Date().ISO8601Format()
+            processedAt: Date().ISO8601Format(),
         )
         let phase = makePhase(transcriber: transcriber)
 
@@ -134,7 +135,7 @@ final class AssistantTranscriptionPhaseTests: XCTestCase {
                 vocabularyReplacementRules: [],
                 executionFlow: .assistantMode,
                 isAssistantIntegrationsEnabled: true,
-                assistantSelectedIntegration: nil
+                assistantSelectedIntegration: nil,
             )
             XCTFail("Expected empty command error")
         } catch {
@@ -149,7 +150,7 @@ final class AssistantTranscriptionPhaseTests: XCTestCase {
             language: "pt",
             durationSeconds: 1,
             model: "mock-model",
-            processedAt: Date().ISO8601Format()
+            processedAt: Date().ISO8601Format(),
         )
         let phase = makePhase(transcriber: transcriber)
 
@@ -158,7 +159,7 @@ final class AssistantTranscriptionPhaseTests: XCTestCase {
             vocabularyReplacementRules: [],
             executionFlow: .integrationDispatch,
             isAssistantIntegrationsEnabled: false,
-            assistantSelectedIntegration: makeIntegrationConfig(name: "Disabled")
+            assistantSelectedIntegration: makeIntegrationConfig(name: "Disabled"),
         )
 
         XCTAssertEqual(result.command, "summarize this")
@@ -168,7 +169,7 @@ final class AssistantTranscriptionPhaseTests: XCTestCase {
     // MARK: - Helpers
 
     private func makePhase(
-        transcriber: MockAssistantCommandTranscriber = MockAssistantCommandTranscriber()
+        transcriber: MockAssistantCommandTranscriber = MockAssistantCommandTranscriber(),
     ) -> AssistantTranscriptionPhase {
         AssistantTranscriptionPhase(transcriptionClient: transcriber)
     }
@@ -188,7 +189,7 @@ final class AssistantTranscriptionPhaseTests: XCTestCase {
             modifierShortcutGesture: nil,
             advancedScript: nil,
             showsPromptSelectorInOverlay: false,
-            showsLanguageSelectorInOverlay: false
+            showsLanguageSelectorInOverlay: false,
         )
     }
 }
@@ -200,7 +201,7 @@ private final class MockAssistantCommandTranscriber: AssistantCommandTranscribin
         language: "pt",
         durationSeconds: 1,
         model: "mock-model",
-        processedAt: Date().ISO8601Format()
+        processedAt: Date().ISO8601Format(),
     )
     var lastExecutionMode: TranscriptionExecutionMode?
     var lastDiarizationOverride: Bool?
@@ -209,7 +210,7 @@ private final class MockAssistantCommandTranscriber: AssistantCommandTranscribin
         audioURL _: URL,
         onProgress _: (@Sendable (Double) -> Void)?,
         executionMode: TranscriptionExecutionMode,
-        diarizationEnabledOverride: Bool?
+        diarizationEnabledOverride: Bool?,
     ) async throws -> TranscriptionResponse {
         lastExecutionMode = executionMode
         lastDiarizationOverride = diarizationEnabledOverride

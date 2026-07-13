@@ -28,14 +28,14 @@ struct TranscriptionInfoPopover: View {
                     InfoRow(
                         icon: "calendar",
                         label: linkedEvent.trimmedTitle.isEmpty ? "metrics.calendar.event.untitled".localized : linkedEvent.trimmedTitle,
-                        value: calendarIntervalLabel(for: linkedEvent)
+                        value: calendarIntervalLabel(for: linkedEvent),
                     )
 
                     if let location = linkedEvent.location?.trimmingCharacters(in: .whitespacesAndNewlines), !location.isEmpty {
                         InfoRow(
                             icon: "mappin.and.ellipse",
                             label: location,
-                            value: "\(linkedEvent.attendees.count)"
+                            value: "\(linkedEvent.attendees.count)",
                         )
                     }
                 }
@@ -52,7 +52,7 @@ struct TranscriptionInfoPopover: View {
                 InfoRow(
                     icon: "mic.fill",
                     label: transcription.inputSource ?? "transcription.info.unknown_input".localized,
-                    value: formatDuration(transcription.meeting.duration)
+                    value: formatDuration(transcription.meeting.duration),
                 )
             }
 
@@ -64,7 +64,7 @@ struct TranscriptionInfoPopover: View {
                 InfoRow(
                     icon: "waveform",
                     label: transcription.modelName,
-                    value: formatDuration(transcription.transcriptionDuration)
+                    value: formatDuration(transcription.transcriptionDuration),
                 )
             }
 
@@ -100,7 +100,7 @@ struct TranscriptionInfoPopover: View {
                     bundleIdentifier: transcription.meeting.appBundleIdentifier,
                     fallbackSystemName: transcription.meeting.appIcon,
                     size: 18,
-                    cornerRadius: 4
+                    cornerRadius: 4,
                 )
                 Text(sourceDisplayName)
                     .font(.subheadline)
@@ -143,7 +143,7 @@ struct TranscriptionInfoPopover: View {
         let configuredBrowsers = Set(
             AppSettingsStore.shared
                 .effectiveWebTargetBrowserBundleIdentifiers
-                .map { $0.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() }
+                .map { $0.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() },
         )
 
         return configuredBrowsers.contains(bundleID)
@@ -236,7 +236,9 @@ struct TranscriptionInfoPopover: View {
     }
 
     private func formatDuration(_ duration: Double) -> String {
-        if duration <= 0 { return "-" }
+        if duration <= 0 {
+            return "-"
+        }
         if duration < 60 {
             return String(format: "%.1fs", duration)
         }
@@ -294,7 +296,7 @@ private struct InfoRow: View {
             inputSource: "MacBook Pro Mic",
             transcriptionDuration: 35.5,
             postProcessingDuration: 2.1,
-            postProcessingModel: "GPT-4"
-        )
+            postProcessingModel: "GPT-4",
+        ),
     )
 }

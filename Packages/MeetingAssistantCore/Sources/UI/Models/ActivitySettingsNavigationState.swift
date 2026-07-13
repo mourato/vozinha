@@ -18,7 +18,7 @@ public struct ActivitySettingsNavigationState: Equatable {
         activeRoute: ActivitySettingsRoute = .root,
         forwardRoute: ActivitySettingsRoute? = nil,
         metricsNavigationState: SettingsSubpageNavigationState<MetricsDashboardRoute> = SettingsSubpageNavigationState(),
-        transcriptionsNavigationHistory: TranscriptionsNavigationHistory = TranscriptionsNavigationHistory()
+        transcriptionsNavigationHistory: TranscriptionsNavigationHistory = TranscriptionsNavigationHistory(),
     ) {
         self.activeRoute = activeRoute
         self.forwardRoute = forwardRoute

@@ -9,7 +9,7 @@ import MeetingAssistantCoreInfrastructure
 extension RecordingManager {
     func shouldUseIncrementalMeetingCapture(
         purpose: CapturePurpose,
-        source: RecordingSource
+        source: RecordingSource,
     ) -> Bool {
         guard AppSettingsStore.shared.isMeetingTranscriptionEnabled else { return false }
         guard transcriptionClient is any TranscriptionServiceFinalDiarization else { return false }
@@ -18,7 +18,7 @@ extension RecordingManager {
             expectedSource: .all,
             incrementalFeatureEnabled: FeatureFlags.enableIncrementalMeetingTranscription,
             realtimeFeatureEnabled: FeatureFlags.enableRealtimeVADForMeetings,
-            executionMode: .meeting
+            executionMode: .meeting,
         )
         return supportsIncrementalCapture(config, actualPurpose: purpose, actualSource: source)
     }
@@ -26,7 +26,7 @@ extension RecordingManager {
     func prepareIncrementalMeetingSessionIfNeeded(
         meeting: Meeting,
         purpose: CapturePurpose,
-        source: RecordingSource
+        source: RecordingSource,
     ) async throws {
         guard shouldUseIncrementalMeetingCapture(purpose: purpose, source: source) else {
             teardownIncrementalMeetingSession()
@@ -48,11 +48,11 @@ extension RecordingManager {
                     Task { @MainActor [weak self] in
                         self?.transcriptionStatus.updateProgress(
                             phase: .processing,
-                            processedSeconds: processedDuration
+                            processedSeconds: processedDuration,
                         )
                     }
-                }
-            )
+                },
+            ),
         )
 
         installIncrementalBufferForwarder(
@@ -64,7 +64,7 @@ extension RecordingManager {
                 Task {
                     await coordinator.setHighLoadMode(isHighLoad)
                 }
-            }
+            },
         )
 
         do {
@@ -79,7 +79,7 @@ extension RecordingManager {
 
     func finishIncrementalMeetingSession(
         audioURL: URL,
-        session: TranscriptionSessionSnapshot
+        session: TranscriptionSessionSnapshot,
     ) async throws -> Transcription {
         guard let incrementalMeetingCoordinator else {
             throw TranscriptionError.transcriptionFailed("Missing incremental meeting session")
@@ -87,20 +87,20 @@ extension RecordingManager {
 
         let diarizationEnabled = shouldEnableDiarization(
             for: session.meeting,
-            capturePurposeOverride: session.meeting.capturePurpose
+            capturePurposeOverride: session.meeting.capturePurpose,
         )
         let finalDiarizationServiceBox = (transcriptionClient as? any TranscriptionServiceFinalDiarization)
             .map(UncheckedFinalDiarizationServiceBox.init)
 
         let audioDuration = await beginIncrementalFinalizationUI(
             audioURL: audioURL,
-            sessionID: session.id
+            sessionID: session.id,
         )
 
         let result = try await incrementalMeetingCoordinator.finish(
             audioURL: audioURL,
             diarizationEnabled: diarizationEnabled,
-            finalDiarizationServiceBox: finalDiarizationServiceBox
+            finalDiarizationServiceBox: finalDiarizationServiceBox,
         )
         AppLogger.info(
             "Selected transcription pipeline",
@@ -109,14 +109,14 @@ extension RecordingManager {
                 "path": "incremental-final",
                 "sessionID": session.id.uuidString,
                 "capturePurpose": session.meeting.capturePurpose.rawValue,
-            ]
+            ],
         )
         let transcription = try await finalizeIncrementalPreparedResponse(
             response: result.response,
             checkpointID: result.checkpointID,
             session: session,
             audioDuration: audioDuration,
-            transcriptionDuration: result.wallClockDuration
+            transcriptionDuration: result.wallClockDuration,
         )
         teardownIncrementalMeetingSession()
         return transcription

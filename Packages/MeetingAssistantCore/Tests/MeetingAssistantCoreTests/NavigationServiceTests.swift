@@ -1,5 +1,5 @@
-import XCTest
 @testable import MeetingAssistantCoreInfrastructure
+import XCTest
 
 @MainActor
 final class NavigationServiceTests: XCTestCase {

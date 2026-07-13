@@ -13,7 +13,7 @@ public struct SpeakerIdentificationSettingsSection: View {
 
     public init(
         settings: AppSettingsStore = .shared,
-        modelManager: FluidAIModelManager = .shared
+        modelManager: FluidAIModelManager = .shared,
     ) {
         self.settings = settings
         self.modelManager = modelManager
@@ -23,7 +23,7 @@ public struct SpeakerIdentificationSettingsSection: View {
         DSToggleRow(
             "settings.ai.diarization".localized,
             description: "settings.ai.diarization_desc".localized,
-            isOn: $settings.isDiarizationEnabled
+            isOn: $settings.isDiarizationEnabled,
         )
         .onChange(of: settings.isDiarizationEnabled) { isEnabled, _ in
             guard isEnabled else { return }
@@ -121,7 +121,7 @@ public struct SpeakerIdentificationSettingsSection: View {
     }
 }
 
-private struct SpeakerIdentificationSettingsSectionPreview: View {
+private struct SpeakerIdentificationPreview: View {
     private let settings: AppSettingsStore
 
     init() {
@@ -143,5 +143,5 @@ private struct SpeakerIdentificationSettingsSectionPreview: View {
 }
 
 #Preview("Speaker Identification Settings") {
-    SpeakerIdentificationSettingsSectionPreview()
+    SpeakerIdentificationPreview()
 }

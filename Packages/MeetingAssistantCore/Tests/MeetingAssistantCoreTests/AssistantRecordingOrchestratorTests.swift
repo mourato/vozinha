@@ -12,11 +12,11 @@ final class AssistantRecordingOrchestratorTests: XCTestCase {
         try await super.tearDown()
     }
 
-    func testCancelRecording_CleansUpEvenWhenRecorderAlreadyStopped() async throws {
+    func testCancelRecording_CleansUpEvenWhenRecorderAlreadyStopped() async {
         let manager = RecordingManager(
             transcriptionClient: MockTranscriptionClient(),
             postProcessingService: MockPostProcessingService(),
-            storage: MockStorageService()
+            storage: MockStorageService(),
         )
         manager.setPostProcessingReadinessWarning(issue: .missingAPIKey, mode: .assistant)
 
@@ -32,7 +32,7 @@ final class AssistantRecordingOrchestratorTests: XCTestCase {
             indicator: indicator,
             screenBorder: screenBorder,
             settings: .shared,
-            playCancelSound: { cancelSoundPlayed = true }
+            playCancelSound: { cancelSoundPlayed = true },
         )
 
         let tempURL = FileManager.default.temporaryDirectory

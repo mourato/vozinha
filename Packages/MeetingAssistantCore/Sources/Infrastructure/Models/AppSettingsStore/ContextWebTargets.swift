@@ -7,7 +7,7 @@ extension AppSettingsStore {
         let legacyMarkdownBrowsers = markdownWebTargets.flatMap(\.browserBundleIdentifiers)
         let legacyMeetingBrowsers = webMeetingTargets.flatMap(\.browserBundleIdentifiers)
         let mergedBrowsers = deduplicatedNormalizedBundleIdentifiers(
-            webTargetBrowserBundleIdentifiers + legacyMarkdownBrowsers + legacyMeetingBrowsers
+            webTargetBrowserBundleIdentifiers + legacyMarkdownBrowsers + legacyMeetingBrowsers,
         )
 
         if mergedBrowsers != webTargetBrowserBundleIdentifiers {
@@ -22,7 +22,7 @@ extension AppSettingsStore {
                 browserBundleIdentifiers: [],
                 forceMarkdownOutput: target.forceMarkdownOutput,
                 outputLanguage: target.outputLanguage,
-                autoStartMeetingRecording: target.autoStartMeetingRecording
+                autoStartMeetingRecording: target.autoStartMeetingRecording,
             )
         }
 
@@ -36,7 +36,7 @@ extension AppSettingsStore {
                 app: target.app,
                 displayName: target.displayName,
                 urlPatterns: target.urlPatterns,
-                browserBundleIdentifiers: []
+                browserBundleIdentifiers: [],
             )
         }
 
@@ -51,7 +51,7 @@ extension AppSettingsStore {
         let migratedRules = Self.normalizedDictationAppRules(
             markdownTargetBundleIdentifiers.map {
                 DictationAppRule(bundleIdentifier: $0, forceMarkdownOutput: true, outputLanguage: .original)
-            }
+            },
         )
 
         dictationAppRules = migratedRules.isEmpty ? Self.defaultDictationAppRules : migratedRules
@@ -69,7 +69,7 @@ extension AppSettingsStore {
 
         let synchronizedBrowsers = synchronizedWebTargetBrowsers(
             from: dictationAppRules,
-            legacyBrowsers: webTargetBrowserBundleIdentifiers
+            legacyBrowsers: webTargetBrowserBundleIdentifiers,
         )
 
         if synchronizedBrowsers != webTargetBrowserBundleIdentifiers {
@@ -95,8 +95,8 @@ extension AppSettingsStore {
                     bundleIdentifier: trimmedBundleIdentifier,
                     forceMarkdownOutput: rule.forceMarkdownOutput,
                     outputLanguage: rule.outputLanguage,
-                    customPromptInstructions: rule.customPromptInstructions
-                )
+                    customPromptInstructions: rule.customPromptInstructions,
+                ),
             )
         }
 
@@ -109,7 +109,7 @@ extension AppSettingsStore {
         includeWindowOCR: Bool,
         includeAccessibilityText: Bool,
         redactSensitiveData: Bool,
-        dictationSelection: EnhancementsAISelection
+        dictationSelection: EnhancementsAISelection,
     ) -> DictationStyle {
         DictationStyle(
             id: defaultDictationModeID,
@@ -125,16 +125,16 @@ extension AppSettingsStore {
                 includeClipboard: includeClipboard,
                 includeWindowOCR: includeWindowOCR,
                 includeAccessibilityText: includeAccessibilityText,
-                redactSensitiveData: redactSensitiveData
+                redactSensitiveData: redactSensitiveData,
             ),
             enhancementsSelection: dictationSelection,
-            isDefault: true
+            isDefault: true,
         )
     }
 
     static func normalizedDictationStyles(
         _ styles: [DictationStyle],
-        defaultStyle: DictationStyle = defaultDictationStyles[0]
+        defaultStyle: DictationStyle = defaultDictationStyles[0],
     ) -> [DictationStyle] {
         var seenStyleIDs = Set<UUID>()
         var globallyAssignedTargetKeys = Set<String>()
@@ -178,21 +178,21 @@ extension AppSettingsStore {
                     targets: normalizedTargets,
                     contextSourcePolicy: style.contextSourcePolicy,
                     enhancementsSelection: style.enhancementsSelection,
-                    isDefault: false
-                )
+                    isDefault: false,
+                ),
             )
         }
 
         let normalizedDefault = normalizedDefaultDictationStyle(
             persistedDefaultStyle,
-            fallback: defaultStyle
+            fallback: defaultStyle,
         )
         return [normalizedDefault] + userStyles
     }
 
     private static func normalizedDefaultDictationStyle(
         _ style: DictationStyle?,
-        fallback: DictationStyle
+        fallback: DictationStyle,
     ) -> DictationStyle {
         let source = style ?? fallback
         return DictationStyle(
@@ -206,7 +206,7 @@ extension AppSettingsStore {
             targets: [],
             contextSourcePolicy: source.contextSourcePolicy ?? fallback.contextSourcePolicy,
             enhancementsSelection: source.enhancementsSelection ?? fallback.enhancementsSelection,
-            isDefault: true
+            isDefault: true,
         )
     }
 
@@ -229,7 +229,7 @@ extension AppSettingsStore {
 
     func synchronizedWebTargetBrowsers(
         from rules: [DictationAppRule],
-        legacyBrowsers: [String]
+        legacyBrowsers: [String],
     ) -> [String] {
         let legacy = deduplicatedNormalizedBundleIdentifiers(legacyBrowsers)
         let legacyNormalized = Set(legacy.map(Self.normalizeBundleIdentifier))
@@ -241,7 +241,7 @@ extension AppSettingsStore {
                     let normalizedBundleIdentifier = Self.normalizeBundleIdentifier(bundleIdentifier)
                     return BrowserProviderRegistry.isLikelyBrowserBundleIdentifier(normalizedBundleIdentifier)
                         || legacyNormalized.contains(normalizedBundleIdentifier)
-                }
+                },
         )
 
         return browsersFromRules.isEmpty ? legacy : browsersFromRules

@@ -20,7 +20,7 @@ final class AppSettingsStoreAISelectionTests: XCTestCase {
     func testResolvedEnhancementsConfigurationUsesProviderDefaults() {
         settings.enhancementsAISelection = EnhancementsAISelection(
             provider: .google,
-            selectedModel: "gemini-2.0-flash"
+            selectedModel: "gemini-2.0-flash",
         )
 
         let resolved = settings.resolvedEnhancementsAIConfiguration
@@ -32,7 +32,7 @@ final class AppSettingsStoreAISelectionTests: XCTestCase {
     func testResolvedEnhancementsConfiguration_NormalizesLegacyGoogleModelID() {
         settings.enhancementsAISelection = EnhancementsAISelection(
             provider: .google,
-            selectedModel: "models/gemini-2.0-flash-001"
+            selectedModel: "models/gemini-2.0-flash-001",
         )
 
         let resolved = settings.resolvedEnhancementsAIConfiguration
@@ -44,7 +44,7 @@ final class AppSettingsStoreAISelectionTests: XCTestCase {
         settings.updateAIConfiguration(provider: .custom, baseURL: "https://proxy.example.com/v1", selectedModel: "base")
         settings.enhancementsAISelection = EnhancementsAISelection(
             provider: .custom,
-            selectedModel: "custom-model"
+            selectedModel: "custom-model",
         )
 
         let resolved = settings.resolvedEnhancementsAIConfiguration
@@ -91,7 +91,7 @@ final class AppSettingsStoreAISelectionTests: XCTestCase {
         settings.resetToDefaults()
 
         XCTAssertEqual(settings.meetingNotesFontFamilyKey, "__system__")
-        XCTAssertEqual(settings.meetingNotesFontSize, 16, accuracy: 0.0_001)
+        XCTAssertEqual(settings.meetingNotesFontSize, 16, accuracy: 0.000_001)
     }
 
     func testAppearanceModeSettingIsPersistedAndReset() {
@@ -109,27 +109,27 @@ final class AppSettingsStoreAISelectionTests: XCTestCase {
         settings.meetingNotesFontSize = 15
 
         XCTAssertEqual(settings.meetingNotesFontFamilyKey, "__system__")
-        XCTAssertEqual(settings.meetingNotesFontSize, 14, accuracy: 0.0_001)
+        XCTAssertEqual(settings.meetingNotesFontSize, 14, accuracy: 0.000_001)
         XCTAssertEqual(
             UserDefaults.standard.string(forKey: "meetingNotesFontFamilyKey"),
-            "__system__"
+            "__system__",
         )
         let persistedSize = UserDefaults.standard.object(forKey: "meetingNotesFontSize") as? Double
         XCTAssertNotNil(persistedSize)
-        XCTAssertEqual(persistedSize ?? 0, 14, accuracy: 0.0_001)
+        XCTAssertEqual(persistedSize ?? 0, 14, accuracy: 0.000_001)
     }
 
     func testDictationStructuredPostProcessingSettingIsPersisted() {
         settings.dictationStructuredPostProcessingEnabled = true
         XCTAssertEqual(
             UserDefaults.standard.object(forKey: "dictationStructuredPostProcessingEnabled") as? Bool,
-            true
+            true,
         )
 
         settings.dictationStructuredPostProcessingEnabled = false
         XCTAssertEqual(
             UserDefaults.standard.object(forKey: "dictationStructuredPostProcessingEnabled") as? Bool,
-            false
+            false,
         )
     }
 
@@ -137,13 +137,13 @@ final class AppSettingsStoreAISelectionTests: XCTestCase {
         settings.smartParagraphsEnabled = true
         XCTAssertEqual(
             UserDefaults.standard.object(forKey: "smartParagraphsEnabled") as? Bool,
-            true
+            true,
         )
 
         settings.smartParagraphsEnabled = false
         XCTAssertEqual(
             UserDefaults.standard.object(forKey: "smartParagraphsEnabled") as? Bool,
-            false
+            false,
         )
     }
 
@@ -163,13 +163,13 @@ final class AppSettingsStoreAISelectionTests: XCTestCase {
         settings.modelResidencyTimeout = .minutes60
         XCTAssertEqual(
             UserDefaults.standard.string(forKey: "modelResidencyTimeout"),
-            AppSettingsStore.ModelResidencyTimeoutOption.minutes60.rawValue
+            AppSettingsStore.ModelResidencyTimeoutOption.minutes60.rawValue,
         )
 
         settings.modelResidencyTimeout = .never
         XCTAssertEqual(
             UserDefaults.standard.string(forKey: "modelResidencyTimeout"),
-            AppSettingsStore.ModelResidencyTimeoutOption.never.rawValue
+            AppSettingsStore.ModelResidencyTimeoutOption.never.rawValue,
         )
     }
 
@@ -182,7 +182,7 @@ final class AppSettingsStoreAISelectionTests: XCTestCase {
 
         XCTAssertEqual(
             UserDefaults.standard.string(forKey: "transcriptionInputLanguageHint"),
-            TranscriptionInputLanguageHint.portuguese.rawValue
+            TranscriptionInputLanguageHint.portuguese.rawValue,
         )
     }
 
@@ -190,7 +190,7 @@ final class AppSettingsStoreAISelectionTests: XCTestCase {
         settings.transcriptionInputLanguageHint = .portuguese
         settings.updateTranscriptionDictationSelection(
             provider: .groq,
-            model: "whisper-large-v3"
+            model: "whisper-large-v3",
         )
 
         XCTAssertEqual(settings.resolvedTranscriptionInputLanguageCode(for: .meeting), "pt")
@@ -226,7 +226,7 @@ final class AppSettingsStoreAISelectionTests: XCTestCase {
     func testUpdateEnhancementsProviderClearsSelectedModel() {
         settings.enhancementsAISelection = EnhancementsAISelection(
             provider: .openai,
-            selectedModel: "gpt-4o-mini"
+            selectedModel: "gpt-4o-mini",
         )
 
         settings.updateEnhancementsProvider(.anthropic)
@@ -238,7 +238,7 @@ final class AppSettingsStoreAISelectionTests: XCTestCase {
     func testEnhancementsInferenceReadinessIssue_MissingModel() {
         settings.enhancementsAISelection = EnhancementsAISelection(
             provider: .openai,
-            selectedModel: "   "
+            selectedModel: "   ",
         )
 
         let issue = settings.enhancementsInferenceReadinessIssue(apiKeyExists: { _ in true })
@@ -249,7 +249,7 @@ final class AppSettingsStoreAISelectionTests: XCTestCase {
     func testEnhancementsInferenceReadinessIssue_ReturnsNilWhenConfigurationIsReady() {
         settings.enhancementsAISelection = EnhancementsAISelection(
             provider: .openai,
-            selectedModel: "gpt-4o-mini"
+            selectedModel: "gpt-4o-mini",
         )
 
         let issue = settings.enhancementsInferenceReadinessIssue(apiKeyExists: { _ in true })
@@ -261,20 +261,20 @@ final class AppSettingsStoreAISelectionTests: XCTestCase {
         let registration = settings.addEnhancementsProviderRegistration(
             provider: .custom,
             displayName: "Proxy",
-            baseURLOverride: "https://proxy.example/v1"
+            baseURLOverride: "https://proxy.example/v1",
         )
         let registrationID = try XCTUnwrap(registration?.id)
 
         settings.updateEnhancementsSelection(
             registrationID: registrationID,
             model: "custom-model",
-            for: .dictation
+            for: .dictation,
         )
 
         let issue = settings.enhancementsInferenceReadinessIssue(
             for: .dictation,
             apiKeyExists: { _ in false },
-            registrationAPIKeyExists: { $0 == registrationID }
+            registrationAPIKeyExists: { $0 == registrationID },
         )
 
         XCTAssertNil(issue)
@@ -301,7 +301,7 @@ final class AppSettingsStoreAISelectionTests: XCTestCase {
         settings.updateAIConfiguration(
             provider: .openai,
             baseURL: AIProvider.openai.defaultBaseURL,
-            selectedModel: "gpt-4o-mini"
+            selectedModel: "gpt-4o-mini",
         )
         settings.enhancementsAISelection = EnhancementsAISelection(provider: .openai, selectedModel: " ")
         settings.enhancementsProviderSelectedModels = [:]
@@ -335,7 +335,7 @@ final class AppSettingsStoreAISelectionTests: XCTestCase {
     func testBackfillEnhancementsSelectionModels_DoesNotOverrideExistingSelection() {
         settings.enhancementsAISelection = EnhancementsAISelection(
             provider: .openai,
-            selectedModel: "gpt-4.1-mini"
+            selectedModel: "gpt-4.1-mini",
         )
         settings.enhancementsProviderSelectedModels = [AIProvider.openai.rawValue: "gpt-4o-mini"]
 
@@ -349,7 +349,7 @@ final class AppSettingsStoreAISelectionTests: XCTestCase {
         settings.updateAIConfiguration(
             provider: .openai,
             baseURL: AIProvider.openai.defaultBaseURL,
-            selectedModel: "   "
+            selectedModel: "   ",
         )
         settings.enhancementsAISelection = EnhancementsAISelection(provider: .google, selectedModel: " ")
         settings.enhancementsProviderSelectedModels = [:]
@@ -364,7 +364,7 @@ final class AppSettingsStoreAISelectionTests: XCTestCase {
         settings.updateAIConfiguration(
             provider: .google,
             baseURL: AIProvider.google.defaultBaseURL,
-            selectedModel: "models/gemini-2.0-flash-001"
+            selectedModel: "models/gemini-2.0-flash-001",
         )
         settings.enhancementsAISelection = EnhancementsAISelection(provider: .google, selectedModel: "")
         settings.enhancementsProviderSelectedModels = [:]
@@ -396,7 +396,7 @@ final class AppSettingsStoreAISelectionTests: XCTestCase {
         let registration = EnhancementsProviderRegistration(
             id: UUID(),
             provider: .groq,
-            displayName: "Groq"
+            displayName: "Groq",
         )
         settings.enhancementsProviderRegistrations = [registration]
 
@@ -419,12 +419,12 @@ final class AppSettingsStoreAISelectionTests: XCTestCase {
         let firstCustom = settings.addEnhancementsProviderRegistration(
             provider: .custom,
             displayName: "Gateway A",
-            baseURLOverride: "https://gateway-a.example/v1"
+            baseURLOverride: "https://gateway-a.example/v1",
         )
         let secondCustom = settings.addEnhancementsProviderRegistration(
             provider: .custom,
             displayName: "Gateway B",
-            baseURLOverride: "https://gateway-b.example/v1"
+            baseURLOverride: "https://gateway-b.example/v1",
         )
 
         XCTAssertNotNil(firstCustom)
@@ -438,7 +438,7 @@ final class AppSettingsStoreAISelectionTests: XCTestCase {
             provider: .custom,
             displayName: "Gateway A",
             baseURLOverride: "https://gateway-a.example/v1",
-            iconSystemName: "terminal"
+            iconSystemName: "terminal",
         )
 
         XCTAssertEqual(registration?.iconSystemName, "terminal")
@@ -461,14 +461,14 @@ final class AppSettingsStoreAISelectionTests: XCTestCase {
         let custom = settings.addEnhancementsProviderRegistration(
             provider: .custom,
             displayName: "Custom Proxy",
-            baseURLOverride: "https://proxy.example/v1"
+            baseURLOverride: "https://proxy.example/v1",
         )
         let customID = try XCTUnwrap(custom?.id)
 
         settings.updateEnhancementsSelection(
             registrationID: customID,
             model: "custom-model",
-            for: .meeting
+            for: .meeting,
         )
 
         XCTAssertEqual(settings.enhancementsAISelection.registrationID, customID)
@@ -484,7 +484,7 @@ final class AppSettingsStoreAISelectionTests: XCTestCase {
     func testResolvedTranscriptionSelection_MeetingAlwaysUsesLocalProvider() {
         settings.updateTranscriptionDictationSelection(
             provider: .groq,
-            model: "whisper-large-v3"
+            model: "whisper-large-v3",
         )
 
         let resolved = settings.resolvedTranscriptionSelection(for: .meeting)
@@ -497,11 +497,11 @@ final class AppSettingsStoreAISelectionTests: XCTestCase {
         settings.updateMeetingTranscriptionLocalModel(.cohereTranscribe032026CoreML6Bit)
         settings.updateTranscriptionDictationSelection(
             provider: .local,
-            model: MeetingAssistantCoreInfrastructure.TranscriptionProvider.localModelID
+            model: MeetingAssistantCoreInfrastructure.TranscriptionProvider.localModelID,
         )
         settings.updateTranscriptionDictationSelection(
             provider: .groq,
-            model: "whisper-large-v3"
+            model: "whisper-large-v3",
         )
 
         let resolved = settings.resolvedTranscriptionSelection(for: .meeting)
@@ -509,7 +509,7 @@ final class AppSettingsStoreAISelectionTests: XCTestCase {
         XCTAssertEqual(resolved.provider, .local)
         XCTAssertEqual(
             resolved.selectedModel,
-            MeetingAssistantCoreInfrastructure.TranscriptionProvider.cohereLocalModelID
+            MeetingAssistantCoreInfrastructure.TranscriptionProvider.cohereLocalModelID,
         )
     }
 
@@ -517,16 +517,16 @@ final class AppSettingsStoreAISelectionTests: XCTestCase {
         settings.updateMeetingTranscriptionLocalModel(.cohereTranscribe032026CoreML6Bit)
         settings.updateTranscriptionDictationSelection(
             provider: .local,
-            model: MeetingAssistantCoreInfrastructure.TranscriptionProvider.localModelID
+            model: MeetingAssistantCoreInfrastructure.TranscriptionProvider.localModelID,
         )
 
         XCTAssertEqual(
             UserDefaults.standard.string(forKey: "meetingTranscriptionLocalModel"),
-            MeetingAssistantCoreInfrastructure.TranscriptionProvider.cohereLocalModelID
+            MeetingAssistantCoreInfrastructure.TranscriptionProvider.cohereLocalModelID,
         )
         XCTAssertEqual(
             settings.transcriptionSelectedModel(for: .local),
-            MeetingAssistantCoreInfrastructure.TranscriptionProvider.localModelID
+            MeetingAssistantCoreInfrastructure.TranscriptionProvider.localModelID,
         )
     }
 
@@ -534,7 +534,7 @@ final class AppSettingsStoreAISelectionTests: XCTestCase {
         settings.updateMeetingTranscriptionLocalModel(.parakeetTdt06BV3)
         settings.updateTranscriptionDictationSelection(
             provider: .local,
-            model: MeetingAssistantCoreInfrastructure.TranscriptionProvider.cohereLocalModelID
+            model: MeetingAssistantCoreInfrastructure.TranscriptionProvider.cohereLocalModelID,
         )
 
         let resolved = settings.resolvedTranscriptionSelection(for: .meeting)
@@ -546,7 +546,7 @@ final class AppSettingsStoreAISelectionTests: XCTestCase {
     func testResolvedTranscriptionSelection_DictationFollowsConfiguredProvider() {
         settings.updateTranscriptionDictationSelection(
             provider: .groq,
-            model: "whisper-large-v3"
+            model: "whisper-large-v3",
         )
 
         let resolved = settings.resolvedTranscriptionSelection(for: .dictation)
@@ -558,7 +558,7 @@ final class AppSettingsStoreAISelectionTests: XCTestCase {
     func testResolvedTranscriptionSelection_AssistantFollowsConfiguredProvider() {
         settings.updateTranscriptionDictationSelection(
             provider: .groq,
-            model: "whisper-large-v3"
+            model: "whisper-large-v3",
         )
 
         let resolved = settings.resolvedTranscriptionSelection(for: .assistant)
@@ -570,7 +570,7 @@ final class AppSettingsStoreAISelectionTests: XCTestCase {
     func testSupportsIncrementalTranscription_DisabledForGroqDictationEnabledForMeeting() {
         settings.updateTranscriptionDictationSelection(
             provider: .groq,
-            model: "whisper-large-v3-turbo"
+            model: "whisper-large-v3-turbo",
         )
 
         XCTAssertFalse(settings.supportsIncrementalTranscription(for: .dictation))
@@ -580,7 +580,7 @@ final class AppSettingsStoreAISelectionTests: XCTestCase {
     func testSupportsIncrementalTranscription_DisabledForGroqAssistantEnabledForMeeting() {
         settings.updateTranscriptionDictationSelection(
             provider: .groq,
-            model: "whisper-large-v3-turbo"
+            model: "whisper-large-v3-turbo",
         )
 
         XCTAssertFalse(settings.supportsIncrementalTranscription(for: .assistant))
@@ -591,7 +591,7 @@ final class AppSettingsStoreAISelectionTests: XCTestCase {
         settings.updateMeetingTranscriptionLocalModel(.cohereTranscribe032026CoreML6Bit)
         settings.updateTranscriptionDictationSelection(
             provider: .groq,
-            model: "whisper-large-v3-turbo"
+            model: "whisper-large-v3-turbo",
         )
 
         XCTAssertFalse(settings.supportsIncrementalTranscription(for: .meeting))
@@ -600,7 +600,7 @@ final class AppSettingsStoreAISelectionTests: XCTestCase {
     func testResolvedTranscriptionSelection_DictationSupportsElevenLabsProvider() {
         settings.updateTranscriptionDictationSelection(
             provider: .elevenLabs,
-            model: "scribe_v2"
+            model: "scribe_v2",
         )
 
         let resolved = settings.resolvedTranscriptionSelection(for: .dictation)
@@ -612,7 +612,7 @@ final class AppSettingsStoreAISelectionTests: XCTestCase {
     func testSupportsIncrementalTranscription_DisabledForElevenLabsDictationEnabledForMeeting() {
         settings.updateTranscriptionDictationSelection(
             provider: .elevenLabs,
-            model: "scribe_v1"
+            model: "scribe_v1",
         )
 
         XCTAssertFalse(settings.supportsIncrementalTranscription(for: .dictation))

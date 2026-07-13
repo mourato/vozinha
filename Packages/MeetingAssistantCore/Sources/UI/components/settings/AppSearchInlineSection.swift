@@ -24,7 +24,7 @@ public struct AppSearchInlineSection: View {
         emptyResultsKey: String = "settings.styles.editor.app_results_empty",
         addButtonKey: String = "settings.styles.editor.add_app_target",
         maxVisibleResults: Int = 8,
-        onAdd: @escaping (String) -> Void
+        onAdd: @escaping (String) -> Void,
     ) {
         self.appCatalog = appCatalog
         self.isLoading = isLoading
@@ -46,7 +46,7 @@ public struct AppSearchInlineSection: View {
                 SettingsStateBlock(
                     kind: .loading,
                     title: loadingKey.localized,
-                    message: nil
+                    message: nil,
                 )
             } else if filteredCatalog.isEmpty {
                 Text(emptyResultsKey.localized)
@@ -71,7 +71,7 @@ public struct AppSearchInlineSection: View {
         let selectedKeys = Set(
             selectedBundleIdentifiers.map {
                 $0.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
-            }
+            },
         )
 
         let candidates = appCatalog.filter { app in
@@ -91,7 +91,7 @@ public struct AppSearchInlineSection: View {
                 bundleIdentifier: app.bundleIdentifier,
                 fallbackSystemName: "app.fill",
                 size: 24,
-                cornerRadius: 6
+                cornerRadius: 6,
             )
 
             VStack(alignment: .leading, spacing: 1) {

@@ -1,5 +1,5 @@
-import XCTest
 @testable import MeetingAssistantCore
+import XCTest
 
 @MainActor
 final class GeneralSettingsAudioProcessingTests: XCTestCase {

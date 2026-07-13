@@ -34,8 +34,8 @@ struct SummaryBenchmarkRubric: Codable, Equatable {
             actionItemsTitleF1: 0.75,
             openQuestionsF1: 0.75,
             trustFlagsAccuracy: 0.90,
-            hallucinationRate: 0.15
-        )
+            hallucinationRate: 0.15,
+        ),
     )
 }
 
@@ -57,7 +57,7 @@ struct SummaryBenchmarkMetricSet: Codable, Equatable {
         actionItemsTitleF1: 0,
         openQuestionsF1: 0,
         trustFlagsAccuracy: 0,
-        hallucinationRate: 0
+        hallucinationRate: 0,
     )
 }
 

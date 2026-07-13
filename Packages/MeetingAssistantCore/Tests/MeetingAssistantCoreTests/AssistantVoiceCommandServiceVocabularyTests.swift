@@ -1,9 +1,9 @@
-import XCTest
 @testable import MeetingAssistantCore
 @testable import MeetingAssistantCoreUI
+import XCTest
 
 @MainActor
-final class AssistantVoiceCommandServiceVocabularyTests: XCTestCase {
+final class AssistantVoiceVocabularyTests: XCTestCase {
     func testNormalizedAssistantTranscription_AppliesVocabularyRulesBeforeTrimming() {
         let phase = AssistantTranscriptionPhase(transcriptionClient: .shared)
 
@@ -12,7 +12,7 @@ final class AssistantVoiceCommandServiceVocabularyTests: XCTestCase {
             vocabularyReplacementRules: [
                 VocabularyReplacementRule(find: "open ay eye", replace: "OpenAI"),
                 VocabularyReplacementRule(find: "reycast, recast", replace: "Raycast"),
-            ]
+            ],
         )
 
         XCTAssertEqual(result, "OpenAI summarize this for Raycast")
@@ -25,7 +25,7 @@ final class AssistantVoiceCommandServiceVocabularyTests: XCTestCase {
             "  ask for status update  ",
             vocabularyReplacementRules: [
                 VocabularyReplacementRule(find: "open ay eye", replace: "OpenAI"),
-            ]
+            ],
         )
 
         XCTAssertEqual(result, "ask for status update")

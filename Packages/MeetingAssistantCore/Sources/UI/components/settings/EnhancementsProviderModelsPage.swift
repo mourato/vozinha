@@ -31,7 +31,7 @@ public struct EnhancementsProviderModelsPage: View {
     public init(
         viewModel: AISettingsViewModel,
         postProcessingViewModel: PostProcessingSettingsViewModel,
-        initialExpandedProvider: AIProvider? = nil
+        initialExpandedProvider: AIProvider? = nil,
     ) {
         self.viewModel = viewModel
         self.postProcessingViewModel = postProcessingViewModel
@@ -43,7 +43,7 @@ public struct EnhancementsProviderModelsPage: View {
             DSCallout(
                 kind: .info,
                 title: "settings.enhancements.provider_models.context_title".localized,
-                message: "settings.enhancements.provider_models.context_desc".localized
+                message: "settings.enhancements.provider_models.context_desc".localized,
             )
 
             providerRegistrationsSection
@@ -62,7 +62,7 @@ public struct EnhancementsProviderModelsPage: View {
                 },
                 onCancel: {
                     isShowingProviderPicker = false
-                }
+                },
             )
         }
         .sheet(item: $registrationEditorContext) { context in
@@ -90,7 +90,7 @@ public struct EnhancementsProviderModelsPage: View {
                 },
                 onCancel: {
                     registrationEditorContext = nil
-                }
+                },
             )
         }
     }
@@ -136,11 +136,11 @@ extension EnhancementsProviderModelsPage {
                         DSCallout(
                             kind: .warning,
                             title: "settings.enhancements.provider_models.error.title".localized,
-                            message: fetchError
+                            message: fetchError,
                         )
                     }
                 }
-            }
+            },
         )
     }
 
@@ -155,7 +155,7 @@ extension EnhancementsProviderModelsPage {
             HStack(alignment: .top, spacing: 12) {
                 EnhancementsProviderAvatar(
                     provider: registration.provider,
-                    customIconName: registration.iconSystemName
+                    customIconName: registration.iconSystemName,
                 )
 
                 VStack(alignment: .leading, spacing: 6) {
@@ -184,8 +184,8 @@ extension EnhancementsProviderModelsPage {
                             providerStatusText(
                                 isReady: isReady,
                                 issue: readinessIssue,
-                                isSelectedForActiveUse: isSelectedForActiveUse
-                            )
+                                isSelectedForActiveUse: isSelectedForActiveUse,
+                            ),
                         )
                         .font(.caption2)
                         .foregroundStyle(.secondary)
@@ -207,7 +207,7 @@ extension EnhancementsProviderModelsPage {
     func providerStatusText(
         isReady: Bool,
         issue: EnhancementsInferenceReadinessIssue?,
-        isSelectedForActiveUse: Bool
+        isSelectedForActiveUse: Bool,
     ) -> String {
         guard !isReady else {
             if !isSelectedForActiveUse {

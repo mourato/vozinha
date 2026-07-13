@@ -18,7 +18,7 @@ public struct MeetingQuestionComposerTextView: View {
         minHeight: CGFloat = 36,
         maxHeight: CGFloat = 140,
         sendOnReturn: Bool = false,
-        onSubmit: @escaping () -> Void
+        onSubmit: @escaping () -> Void,
     ) {
         _text = text
         self.placeholder = placeholder
@@ -37,7 +37,7 @@ public struct MeetingQuestionComposerTextView: View {
                 minHeight: minHeight,
                 maxHeight: maxHeight,
                 sendOnReturn: sendOnReturn,
-                onSubmit: onSubmit
+                onSubmit: onSubmit,
             )
             .frame(height: dynamicHeight)
 
@@ -55,7 +55,7 @@ public struct MeetingQuestionComposerTextView: View {
         .clipShape(RoundedRectangle(cornerRadius: AppDesignSystem.Layout.smallCornerRadius))
         .overlay(
             RoundedRectangle(cornerRadius: AppDesignSystem.Layout.smallCornerRadius)
-                .stroke(AppDesignSystem.Colors.settingsCardStroke, lineWidth: 1)
+                .stroke(AppDesignSystem.Colors.settingsCardStroke, lineWidth: 1),
         )
     }
 }
@@ -65,7 +65,7 @@ public struct MeetingQuestionComposerTextView: View {
         MeetingQuestionComposerTextView(
             text: text,
             placeholder: "transcription.qa.placeholder".localized,
-            onSubmit: {}
+            onSubmit: {},
         )
         .frame(width: 420)
         .padding()
@@ -126,7 +126,7 @@ private struct MeetingQuestionTextViewRepresentable: NSViewRepresentable {
             text: $text,
             dynamicHeight: $dynamicHeight,
             minHeight: minHeight,
-            maxHeight: maxHeight
+            maxHeight: maxHeight,
         )
     }
 
@@ -141,7 +141,7 @@ private struct MeetingQuestionTextViewRepresentable: NSViewRepresentable {
             text: Binding<String>,
             dynamicHeight: Binding<CGFloat>,
             minHeight: CGFloat,
-            maxHeight: CGFloat
+            maxHeight: CGFloat,
         ) {
             _text = text
             _dynamicHeight = dynamicHeight

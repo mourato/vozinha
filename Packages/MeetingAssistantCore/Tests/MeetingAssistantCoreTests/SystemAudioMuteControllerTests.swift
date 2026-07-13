@@ -33,12 +33,12 @@ final class SystemAudioMuteControllerTests: XCTestCase {
         let channelState = SystemAudioMuteController.OutputScalarPropertyState(
             selector: kAudioDevicePropertyVolumeScalar,
             element: 1,
-            value: 0.42
+            value: 0.42,
         )
 
         let state = SystemAudioMuteController.makeOutputVolumeState(
             virtualMainVolume: 0.73,
-            channelVolumes: [channelState]
+            channelVolumes: [channelState],
         )
 
         XCTAssertEqual(
@@ -48,11 +48,11 @@ final class SystemAudioMuteControllerTests: XCTestCase {
                     SystemAudioMuteController.OutputScalarPropertyState(
                         selector: kAudioHardwareServiceDeviceProperty_VirtualMainVolume,
                         element: kAudioObjectPropertyElementMain,
-                        value: 0.73
+                        value: 0.73,
                     ),
                 ],
-                strategyDescription: "virtualMainVolume"
-            )
+                strategyDescription: "virtualMainVolume",
+            ),
         )
     }
 
@@ -61,26 +61,26 @@ final class SystemAudioMuteControllerTests: XCTestCase {
             SystemAudioMuteController.OutputScalarPropertyState(
                 selector: kAudioDevicePropertyVolumeScalar,
                 element: 1,
-                value: 0.30
+                value: 0.30,
             ),
             SystemAudioMuteController.OutputScalarPropertyState(
                 selector: kAudioDevicePropertyVolumeScalar,
                 element: 2,
-                value: 0.45
+                value: 0.45,
             ),
         ]
 
         let state = SystemAudioMuteController.makeOutputVolumeState(
             virtualMainVolume: nil,
-            channelVolumes: channelStates
+            channelVolumes: channelStates,
         )
 
         XCTAssertEqual(
             state,
             SystemAudioMuteController.OutputVolumeState(
                 properties: channelStates,
-                strategyDescription: "channelVolumeScalar"
-            )
+                strategyDescription: "channelVolumeScalar",
+            ),
         )
     }
 
@@ -88,8 +88,8 @@ final class SystemAudioMuteControllerTests: XCTestCase {
         XCTAssertNil(
             SystemAudioMuteController.makeOutputVolumeState(
                 virtualMainVolume: nil,
-                channelVolumes: []
-            )
+                channelVolumes: [],
+            ),
         )
     }
 
@@ -99,16 +99,16 @@ final class SystemAudioMuteControllerTests: XCTestCase {
                 SystemAudioMuteController.OutputScalarPropertyState(
                     selector: kAudioHardwareServiceDeviceProperty_VirtualMainVolume,
                     element: kAudioObjectPropertyElementMain,
-                    value: 0.8
+                    value: 0.8,
                 ),
             ],
-            strategyDescription: "virtualMainVolume"
+            strategyDescription: "virtualMainVolume",
         )
 
         let ducked = SystemAudioMuteController.makeDuckedOutputVolumeState(from: state, levelPercent: 30)
 
         XCTAssertEqual(ducked.properties.count, 1)
-        XCTAssertEqual(ducked.properties[0].value, 0.24, accuracy: 0.0001)
+        XCTAssertEqual(ducked.properties[0].value, 0.24, accuracy: 0.0_001)
         XCTAssertEqual(ducked.strategyDescription, state.strategyDescription)
     }
 
@@ -118,16 +118,16 @@ final class SystemAudioMuteControllerTests: XCTestCase {
                 SystemAudioMuteController.OutputScalarPropertyState(
                     selector: kAudioDevicePropertyVolumeScalar,
                     element: 1,
-                    value: 0.65
+                    value: 0.65,
                 ),
             ],
-            strategyDescription: "channelVolumeScalar"
+            strategyDescription: "channelVolumeScalar",
         )
 
         let muted = SystemAudioMuteController.makeDuckedOutputVolumeState(from: state, levelPercent: -10)
         let unchanged = SystemAudioMuteController.makeDuckedOutputVolumeState(from: state, levelPercent: 140)
 
-        XCTAssertEqual(muted.properties[0].value, 0.0, accuracy: 0.0001)
-        XCTAssertEqual(unchanged.properties[0].value, 0.65, accuracy: 0.0001)
+        XCTAssertEqual(muted.properties[0].value, 0.0, accuracy: 0.0_001)
+        XCTAssertEqual(unchanged.properties[0].value, 0.65, accuracy: 0.0_001)
     }
 }

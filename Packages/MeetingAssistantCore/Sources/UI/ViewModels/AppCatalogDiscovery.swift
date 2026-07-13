@@ -23,7 +23,7 @@ enum AppCatalogDiscovery {
             guard let enumerator = fileManager.enumerator(
                 at: rootDirectory,
                 includingPropertiesForKeys: [.isDirectoryKey, .isPackageKey],
-                options: [.skipsHiddenFiles, .skipsPackageDescendants]
+                options: [.skipsHiddenFiles, .skipsPackageDescendants],
             ) else {
                 continue
             }
@@ -46,8 +46,8 @@ enum AppCatalogDiscovery {
                 discovered.append(
                     InstalledApplicationRecord(
                         bundleIdentifier: bundleIdentifier,
-                        displayName: Self.appDisplayName(from: bundle, fallbackURL: item)
-                    )
+                        displayName: Self.appDisplayName(from: bundle, fallbackURL: item),
+                    ),
                 )
             }
         }

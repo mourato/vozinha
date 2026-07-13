@@ -6,7 +6,7 @@ public enum PostProcessingSystemContextMetadata {
         now: Date = Date(),
         timeZone: TimeZone = .current,
         locale: Locale = .current,
-        fullUserName: String = NSFullUserName()
+        fullUserName: String = NSFullUserName(),
     ) -> String? {
         guard let existingContext else { return nil }
 
@@ -19,7 +19,7 @@ public enum PostProcessingSystemContextMetadata {
             now: now,
             timeZone: timeZone,
             locale: locale,
-            fullUserName: fullUserName
+            fullUserName: fullUserName,
         )
 
         var outputLines = ["CONTEXT_METADATA"]
@@ -53,7 +53,7 @@ public enum PostProcessingSystemContextMetadata {
         now: Date,
         timeZone: TimeZone,
         locale: Locale,
-        fullUserName: String
+        fullUserName: String,
     ) -> [String] {
         let userName = fullUserName.trimmingCharacters(in: .whitespacesAndNewlines)
         let resolvedUserName = userName.isEmpty ? "Unknown" : userName

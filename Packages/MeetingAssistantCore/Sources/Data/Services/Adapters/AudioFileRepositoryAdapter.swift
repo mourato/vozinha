@@ -29,7 +29,7 @@ public final class AudioFileRepositoryAdapter: AudioFileRepository {
         let tempMeeting = Meeting(
             id: meetingId,
             app: .importedFile,
-            startTime: Date()
+            startTime: Date(),
         )
         return storageService.createRecordingURL(for: tempMeeting, type: .merged)
     }
@@ -39,7 +39,7 @@ public final class AudioFileRepositoryAdapter: AudioFileRepository {
         let contents = try FileManager.default.contentsOfDirectory(
             at: recordingsDir,
             includingPropertiesForKeys: nil,
-            options: .skipsHiddenFiles
+            options: .skipsHiddenFiles,
         )
         return contents.filter { url in
             let ext = url.pathExtension.lowercased()

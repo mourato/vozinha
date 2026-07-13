@@ -13,14 +13,14 @@ extension AudioRecorder {
     /// - Returns: Configured AVAudioSourceNode ready for engine attachment.
     nonisolated func createSystemSourceNode(
         queue: AudioBufferQueue,
-        partialState: PartialBufferState
+        partialState: PartialBufferState,
     ) -> AVAudioSourceNode {
         AVAudioSourceNode { @Sendable [queue, partialState] _, _, frameCount, audioBufferList -> OSStatus in
             self.validateCallbackInputs(
                 frameCount: frameCount,
                 audioBufferList: audioBufferList,
                 queue: queue,
-                partialState: partialState
+                partialState: partialState,
             )
         }
     }
@@ -34,7 +34,7 @@ extension AudioRecorder {
         frameCount: UInt32,
         audioBufferList: UnsafeMutablePointer<AudioBufferList>,
         queue: AudioBufferQueue,
-        partialState: PartialBufferState
+        partialState: PartialBufferState,
     ) -> OSStatus {
         guard frameCount > 0 else {
             return -50 // kAudio_ParamError
@@ -44,7 +44,7 @@ extension AudioRecorder {
             frameCount: frameCount,
             audioBufferList: audioBufferList,
             queue: queue,
-            partialState: partialState
+            partialState: partialState,
         )
     }
 
@@ -57,7 +57,7 @@ extension AudioRecorder {
         frameCount: UInt32,
         audioBufferList: UnsafeMutablePointer<AudioBufferList>,
         queue: AudioBufferQueue,
-        partialState: PartialBufferState
+        partialState: PartialBufferState,
     ) -> OSStatus {
         let buffers = UnsafeMutableAudioBufferListPointer(audioBufferList)
         let targetFrames = Int(frameCount)
@@ -81,7 +81,7 @@ extension AudioRecorder {
                 srcOffset: 0,
                 maxFrames: framesToCopy,
                 into: buffers,
-                destOffset: framesFilled
+                destOffset: framesFilled,
             )
 
             framesFilled += copied
@@ -100,7 +100,7 @@ extension AudioRecorder {
                 buffers: buffers,
                 bufferCount: 2,
                 targetFrames: targetFrames - framesFilled,
-                destOffset: framesFilled
+                destOffset: framesFilled,
             )
         }
 
@@ -116,7 +116,7 @@ extension AudioRecorder {
         buffers: UnsafeMutableAudioBufferListPointer,
         bufferCount: Int,
         targetFrames: Int,
-        destOffset: Int = 0
+        destOffset: Int = 0,
     ) {
         // Process up to the number of buffers requested or available, ensuring we don't go out of bounds
         let channelsToProcess = min(bufferCount, buffers.count)

@@ -39,7 +39,7 @@ final class TranscribeAudioUseCaseMacroMockingTests: XCTestCase {
             language: "en",
             durationSeconds: 1.0,
             model: "test-model",
-            processedAt: "now"
+            processedAt: "now",
         )
 
         transcriptionRepository.transcribeHandler = { _, _ in response }
@@ -52,7 +52,7 @@ final class TranscribeAudioUseCaseMacroMockingTests: XCTestCase {
         let useCase = TranscribeAudioUseCase(
             transcriptionRepository: transcriptionRepository,
             transcriptionStorageRepository: storageRepository,
-            postProcessingRepository: nil
+            postProcessingRepository: nil,
         )
 
         let meeting = MeetingEntity(app: .googleMeet)
@@ -77,14 +77,14 @@ final class TranscribeAudioUseCaseMacroMockingTests: XCTestCase {
                 language: "en",
                 durationSeconds: 30,
                 model: "test-model",
-                processedAt: "now"
+                processedAt: "now",
             )
         }
         postProcessingRepository.processTranscriptionStructured_4Handler = { _, _, _ in
             DomainPostProcessingResult(
                 processedText: "Processed",
                 canonicalSummary: CanonicalSummary(title: "Processed", summary: "Processed"),
-                outputState: .structured
+                outputState: .structured,
             )
         }
 
@@ -97,7 +97,7 @@ final class TranscribeAudioUseCaseMacroMockingTests: XCTestCase {
         let useCase = TranscribeAudioUseCase(
             transcriptionRepository: transcriptionRepository,
             transcriptionStorageRepository: storageRepository,
-            postProcessingRepository: postProcessingRepository
+            postProcessingRepository: postProcessingRepository,
         )
 
         _ = try await useCase.execute(
@@ -108,7 +108,7 @@ final class TranscribeAudioUseCaseMacroMockingTests: XCTestCase {
                 providerDisplayName: "Local",
                 modelID: "test-model",
                 modelDisplayName: "Test Model",
-                runtimeKind: .local
+                runtimeKind: .local,
             ),
             applyPostProcessing: true,
             postProcessingPrompt: DomainPostProcessingPrompt(title: "Prompt", content: "Prompt"),
@@ -117,10 +117,10 @@ final class TranscribeAudioUseCaseMacroMockingTests: XCTestCase {
                 providerDisplayName: "OpenAI",
                 modelID: "gpt-4.1-mini",
                 modelDisplayName: "GPT-4.1 Mini",
-                runtimeKind: .remote
+                runtimeKind: .remote,
             ),
             kernelMode: .dictation,
-            dictationStructuredPostProcessingEnabled: true
+            dictationStructuredPostProcessingEnabled: true,
         )
 
         XCTAssertEqual(savedAttempts.count, 2)
@@ -143,14 +143,14 @@ final class TranscribeAudioUseCaseMacroMockingTests: XCTestCase {
                 language: "en",
                 durationSeconds: 1.0,
                 model: "test-model",
-                processedAt: "now"
+                processedAt: "now",
             )
         }
         postProcessingRepository.processTranscriptionStructured_4Handler = { _, _, _ in
             DomainPostProcessingResult(
                 processedText: "Processed",
                 canonicalSummary: CanonicalSummary(title: "Processed", summary: "Processed"),
-                outputState: .structured
+                outputState: .structured,
             )
         }
         storageRepository.saveTranscriptionHandler = { _ in }
@@ -158,7 +158,7 @@ final class TranscribeAudioUseCaseMacroMockingTests: XCTestCase {
         let useCase = TranscribeAudioUseCase(
             transcriptionRepository: transcriptionRepository,
             transcriptionStorageRepository: storageRepository,
-            postProcessingRepository: postProcessingRepository
+            postProcessingRepository: postProcessingRepository,
         )
 
         let recorder = UseCaseCallbackRecorder()
@@ -173,7 +173,7 @@ final class TranscribeAudioUseCaseMacroMockingTests: XCTestCase {
             },
             onTranscriptionProgress: { progress in
                 recorder.record(progress: progress)
-            }
+            },
         )
 
         let snapshot = recorder.snapshot()

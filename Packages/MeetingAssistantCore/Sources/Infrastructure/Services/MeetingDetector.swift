@@ -26,7 +26,7 @@ public class MeetingDetector: ObservableObject {
     private let pollTimerTolerance: TimeInterval = 2.0
 
     private init(
-        captureContextResolver: any CaptureContextResolving = CaptureContextResolver.shared
+        captureContextResolver: any CaptureContextResolving = CaptureContextResolver.shared,
     ) {
         self.captureContextResolver = captureContextResolver
         setupAppNotifications()
@@ -45,7 +45,7 @@ public class MeetingDetector: ObservableObject {
         // Periodic polling
         monitoringTimer = Timer.scheduledTimer(
             withTimeInterval: pollInterval,
-            repeats: true
+            repeats: true,
         ) { [weak self] _ in
             Task { @MainActor in
                 self?.checkForMeetings()
@@ -101,10 +101,10 @@ public class MeetingDetector: ObservableObject {
                 return
             }
 
-            self.logger.debug("App \(eventName): \(app.bundleIdentifier ?? "unknown")")
+            logger.debug("App \(eventName): \(app.bundleIdentifier ?? "unknown")")
 
-            guard self.isMonitoring else { return }
-            self.checkForMeetings()
+            guard isMonitoring else { return }
+            checkForMeetings()
         }
 
         workspace.notificationCenter.publisher(for: NSWorkspace.didLaunchApplicationNotification)

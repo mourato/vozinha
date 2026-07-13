@@ -36,7 +36,7 @@ struct SettingsSidebarView: View {
         .searchable(
             text: $searchText,
             placement: .sidebar,
-            prompt: "settings.search.placeholder".localized
+            prompt: "settings.search.placeholder".localized,
         )
     }
 
@@ -103,7 +103,7 @@ struct SettingsSidebarView: View {
         .searchable(
             text: $searchText,
             placement: .sidebar,
-            prompt: "settings.search.placeholder".localized
+            prompt: "settings.search.placeholder".localized,
         )
     }
 

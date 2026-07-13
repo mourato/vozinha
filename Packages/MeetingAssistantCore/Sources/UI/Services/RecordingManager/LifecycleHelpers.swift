@@ -27,7 +27,7 @@ extension RecordingManager {
         AppLogger.error(
             "Recorder reported an unexpected runtime failure",
             category: .recordingManager,
-            error: error
+            error: error,
         )
 
         cancelPostStartCaptureTasks()
@@ -75,8 +75,12 @@ extension RecordingManager {
 
     func cleanupTemporaryFiles() async {
         var urlsToDelete: [URL] = []
-        if let micURL = await getMicAudioURL() { urlsToDelete.append(micURL) }
-        if let sysURL = await getSystemAudioURL() { urlsToDelete.append(sysURL) }
+        if let micURL = await getMicAudioURL() {
+            urlsToDelete.append(micURL)
+        }
+        if let sysURL = await getSystemAudioURL() {
+            urlsToDelete.append(sysURL)
+        }
 
         storage.cleanupTemporaryFiles(urls: urlsToDelete)
 
@@ -96,18 +100,18 @@ extension RecordingManager {
                 "trace": telemetry.traceID,
                 "trigger": telemetry.triggerLabel,
                 "source": telemetry.source.rawValue,
-            ]
+            ],
         )
 
         PerformanceMonitor.shared.reportMetric(
             name: "recording_start_requested_to_recorder_ms",
             value: recorderStartedAt.timeIntervalSince(telemetry.requestedAt) * 1_000,
-            unit: "ms"
+            unit: "ms",
         )
         PerformanceMonitor.shared.reportMetric(
             name: "recording_start_entry_to_recorder_ms",
             value: recorderStartedAt.timeIntervalSince(telemetry.managerEntryAt) * 1_000,
-            unit: "ms"
+            unit: "ms",
         )
     }
 
@@ -127,15 +131,19 @@ extension RecordingManager {
 
         if settings.shouldMergeAudioFiles {
             var inputURLs: [URL] = []
-            if let micURL { inputURLs.append(micURL) }
-            if let sysURL { inputURLs.append(sysURL) }
+            if let micURL {
+                inputURLs.append(micURL)
+            }
+            if let sysURL {
+                inputURLs.append(sysURL)
+            }
 
             if inputURLs.count >= 2 {
                 AppLogger.info("Merging \(inputURLs.count) audio files...", category: .recordingManager)
                 let finalURL = try await audioMerger.mergeAudioFiles(
                     inputURLs: inputURLs,
                     to: outputURL,
-                    format: settings.audioFormat
+                    format: settings.audioFormat,
                 )
                 await cleanupTemporaryFiles()
                 return finalURL
@@ -159,7 +167,7 @@ extension RecordingManager {
         } else {
             AppLogger.info(
                 "Audio merge disabled. Using microphone recording as primary.",
-                category: .recordingManager
+                category: .recordingManager,
             )
 
             guard let sourceURL = micURL else {

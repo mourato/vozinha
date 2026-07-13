@@ -5,21 +5,21 @@ final class SettingsSectionTests: XCTestCase {
     func testPrimarySections_OrderStartsWithCaptureWorkflows() {
         XCTAssertEqual(
             SettingsSection.primarySections,
-            [.activity, .dictation, .meetings, .assistant, .integrations]
+            [.activity, .dictation, .meetings, .assistant, .integrations],
         )
     }
 
     func testSettingsSections_OrderStartsWithConsolidatedSections() {
         XCTAssertEqual(
             SettingsSection.settingsSections,
-            [.system]
+            [.system],
         )
     }
 
     func testVisibleSections_OrderMatchesProductConcepts() {
         XCTAssertEqual(
             SettingsSection.visibleSections,
-            [.activity, .dictation, .meetings, .assistant, .integrations, .system]
+            [.activity, .dictation, .meetings, .assistant, .integrations, .system],
         )
     }
 
@@ -68,38 +68,38 @@ final class SettingsSectionTests: XCTestCase {
     func testResolvedDestination_PreservesLegacyActivitySubroutes() {
         XCTAssertEqual(
             SettingsSection.resolvedDestination(for: "metrics"),
-            SettingsDestination(section: .activity, activityRoute: .modelPerformance)
+            SettingsDestination(section: .activity, activityRoute: .modelPerformance),
         )
         XCTAssertEqual(
             SettingsSection.resolvedDestination(for: "transcriptions"),
-            SettingsDestination(section: .activity, activityRoute: .history)
+            SettingsDestination(section: .activity, activityRoute: .history),
         )
     }
 
     func testResolvedDestination_PreservesSystemSubroutes() {
         XCTAssertEqual(
             SettingsSection.resolvedDestination(for: "general"),
-            SettingsDestination(section: .system)
+            SettingsDestination(section: .system),
         )
         XCTAssertEqual(
             SettingsSection.resolvedDestination(for: "permissions"),
-            SettingsDestination(section: .system, systemRoute: .permissions)
+            SettingsDestination(section: .system, systemRoute: .permissions),
         )
         XCTAssertEqual(
             SettingsSection.resolvedDestination(for: "audio"),
-            SettingsDestination(section: .system, systemRoute: .sound)
+            SettingsDestination(section: .system, systemRoute: .sound),
         )
         XCTAssertEqual(
             SettingsSection.resolvedDestination(for: "models"),
-            SettingsDestination(section: .system, systemRoute: .models)
+            SettingsDestination(section: .system, systemRoute: .models),
         )
         XCTAssertEqual(
             SettingsSection.resolvedDestination(for: "vocabulary"),
-            SettingsDestination(section: .system, systemRoute: .dictionary)
+            SettingsDestination(section: .system, systemRoute: .dictionary),
         )
         XCTAssertEqual(
             SettingsSection.resolvedDestination(for: "enhancements"),
-            SettingsDestination(section: .dictation, dictationRoute: .postProcessing)
+            SettingsDestination(section: .dictation, dictationRoute: .postProcessing),
         )
     }
 

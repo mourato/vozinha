@@ -16,8 +16,8 @@ final class RichTextFormattingShortcutTextViewTests: XCTestCase {
                 keyCode: 11,
                 modifiers: [.command],
                 characters: "b",
-                charactersIgnoringModifiers: "b"
-            )
+                charactersIgnoringModifiers: "b",
+            ),
         )
         textView.keyDown(with: event)
 
@@ -36,8 +36,8 @@ final class RichTextFormattingShortcutTextViewTests: XCTestCase {
                 keyCode: 48,
                 modifiers: [],
                 characters: "\t",
-                charactersIgnoringModifiers: "\t"
-            )
+                charactersIgnoringModifiers: "\t",
+            ),
         )
         textView.keyDown(with: tabEvent)
 
@@ -46,8 +46,8 @@ final class RichTextFormattingShortcutTextViewTests: XCTestCase {
                 keyCode: 48,
                 modifiers: [.shift],
                 characters: "\t",
-                charactersIgnoringModifiers: "\t"
-            )
+                charactersIgnoringModifiers: "\t",
+            ),
         )
         textView.keyDown(with: shiftTabEvent)
 
@@ -66,8 +66,8 @@ final class RichTextFormattingShortcutTextViewTests: XCTestCase {
                 keyCode: 26,
                 modifiers: [.command],
                 characters: "x",
-                charactersIgnoringModifiers: "x"
-            )
+                charactersIgnoringModifiers: "x",
+            ),
         )
         textView.keyDown(with: orderedListEvent)
 
@@ -76,8 +76,8 @@ final class RichTextFormattingShortcutTextViewTests: XCTestCase {
                 keyCode: 28,
                 modifiers: [.command],
                 characters: "x",
-                charactersIgnoringModifiers: "x"
-            )
+                charactersIgnoringModifiers: "x",
+            ),
         )
         textView.keyDown(with: unorderedListEvent)
 
@@ -88,7 +88,7 @@ final class RichTextFormattingShortcutTextViewTests: XCTestCase {
         keyCode: UInt16,
         modifiers: NSEvent.ModifierFlags,
         characters: String,
-        charactersIgnoringModifiers: String
+        charactersIgnoringModifiers: String,
     ) -> NSEvent? {
         NSEvent.keyEvent(
             with: .keyDown,
@@ -100,7 +100,7 @@ final class RichTextFormattingShortcutTextViewTests: XCTestCase {
             characters: characters,
             charactersIgnoringModifiers: charactersIgnoringModifiers,
             isARepeat: false,
-            keyCode: keyCode
+            keyCode: keyCode,
         )
     }
 }

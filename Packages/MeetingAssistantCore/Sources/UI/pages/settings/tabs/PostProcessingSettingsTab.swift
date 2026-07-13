@@ -34,7 +34,7 @@ public struct PostProcessingSettingsTab: View {
             PromptEditorSheet(
                 prompt: viewModel.editingPrompt,
                 onSave: viewModel.handleSavePrompt,
-                onCancel: { viewModel.showPromptEditor = false }
+                onCancel: { viewModel.showPromptEditor = false },
             )
         }
         .sheet(isPresented: $viewModel.showSystemPromptEditor) {
@@ -42,7 +42,7 @@ public struct PostProcessingSettingsTab: View {
                 initialPrompt: viewModel.settings.systemPrompt,
                 onSave: viewModel.handleSaveSystemPrompt,
                 onCancel: { viewModel.showSystemPromptEditor = false },
-                onRestoreDefault: { viewModel.resetSystemPrompt() }
+                onRestoreDefault: { viewModel.resetSystemPrompt() },
             )
         }
         .alert("settings.post_processing.delete_confirm_title".localized, isPresented: $viewModel.showDeleteConfirmation) {
@@ -64,7 +64,7 @@ public struct PostProcessingSettingsTab: View {
             DSToggleRow(
                 "settings.post_processing.enabled".localized,
                 description: "settings.post_processing.description".localized,
-                isOn: $viewModel.settings.postProcessingEnabled.animated()
+                isOn: $viewModel.settings.postProcessingEnabled.animated(),
             )
         }
     }
@@ -73,7 +73,7 @@ public struct PostProcessingSettingsTab: View {
         DSCallout(
             kind: .warning,
             title: "settings.post_processing.warning_title".localized,
-            message: "settings.post_processing.warning_desc".localized
+            message: "settings.post_processing.warning_desc".localized,
         )
     }
 
@@ -99,7 +99,7 @@ public struct PostProcessingSettingsTab: View {
                     } label: {
                         Label(
                             "settings.post_processing.edit_system_guidelines".localized,
-                            systemImage: "pencil"
+                            systemImage: "pencil",
                         )
                     }
                     .buttonStyle(.bordered)
@@ -125,7 +125,7 @@ public struct PostProcessingSettingsTab: View {
                     } label: {
                         Label(
                             "settings.post_processing.new_prompt".localized,
-                            systemImage: "plus"
+                            systemImage: "plus",
                         )
                     }
                     .buttonStyle(.bordered)
@@ -157,7 +157,7 @@ public struct PostProcessingSettingsTab: View {
             onDoubleClick: {
                 openPromptEditor(for: prompt)
             },
-            menuAccessibilityLabel: "transcription.ai_actions".localized
+            menuAccessibilityLabel: "transcription.ai_actions".localized,
         ) {
             promptMenuContent(prompt: prompt, isSelected: isSelected)
         }

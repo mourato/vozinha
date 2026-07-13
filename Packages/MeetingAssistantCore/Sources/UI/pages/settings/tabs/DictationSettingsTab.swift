@@ -23,7 +23,7 @@ public struct DictationSettingsTab: View {
 
     public init(
         settings: AppSettingsStore = .shared,
-        navigationState: Binding<SettingsSubpageNavigationState<DictationSettingsRoute>> = .constant(SettingsSubpageNavigationState())
+        navigationState: Binding<SettingsSubpageNavigationState<DictationSettingsRoute>> = .constant(SettingsSubpageNavigationState()),
     ) {
         _navigationState = navigationState
         _viewModel = StateObject(wrappedValue: GeneralSettingsViewModel(settingsStore: settings))
@@ -31,17 +31,15 @@ public struct DictationSettingsTab: View {
     }
 
     public var body: some View {
-        Group {
-            switch navigationState.currentRoute {
-            case nil:
-                rootPage
-            case .some(.modes):
-                StylesSettingsTab()
-            case .some(.postProcessing):
-                EnhancementsSettingsTab(content: .postProcessing)
-            case .some(.userPrompts):
-                UserPromptsSettingsTab()
-            }
+        switch navigationState.currentRoute {
+        case nil:
+            rootPage
+        case .some(.modes):
+            StylesSettingsTab()
+        case .some(.postProcessing):
+            EnhancementsSettingsTab(content: .postProcessing)
+        case .some(.userPrompts):
+            UserPromptsSettingsTab()
         }
     }
 
@@ -49,7 +47,7 @@ public struct DictationSettingsTab: View {
         SettingsScrollableContent {
             SettingsSectionHeader(
                 title: "settings.section.dictation".localized,
-                description: "settings.dictation.description".localized
+                description: "settings.dictation.description".localized,
             )
 
             ShortcutSettingsSection(
@@ -65,17 +63,17 @@ public struct DictationSettingsTab: View {
 
                         DSModifierShortcutEditor(
                             shortcut: $shortcutsViewModel.dictationShortcutDefinition,
-                            conflictMessage: shortcutsViewModel.dictationModifierConflictMessage
+                            conflictMessage: shortcutsViewModel.dictationModifierConflictMessage,
                         )
                     }
-                }
+                },
             )
 
             SettingsListGroup("settings.dictation.modes_and_prompts.title".localized, icon: "paintpalette") {
                 SettingsListDrillDownButtonRow(
                     title: "settings.dictation.modes.title".localized,
                     subtitle: "settings.dictation.modes.description".localized,
-                    accessibilityHint: "settings.dictation.modes.accessibility_hint".localized
+                    accessibilityHint: "settings.dictation.modes.accessibility_hint".localized,
                 ) {
                     navigationState.open(.modes)
                 }
@@ -83,7 +81,7 @@ public struct DictationSettingsTab: View {
                 SettingsListDrillDownButtonRow(
                     title: "settings.dictation.user_prompts.title".localized,
                     subtitle: "settings.dictation.user_prompts.description".localized,
-                    accessibilityHint: "settings.dictation.user_prompts.accessibility_hint".localized
+                    accessibilityHint: "settings.dictation.user_prompts.accessibility_hint".localized,
                 ) {
                     navigationState.open(.userPrompts)
                 }
@@ -91,7 +89,7 @@ public struct DictationSettingsTab: View {
                 SettingsListDrillDownButtonRow(
                     title: "settings.post_processing.title".localized,
                     subtitle: "settings.post_processing.description".localized,
-                    accessibilityHint: "settings.post_processing.system_guidelines.accessibility_hint".localized
+                    accessibilityHint: "settings.post_processing.system_guidelines.accessibility_hint".localized,
                 ) {
                     navigationState.open(.postProcessing)
                 }
@@ -101,24 +99,24 @@ public struct DictationSettingsTab: View {
                 DSToggleRow(
                     "settings.general.auto_copy_transcription".localized,
                     description: "settings.general.auto_copy_transcription_desc".localized,
-                    isOn: $viewModel.autoCopyTranscriptionToClipboard
+                    isOn: $viewModel.autoCopyTranscriptionToClipboard,
                 )
 
                 DSToggleRow(
                     "settings.general.auto_paste_transcription".localized,
-                    isOn: $viewModel.autoPasteTranscriptionToActiveApp
+                    isOn: $viewModel.autoPasteTranscriptionToActiveApp,
                 )
 
                 DSToggleRow(
                     "settings.dictation.smart_spacing".localized,
                     description: "settings.dictation.smart_spacing_desc".localized,
-                    isOn: $viewModel.smartSpacingAndCapitalizationEnabled
+                    isOn: $viewModel.smartSpacingAndCapitalizationEnabled,
                 )
 
                 DSToggleRow(
                     "settings.dictation.smart_paragraphs".localized,
                     description: "settings.dictation.smart_paragraphs_desc".localized,
-                    isOn: $viewModel.smartParagraphsEnabled
+                    isOn: $viewModel.smartParagraphsEnabled,
                 )
             }
 

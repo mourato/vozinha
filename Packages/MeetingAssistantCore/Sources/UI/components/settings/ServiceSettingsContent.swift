@@ -18,7 +18,7 @@ public struct ServiceSettingsContent: View {
         settings _: AppSettingsStore = .shared,
         runInitialTasks: Bool = !PreviewRuntime.isRunning,
         includeTranscriptionProviderSection: Bool = true,
-        includeMeetingTranscriptionSection: Bool = true
+        includeMeetingTranscriptionSection: Bool = true,
     ) {
         _viewModel = StateObject(wrappedValue: viewModel)
         self.runInitialTasks = runInitialTasks
@@ -68,7 +68,7 @@ public struct ServiceSettingsContent: View {
                     DSCallout(
                         kind: .error,
                         title: "common.error".localized,
-                        message: errorMessage
+                        message: errorMessage,
                     )
                 }
             }
@@ -152,7 +152,7 @@ public struct ServiceSettingsContent: View {
                     Text(
                         provider.isReady
                             ? "settings.models.cloud_models.provider_ready".localized
-                            : "settings.models.cloud_models.provider_requires_key".localized
+                            : "settings.models.cloud_models.provider_requires_key".localized,
                     )
                     .font(.caption)
                     .foregroundStyle(provider.isReady ? AppDesignSystem.Colors.success : .secondary)
@@ -183,22 +183,22 @@ public struct ServiceSettingsContent: View {
                         "settings.ai.api_key_placeholder".localized,
                         text: Binding(
                             get: { viewModel.transcriptionAPIKeyInputsByProvider[provider.provider.rawValue] ?? "" },
-                            set: { viewModel.transcriptionAPIKeyInputsByProvider[provider.provider.rawValue] = $0 }
-                        )
+                            set: { viewModel.transcriptionAPIKeyInputsByProvider[provider.provider.rawValue] = $0 },
+                        ),
                     )
                     .textFieldStyle(.roundedBorder)
 
                     Button("common.save".localized) {
                         viewModel.saveTranscriptionAPIKey(
                             viewModel.transcriptionAPIKeyInputsByProvider[provider.provider.rawValue] ?? "",
-                            for: provider.provider
+                            for: provider.provider,
                         )
                     }
                     .buttonStyle(.borderedProminent)
                     .disabled(
                         (viewModel.transcriptionAPIKeyInputsByProvider[provider.provider.rawValue] ?? "")
                             .trimmingCharacters(in: .whitespacesAndNewlines)
-                            .isEmpty
+                            .isEmpty,
                     )
                 }
             }
@@ -224,8 +224,8 @@ public struct ServiceSettingsContent: View {
                 } else {
                     Text(
                         "settings.service.transcription_provider.missing_key.message".localized(
-                            with: provider.displayName
-                        )
+                            with: provider.displayName,
+                        ),
                     )
                     .font(.caption)
                     .foregroundStyle(.secondary)
@@ -257,8 +257,8 @@ public struct ServiceSettingsContent: View {
                             "settings.service.model_residency_timeout".localized,
                             selection: Binding(
                                 get: { viewModel.modelResidencyTimeout },
-                                set: { viewModel.modelResidencyTimeout = $0 }
-                            )
+                                set: { viewModel.modelResidencyTimeout = $0 },
+                            ),
                         ) {
                             ForEach(viewModel.modelResidencyTimeoutOptions, id: \.self) { option in
                                 Text(option.displayName).tag(option)
@@ -327,8 +327,8 @@ public struct ServiceSettingsContent: View {
             DSMenuPicker(
                 selection: Binding(
                     get: { provider.selectedModelID },
-                    set: { viewModel.updateCloudProviderModel($0, for: provider.provider) }
-                )
+                    set: { viewModel.updateCloudProviderModel($0, for: provider.provider) },
+                ),
             ) {
                 ForEach(provider.availableModelIDs, id: \.self) { modelID in
                     Text(viewModel.displayName(forModelID: modelID)).tag(modelID)

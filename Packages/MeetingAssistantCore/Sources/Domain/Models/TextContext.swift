@@ -10,7 +10,7 @@ public struct TextContextSnapshot: Sendable, Equatable {
         text: String,
         source: ContextSource,
         capturedAt: Date = Date(),
-        appContext: ActiveAppContext?
+        appContext: ActiveAppContext?,
     ) {
         self.text = text
         self.source = source
@@ -57,6 +57,6 @@ public struct TextContextPolicy: Sendable, Equatable {
 
     public static let `default` = TextContextPolicy(
         maxCharacters: 15_000,
-        preferredLineWindow: 200...400
+        preferredLineWindow: 200...400,
     )
 }

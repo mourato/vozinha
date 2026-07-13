@@ -30,7 +30,7 @@ enum AppSettingsTestIsolationLock {
         return NSError(
             domain: "AppSettingsTestIsolationLock",
             code: Int(errno),
-            userInfo: [NSLocalizedDescriptionKey: "\(message): \(errorMessage)"]
+            userInfo: [NSLocalizedDescriptionKey: "\(message): \(errorMessage)"],
         )
     }
 }

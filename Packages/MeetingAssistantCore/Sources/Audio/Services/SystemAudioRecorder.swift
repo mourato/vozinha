@@ -199,7 +199,7 @@ public class SystemAudioRecorder: ObservableObject, AudioRecordingService {
         let output = SystemAudioStreamOutput(
             onBuffer: { @Sendable [weak self] buffer in
                 self?.handleBuffer(buffer)
-            }
+            },
         )
         streamOutput = output
         streamOutputHolder = output // Keep strong reference to prevent deallocation
@@ -241,7 +241,7 @@ public class SystemAudioRecorder: ObservableObject, AudioRecordingService {
         AppLogger.error(
             "System audio capture stopped unexpectedly",
             category: .recordingManager,
-            error: error
+            error: error,
         )
         self.error = error
         onRecordingError?(SystemAudioRecorderError.streamStoppedUnexpectedly(error))
@@ -314,7 +314,7 @@ private class SystemAudioStreamOutput: NSObject, SCStreamOutput {
             sampleBuffer,
             at: 0,
             frameCount: Int32(frames),
-            into: buffer.mutableAudioBufferList
+            into: buffer.mutableAudioBufferList,
         )
 
         guard status == noErr else {

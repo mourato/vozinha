@@ -1,5 +1,5 @@
-import XCTest
 @testable import MeetingAssistantCore
+import XCTest
 
 final class TranscriptionModelPromptFieldsTests: XCTestCase {
     func testInit_PreservesPostProcessingRequestPrompts() {
@@ -8,7 +8,7 @@ final class TranscriptionModelPromptFieldsTests: XCTestCase {
             text: "processed",
             rawText: "raw",
             postProcessingRequestSystemPrompt: "system prompt",
-            postProcessingRequestUserPrompt: "user prompt"
+            postProcessingRequestUserPrompt: "user prompt",
         )
 
         XCTAssertEqual(transcription.postProcessingRequestSystemPrompt, "system prompt")

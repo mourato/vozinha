@@ -7,7 +7,7 @@ final class MenuBarRecordingSectionStateTests: XCTestCase {
         let state = MenuBarRecordingSectionState(
             isRecordingManagerActive: false,
             recordingSource: .microphone,
-            isAssistantRecording: false
+            isAssistantRecording: false,
         )
 
         XCTAssertEqual(state, .idle)
@@ -17,7 +17,7 @@ final class MenuBarRecordingSectionStateTests: XCTestCase {
         let state = MenuBarRecordingSectionState(
             isRecordingManagerActive: true,
             recordingSource: .microphone,
-            isAssistantRecording: false
+            isAssistantRecording: false,
         )
 
         XCTAssertEqual(state, .dictationActive)
@@ -27,7 +27,7 @@ final class MenuBarRecordingSectionStateTests: XCTestCase {
         let state = MenuBarRecordingSectionState(
             isRecordingManagerActive: true,
             recordingSource: .all,
-            isAssistantRecording: false
+            isAssistantRecording: false,
         )
 
         XCTAssertEqual(state, .meetingActive)
@@ -37,7 +37,7 @@ final class MenuBarRecordingSectionStateTests: XCTestCase {
         let state = MenuBarRecordingSectionState(
             isRecordingManagerActive: false,
             recordingSource: .microphone,
-            isAssistantRecording: true
+            isAssistantRecording: true,
         )
 
         XCTAssertEqual(state, .assistantActive)
@@ -47,7 +47,7 @@ final class MenuBarRecordingSectionStateTests: XCTestCase {
         let state = MenuBarRecordingSectionState(
             isRecordingManagerActive: true,
             recordingSource: .system,
-            isAssistantRecording: false
+            isAssistantRecording: false,
         )
 
         XCTAssertEqual(state, .meetingActive)

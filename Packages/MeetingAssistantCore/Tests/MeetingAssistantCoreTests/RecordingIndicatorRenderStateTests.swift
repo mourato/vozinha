@@ -1,11 +1,11 @@
-import XCTest
 @testable import MeetingAssistantCore
+import XCTest
 
 final class RecordingIndicatorRenderStateTests: XCTestCase {
     func testProcessingSnapshotUsesStepLocalizationKeys() {
         let snapshot = RecordingIndicatorProcessingSnapshot(
             step: .capturingContext,
-            progressPercent: 37
+            progressPercent: 37,
         )
 
         XCTAssertEqual(snapshot.step.localizedTitleKey, "recording_indicator.processing.step.capturing_context")
@@ -53,7 +53,7 @@ final class RecordingIndicatorRenderStateTests: XCTestCase {
         let initial = RecordingIndicatorRenderState(
             mode: .recording,
             kind: .assistantIntegration,
-            assistantIntegrationID: integrationID
+            assistantIntegrationID: integrationID,
         )
 
         let updated = initial.with(mode: .processing)
@@ -67,7 +67,7 @@ final class RecordingIndicatorRenderStateTests: XCTestCase {
         let state = RecordingIndicatorRenderState.forRecordingSource(
             mode: .recording,
             recordingSource: .microphone,
-            meetingType: .standup
+            meetingType: .standup,
         )
 
         XCTAssertEqual(state.kind, .dictation)
@@ -78,7 +78,7 @@ final class RecordingIndicatorRenderStateTests: XCTestCase {
         let state = RecordingIndicatorRenderState.forRecordingSource(
             mode: .processing,
             recordingSource: .all,
-            meetingType: .planning
+            meetingType: .planning,
         )
 
         XCTAssertEqual(state.kind, .meeting)

@@ -3,30 +3,34 @@ import MeetingAssistantCoreData
 import MeetingAssistantCoreDomain
 
 enum TranscriptionHistoryFilterEngine {
+    struct FilterConfiguration {
+        let sourceFilter: RecordingSourceFilter
+        let dateFilter: DateFilter
+        let searchText: String
+        let appFilterId: String
+        let allAppsId: String
+        let rawAppPrefix: String
+        let bundleAppPrefix: String
+        let nameAppPrefix: String
+    }
+
     static func filteredTranscriptions(
         from transcriptions: [TranscriptionMetadata],
-        sourceFilter: RecordingSourceFilter,
-        dateFilter: DateFilter,
-        searchText: String,
-        appFilterId: String,
-        allAppsId: String,
-        rawAppPrefix: String,
-        bundleAppPrefix: String,
-        nameAppPrefix: String
+        configuration: FilterConfiguration,
     ) -> [TranscriptionMetadata] {
         let selectedAppScope = selectedAppFilterScope(
-            appFilterId: appFilterId,
-            allAppsId: allAppsId,
-            rawAppPrefix: rawAppPrefix,
-            bundleAppPrefix: bundleAppPrefix,
-            nameAppPrefix: nameAppPrefix
+            appFilterId: configuration.appFilterId,
+            allAppsId: configuration.allAppsId,
+            rawAppPrefix: configuration.rawAppPrefix,
+            bundleAppPrefix: configuration.bundleAppPrefix,
+            nameAppPrefix: configuration.nameAppPrefix,
         )
 
         return transcriptions.filter { transcription in
-            let matchesSource = matchesSourceFilter(transcription, sourceFilter: sourceFilter)
-            let matchesDate = dateFilter.contains(transcription.createdAt)
+            let matchesSource = matchesSourceFilter(transcription, sourceFilter: configuration.sourceFilter)
+            let matchesDate = configuration.dateFilter.contains(transcription.createdAt)
             let matchesApp = matchesAppFilter(transcription, scope: selectedAppScope)
-            let matchesText = matchesSearchFilter(transcription, searchText: searchText)
+            let matchesText = matchesSearchFilter(transcription, searchText: configuration.searchText)
             return matchesSource && matchesDate && matchesApp && matchesText
         }
     }
@@ -36,7 +40,7 @@ enum TranscriptionHistoryFilterEngine {
         allAppsId: String,
         rawAppPrefix: String,
         bundleAppPrefix: String,
-        nameAppPrefix: String
+        nameAppPrefix: String,
     ) -> [TranscriptionSettingsViewModel.AppFilterOption] {
         let optionsById = transcriptions.reduce(into: [String: TranscriptionSettingsViewModel.AppFilterOption]()) {
             result,
@@ -45,7 +49,7 @@ enum TranscriptionHistoryFilterEngine {
                 for: transcription,
                 rawAppPrefix: rawAppPrefix,
                 bundleAppPrefix: bundleAppPrefix,
-                nameAppPrefix: nameAppPrefix
+                nameAppPrefix: nameAppPrefix,
             ) else {
                 return
             }
@@ -55,7 +59,7 @@ enum TranscriptionHistoryFilterEngine {
         let allAppsOption = TranscriptionSettingsViewModel.AppFilterOption(
             id: allAppsId,
             scope: .all,
-            displayName: "settings.transcriptions.filter_app_all".localized
+            displayName: "settings.transcriptions.filter_app_all".localized,
         )
 
         let sortedAppOptions = optionsById.values.sorted {
@@ -67,7 +71,7 @@ enum TranscriptionHistoryFilterEngine {
 
     static func matchesSourceFilter(
         _ transcription: TranscriptionMetadata,
-        sourceFilter: RecordingSourceFilter
+        sourceFilter: RecordingSourceFilter,
     ) -> Bool {
         switch sourceFilter {
         case .all:
@@ -81,7 +85,7 @@ enum TranscriptionHistoryFilterEngine {
 
     private static func matchesAppFilter(
         _ transcription: TranscriptionMetadata,
-        scope: TranscriptionSettingsViewModel.AppFilterOption.Scope
+        scope: TranscriptionSettingsViewModel.AppFilterOption.Scope,
     ) -> Bool {
         switch scope {
         case .all:
@@ -103,7 +107,7 @@ enum TranscriptionHistoryFilterEngine {
         allAppsId: String,
         rawAppPrefix: String,
         bundleAppPrefix: String,
-        nameAppPrefix: String
+        nameAppPrefix: String,
     ) -> TranscriptionSettingsViewModel.AppFilterOption.Scope {
         guard appFilterId != allAppsId else { return .all }
 
@@ -149,7 +153,7 @@ enum TranscriptionHistoryFilterEngine {
         for transcription: TranscriptionMetadata,
         rawAppPrefix: String,
         bundleAppPrefix: String,
-        nameAppPrefix: String
+        nameAppPrefix: String,
     ) -> TranscriptionSettingsViewModel.AppFilterOption? {
         let rawValue = transcription.appRawValue.trimmingCharacters(in: .whitespacesAndNewlines)
         let displayName = appDisplayName(for: transcription)
@@ -158,7 +162,7 @@ enum TranscriptionHistoryFilterEngine {
             return TranscriptionSettingsViewModel.AppFilterOption(
                 id: rawAppPrefix + rawValue,
                 scope: .appRawValue(rawValue),
-                displayName: displayName
+                displayName: displayName,
             )
         }
 
@@ -169,7 +173,7 @@ enum TranscriptionHistoryFilterEngine {
             return TranscriptionSettingsViewModel.AppFilterOption(
                 id: bundleAppPrefix + bundleIdentifier,
                 scope: .appBundleIdentifier(bundleIdentifier),
-                displayName: displayName
+                displayName: displayName,
             )
         }
 
@@ -178,7 +182,7 @@ enum TranscriptionHistoryFilterEngine {
         return TranscriptionSettingsViewModel.AppFilterOption(
             id: nameAppPrefix + normalizedDisplayName,
             scope: .appDisplayName(normalizedDisplayName),
-            displayName: displayName
+            displayName: displayName,
         )
     }
 

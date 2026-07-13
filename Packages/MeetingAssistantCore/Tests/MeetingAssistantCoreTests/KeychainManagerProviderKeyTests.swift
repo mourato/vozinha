@@ -1,5 +1,5 @@
-import XCTest
 @testable import MeetingAssistantCore
+import XCTest
 
 final class KeychainManagerProviderKeyTests: XCTestCase {
     func testGoogleProviderMapsToDedicatedKeychainSlot() {

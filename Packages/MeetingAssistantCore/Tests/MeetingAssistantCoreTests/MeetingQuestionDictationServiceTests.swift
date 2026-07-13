@@ -26,7 +26,7 @@ final class MeetingQuestionDictationServiceTests: XCTestCase {
             durationSeconds: 2,
             model: "mock-model",
             processedAt: Date().ISO8601Format(),
-            confidenceScore: 0.9
+            confidenceScore: 0.9,
         )
 
         let service = MeetingQuestionDictationService(recorder: recorder, transcriber: transcriber)
@@ -124,7 +124,7 @@ private final class MockMeetingQuestionTranscriber: MeetingQuestionDictationTran
         durationSeconds: 0,
         model: "",
         processedAt: Date().ISO8601Format(),
-        confidenceScore: nil
+        confidenceScore: nil,
     )
     var nextError: Error?
 

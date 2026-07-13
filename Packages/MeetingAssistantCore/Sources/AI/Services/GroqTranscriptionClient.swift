@@ -15,7 +15,7 @@ public final class GroqTranscriptionClient {
         audioURL: URL,
         modelID: String,
         inputLanguageCode: String? = nil,
-        onProgress: (@Sendable (Double) -> Void)? = nil
+        onProgress: (@Sendable (Double) -> Void)? = nil,
     ) async throws -> TranscriptionResponse {
         let apiKey = try resolveAPIKey()
         let normalizedModel = normalizedGroqModelID(modelID)
@@ -23,7 +23,7 @@ public final class GroqTranscriptionClient {
             audioURL: audioURL,
             modelID: normalizedModel,
             inputLanguageCode: inputLanguageCode,
-            apiKey: apiKey
+            apiKey: apiKey,
         )
 
         onProgress?(0.1)
@@ -49,7 +49,7 @@ public final class GroqTranscriptionClient {
         audioURL: URL,
         modelID: String,
         inputLanguageCode: String?,
-        apiKey: String
+        apiKey: String,
     ) throws -> URLRequest {
         guard FileManager.default.fileExists(atPath: audioURL.path) else {
             throw TranscriptionError.transcriptionFailed("Audio file not found")
@@ -73,7 +73,7 @@ public final class GroqTranscriptionClient {
             fileData: fileData,
             fileName: audioURL.lastPathComponent,
             modelID: modelID,
-            inputLanguageCode: inputLanguageCode
+            inputLanguageCode: inputLanguageCode,
         )
 
         return request
@@ -92,7 +92,7 @@ public final class GroqTranscriptionClient {
         fileData: Data,
         fileName: String,
         modelID: String,
-        inputLanguageCode: String?
+        inputLanguageCode: String?,
     ) -> Data {
         var body = Data()
 
@@ -116,7 +116,7 @@ public final class GroqTranscriptionClient {
         _ name: String,
         value: String,
         boundary: String,
-        to body: inout Data
+        to body: inout Data,
     ) {
         appendString("--\(boundary)\r\n", to: &body)
         appendString("Content-Disposition: form-data; name=\"\(name)\"\r\n\r\n", to: &body)
@@ -170,7 +170,7 @@ public final class GroqTranscriptionClient {
                     speaker: Transcription.unknownSpeaker,
                     text: segment.text,
                     startTime: segment.start,
-                    endTime: segment.end
+                    endTime: segment.end,
                 )
             }
 
@@ -181,7 +181,7 @@ public final class GroqTranscriptionClient {
                 durationSeconds: verboseResponse.duration ?? 0,
                 model: modelID,
                 processedAt: ISO8601DateFormatter().string(from: Date()),
-                confidenceScore: nil
+                confidenceScore: nil,
             )
         }
 
@@ -193,7 +193,7 @@ public final class GroqTranscriptionClient {
                 durationSeconds: 0,
                 model: modelID,
                 processedAt: ISO8601DateFormatter().string(from: Date()),
-                confidenceScore: nil
+                confidenceScore: nil,
             )
         }
 

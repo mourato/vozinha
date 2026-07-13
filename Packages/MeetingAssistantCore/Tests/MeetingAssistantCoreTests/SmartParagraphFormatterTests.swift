@@ -1,5 +1,5 @@
-import XCTest
 @testable import MeetingAssistantCore
+import XCTest
 
 final class SmartParagraphFormatterTests: XCTestCase {
     func testFormat_LeavesShortTextUnchanged() {

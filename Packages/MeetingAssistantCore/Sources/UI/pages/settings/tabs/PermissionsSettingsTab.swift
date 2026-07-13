@@ -24,7 +24,7 @@ public struct PermissionsSettingsTab: View {
             openMicrophoneSettings: { recordingManager.openMicrophoneSettings() },
             openScreenSettings: { recordingManager.openPermissionSettings() },
             requestAccessibility: { recordingManager.requestAccessibilityPermission() },
-            openAccessibilitySettings: { recordingManager.openAccessibilitySettings() }
+            openAccessibilitySettings: { recordingManager.openAccessibilitySettings() },
         ))
         self.showsHeader = showsHeader
     }
@@ -34,7 +34,7 @@ public struct PermissionsSettingsTab: View {
             if showsHeader {
                 SettingsSectionHeader(
                     title: "settings.section.permissions".localized,
-                    description: "settings.permissions.description".localized
+                    description: "settings.permissions.description".localized,
                 )
             }
 
@@ -67,14 +67,14 @@ public struct PermissionsSettingsTab: View {
                 SettingsStateBlock(
                     kind: .success,
                     title: "common.ok".localized,
-                    message: "permissions.system_title".localized
+                    message: "permissions.system_title".localized,
                 )
             } else {
                 SettingsStateBlock(
                     kind: .warning,
                     title: "permissions.action_required".localized,
                     message: "permissions.warning".localized,
-                    actionTitle: "permissions.configure".localized
+                    actionTitle: "permissions.configure".localized,
                 ) {
                     viewModel.openScreenSystemSettings()
                 }

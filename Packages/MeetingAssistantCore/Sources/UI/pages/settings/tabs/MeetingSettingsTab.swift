@@ -30,7 +30,7 @@ public struct MeetingSettingsTab: View {
 
     public init(
         settings: AppSettingsStore = .shared,
-        navigationState: Binding<MeetingSettingsNavigationState> = .constant(MeetingSettingsNavigationState())
+        navigationState: Binding<MeetingSettingsNavigationState> = .constant(MeetingSettingsNavigationState()),
     ) {
         _navigationState = navigationState
         _meetingViewModel = StateObject(wrappedValue: MeetingSettingsViewModel(settings: settings))
@@ -41,8 +41,8 @@ public struct MeetingSettingsTab: View {
                 defaultBundleIdentifiers: AppSettingsStore.defaultMonitoredMeetingBundleIdentifiers,
                 hasConfigured: { settings.hasConfiguredMonitoredMeetingApps },
                 loadBundleIdentifiers: { settings.monitoredMeetingBundleIdentifiers },
-                saveBundleIdentifiers: { settings.monitoredMeetingBundleIdentifiers = $0 }
-            )
+                saveBundleIdentifiers: { settings.monitoredMeetingBundleIdentifiers = $0 },
+            ),
         )
         _webTargetsViewModel = StateObject(wrappedValue: WebMeetingTargetsViewModel(settings: settings))
         self.settings = settings
@@ -65,7 +65,7 @@ public struct MeetingSettingsTab: View {
             PromptEditorSheet(
                 prompt: meetingViewModel.editingPrompt,
                 onSave: meetingViewModel.handleSavePrompt,
-                onCancel: { meetingViewModel.showPromptEditor = false }
+                onCancel: { meetingViewModel.showPromptEditor = false },
             )
         }
         .sheet(isPresented: $showSummaryTemplateEditor) {
@@ -75,7 +75,7 @@ public struct MeetingSettingsTab: View {
                     meetingViewModel.settings.summaryTemplate = updatedTemplate
                     showSummaryTemplateEditor = false
                 },
-                onCancel: { showSummaryTemplateEditor = false }
+                onCancel: { showSummaryTemplateEditor = false },
             )
         }
         .alert("settings.post_processing.delete_confirm_title".localized, isPresented: $meetingViewModel.showDeleteConfirmation) {
@@ -111,7 +111,7 @@ public struct MeetingSettingsTab: View {
         SettingsScrollableContent {
             SettingsSectionHeader(
                 title: "settings.section.meetings".localized,
-                description: "settings.meetings.description".localized
+                description: "settings.meetings.description".localized,
             )
 
             VStack(alignment: .leading, spacing: AppDesignSystem.Layout.sectionSpacing) {
@@ -128,22 +128,22 @@ public struct MeetingSettingsTab: View {
 
                             DSModifierShortcutEditor(
                                 shortcut: $shortcutsViewModel.meetingShortcutDefinition,
-                                conflictMessage: shortcutsViewModel.meetingModifierConflictMessage
+                                conflictMessage: shortcutsViewModel.meetingModifierConflictMessage,
                             )
                         }
-                    }
+                    },
                 )
 
                 SettingsListGroup("settings.meetings.workflow".localized, icon: "bolt.fill") {
                     DSToggleRow(
                         "settings.general.auto_start".localized,
-                        isOn: $meetingViewModel.settings.autoStartRecording
+                        isOn: $meetingViewModel.settings.autoStartRecording,
                     )
 
                     HStack {
                         Text("settings.general.auto_start_confirmation_delay".localized)
                         Spacer()
-                        DSMenuPicker(selection: $meetingViewModel.settings.automaticMeetingRecordingConfirmationDelay) {
+                        DSMenuPicker(selection: $meetingViewModel.settings.automaticAutomaticMeetingRecordingConfirmationDelay) {
                             ForEach(AppSettingsStore.AutomaticMeetingRecordingConfirmationDelay.allCases, id: \.self) { delay in
                                 Text(delay.localizedTitle)
                                     .tag(delay)
@@ -154,20 +154,20 @@ public struct MeetingSettingsTab: View {
                     SettingsListDrillDownButtonRow(
                         title: "settings.meetings.monitoring_access.button".localized,
                         subtitle: "settings.meetings.monitoring_access.desc".localized,
-                        accessibilityHint: "settings.meetings.monitoring_access.accessibility_hint".localized
+                        accessibilityHint: "settings.meetings.monitoring_access.accessibility_hint".localized,
                     ) {
                         updateNavigationState(to: .monitoringTargets)
                     }
 
                     DSToggleRow(
                         "settings.general.merge_audio".localized,
-                        isOn: $meetingViewModel.settings.shouldMergeAudioFiles
+                        isOn: $meetingViewModel.settings.shouldMergeAudioFiles,
                     )
 
                     SettingsListDrillDownButtonRow(
                         title: "settings.meetings.export".localized,
                         subtitle: "settings.meetings.export_drilldown_desc".localized,
-                        accessibilityHint: "settings.meetings.export_drilldown_accessibility_hint".localized
+                        accessibilityHint: "settings.meetings.export_drilldown_accessibility_hint".localized,
                     ) {
                         updateNavigationState(to: .export)
                     }
@@ -187,7 +187,7 @@ public struct MeetingSettingsTab: View {
                             SettingsTitleWithPopover(
                                 title: "settings.meetings.notes_typography.font_family".localized,
                                 helperTitle: "settings.meetings.notes_typography.title".localized,
-                                helperMessage: "settings.meetings.notes_typography.desc".localized
+                                helperMessage: "settings.meetings.notes_typography.desc".localized,
                             )
                             Spacer()
                             DSMenuPicker(selection: $meetingViewModel.settings.meetingNotesFontFamilyKey) {
@@ -218,7 +218,7 @@ public struct MeetingSettingsTab: View {
             .opacity(meetingViewModel.settings.isMeetingTranscriptionEnabled ? 1 : CapabilityLayout.disabledOpacity)
             .animation(
                 SettingsMotion.sectionAnimation(reduceMotion: reduceMotion),
-                value: meetingViewModel.settings.isMeetingTranscriptionEnabled
+                value: meetingViewModel.settings.isMeetingTranscriptionEnabled,
             )
         }
     }
@@ -228,25 +228,25 @@ public struct MeetingSettingsTab: View {
             DSToggleRow(
                 "settings.meetings.post_processing_enabled".localized,
                 description: "settings.meetings.post_processing_enabled_desc".localized,
-                isOn: meetingPostProcessingBinding
+                isOn: meetingPostProcessingBinding,
             )
 
             EnhancementsModelSelectionControl(
                 target: .meeting,
                 viewModel: aiSettingsViewModel,
-                settings: settings
+                settings: settings,
             )
 
             DSToggleRow(
                 "transcription.qa.title".localized,
                 description: "settings.enhancements.qa_enabled_desc".localized,
-                isOn: $meetingViewModel.settings.meetingQnAEnabled
+                isOn: $meetingViewModel.settings.meetingQnAEnabled,
             )
 
             SettingsListDrillDownButtonRow(
                 title: "settings.meetings.prompts".localized,
                 subtitle: "settings.meetings.prompts_drilldown_desc".localized,
-                accessibilityHint: "settings.meetings.prompts_drilldown_accessibility_hint".localized
+                accessibilityHint: "settings.meetings.prompts_drilldown_accessibility_hint".localized,
             ) {
                 updateNavigationState(to: .meetingPrompts)
             }
@@ -258,7 +258,7 @@ public struct MeetingSettingsTab: View {
     private var meetingPostProcessingBinding: Binding<Bool> {
         Binding(
             get: { meetingViewModel.isMeetingPostProcessingEnabled },
-            set: { meetingViewModel.setMeetingPostProcessingEnabled($0) }
+            set: { meetingViewModel.setMeetingPostProcessingEnabled($0) },
         )
     }
 
@@ -267,7 +267,7 @@ public struct MeetingSettingsTab: View {
             DSCallout(
                 kind: .info,
                 title: "settings.meetings.monitoring_access.context_title".localized,
-                message: "settings.meetings.monitoring_access.context_desc".localized
+                message: "settings.meetings.monitoring_access.context_desc".localized,
             )
 
             InstalledAppsSelectionSection(
@@ -277,7 +277,7 @@ public struct MeetingSettingsTab: View {
                 addButtonKey: "settings.general.monitored_apps_add",
                 icon: "app.badge",
                 onAddApp: { showMonitoredAppSearchSheet = true },
-                viewModel: monitoredAppsViewModel
+                viewModel: monitoredAppsViewModel,
             )
 
             webTargetsSection
@@ -286,13 +286,13 @@ public struct MeetingSettingsTab: View {
         .opacity(meetingViewModel.settings.isMeetingTranscriptionEnabled ? 1 : CapabilityLayout.disabledOpacity)
         .animation(
             SettingsMotion.sectionAnimation(reduceMotion: reduceMotion),
-            value: meetingViewModel.settings.isMeetingTranscriptionEnabled
+            value: meetingViewModel.settings.isMeetingTranscriptionEnabled,
         )
         .sheet(isPresented: $webTargetsViewModel.showEditor) {
             WebMeetingTargetEditorSheet(
                 target: webTargetsViewModel.editingTarget,
                 onSave: webTargetsViewModel.handleSave,
-                onCancel: { webTargetsViewModel.showEditor = false }
+                onCancel: { webTargetsViewModel.showEditor = false },
             )
         }
         .sheet(isPresented: $showMonitoredAppSearchSheet) {
@@ -301,7 +301,7 @@ public struct MeetingSettingsTab: View {
                 isPresented: $showMonitoredAppSearchSheet,
                 titleKey: "settings.general.monitored_apps",
                 descriptionKey: "settings.general.monitored_apps_desc",
-                addButtonKey: "settings.general.monitored_apps_add"
+                addButtonKey: "settings.general.monitored_apps_add",
             )
         }
         .alert("settings.meetings.web_targets.delete_confirm_title".localized, isPresented: $webTargetsViewModel.showDeleteConfirmation) {
@@ -320,7 +320,7 @@ public struct MeetingSettingsTab: View {
         SettingsScrollableContent {
             SettingsSectionHeader(
                 title: "settings.meetings.export".localized,
-                description: "settings.meetings.export_drilldown_desc".localized
+                description: "settings.meetings.export_drilldown_desc".localized,
             )
 
             DSGroup("settings.meetings.export".localized, icon: "folder.fill") {
@@ -328,7 +328,7 @@ public struct MeetingSettingsTab: View {
                     DSToggleRow(
                         "settings.meetings.auto_export".localized,
                         description: "settings.meetings.auto_export_desc".localized,
-                        isOn: $meetingViewModel.settings.autoExportSummaries
+                        isOn: $meetingViewModel.settings.autoExportSummaries,
                     )
 
                     if meetingViewModel.settings.autoExportSummaries {
@@ -337,7 +337,7 @@ public struct MeetingSettingsTab: View {
                         HStack {
                             SettingsTitleWithPopover(
                                 title: "settings.meetings.export_location".localized,
-                                helperMessage: "settings.meetings.export_location_desc".localized
+                                helperMessage: "settings.meetings.export_location_desc".localized,
                             )
                             Spacer()
                             if let url = meetingViewModel.settings.summaryExportFolder {
@@ -358,7 +358,7 @@ public struct MeetingSettingsTab: View {
                         DSToggleRow(
                             "settings.meetings.template_enabled".localized,
                             description: "settings.meetings.template_enabled_desc".localized,
-                            isOn: $meetingViewModel.settings.summaryTemplateEnabled
+                            isOn: $meetingViewModel.settings.summaryTemplateEnabled,
                         )
 
                         Divider()
@@ -366,7 +366,7 @@ public struct MeetingSettingsTab: View {
                         HStack {
                             SettingsTitleWithPopover(
                                 title: "settings.meetings.export_safety_policy".localized,
-                                helperMessage: "settings.meetings.export_safety_policy_desc".localized
+                                helperMessage: "settings.meetings.export_safety_policy_desc".localized,
                             )
                             Spacer()
                             DSMenuPicker(selection: $meetingViewModel.settings.summaryExportSafetyPolicyLevel) {
@@ -393,7 +393,7 @@ public struct MeetingSettingsTab: View {
                                         title: "settings.meetings.template".localized,
                                         helperMessage: "settings.meetings.template_desc".localized,
                                         font: .subheadline,
-                                        fontWeight: .semibold
+                                        fontWeight: .semibold,
                                     )
                                 }
 
@@ -416,7 +416,7 @@ public struct MeetingSettingsTab: View {
         .opacity(meetingViewModel.settings.isMeetingTranscriptionEnabled ? 1 : CapabilityLayout.disabledOpacity)
         .animation(
             SettingsMotion.sectionAnimation(reduceMotion: reduceMotion),
-            value: meetingViewModel.settings.isMeetingTranscriptionEnabled
+            value: meetingViewModel.settings.isMeetingTranscriptionEnabled,
         )
     }
 
@@ -424,7 +424,7 @@ public struct MeetingSettingsTab: View {
         SettingsScrollableContent {
             SettingsSectionHeader(
                 title: "settings.meetings.prompts".localized,
-                description: "settings.meetings.prompts_drilldown_desc".localized
+                description: "settings.meetings.prompts_drilldown_desc".localized,
             )
 
             DSGroup("settings.meetings.prompts".localized, icon: "sparkles") {
@@ -432,7 +432,7 @@ public struct MeetingSettingsTab: View {
                     HStack {
                         SettingsTitleWithPopover(
                             title: "settings.meetings.summary_output_language".localized,
-                            helperMessage: "settings.meetings.summary_output_language_desc".localized
+                            helperMessage: "settings.meetings.summary_output_language_desc".localized,
                         )
                         Spacer()
                         DSMenuPicker(selection: $meetingViewModel.settings.meetingSummaryOutputLanguage) {
@@ -448,7 +448,7 @@ public struct MeetingSettingsTab: View {
                     DSToggleRow(
                         "settings.meetings.autodetect_type".localized,
                         description: "settings.meetings.autodetect_type_desc".localized,
-                        isOn: $meetingViewModel.settings.meetingTypeAutoDetectEnabled
+                        isOn: $meetingViewModel.settings.meetingTypeAutoDetectEnabled,
                     )
 
                     HStack {
@@ -464,7 +464,7 @@ public struct MeetingSettingsTab: View {
                         } label: {
                             Label(
                                 "settings.post_processing.new_prompt".localized,
-                                systemImage: "plus"
+                                systemImage: "plus",
                             )
                         }
                         .buttonStyle(.bordered)
@@ -483,15 +483,15 @@ public struct MeetingSettingsTab: View {
         .opacity(
             meetingViewModel.settings.isMeetingTranscriptionEnabled && meetingViewModel.isMeetingPostProcessingEnabled
                 ? 1
-                : CapabilityLayout.disabledOpacity
+                : CapabilityLayout.disabledOpacity,
         )
         .animation(
             SettingsMotion.sectionAnimation(reduceMotion: reduceMotion),
-            value: meetingViewModel.settings.isMeetingTranscriptionEnabled
+            value: meetingViewModel.settings.isMeetingTranscriptionEnabled,
         )
         .animation(
             SettingsMotion.sectionAnimation(reduceMotion: reduceMotion),
-            value: meetingViewModel.isMeetingPostProcessingEnabled
+            value: meetingViewModel.isMeetingPostProcessingEnabled,
         )
     }
 
@@ -540,7 +540,7 @@ public struct MeetingSettingsTab: View {
             menuAccessibilityLabel: "transcription.ai_actions".localized,
             menuContent: {
                 promptMenuContent(prompt: prompt, isSelected: isSelected, isAutoDetectEnabled: isAutoDetectEnabled)
-            }
+            },
         )
     }
 

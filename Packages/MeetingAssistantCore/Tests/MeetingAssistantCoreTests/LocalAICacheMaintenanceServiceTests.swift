@@ -17,7 +17,7 @@ final class LocalAICacheMaintenanceServiceTests: XCTestCase {
         let activeCompiledDirectory = try CohereTranscribeModelRuntime.compiledModelDirectory(
             for: .encoder,
             artifactURL: sourceDirectory,
-            modelDirectory: modelDirectory
+            modelDirectory: modelDirectory,
         )
         try FileManager.default.createDirectory(at: activeCompiledDirectory, withIntermediateDirectories: true)
         try Data("compiled".utf8).write(to: activeCompiledDirectory.appendingPathComponent("model.bin"))
@@ -33,13 +33,13 @@ final class LocalAICacheMaintenanceServiceTests: XCTestCase {
             loadedASRLocalModelID: LocalTranscriptionModel.cohereTranscribe032026CoreML6Bit.rawValue,
             modelState: .loaded,
             isASRInUse: false,
-            isASRResidentInMemory: true
+            isASRResidentInMemory: true,
         )
         let service = LocalAICacheMaintenanceService(
             runtimeState: runtimeState,
             fileManager: .default,
             cohereModelDirectoryProvider: { modelDirectory },
-            appleRuntimeCacheDirectoryProvider: { rootDirectory.appendingPathComponent("AppleCache", isDirectory: true) }
+            appleRuntimeCacheDirectoryProvider: { rootDirectory.appendingPathComponent("AppleCache", isDirectory: true) },
         )
 
         let preview = try await service.computeCleanupPreview(olderThanDays: 30)
@@ -63,13 +63,13 @@ final class LocalAICacheMaintenanceServiceTests: XCTestCase {
             loadedASRLocalModelID: LocalTranscriptionModel.cohereTranscribe032026CoreML6Bit.rawValue,
             modelState: .loaded,
             isASRInUse: false,
-            isASRResidentInMemory: true
+            isASRResidentInMemory: true,
         )
         let service = LocalAICacheMaintenanceService(
             runtimeState: runtimeState,
             fileManager: .default,
             cohereModelDirectoryProvider: { rootDirectory.appendingPathComponent("Models", isDirectory: true) },
-            appleRuntimeCacheDirectoryProvider: { appleCacheRoot }
+            appleRuntimeCacheDirectoryProvider: { appleCacheRoot },
         )
 
         let preview = try await service.computeCleanupPreview(olderThanDays: 30)
@@ -93,7 +93,7 @@ final class LocalAICacheMaintenanceServiceTests: XCTestCase {
             runtimeState: runtimeState,
             fileManager: .default,
             cohereModelDirectoryProvider: { rootDirectory.appendingPathComponent("Models", isDirectory: true) },
-            appleRuntimeCacheDirectoryProvider: { appleCacheRoot }
+            appleRuntimeCacheDirectoryProvider: { appleCacheRoot },
         )
 
         let preview = try await service.computeCleanupPreview(olderThanDays: 30)
@@ -127,7 +127,7 @@ private final class MockLocalAICacheRuntimeState: LocalAICacheRuntimeStateProvid
         loadedASRLocalModelID: String? = nil,
         modelState: FluidAIModelManager.ModelState = .unloaded,
         isASRInUse: Bool = false,
-        isASRResidentInMemory: Bool = false
+        isASRResidentInMemory: Bool = false,
     ) {
         self.loadedASRLocalModelID = loadedASRLocalModelID
         self.modelState = modelState

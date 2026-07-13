@@ -58,7 +58,7 @@ public extension FileSystemStorageService {
                     AppLogger.debug(
                         "Deleted temporary file",
                         category: .databaseManager,
-                        extra: ["filename": url.lastPathComponent]
+                        extra: ["filename": url.lastPathComponent],
                     )
                 }
             } catch {
@@ -66,7 +66,7 @@ public extension FileSystemStorageService {
                     "Failed to delete file",
                     category: .databaseManager,
                     error: error,
-                    extra: ["filename": url.lastPathComponent]
+                    extra: ["filename": url.lastPathComponent],
                 )
             }
         }
@@ -75,7 +75,7 @@ public extension FileSystemStorageService {
     func saveTranscription(_ transcription: Transcription) async throws {
         await coreDataStack.sanitizeMockTranscriptionArtifactsIfNeeded()
         await coreDataStack.sanitizeMeetingOnlyPresentationDataIfNeeded(
-            checkpointKey: Keys.didSanitizeNonMeetingPresentationDataV1
+            checkpointKey: Keys.didSanitizeNonMeetingPresentationDataV1,
         )
         await coreDataStack.backfillModelPerformanceAttemptsIfNeeded()
 
@@ -87,7 +87,7 @@ public extension FileSystemStorageService {
     func saveModelPerformanceAttempt(_ attempt: ModelPerformanceAttempt) async throws {
         await coreDataStack.sanitizeMockTranscriptionArtifactsIfNeeded()
         await coreDataStack.sanitizeMeetingOnlyPresentationDataIfNeeded(
-            checkpointKey: Keys.didSanitizeNonMeetingPresentationDataV1
+            checkpointKey: Keys.didSanitizeNonMeetingPresentationDataV1,
         )
         await coreDataStack.backfillModelPerformanceAttemptsIfNeeded()
 
@@ -95,14 +95,14 @@ public extension FileSystemStorageService {
         AppLogger.info(
             "Saved model performance attempt",
             category: .databaseManager,
-            extra: ["attemptID": attempt.id.uuidString, "transcriptionID": attempt.transcriptionID.uuidString]
+            extra: ["attemptID": attempt.id.uuidString, "transcriptionID": attempt.transcriptionID.uuidString],
         )
     }
 
     func loadTranscriptions() async throws -> [Transcription] {
         await coreDataStack.sanitizeMockTranscriptionArtifactsIfNeeded()
         await coreDataStack.sanitizeMeetingOnlyPresentationDataIfNeeded(
-            checkpointKey: Keys.didSanitizeNonMeetingPresentationDataV1
+            checkpointKey: Keys.didSanitizeNonMeetingPresentationDataV1,
         )
         await coreDataStack.backfillModelPerformanceAttemptsIfNeeded()
 
@@ -118,15 +118,15 @@ public extension FileSystemStorageService {
                 sourceFilter: .all,
                 dateFilter: .allEntries,
                 searchText: "",
-                appRawValue: nil
-            )
+                appRawValue: nil,
+            ),
         )
     }
 
     func loadMetadata(matching query: TranscriptionMetadataQuery) async throws -> [TranscriptionMetadata] {
         await coreDataStack.sanitizeMockTranscriptionArtifactsIfNeeded()
         await coreDataStack.sanitizeMeetingOnlyPresentationDataIfNeeded(
-            checkpointKey: Keys.didSanitizeNonMeetingPresentationDataV1
+            checkpointKey: Keys.didSanitizeNonMeetingPresentationDataV1,
         )
         await coreDataStack.backfillModelPerformanceAttemptsIfNeeded()
 
@@ -148,7 +148,7 @@ public extension FileSystemStorageService {
     func loadModelPerformanceAttempts(matching query: ModelPerformanceAttemptQuery) async throws -> [ModelPerformanceAttempt] {
         await coreDataStack.sanitizeMockTranscriptionArtifactsIfNeeded()
         await coreDataStack.sanitizeMeetingOnlyPresentationDataIfNeeded(
-            checkpointKey: Keys.didSanitizeNonMeetingPresentationDataV1
+            checkpointKey: Keys.didSanitizeNonMeetingPresentationDataV1,
         )
         await coreDataStack.backfillModelPerformanceAttemptsIfNeeded()
 
@@ -158,7 +158,7 @@ public extension FileSystemStorageService {
     func loadTranscription(by id: UUID) async throws -> Transcription? {
         await coreDataStack.sanitizeMockTranscriptionArtifactsIfNeeded()
         await coreDataStack.sanitizeMeetingOnlyPresentationDataIfNeeded(
-            checkpointKey: Keys.didSanitizeNonMeetingPresentationDataV1
+            checkpointKey: Keys.didSanitizeNonMeetingPresentationDataV1,
         )
         await coreDataStack.backfillModelPerformanceAttemptsIfNeeded()
 
@@ -196,7 +196,7 @@ public extension FileSystemStorageService {
                 recordingsDir: recordingsDirectory.standardizedFileURL,
                 audioPathsToKeep: Self.standardizedAudioPaths(from: metadataWithAudioToKeep),
                 audioPathsEligibleForDeletion: Self.standardizedAudioPaths(from: metadataWithAudioToDelete),
-                transcriptionCandidates: []
+                transcriptionCandidates: [],
             )
 
             return Self.computeRetentionCleanupPreviewSync(context: context)
@@ -216,7 +216,7 @@ public extension FileSystemStorageService {
             request.predicate = NSCompoundPredicate(andPredicateWithSubpredicates: [
                 NSPredicate(
                     format: "lifecycleStateRawValue IN %@",
-                    [TranscriptionLifecycleState.partial.rawValue, TranscriptionLifecycleState.finalizing.rawValue]
+                    [TranscriptionLifecycleState.partial.rawValue, TranscriptionLifecycleState.finalizing.rawValue],
                 ),
                 NSPredicate(format: "meeting.capturePurposeRawValue == %@", CapturePurpose.dictation.rawValue),
             ])
@@ -236,7 +236,7 @@ public extension FileSystemStorageService {
         let fileManager = FileManager.default
         var audioURLsToDelete = collectAudioURLsFromRetentionMetadata(
             paths: context.audioPathsEligibleForDeletion,
-            recordingsDirectoryPath: context.recordingsDir.path
+            recordingsDirectoryPath: context.recordingsDir.path,
         )
 
         let files = listRecordingFiles(in: context.recordingsDir, fileManager: fileManager)
@@ -244,7 +244,7 @@ public extension FileSystemStorageService {
             guard shouldDeleteRecordingFile(
                 fileURL,
                 keepPaths: context.audioPathsToKeep,
-                cutoffDate: context.cutoffDate
+                cutoffDate: context.cutoffDate,
             ) else {
                 continue
             }
@@ -254,21 +254,21 @@ public extension FileSystemStorageService {
         let audioFiles = computeAudioCandidates(
             audioURLsToDelete: audioURLsToDelete,
             fileByteSizeIfExists: fileByteSizeIfExists,
-            fileManager: fileManager
+            fileManager: fileManager,
         )
         let sortedTranscriptions = context.transcriptionCandidates.sorted { $0.id.uuidString < $1.id.uuidString }
 
         return RetentionCleanupPreview(
             retentionDays: context.retentionDays,
             audioFiles: audioFiles,
-            transcriptions: sortedTranscriptions
+            transcriptions: sortedTranscriptions,
         )
     }
 
     internal static func computeAudioCandidates(
         audioURLsToDelete: Set<URL>,
         fileByteSizeIfExists: (URL) -> Int64?,
-        fileManager: FileManager
+        fileManager: FileManager,
     ) -> [RetentionCleanupAudioCandidate] {
         var audioFiles: [RetentionCleanupAudioCandidate] = []
         audioFiles.reserveCapacity(audioURLsToDelete.count)
@@ -311,13 +311,13 @@ public extension FileSystemStorageService {
                 extra: [
                     "deletedAudioCount": "\(deletedAudio)",
                     "deletedTranscriptionCount": "\(deletedTranscriptions)",
-                ]
+                ],
             )
         }
 
         return RetentionCleanupResult(
             deletedAudioCount: deletedAudio,
-            deletedTranscriptionCount: deletedTranscriptions
+            deletedTranscriptionCount: deletedTranscriptions,
         )
     }
 
@@ -331,7 +331,7 @@ public extension FileSystemStorageService {
             let fileManager = FileManager.default
             guard let files = try? fileManager.contentsOfDirectory(
                 at: recordingsDir,
-                includingPropertiesForKeys: [.creationDateKey]
+                includingPropertiesForKeys: [.creationDateKey],
             ) else {
                 return
             }
@@ -351,7 +351,7 @@ public extension FileSystemStorageService {
                         AppLogger.info(
                             "Deleted orphaned recording",
                             category: .databaseManager,
-                            extra: ["filename": file.lastPathComponent]
+                            extra: ["filename": file.lastPathComponent],
                         )
                     } catch {
                         AppLogger.error("Failed to delete orphan", category: .databaseManager, error: error)
@@ -363,7 +363,7 @@ public extension FileSystemStorageService {
                 AppLogger.info(
                     "Orphan cleanup completed",
                     category: .databaseManager,
-                    extra: ["deletedCount": deletedCount]
+                    extra: ["deletedCount": deletedCount],
                 )
             }
         }.value
@@ -398,9 +398,9 @@ public extension FileSystemStorageService {
                     NSPredicate(format: "meeting.capturePurposeRawValue == %@", CapturePurpose.dictation.rawValue),
                     NSPredicate(
                         format: "meeting.capturePurposeRawValue == nil AND meeting.appRawValue == %@",
-                        MeetingApp.unknown.rawValue
+                        MeetingApp.unknown.rawValue,
                     ),
-                ])
+                ]),
             )
         case .meetings:
             predicates.append(
@@ -408,9 +408,9 @@ public extension FileSystemStorageService {
                     NSPredicate(format: "meeting.capturePurposeRawValue == %@", CapturePurpose.meeting.rawValue),
                     NSPredicate(
                         format: "meeting.capturePurposeRawValue == nil AND meeting.appRawValue != %@",
-                        MeetingApp.unknown.rawValue
+                        MeetingApp.unknown.rawValue,
                     ),
-                ])
+                ]),
             )
         }
 
@@ -420,8 +420,8 @@ public extension FileSystemStorageService {
                 NSPredicate(
                     format: "createdAt >= %@ AND createdAt < %@",
                     range.start as NSDate,
-                    range.end as NSDate
-                )
+                    range.end as NSDate,
+                ),
             )
         }
 
@@ -448,7 +448,7 @@ public extension FileSystemStorageService {
 
     private static func collectAudioURLsFromRetentionMetadata(
         paths: Set<String>,
-        recordingsDirectoryPath: String
+        recordingsDirectoryPath: String,
     ) -> Set<URL> {
         var audioURLsToDelete: Set<URL> = []
         audioURLsToDelete.reserveCapacity(paths.count)
@@ -473,14 +473,14 @@ public extension FileSystemStorageService {
         return (try? fileManager.contentsOfDirectory(
             at: recordingsDir,
             includingPropertiesForKeys: resourceKeys,
-            options: [.skipsHiddenFiles]
+            options: [.skipsHiddenFiles],
         )) ?? []
     }
 
     private static func shouldDeleteRecordingFile(
         _ fileURL: URL,
         keepPaths: Set<String>,
-        cutoffDate: Date
+        cutoffDate: Date,
     ) -> Bool {
         let values = try? fileURL.resourceValues(forKeys: [.contentModificationDateKey, .creationDateKey, .isDirectoryKey])
         if values?.isDirectory == true || !isAllowedAudioFile(fileURL) {
