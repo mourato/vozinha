@@ -133,6 +133,7 @@ make build-agent
 make test-agent
 make lint-agent
 make scope-check-agent
+make workflow-test
 make preflight-agent
 
 # Scope-specific checks
@@ -148,9 +149,10 @@ make guidance-check
 
 Compact-mode notes:
 
-- Full logs are written under `${MA_AGENT_LOG_DIR:-/tmp/ma-agent}`.
+- Each agent invocation creates an immutable run directory below `${MA_AGENT_LOG_DIR:-/tmp/ma-agent}`. Nested build/lint/test steps inherit `MA_AGENT_RUN_DIR` and write into that same tree; result JSON points to the exact paths.
 - Scripts emit deterministic `AGENT_*` summary lines for pass/fail parsing.
 - `*.result.json` files use schema version 2 with command summaries and the selected validation decision; they contain metadata and log paths, never prompts, transcripts, file contents, or secrets.
+- `make workflow-test` runs disposable, deterministic fixtures for diff selection, risk thresholds, result schema, quoting, invalid refs, and concurrent artifact isolation without invoking Xcode.
 - Use compact mode for iteration; keep lane merge gates unchanged.
 
 Agent delivery sequence:

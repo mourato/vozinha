@@ -8,6 +8,7 @@ Choose commands by lane:
 
 - Fast lane merge gate: `make scope-check`
 - Full lane merge gate: `make lint-strict` + `make build-test`
+- Workflow fixture gate: `make workflow-test`
 - Optional comprehensive validation: `make preflight`
 
 Agent default loop: preview with `make scope-check-agent ARGS="--dry-run --base main"` when needed, run the smallest changed-path check, let the staged pre-commit hook enforce Swift lint/format, then let pre-push run compact scoped validation. Do not run tests before every commit by default; use targeted tests and the lane gates for behavioral confidence.
@@ -33,6 +34,7 @@ make test-sensitive     # Isolated sensitive subsystem suite
 make test-appkit        # Isolated AppKit lifecycle suite
 make test-parity        # Xcode parity run
 make scope-check        # Scoped validation with smart targeted mapping + escalation
+make workflow-test      # Deterministic validation workflow fixtures (no Xcode)
 make test-ci-strict     # Xcode test run without retry/fallback
 make preflight          # Build + Test + Lint + Benchmark (full validation)
 make preflight-fast     # Lint + Build + Test (skips benchmark, faster feedback)
@@ -245,6 +247,9 @@ Agents automatically capture build/test output and diagnostics.
 **Log directory:**
 - Default: `/tmp/ma-agent/`
 - Override: `MA_AGENT_LOG_DIR=/custom/path make build-agent`
+- Each invocation creates an immutable `run-*` directory below that root. Nested
+  commands inherit `MA_AGENT_RUN_DIR`, so concurrent worktrees cannot truncate
+  one another's logs or result files.
 
 **Log contents** (deterministic summary lines):
 - `AGENT_STEP` — task milestone
