@@ -12,6 +12,7 @@ import SwiftUI
 public enum ConnectionStatus: Equatable {
     case unknown
     case testing
+    case saved
     case success
     case failure(String?)
 
@@ -19,6 +20,7 @@ public enum ConnectionStatus: Equatable {
         switch self {
         case .unknown: .secondary
         case .testing: AppDesignSystem.Colors.warning
+        case .saved: AppDesignSystem.Colors.warning
         case .success: AppDesignSystem.Colors.success
         case .failure: AppDesignSystem.Colors.error
         }
@@ -30,6 +32,8 @@ public enum ConnectionStatus: Equatable {
             "settings.service.status.not_tested".localized
         case .testing:
             "settings.service.status.testing".localized
+        case .saved:
+            "connection.status.saved".localized
         case .success:
             "settings.service.status.connected".localized
         case .failure:
@@ -39,6 +43,8 @@ public enum ConnectionStatus: Equatable {
 
     public var detail: String? {
         switch self {
+        case .saved:
+            "settings.ai.connection.saved_detail".localized
         case let .failure(message):
             message
         case .unknown, .testing, .success:

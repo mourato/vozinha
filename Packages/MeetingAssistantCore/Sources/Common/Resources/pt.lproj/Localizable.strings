@@ -260,8 +260,10 @@
 "settings.ai.models_loaded" = "%d modelos disponíveis";
 "settings.ai.model_hint" = "Teste a conexão para carregar os modelos disponíveis";
 "settings.ai.models.fetch_failed" = "Falha ao buscar modelos";
+"settings.ai.models.catalog_unavailable" = "Este provedor não oferece catálogo de modelos. Informe o ID do modelo manualmente.";
 "settings.ai.test_connection" = "Testar Conexão";
 "settings.ai.verify_and_save" = "Verificar e Salvar";
+"settings.ai.save_without_verification" = "Salvar sem Verificar";
 "settings.ai.get_api_key" = "Obter Chave de API";
 "settings.ai.remove_key" = "Remover";
 "settings.ai.remove_failed" = "Falha ao remover a chave de API. Verifique as permissões do Keychain.";
@@ -269,6 +271,8 @@
 "settings.ai.show_key" = "Mostrar chave";
 "settings.ai.connection.testing" = "Testando...";
 "settings.ai.connection.success" = "Conectado";
+"settings.ai.connection.saved_detail" = "Salvo com segurança no Keychain, mas ainda não verificado.";
+"settings.ai.connection.missing_key" = "Informe uma chave de API ou salve uma antes de verificar.";
 "settings.ai.connection.invalid_url" = "URL inválida";
 "settings.ai.connection.invalid_response" = "Resposta inválida";
 "settings.ai.connection.not_connected" = "Sem conexão com a internet";
@@ -324,7 +328,7 @@
 "settings.enhancements.provider.anthropic.desc" = "Modelos Claude da Anthropic para inteligência de reunião com contexto longo.";
 "settings.enhancements.provider.groq.desc" = "Modelos OpenAI-compatíveis hospedados pela Groq com baixa latência.";
 "settings.enhancements.provider.google.desc" = "Modelos Gemini do Google para pós-processamento e Q&A de reuniões.";
-"settings.enhancements.provider.custom.desc" = "Endpoint customizado compatível com OpenAI para provedores internos ou proxy.";
+"settings.enhancements.provider.custom.desc" = "Endpoint customizado compatível com OpenAI para provedores internos ou proxy. Informe o ID do modelo manualmente quando não houver catálogo.";
 "settings.enhancements.provider.custom.default_name" = "Custom %d";
 "settings.enhancements.providers.select_title" = "Selecionar provedor";
 "settings.enhancements.providers.already_added" = "Já adicionado";
@@ -937,6 +941,7 @@
 "connection.status.unknown" = "Não testado";
 "connection.status.testing" = "Testando...";
 "connection.status.success" = "Conectado";
+"connection.status.saved" = "Salvo, não verificado";
 "connection.status.failure" = "Falha";
 
 /* Service Status */

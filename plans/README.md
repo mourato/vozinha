@@ -213,7 +213,7 @@ honor its STOP conditions, and update your row when done.
 | 043 | Decompose the rich-text notes editor family | P1 | L | 041 | DONE |
 | 044 | Replace brittle SettingsSearchIndex prefix routing | P2 | M | 038 | DONE |
 | 045 | Establish the history performance baseline before FRC or FTS | P2 | M | 001 | DONE |
-| 046 | Make custom provider setup explicit and resilient | P1 | M | 039 | TODO |
+| 046 | Make custom provider setup explicit and resilient | P1 | M | 039 | DONE |
 | 047 | Decompose settings bootstrap and transcription initialization | P2 | M | 039 | TODO |
 | 048 | Improve Launch at Login failure diagnostics | P2 | S | 041 | TODO |
 | 049 | Document the current storage architecture and migration policy | P2 | M | - | TODO |

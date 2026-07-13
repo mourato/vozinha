@@ -11,11 +11,11 @@ final class AISettingsViewModelTests: XCTestCase {
         settings.updateAIConfiguration(
             provider: .openai,
             baseURL: AIProvider.openai.defaultBaseURL,
-            selectedModel: ""
+            selectedModel: "",
         )
         settings.enhancementsAISelection = EnhancementsAISelection(
             provider: .openai,
-            selectedModel: ""
+            selectedModel: "",
         )
     }
 
@@ -33,7 +33,7 @@ final class AISettingsViewModelTests: XCTestCase {
             settings: settings,
             keychain: keychain,
             llmService: llmService,
-            credentialBootstrapPolicy: .deferredUserAction
+            credentialBootstrapPolicy: .deferredUserAction,
         )
 
         await Task.yield()
@@ -121,6 +121,92 @@ final class AISettingsViewModelTests: XCTestCase {
         }
     }
 
+    func testSaveAPIKeyWithoutVerification_PersistsKeyAndMarksSaved() throws {
+        let keychain = MockKeychainProvider()
+        let viewModel = AISettingsViewModel(
+            settings: settings,
+            keychain: keychain,
+            llmService: MockLLMService(),
+            credentialBootstrapPolicy: .deferredUserAction,
+        )
+        viewModel.apiKeyText = "sk-custom-save-only"
+
+        XCTAssertTrue(viewModel.saveAPIKeyWithoutVerification())
+        XCTAssertEqual(try keychain.retrieveAPIKey(for: .openai), "sk-custom-save-only")
+        XCTAssertTrue(viewModel.isKeySaved)
+        XCTAssertEqual(viewModel.connectionStatus, .saved)
+        XCTAssertEqual(viewModel.apiKeyText, "")
+    }
+
+    func testTestAPIConnection_UsesSavedKeyWhenNoPendingInput() async {
+        let keychain = MockKeychainProvider()
+        let llmService = MockLLMService()
+        try? keychain.store("sk-existing", for: KeychainManager.apiKeyKey(for: .openai))
+        llmService.testConnectionResult = true
+
+        let viewModel = AISettingsViewModel(
+            settings: settings,
+            keychain: keychain,
+            llmService: llmService,
+            credentialBootstrapPolicy: .deferredUserAction,
+        )
+
+        await viewModel.testAPIConnection().value
+
+        XCTAssertEqual(llmService.lastConnectionTestAPIKey, "sk-existing")
+        XCTAssertEqual(viewModel.connectionStatus, .success)
+        XCTAssertTrue(viewModel.isKeySaved)
+    }
+
+    func testCustomProvider_UsesManualModelWithoutFetchingCatalog() async throws {
+        settings.updateAIConfiguration(
+            provider: .custom,
+            baseURL: "https://custom.example/v1",
+            selectedModel: "manual-chat-model",
+        )
+        let keychain = MockKeychainProvider()
+        try keychain.store("sk-custom", for: KeychainManager.apiKeyKey(for: .custom))
+        let llmService = MockLLMService()
+
+        let viewModel = AISettingsViewModel(
+            settings: settings,
+            keychain: keychain,
+            llmService: llmService,
+        )
+
+        await Task.yield()
+
+        XCTAssertEqual(llmService.fetchCallCount, 0)
+        XCTAssertEqual(viewModel.modelCatalogStatus, .unavailable)
+        XCTAssertEqual(settings.aiConfiguration.selectedModel, "manual-chat-model")
+        XCTAssertEqual(viewModel.connectionStatus, .saved)
+    }
+
+    func testCustomEnhancementsProvider_UsesManualModelWithoutFetchingCatalog() async throws {
+        settings.updateAIConfiguration(
+            provider: .custom,
+            baseURL: "https://custom.example/v1",
+            selectedModel: "manual-chat-model",
+        )
+        settings.enhancementsAISelection = EnhancementsAISelection(
+            provider: .custom,
+            selectedModel: "manual-chat-model",
+        )
+        let keychain = MockKeychainProvider()
+        try keychain.store("sk-custom", for: KeychainManager.apiKeyKey(for: .custom))
+        let llmService = MockLLMService()
+        let viewModel = AISettingsViewModel(
+            settings: settings,
+            keychain: keychain,
+            llmService: llmService,
+        )
+
+        await viewModel.fetchEnhancementsAvailableModels(provider: .custom)
+
+        XCTAssertEqual(llmService.fetchCallCount, 0)
+        XCTAssertEqual(viewModel.enhancementsModelCatalogStatus, .unavailable)
+    }
+
     func testProviderChange_ClearsTransientAPIKeyInput() async {
         let keychain = MockKeychainProvider()
         let llmService = MockLLMService()
@@ -131,7 +217,7 @@ final class AISettingsViewModelTests: XCTestCase {
         settings.updateAIConfiguration(
             provider: .anthropic,
             baseURL: AIProvider.anthropic.defaultBaseURL,
-            selectedModel: ""
+            selectedModel: "",
         )
         await Task.yield()
 
@@ -146,7 +232,7 @@ final class AISettingsViewModelTests: XCTestCase {
 
         settings.enhancementsAISelection = EnhancementsAISelection(
             provider: .google,
-            selectedModel: ""
+            selectedModel: "",
         )
 
         let viewModel = AISettingsViewModel(settings: settings, keychain: keychain, llmService: llmService)
@@ -162,7 +248,7 @@ final class AISettingsViewModelTests: XCTestCase {
         settings.updateAIConfiguration(
             provider: .openai,
             baseURL: AIProvider.openai.defaultBaseURL,
-            selectedModel: "gpt-4o-mini"
+            selectedModel: "gpt-4o-mini",
         )
 
         settings.updateEnhancementsProvider(.anthropic)
@@ -176,7 +262,7 @@ final class AISettingsViewModelTests: XCTestCase {
     func testPrepareEnhancementsProvider_UpdatesActiveProviderWithoutMutatingMeetingSelection() {
         settings.enhancementsAISelection = EnhancementsAISelection(
             provider: .openai,
-            selectedModel: "gpt-4o-mini"
+            selectedModel: "gpt-4o-mini",
         )
 
         let viewModel = AISettingsViewModel(settings: settings, keychain: MockKeychainProvider(), llmService: MockLLMService())
@@ -194,7 +280,7 @@ final class AISettingsViewModelTests: XCTestCase {
         llmService.testConnectionResult = true
         settings.enhancementsAISelection = EnhancementsAISelection(
             provider: .openai,
-            selectedModel: "gpt-4o-mini"
+            selectedModel: "gpt-4o-mini",
         )
 
         let viewModel = AISettingsViewModel(settings: settings, keychain: keychain, llmService: llmService)
@@ -217,15 +303,15 @@ final class AISettingsViewModelTests: XCTestCase {
             settings: settings,
             keychain: keychain,
             llmService: MockLLMService(),
-            credentialBootstrapPolicy: .deferredUserAction
+            credentialBootstrapPolicy: .deferredUserAction,
         )
 
         XCTAssertTrue(
             viewModel.saveEnhancementsAPIKey(
                 "sk-groq-shared",
                 registrationID: registration.id,
-                provider: .groq
-            )
+                provider: .groq,
+            ),
         )
 
         XCTAssertEqual(try keychain.retrieveAPIKey(for: .groq), "sk-groq-shared")
@@ -243,7 +329,7 @@ final class AISettingsViewModelTests: XCTestCase {
             settings: settings,
             keychain: keychain,
             llmService: MockLLMService(),
-            credentialBootstrapPolicy: .deferredUserAction
+            credentialBootstrapPolicy: .deferredUserAction,
         )
 
         viewModel.removeEnhancementsAPIKey(registrationID: registration.id, provider: .groq)
@@ -267,7 +353,7 @@ final class AISettingsViewModelTests: XCTestCase {
             settings: settings,
             keychain: keychain,
             llmService: llmService,
-            credentialBootstrapPolicy: .deferredUserAction
+            credentialBootstrapPolicy: .deferredUserAction,
         )
 
         let task = viewModel.refreshEnhancementsProviderModelsManually()
@@ -277,18 +363,18 @@ final class AISettingsViewModelTests: XCTestCase {
         XCTAssertEqual(keychain.retrieveAPIKeyCallCount, 1) // One migration probe for active provider.
         XCTAssertTrue(
             viewModel.enhancementsProviderModels.contains(
-                where: { $0.provider == .openai && $0.modelID == "gpt-4o-mini" }
-            )
+                where: { $0.provider == .openai && $0.modelID == "gpt-4o-mini" },
+            ),
         )
         XCTAssertTrue(
             viewModel.enhancementsProviderModels.contains(
-                where: { $0.provider == .google && $0.modelID == "gemini-2.0-flash" }
-            )
+                where: { $0.provider == .google && $0.modelID == "gemini-2.0-flash" },
+            ),
         )
         XCTAssertFalse(
             viewModel.enhancementsProviderModels.contains(
-                where: { $0.provider == .anthropic }
-            )
+                where: { $0.provider == .anthropic },
+            ),
         )
     }
 
@@ -306,7 +392,7 @@ final class AISettingsViewModelTests: XCTestCase {
             settings: settings,
             keychain: keychain,
             llmService: llmService,
-            credentialBootstrapPolicy: .deferredUserAction
+            credentialBootstrapPolicy: .deferredUserAction,
         )
 
         let task = viewModel.refreshEnhancementsProviderModelsManually()
@@ -315,8 +401,8 @@ final class AISettingsViewModelTests: XCTestCase {
         XCTAssertEqual(llmService.lastFetchedAPIKey, "sk-groq-provider")
         XCTAssertTrue(
             viewModel.enhancementsProviderModels.contains(
-                where: { $0.provider == .groq && $0.registrationID == registration.id }
-            )
+                where: { $0.provider == .groq && $0.registrationID == registration.id },
+            ),
         )
     }
 
@@ -332,7 +418,7 @@ final class AISettingsViewModelTests: XCTestCase {
             settings: settings,
             keychain: keychain,
             llmService: llmService,
-            credentialBootstrapPolicy: .deferredUserAction
+            credentialBootstrapPolicy: .deferredUserAction,
         )
 
         let task = viewModel.refreshEnhancementsProviderModelsManually()
@@ -344,8 +430,8 @@ final class AISettingsViewModelTests: XCTestCase {
         XCTAssertEqual(keychain.retrieveAPIKeysCallCount, 1)
         XCTAssertTrue(
             viewModel.enhancementsProviderModels.contains(
-                where: { $0.provider == .openai && $0.modelID == "gpt-4.1-mini" }
-            )
+                where: { $0.provider == .openai && $0.modelID == "gpt-4.1-mini" },
+            ),
         )
     }
 }

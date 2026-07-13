@@ -19,13 +19,13 @@ public struct AIProviderIntegrationCard: View {
             get: { viewModel.settings.aiConfiguration.selectedModel },
             set: { newValue in
                 viewModel.settings.updateSelectedModel(newValue)
-            }
+            },
         )
     }
 
     public init(
         viewModel: AISettingsViewModel,
-        runInitialTasks: Bool = !PreviewRuntime.isRunning
+        runInitialTasks: Bool = !PreviewRuntime.isRunning,
     ) {
         self.viewModel = viewModel
         self.runInitialTasks = runInitialTasks
@@ -76,12 +76,12 @@ public struct AIProviderIntegrationCard: View {
                 .foregroundStyle(.secondary)
             Spacer()
             HStack(spacing: 8) {
-                if viewModel.connectionStatus == .success {
+                if viewModel.connectionStatus == .success || viewModel.connectionStatus == .saved {
                     HStack(spacing: 4) {
                         Circle()
-                            .fill(AppDesignSystem.Colors.success)
+                            .fill(viewModel.connectionStatus.color)
                             .frame(width: 8, height: 8)
-                        Text("settings.ai.connection.success".localized)
+                        Text(viewModel.connectionStatus.text)
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }
@@ -112,7 +112,7 @@ public struct AIProviderIntegrationCard: View {
                 if viewModel.settings.aiConfiguration.provider == .custom {
                     TextField(
                         "",
-                        text: $viewModel.settings.aiConfiguration.selectedModel
+                        text: $viewModel.settings.aiConfiguration.selectedModel,
                     )
                     .textFieldStyle(.plain)
                     .multilineTextAlignment(.trailing)
@@ -159,12 +159,16 @@ public struct AIProviderIntegrationCard: View {
                         .foregroundStyle(
                             viewModel.lastModelsRefreshSucceeded
                                 ? AppDesignSystem.Colors.success
-                                : AppDesignSystem.Colors.warning
+                                : AppDesignSystem.Colors.warning,
                         )
                     Text(refreshSummary)
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
+            } else if viewModel.modelCatalogStatus == .unavailable {
+                Text("settings.ai.models.catalog_unavailable".localized)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
             } else if viewModel.canRefreshModels, viewModel.availableModels.isEmpty, !viewModel.isLoadingModels {
                 Text("settings.ai.model_hint".localized)
                     .font(.caption)
@@ -181,7 +185,7 @@ public struct AIProviderIntegrationCard: View {
             Spacer()
             TextField(
                 "https://api.example.com/v1",
-                text: $viewModel.settings.aiConfiguration.baseURL
+                text: $viewModel.settings.aiConfiguration.baseURL,
             )
             .textFieldStyle(.plain)
             .multilineTextAlignment(.trailing)
@@ -266,6 +270,14 @@ public struct AIProviderIntegrationCard: View {
 
             Spacer()
 
+            if viewModel.hasPendingAPIKeyInput {
+                Button("settings.ai.save_without_verification".localized) {
+                    viewModel.saveAPIKeyWithoutVerification()
+                }
+                .buttonStyle(.bordered)
+                .controlSize(.regular)
+            }
+
             if viewModel.showVerifyButton {
                 Button {
                     viewModel.testAPIConnection()
@@ -280,7 +292,7 @@ public struct AIProviderIntegrationCard: View {
                 }
                 .buttonStyle(.bordered)
                 .controlSize(.regular)
-                .disabled(!viewModel.hasPendingAPIKeyInput || viewModel.connectionStatus == .testing)
+                .disabled(!viewModel.canVerifyConnection || viewModel.connectionStatus == .testing)
             }
         }
         .padding(.top, 8)
@@ -344,7 +356,7 @@ private struct AIProviderIntegrationCardPreview: View {
         let viewModel = AISettingsViewModel(
             settings: .shared,
             keychain: PreviewKeychainProvider(),
-            llmService: PreviewLLMService()
+            llmService: PreviewLLMService(),
         )
         viewModel.settings.aiConfiguration.provider = .openai
         viewModel.settings.aiConfiguration.baseURL = AIProvider.openai.defaultBaseURL

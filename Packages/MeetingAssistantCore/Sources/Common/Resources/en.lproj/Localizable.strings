@@ -259,8 +259,10 @@
 "settings.ai.models_loaded" = "%d models available";
 "settings.ai.model_hint" = "Test connection to load available models";
 "settings.ai.models.fetch_failed" = "Failed to fetch models";
+"settings.ai.models.catalog_unavailable" = "This provider has no model catalog. Enter the model ID manually.";
 "settings.ai.test_connection" = "Test Connection";
 "settings.ai.verify_and_save" = "Verify and Save";
+"settings.ai.save_without_verification" = "Save Without Verification";
 "settings.ai.get_api_key" = "Get API Key";
 "settings.ai.remove_key" = "Remove";
 "settings.ai.remove_failed" = "Failed to remove API key. Please check Keychain permissions.";
@@ -268,6 +270,8 @@
 "settings.ai.show_key" = "Show Key";
 "settings.ai.connection.testing" = "Testing...";
 "settings.ai.connection.success" = "Connected";
+"settings.ai.connection.saved_detail" = "Saved securely in Keychain, but not verified yet.";
+"settings.ai.connection.missing_key" = "Enter an API key or save one before verifying.";
 "settings.ai.connection.invalid_url" = "Invalid URL";
 "settings.ai.connection.invalid_response" = "Invalid Response";
 "settings.ai.connection.not_connected" = "No internet connection";
@@ -323,7 +327,7 @@
 "settings.enhancements.provider.anthropic.desc" = "Anthropic Claude models for long-context meeting intelligence.";
 "settings.enhancements.provider.groq.desc" = "Groq-hosted OpenAI-compatible models with low-latency inference.";
 "settings.enhancements.provider.google.desc" = "Google Gemini models for post-processing and meeting Q&A.";
-"settings.enhancements.provider.custom.desc" = "OpenAI-compatible custom endpoint for internal or proxy providers.";
+"settings.enhancements.provider.custom.desc" = "OpenAI-compatible custom endpoint for internal or proxy providers. Enter model IDs manually when no catalog is available.";
 "settings.enhancements.provider.custom.default_name" = "Custom %d";
 "settings.enhancements.providers.select_title" = "Select a provider";
 "settings.enhancements.providers.already_added" = "Already added";
@@ -936,6 +940,7 @@
 "connection.status.unknown" = "Not tested";
 "connection.status.testing" = "Testing...";
 "connection.status.success" = "Connected";
+"connection.status.saved" = "Saved, not verified";
 "connection.status.failure" = "Failed";
 
 /* Service Status */

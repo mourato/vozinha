@@ -19,7 +19,7 @@ public struct EnhancementsProviderModelOption: Identifiable, Hashable, Sendable 
         provider: AIProvider,
         registrationID: UUID? = nil,
         registrationName: String? = nil,
-        modelID: String
+        modelID: String,
     ) {
         self.provider = provider
         self.registrationID = registrationID
@@ -38,6 +38,14 @@ public enum CredentialBootstrapPolicy: Sendable {
     case deferredUserAction
 }
 
+public enum AIModelCatalogStatus: Equatable, Sendable {
+    case idle
+    case loading
+    case loaded
+    case unavailable
+    case failed
+}
+
 @MainActor
 public class AISettingsViewModel: ObservableObject {
     @Published var settings: AppSettingsStore
@@ -47,6 +55,7 @@ public class AISettingsViewModel: ObservableObject {
     @Published public var connectionStatus: ConnectionStatus = .unknown
     @Published public var showVerifyButton = true
     @Published public var showGetApiKeyButton = true
+    @Published public private(set) var modelCatalogStatus: AIModelCatalogStatus = .idle
     @Published public var availableModels: [LLMModel] = []
     @Published public var isLoadingModels = false
     @Published public var modelsFetchError: String?
@@ -67,6 +76,7 @@ public class AISettingsViewModel: ObservableObject {
     @Published public var enhancementsConnectionStatus: ConnectionStatus = .unknown
     @Published public var enhancementsAPIKeyText = ""
     @Published public var enhancementsActionError: String?
+    @Published public internal(set) var enhancementsModelCatalogStatus: AIModelCatalogStatus = .idle
     @Published public var actionError: String?
 
     let logger = Logger(subsystem: AppIdentity.logSubsystem, category: "AISettingsViewModel")
@@ -86,6 +96,10 @@ public class AISettingsViewModel: ObservableObject {
 
     public var hasPendingAPIKeyInput: Bool {
         !normalizedAPIKeyText.isEmpty
+    }
+
+    public var canVerifyConnection: Bool {
+        isKeySaved || hasPendingAPIKeyInput
     }
 
     public var modelsRefreshSummary: String? {
@@ -114,7 +128,7 @@ public class AISettingsViewModel: ObservableObject {
         settings: AppSettingsStore,
         keychain: KeychainProvider = DefaultKeychainProvider(),
         llmService: LLMService = DefaultLLMService(),
-        credentialBootstrapPolicy: CredentialBootstrapPolicy = .eager
+        credentialBootstrapPolicy: CredentialBootstrapPolicy = .eager,
     ) {
         self.settings = settings
         self.keychain = keychain
@@ -165,28 +179,34 @@ public class AISettingsViewModel: ObservableObject {
     }
 
     private func updateUIStates() {
-        showVerifyButton = !isKeySaved
+        showVerifyButton = connectionStatus != .success
         showGetApiKeyButton = !isKeySaved && settings.aiConfiguration.provider.apiKeyURL != nil
     }
 
     public func refreshProviderCredentialState() {
         isKeySaved = keychain.existsAPIKey(for: settings.aiConfiguration.provider)
         clearTransientAPIKey()
+        lastModelsRefreshAt = nil
+        lastModelsRefreshSucceeded = false
+        lastModelsRefreshResultText = nil
+        modelsFetchError = nil
 
         if isKeySaved {
-            connectionStatus = .success
-            if credentialBootstrapPolicy == .eager {
+            connectionStatus = .saved
+            if settings.aiConfiguration.provider == .custom {
+                modelCatalogStatus = .unavailable
+                availableModels = []
+            } else if credentialBootstrapPolicy == .eager {
                 Task {
                     await fetchAvailableModels()
                 }
             } else {
                 availableModels = []
-                modelsFetchError = nil
             }
         } else {
             connectionStatus = .unknown
+            modelCatalogStatus = .idle
             availableModels = []
-            modelsFetchError = nil
         }
 
         updateUIStates()
@@ -211,6 +231,38 @@ public class AISettingsViewModel: ObservableObject {
         }
     }
 
+    @discardableResult
+    public func saveAPIKeyWithoutVerification() -> Bool {
+        let value = normalizedAPIKeyText
+        guard !value.isEmpty else { return false }
+
+        do {
+            try persistAPIKey(value)
+            guard keychain.existsAPIKey(for: settings.aiConfiguration.provider) else {
+                throw KeychainManager.KeychainError.itemNotFound
+            }
+
+            isKeySaved = true
+            connectionStatus = .saved
+            clearTransientAPIKey()
+            actionError = nil
+            if settings.aiConfiguration.provider == .custom {
+                modelCatalogStatus = .unavailable
+                availableModels = []
+            }
+            updateUIStates()
+            refreshEnhancementsCredentialStateIfNeeded()
+            return true
+        } catch {
+            actionError = "settings.ai.save_failed".localized
+            connectionStatus = .failure(actionError)
+            clearTransientAPIKey()
+            updateUIStates()
+            logger.error("Failed to save API key without verification: \(error.localizedDescription)")
+            return false
+        }
+    }
+
     private func loadAPIKeyForCurrentProvider() -> String? {
         do {
             return try keychain.retrieveAPIKey(for: settings.aiConfiguration.provider)
@@ -226,10 +278,21 @@ public class AISettingsViewModel: ObservableObject {
         availableModels = []
         modelsFetchError = nil
 
-        let apiKeySnapshot = normalizedAPIKeyText
+        let pendingAPIKey = normalizedAPIKeyText
+        let apiKeySnapshot = pendingAPIKey.isEmpty
+            ? (loadAPIKeyForCurrentProvider() ?? "")
+            : pendingAPIKey
         guard let url = llmService.validateURL(settings.aiConfiguration.baseURL) else {
             connectionStatus = .failure("settings.ai.connection.invalid_url".localized)
             clearTransientAPIKey()
+            updateUIStates()
+            return Task {}
+        }
+
+        guard !apiKeySnapshot.isEmpty else {
+            connectionStatus = .failure("settings.ai.connection.missing_key".localized)
+            clearTransientAPIKey()
+            updateUIStates()
             return Task {}
         }
 
@@ -238,17 +301,24 @@ public class AISettingsViewModel: ObservableObject {
                 let success = try await llmService.testConnection(
                     baseURL: url,
                     apiKey: apiKeySnapshot,
-                    provider: settings.aiConfiguration.provider
+                    provider: settings.aiConfiguration.provider,
                 )
 
                 if success {
                     self.connectionStatus = .success
-                    try self.persistAPIKey(apiKeySnapshot)
-                    self.isKeySaved = !apiKeySnapshot.isEmpty
+                    if !pendingAPIKey.isEmpty {
+                        try self.persistAPIKey(pendingAPIKey)
+                    }
+                    self.isKeySaved = true
                     self.clearTransientAPIKey()
                     self.updateUIStates()
                     self.refreshEnhancementsCredentialStateIfNeeded()
-                    await self.fetchAvailableModels()
+                    if self.settings.aiConfiguration.provider == .custom {
+                        self.modelCatalogStatus = .unavailable
+                        self.availableModels = []
+                    } else {
+                        await self.fetchAvailableModels()
+                    }
                 } else {
                     self.connectionStatus = .failure("settings.ai.connection.invalid_response".localized)
                     self.clearTransientAPIKey()
@@ -258,6 +328,7 @@ public class AISettingsViewModel: ObservableObject {
                 self.connectionStatus = .failure(self.connectionErrorMessage(from: error))
                 logger.error("Connection test failed: \(error.localizedDescription)")
                 self.clearTransientAPIKey()
+                self.updateUIStates()
             }
         }
     }
@@ -296,8 +367,17 @@ public class AISettingsViewModel: ObservableObject {
         }
 
         guard let baseURL = llmService.validateURL(settings.aiConfiguration.baseURL) else {
+            modelCatalogStatus = .failed
             modelsFetchError = "settings.ai.connection.invalid_url".localized
             registerModelsRefreshResult(success: false, message: "settings.ai.connection.invalid_url".localized)
+            return
+        }
+
+        if settings.aiConfiguration.provider == .custom {
+            modelCatalogStatus = .unavailable
+            availableModels = []
+            modelsFetchError = nil
+            registerModelsRefreshResult(success: false, message: "settings.ai.models.catalog_unavailable".localized)
             return
         }
 
@@ -306,6 +386,7 @@ public class AISettingsViewModel: ObservableObject {
         }
 
         isLoadingModels = true
+        modelCatalogStatus = .loading
         modelsFetchError = nil
 
         defer { self.isLoadingModels = false }
@@ -315,15 +396,21 @@ public class AISettingsViewModel: ObservableObject {
             availableModels = try await llmService.fetchAvailableModels(
                 baseURL: baseURL,
                 apiKey: credential,
-                provider: settings.aiConfiguration.provider
+                provider: settings.aiConfiguration.provider,
             )
+            modelCatalogStatus = .loaded
+            if isKeySaved {
+                connectionStatus = .success
+                updateUIStates()
+            }
             registerModelsRefreshResult(
                 success: true,
-                message: String(format: "settings.ai.models_loaded".localized, availableModels.count)
+                message: String(format: "settings.ai.models_loaded".localized, availableModels.count),
             )
             // swiftformat:disable:next redundantSelf
             self.logger.info("Fetched \(self.availableModels.count) models from API")
         } catch {
+            modelCatalogStatus = .failed
             logger.error("Failed to fetch models: \(error.localizedDescription)")
             modelsFetchError = error.localizedDescription
             registerModelsRefreshResult(success: false, message: "settings.ai.models.fetch_failed".localized)
@@ -341,6 +428,7 @@ public class AISettingsViewModel: ObservableObject {
             connectionStatus = .unknown
             updateUIStates()
             availableModels = []
+            modelCatalogStatus = .idle
             refreshEnhancementsCredentialStateIfNeeded()
             // swiftformat:disable:next redundantSelf
             logger.info("API Key removed from Keychain for \(self.settings.aiConfiguration.provider.displayName)")
@@ -358,6 +446,7 @@ public class AISettingsViewModel: ObservableObject {
     private func resetPrimaryProviderStateForDeferredBootstrap() {
         isKeySaved = false
         connectionStatus = .unknown
+        modelCatalogStatus = settings.aiConfiguration.provider == .custom ? .unavailable : .idle
         availableModels = []
         modelsFetchError = nil
         clearTransientAPIKey()
