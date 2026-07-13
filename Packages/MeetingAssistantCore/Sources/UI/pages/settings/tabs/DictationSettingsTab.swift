@@ -17,7 +17,7 @@ public enum DictationSettingsRoute: Hashable, Sendable {
 /// Tab for dictation-specific settings like auto-copy/paste and shortcuts.
 public struct DictationSettingsTab: View {
     @Binding private var navigationState: SettingsSubpageNavigationState<DictationSettingsRoute>
-    @StateObject private var viewModel: GeneralSettingsViewModel
+    @State private var viewModel: GeneralSettingsViewModel
     @StateObject private var shortcutsViewModel = ShortcutSettingsViewModel()
     @StateObject private var serviceViewModel: ServiceSettingsViewModel
 
@@ -26,7 +26,7 @@ public struct DictationSettingsTab: View {
         navigationState: Binding<SettingsSubpageNavigationState<DictationSettingsRoute>> = .constant(SettingsSubpageNavigationState()),
     ) {
         _navigationState = navigationState
-        _viewModel = StateObject(wrappedValue: GeneralSettingsViewModel(settingsStore: settings))
+        _viewModel = State(wrappedValue: GeneralSettingsViewModel(settingsStore: settings))
         _serviceViewModel = StateObject(wrappedValue: ServiceSettingsViewModel(settings: settings))
     }
 

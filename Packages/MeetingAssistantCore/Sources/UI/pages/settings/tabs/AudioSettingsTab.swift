@@ -44,7 +44,7 @@ struct AudioDeviceOption: Identifiable {
 
 /// Tab for shared audio hardware settings like devices, formats, and system muting.
 public struct AudioSettingsTab: View {
-    @StateObject var viewModel = GeneralSettingsViewModel()
+    @State var viewModel = GeneralSettingsViewModel()
     @State private var previewingSound: SoundFeedbackSound?
     @State private var previewResetTask: Task<Void, Never>?
     @State var selectedCustomPowerSource = PowerSourceStateProvider().currentPowerSourceState()

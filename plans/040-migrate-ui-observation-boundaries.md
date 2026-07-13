@@ -89,19 +89,26 @@ Record the migrated boundary and remaining Combine integration points in the pla
 
 ## Done criteria
 
-- [ ] One coherent UI boundary uses `@Observable` with explicit `@MainActor` ownership.
-- [ ] Child bindings use `@Bindable` or direct state bindings; no new manual `Binding(get:set:)` was added.
-- [ ] Existing navigation/settings behavior and previews remain covered.
-- [ ] Focused tests, `make build-agent`, and `make preview-check` pass.
-- [ ] Thermo review has no unresolved Critical/Medium findings.
-- [ ] No audio, persistence, XPC, or model runtime types were migrated.
-- [ ] `plans/README.md` status row updated.
+- [x] One coherent UI boundary uses `@Observable` with explicit `@MainActor` ownership.
+- [x] Child bindings use `@Bindable` or direct state bindings; no new manual `Binding(get:set:)` was added.
+- [x] Existing navigation/settings behavior and previews remain covered.
+- [x] Focused tests, `make build-agent`, and `make preview-check` pass.
+- [x] Thermo review has no unresolved Critical/Medium findings.
+- [x] No audio, persistence, XPC, or model runtime types were migrated.
+- [x] `plans/README.md` status row updated.
 
 ## STOP conditions
 
 - The selected boundary requires changing a public service protocol or Core Data object.
 - Observation causes duplicate state instances or loses a deep-link/navigation event.
 - A ViewModel cannot be isolated without changing an audio, persistence, or XPC callback contract.
+
+## Completed slice
+
+- Migrated `GeneralSettingsViewModel` to `@MainActor @Observable`.
+- Updated `GeneralSettingsTab`, `AudioSettingsTab`, and `DictationSettingsTab` to own the model with `@State`.
+- Kept `Combine` only for the existing `AudioDeviceManager` publisher integration, marked as an Observation boundary.
+- Added `GeneralSettingsObservationTests` covering observed state changes; remaining settings ViewModels and integration seams stay on `ObservableObject` for later slices.
 
 ## Maintenance notes
 

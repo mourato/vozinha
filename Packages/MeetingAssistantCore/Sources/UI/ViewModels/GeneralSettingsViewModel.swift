@@ -7,89 +7,86 @@ import MeetingAssistantCoreCommon
 import MeetingAssistantCoreData
 import MeetingAssistantCoreDomain
 import MeetingAssistantCoreInfrastructure
+import Observation
 import os
 import SwiftUI
 
 @MainActor
-public class GeneralSettingsViewModel: ObservableObject {
-    private let settingsStore: AppSettingsStore
-    private let storage: StorageService
-    private let localAICacheMaintenance: LocalAICacheMaintenanceService
-    private let launchAtLoginService: any LaunchAtLoginService
-
-    @Published public var autoStartRecording: Bool {
+@Observable
+public final class GeneralSettingsViewModel {
+    public var autoStartRecording: Bool {
         didSet {
             settingsStore.autoStartRecording = autoStartRecording
         }
     }
 
-    @Published public var recordingsPath: String {
+    public var recordingsPath: String {
         didSet {
             settingsStore.recordingsDirectory = recordingsPath
         }
     }
 
-    @Published public var audioFormat: AppSettingsStore.AudioFormat {
+    public var audioFormat: AppSettingsStore.AudioFormat {
         didSet {
             settingsStore.audioFormat = audioFormat
         }
     }
 
-    @Published public var shouldMergeAudioFiles: Bool {
+    public var shouldMergeAudioFiles: Bool {
         didSet {
             settingsStore.shouldMergeAudioFiles = shouldMergeAudioFiles
         }
     }
 
-    @Published public var selectedLanguage: AppLanguage {
+    public var selectedLanguage: AppLanguage {
         didSet {
             settingsStore.selectedLanguage = selectedLanguage
         }
     }
 
-    @Published public var showSettingsOnLaunch: Bool {
+    public var showSettingsOnLaunch: Bool {
         didSet {
             settingsStore.showSettingsOnLaunch = showSettingsOnLaunch
         }
     }
 
-    @Published public var autoCopyTranscriptionToClipboard: Bool {
+    public var autoCopyTranscriptionToClipboard: Bool {
         didSet {
             settingsStore.autoCopyTranscriptionToClipboard = autoCopyTranscriptionToClipboard
         }
     }
 
-    @Published public var shortcutDoubleTapIntervalMilliseconds: Double {
+    public var shortcutDoubleTapIntervalMilliseconds: Double {
         didSet {
             settingsStore.shortcutDoubleTapIntervalMilliseconds = shortcutDoubleTapIntervalMilliseconds
         }
     }
 
-    @Published public var autoPasteTranscriptionToActiveApp: Bool {
+    public var autoPasteTranscriptionToActiveApp: Bool {
         didSet {
             settingsStore.autoPasteTranscriptionToActiveApp = autoPasteTranscriptionToActiveApp
         }
     }
 
-    @Published public var smartSpacingAndCapitalizationEnabled: Bool {
+    public var smartSpacingAndCapitalizationEnabled: Bool {
         didSet {
             settingsStore.smartSpacingAndCapitalizationEnabled = smartSpacingAndCapitalizationEnabled
         }
     }
 
-    @Published public var smartParagraphsEnabled: Bool {
+    public var smartParagraphsEnabled: Bool {
         didSet {
             settingsStore.smartParagraphsEnabled = smartParagraphsEnabled
         }
     }
 
-    @Published public var recordingMediaHandlingMode: AppSettingsStore.RecordingMediaHandlingMode {
+    public var recordingMediaHandlingMode: AppSettingsStore.RecordingMediaHandlingMode {
         didSet {
             settingsStore.recordingMediaHandlingMode = recordingMediaHandlingMode
         }
     }
 
-    @Published public var audioDuckingLevelPercent: Int {
+    public var audioDuckingLevelPercent: Int {
         didSet {
             let clamped = AppSettingsStore.clampedAudioDuckingLevelPercent(audioDuckingLevelPercent)
             guard clamped == audioDuckingLevelPercent else {
@@ -101,55 +98,55 @@ public class GeneralSettingsViewModel: ObservableObject {
         }
     }
 
-    @Published public var useSystemDefaultInput: Bool {
+    public var useSystemDefaultInput: Bool {
         didSet {
             settingsStore.useSystemDefaultInput = useSystemDefaultInput
         }
     }
 
-    @Published public var autoIncreaseMicrophoneVolume: Bool {
+    public var autoIncreaseMicrophoneVolume: Bool {
         didSet {
             settingsStore.autoIncreaseMicrophoneVolume = autoIncreaseMicrophoneVolume
         }
     }
 
-    @Published public var removeSilenceBeforeProcessing: Bool {
+    public var removeSilenceBeforeProcessing: Bool {
         didSet {
             settingsStore.removeSilenceBeforeProcessing = removeSilenceBeforeProcessing
         }
     }
 
-    @Published public var recordingIndicatorEnabled: Bool {
+    public var recordingIndicatorEnabled: Bool {
         didSet {
             settingsStore.recordingIndicatorEnabled = recordingIndicatorEnabled
         }
     }
 
-    @Published public var recordingIndicatorStyle: RecordingIndicatorStyle {
+    public var recordingIndicatorStyle: RecordingIndicatorStyle {
         didSet {
             settingsStore.recordingIndicatorStyle = recordingIndicatorStyle
         }
     }
 
-    @Published public var recordingIndicatorPosition: RecordingIndicatorPosition {
+    public var recordingIndicatorPosition: RecordingIndicatorPosition {
         didSet {
             settingsStore.recordingIndicatorPosition = recordingIndicatorPosition
         }
     }
 
-    @Published public var recordingIndicatorAnimationSpeed: RecordingIndicatorAnimationSpeed {
+    public var recordingIndicatorAnimationSpeed: RecordingIndicatorAnimationSpeed {
         didSet {
             settingsStore.recordingIndicatorAnimationSpeed = recordingIndicatorAnimationSpeed
         }
     }
 
-    @Published public var autoDeleteTranscriptions: Bool {
+    public var autoDeleteTranscriptions: Bool {
         didSet {
             settingsStore.autoDeleteTranscriptions = autoDeleteTranscriptions
         }
     }
 
-    @Published public var autoDeletePeriodDays: Int {
+    public var autoDeletePeriodDays: Int {
         didSet {
             settingsStore.autoDeletePeriodDays = autoDeletePeriodDays
         }
@@ -157,37 +154,37 @@ public class GeneralSettingsViewModel: ObservableObject {
 
     // MARK: - Sound Feedback Properties
 
-    @Published public var soundFeedbackEnabled: Bool {
+    public var soundFeedbackEnabled: Bool {
         didSet {
             settingsStore.soundFeedbackEnabled = soundFeedbackEnabled
         }
     }
 
-    @Published public var recordingStartSound: SoundFeedbackSound {
+    public var recordingStartSound: SoundFeedbackSound {
         didSet {
             settingsStore.recordingStartSound = recordingStartSound
         }
     }
 
-    @Published public var recordingStopSound: SoundFeedbackSound {
+    public var recordingStopSound: SoundFeedbackSound {
         didSet {
             settingsStore.recordingStopSound = recordingStopSound
         }
     }
 
-    @Published public var showInDock: Bool {
+    public var showInDock: Bool {
         didSet {
             settingsStore.showInDock = showInDock
         }
     }
 
-    @Published public var appearanceMode: AppearanceMode {
+    public var appearanceMode: AppearanceMode {
         didSet {
             settingsStore.appearanceMode = appearanceMode
         }
     }
 
-    @Published public var launchAtLogin: Bool {
+    public var launchAtLogin: Bool {
         didSet {
             let previousValue = oldValue
 
@@ -199,32 +196,36 @@ public class GeneralSettingsViewModel: ObservableObject {
         }
     }
 
-    @Published public private(set) var launchAtLoginError: LaunchAtLoginUpdateError?
+    public private(set) var launchAtLoginError: LaunchAtLoginUpdateError?
 
-    @Published public var microphoneWhenChargingUID: String? {
+    public var microphoneWhenChargingUID: String? {
         didSet {
             settingsStore.microphoneWhenChargingUID = microphoneWhenChargingUID
             rebuildAvailableDevices()
         }
     }
 
-    @Published public var microphoneOnBatteryUID: String? {
+    public var microphoneOnBatteryUID: String? {
         didSet {
             settingsStore.microphoneOnBatteryUID = microphoneOnBatteryUID
             rebuildAvailableDevices()
         }
     }
 
-    @Published public var availableDevices: [AudioInputDevice] = []
-    @Published public var showCleanupSuccessAlert = false
-    @Published public var showCleanupConfirmationDialog = false
-    @Published public var cleanupInProgress = false
-    @Published public var cleanupError: String?
-    @Published public var cleanupPreview: RetentionCleanupPreview?
-    @Published public var localAICacheCleanupPreview: LocalAICacheCleanupPreview?
+    public var availableDevices: [AudioInputDevice] = []
+    public var showCleanupSuccessAlert = false
+    public var showCleanupConfirmationDialog = false
+    public var cleanupInProgress = false
+    public var cleanupError: String?
+    public var cleanupPreview: RetentionCleanupPreview?
+    public var localAICacheCleanupPreview: LocalAICacheCleanupPreview?
 
-    private let deviceManager = AudioDeviceManager()
-    private var cancellables = Set<AnyCancellable>()
+    @ObservationIgnored private let settingsStore: AppSettingsStore
+    @ObservationIgnored private let storage: StorageService
+    @ObservationIgnored private let localAICacheMaintenance: LocalAICacheMaintenanceService
+    @ObservationIgnored private let launchAtLoginService: any LaunchAtLoginService
+    @ObservationIgnored private let deviceManager = AudioDeviceManager()
+    @ObservationIgnored private var cancellables = Set<AnyCancellable>()
     private nonisolated static let logger = Logger(subsystem: AppIdentity.logSubsystem, category: "GeneralSettingsViewModel")
 
     public init(

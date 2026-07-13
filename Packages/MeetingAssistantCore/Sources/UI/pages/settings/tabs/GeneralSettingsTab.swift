@@ -10,7 +10,7 @@ import SwiftUI
 
 /// Main tab for core application settings like language, appearance, and storage.
 public struct GeneralSettingsTab: View {
-    @StateObject private var viewModel = GeneralSettingsViewModel()
+    @State private var viewModel = GeneralSettingsViewModel()
     @StateObject private var recordingCancelShortcutViewModel = RecordingCancelShortcutSettingsViewModel()
     @State private var shortcutDoubleTapIntervalInput = ""
     @Environment(\.accessibilityReduceMotion) private var reduceMotion

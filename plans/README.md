@@ -26,7 +26,7 @@ reason) | `REJECTED` (with a one-line rationale).
 
 | Plan | Title | Priority | Effort | Depends on | Status |
 |---|---|---:|---:|---|---|
-| [040](040-migrate-ui-observation-boundaries.md) | Migrate UI state to Observation at stable boundaries | P1 | L | 039 | TODO |
+| [040](040-migrate-ui-observation-boundaries.md) | Migrate UI state to Observation at stable boundaries | P1 | L | 039 | DONE |
 | [055](055-harden-scoped-validation-artifacts.md) | Make scoped validation correct for committed diffs and safe under parallel agents | P1 | M | 032 | DONE |
 | [056](056-create-canonical-lane-runner.md) | Provide one canonical lane runner with safe evidence reuse | P1 | L | 055 | DONE |
 | [057](057-reduce-agent-guidance-context.md) | Reduce recurring agent context through an active ledger and routed skill references | P1 | M | - | DONE |
@@ -34,8 +34,7 @@ reason) | `REJECTED` (with a one-line rationale).
 | [059](059-tune-global-agent-routing.md) | Tune global routing and root reasoning from controlled cost-quality evidence | P1 | M | 058 | DONE (medium beat high on cost/latency; defaults remain unchanged) |
 | [060](060-evaluate-lean-tools-fast-implementer.md) | Evaluate a lean code profile and a Fast-lane implementer before enabling either | P2 | M | 058, 059 | DONE (lean/Fast candidates measured; neither promoted globally) |
 
-Plans 001–039 and 041–054 are completed or archived in the historical ledger;
-plan 040 remains active. The archive preserves the original audit scope,
+Plans 001–060 are completed or archived in the historical ledger. The archive preserves the original audit scope,
 findings, dependency history, status table, committee notes, and rejected
 options verbatim for searchability.
 
