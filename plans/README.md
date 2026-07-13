@@ -164,6 +164,39 @@ honor its STOP conditions, and update your row when done.
 | #67 | Closed; dedicated sensitive/AppKit test lanes now exist | completed |
 | #117 | Closed; Assistant phase/orchestrator decomposition is already present | completed |
 
+## 2026-07-12 Agent Efficiency and Cost Follow-up Scope
+
+- Effort: standard, focused on AI-agent workflow correctness, recurring context,
+  controlled model/role evaluation, API-equivalent cost, routing, and optional
+  tool/implementer experiments.
+- Audited: Prisma `AGENTS.md`, delivery guidance, Makefile/hooks, scoped
+  validation, agent result schema/log paths, workflow test coverage, plan ledger,
+  the four largest frequently triggered skills, global Codex config/profiles,
+  custom agents, `agent-ops`, privacy-safe usage reporter, task manifest, and all
+  reports under `/Users/usuario/.codex/evals/reports`.
+- External research: official OpenAI pricing and reasoning documentation for
+  GPT-5.4, GPT-5.5, and GPT-5.6 families, collected 2026-07-12. Pricing is
+  versioned input to Plan 058, not a permanent constant.
+- Not audited: actual ChatGPT/Codex invoice data, provider contract discounts,
+  enterprise entitlements, private billing APIs, full CI runtime history, live
+  plugin cold-start traces, or whether every cached token in Codex is billed at
+  public API rates.
+- Reuse decision: extend existing `scope-check`, `AGENT_*` schema, Makefile,
+  `delivery-workflow`, `agent-ops`, custom agents, usage reporter, and eval task
+  manifest. Create only one narrow global `agent-efficiency-eval` skill; do not
+  add another general workflow skill or validation framework.
+
+### Findings
+
+| Plan | Finding | Scope | Impact | Effort | Risk | Evidence |
+|---|---|---|---|---|---|---|
+| 055 | Make committed-diff risk calculation and parallel artifacts trustworthy | Prisma | High-risk committed deltas can be under-classified; parallel runs can overwrite evidence | M | HIGH | `scripts/scope-check.sh:102-114,398-401`; `scripts/lib/agent-output.sh:111-120`; fixed result paths at `scripts/scope-check.sh:172-181` |
+| 056 | Replace overlapping final gates with one fingerprinted lane runner | Prisma | Agents repeat lint/build/test work and assemble ambiguous merge evidence | L | HIGH | `AGENTS.md:78-102`; `scripts/scope-check.sh:440-503`; `scripts/hooks/pre-push:18-22`; `.agents/docs/build-and-test.md:265-295` |
+| 057 | Load active plans and skill subdomains progressively | Prisma | Plan-led and specialist tasks repeatedly ingest thousands of unrelated words | M | MED | `plans/README.md` 5,844 words; four frequent skill cores total 9,795 words |
+| 058 | Attribute task/role/model quality and convert usage into current cost | Global | Existing scenario labels cannot prove treatment, quality, rework, or actual model cost | L | MED | `~/.codex/bin/codex-usage-report.py:38-133`; `~/.codex/evals/README.md:21-28`; 18-session reports all record Luna/medium |
+| 059 | Route by workload and test medium as the root default | Global | High root effort applies to routine routing; aggregate orchestration hides task-specific losses | M | MED | `~/.codex/config.toml:2-3`; `~/.codex/skills/agent-ops/SKILL.md:14-35`; controlled read/diff/change breakdown |
+| 060 | Measure lean plugins and a Fast implementer before enabling them | Global | Irrelevant surfaces and one-size implementer may cost context/latency, but lazy loading and rework are unmeasured | M | MED | `~/.codex/config.toml:110-132`; `~/.codex/agents/implementer.toml:3-9`; `~/.codex/fast.config.toml:1-4` |
+
 ## Execution order & status
 
 | Plan | Title | Priority | Effort | Depends on | Status |
@@ -222,6 +255,12 @@ honor its STOP conditions, and update your row when done.
 | 052 | Design an Assistant automation-rule spike | P3 | M | 042 | DONE |
 | 053 | Decide whether optional CloudKit sync fits Prisma's privacy boundary | P3 | L | 049 | DONE |
 | 054 | Retire the repository-wide Swift lint baseline and enable strict gating | P2 | M | 032 | DONE |
+| 055 | Make scoped validation correct for committed diffs and safe under parallel agents | P1 | M | 032 | DONE |
+| 056 | Provide one canonical lane runner with safe evidence reuse | P1 | L | 055 | TODO |
+| 057 | Reduce recurring agent context through an active ledger and routed skill references | P1 | M | - | TODO |
+| 058 | Build a global agent-efficiency evaluator with model-attributed cost | P1 | L | - | TODO |
+| 059 | Tune global routing and root reasoning from controlled cost-quality evidence | P1 | M | 058 | TODO |
+| 060 | Evaluate a lean code profile and a Fast-lane implementer before enabling either | P2 | M | 058, 059 | TODO |
 
 Status values: TODO | IN PROGRESS | DONE | BLOCKED (with one-line reason) | REJECTED (with one-line rationale)
 
@@ -263,6 +302,22 @@ Status values: TODO | IN PROGRESS | DONE | BLOCKED (with one-line reason) | REJE
 - 045 depends on 001 and is measurement-gated; it must not implement FRC or FTS without evidence.
 - 049 should precede 053 so the CloudKit decision is grounded in the documented local storage/privacy boundary.
 - 050, 051, 052, and 053 are P3 design/cleanup paths and should not displace P1 reliability, concurrency, UI, or credential work.
+- 055 is the first workflow follow-up because base-aware risk correctness and
+  immutable artifacts are prerequisites for trustworthy caching or parallel
+  evidence. It extends completed plan 032 rather than replacing its compact
+  staged/push workflow.
+- 056 must follow 055 and reuse its fixture suite/run-directory contract. It is
+  the only plan allowed to add validation-evidence reuse; uncertainty must fail
+  closed and execute a fresh gate.
+- 057 can run independently, but controlled token/cost claims should wait for
+  058. Static word-count reduction alone is not proof of efficiency.
+- 058 is the first global plan. It must separate API-equivalent estimates from
+  actual Codex billing and must never read prompt/response/tool content.
+- 059 depends on 058 because root effort and routing defaults must be selected
+  from attributed quality, rework, latency, and cost rather than aggregate token
+  totals.
+- 060 depends on both 058 and 059 and changes one experimental variable at a
+  time. Do not uninstall plugins or route Medium/High work to a Fast implementer.
 
 ## Committee review notes
 
@@ -307,6 +362,21 @@ Status values: TODO | IN PROGRESS | DONE | BLOCKED (with one-line reason) | REJE
 - Merge `keychain-security`, `data-persistence`, `audio-realtime`, `swift-concurrency-expert`, or `intelligence-kernel` into broader skills: rejected because these are specialist high-risk domains where extra routing cost is lower than the cost of diluted guidance.
 - Run tests before every commit by default: rejected because Prisma already has scoped push gates and agent-mode validation; default per-commit tests would increase latency/token cost. Keep pre-commit to staged lint/format and run tests before push/merge or when targeted proof is needed.
 - Add a second validation framework for agents: rejected because `scope-check`, `*-agent` targets, and `AGENT_*` output already exist; the gap is default routing and hook/guidance alignment, not missing infrastructure.
+- Add another general global workflow skill: rejected because `agent-ops`
+  already owns routing, context, delegation, and validation decisions. Plan 058
+  creates only a separately triggered evaluator with a non-overlapping boundary.
+- Make mixed-model orchestration the global economy default: rejected because
+  the current aggregate used 9.5% more total tokens, the reports cannot attribute
+  child models, and bounded diff review was materially cheaper with one agent.
+- Lower strict reviewer reasoning or High-risk gates to save tokens: rejected
+  because the current study does not prove quality equivalence and rework can
+  erase nominal savings.
+- Treat cached tokens as free or add reasoning tokens twice: rejected because
+  cached input has a nonzero published rate and reasoning tokens are already
+  billed within output tokens.
+- Uninstall artifact/browser/site plugins to slim code sessions: rejected;
+  Plan 060 tests reversible profile-level enablement first because loading may be
+  deferred and those surfaces remain valuable for explicit tasks.
 - Create a second Prisma design system for Apple motion: rejected because `AppDesignSystem`, `SettingsMotion`, `SettingsWindowBackground`, and `DSCard` already centralize the relevant UI vocabulary.
 - Build a new floating recording overlay controller: rejected because the current AppDelegate -> `FloatingRecordingIndicatorController` -> `FloatingRecordingIndicatorView` path already owns recording presentation, and prior recording plans explicitly kept presentation on that pipeline.
 - Add drag-to-reposition to the indicator in the first polish pass: rejected because the current risk is structural concentration and noncentralized motion; direct manipulation can follow after the indicator is decomposed and geometry helpers are stable.
