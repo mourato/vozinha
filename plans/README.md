@@ -30,9 +30,9 @@ reason) | `REJECTED` (with a one-line rationale).
 | [055](055-harden-scoped-validation-artifacts.md) | Make scoped validation correct for committed diffs and safe under parallel agents | P1 | M | 032 | DONE |
 | [056](056-create-canonical-lane-runner.md) | Provide one canonical lane runner with safe evidence reuse | P1 | L | 055 | DONE |
 | [057](057-reduce-agent-guidance-context.md) | Reduce recurring agent context through an active ledger and routed skill references | P1 | M | - | DONE |
-| [058](058-build-global-agent-efficiency-evaluator.md) | Build a global agent-efficiency evaluator with model-attributed cost | P1 | L | - | BLOCKED (six-task controlled rerun lacks independent task/role/model attribution) |
-| [059](059-tune-global-agent-routing.md) | Tune global routing and root reasoning from controlled cost-quality evidence | P1 | M | 058 | BLOCKED (waits for attributed quality/cost evidence from 058) |
-| [060](060-evaluate-lean-tools-fast-implementer.md) | Evaluate a lean code profile and a Fast-lane implementer before enabling either | P2 | M | 058, 059 | BLOCKED (waits for 058 and 059) |
+| [058](058-build-global-agent-efficiency-evaluator.md) | Build a global agent-efficiency evaluator with model-attributed cost | P1 | L | - | DONE (54 controlled runs; 100% segment attribution; API-equivalent estimates) |
+| [059](059-tune-global-agent-routing.md) | Tune global routing and root reasoning from controlled cost-quality evidence | P1 | M | 058 | DONE (medium beat high on cost/latency; defaults remain unchanged) |
+| [060](060-evaluate-lean-tools-fast-implementer.md) | Evaluate a lean code profile and a Fast-lane implementer before enabling either | P2 | M | 058, 059 | DONE (lean/Fast candidates measured; neither promoted globally) |
 
 Plans 001–039 and 041–054 are completed or archived in the historical ledger;
 plan 040 remains active. The archive preserves the original audit scope,
@@ -48,11 +48,10 @@ options verbatim for searchability.
   execute a fresh gate.
 - 057 may reduce static guidance size, but must not claim token/cost savings
   without the controlled evaluator from 058.
-- 058 must keep API-equivalent estimates separate from actual Codex billing and
-  must never read prompts, responses, tool arguments, transcripts, source
-  contents, credentials, or secrets.
-- 059 depends on attributed quality, rework, latency, and cost evidence from
-  058 before changing root defaults.
-- 060 depends on 058 and 059, changes one experimental variable at a time, does
-  not uninstall plugins, and never routes Medium/High work to a Fast
-  implementer.
+- 058 completed 54 controlled runs across six tasks and three scenarios; the
+  privacy-safe reports remain under `~/.codex/evals/reports`.
+- 059 supports medium root effort over high for this workload, but global
+  defaults were deliberately not changed during measurement.
+- 060 found lean and Fast candidates; keep lean opt-in until artifact/browser
+  smoke coverage is added, and keep Fast limited to deterministic Fast-lane
+  work in isolated worktrees.
