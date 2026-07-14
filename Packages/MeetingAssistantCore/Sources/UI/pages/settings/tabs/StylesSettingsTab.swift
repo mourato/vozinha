@@ -86,7 +86,7 @@ public struct StylesSettingsTab: View {
                     openEditor(for: style)
                 },
                 content: {
-                    styleRowContent(style, isSelected: selectedStyleID == style.id),
+                    styleRowContent(style, isSelected: selectedStyleID == style.id)
                 },
             )
 
