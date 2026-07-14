@@ -3,15 +3,22 @@ import MeetingAssistantCoreInfrastructure
 import SwiftUI
 
 public struct StylesSettingsTab: View {
-    @StateObject private var viewModel: DictationStylesSettingsViewModel
-    @StateObject private var aiSettingsViewModel: AISettingsViewModel
+    @ObservedObject private var viewModel: DictationStylesSettingsViewModel
+    @ObservedObject private var aiSettingsViewModel: AISettingsViewModel
     @State private var selectedStyleID: UUID?
     private let embedded: Bool
+    private let onOpenEditor: ((UUID?) -> Void)?
 
-    public init(settings: AppSettingsStore = .shared, embedded: Bool = false) {
-        _viewModel = StateObject(wrappedValue: DictationStylesSettingsViewModel(settings: settings))
-        _aiSettingsViewModel = StateObject(wrappedValue: AISettingsViewModel(settings: settings))
+    public init(
+        viewModel: DictationStylesSettingsViewModel,
+        aiSettingsViewModel: AISettingsViewModel,
+        embedded: Bool = false,
+        onOpenEditor: ((UUID?) -> Void)? = nil,
+    ) {
+        _viewModel = ObservedObject(wrappedValue: viewModel)
+        _aiSettingsViewModel = ObservedObject(wrappedValue: aiSettingsViewModel)
         self.embedded = embedded
+        self.onOpenEditor = onOpenEditor
     }
 
     public var body: some View {
@@ -22,27 +29,6 @@ public struct StylesSettingsTab: View {
                 SettingsScrollableContent {
                     pageContent
                 }
-            }
-        }
-        .sheet(isPresented: $viewModel.showEditor) {
-            if let draft = viewModel.editorDraft {
-                DictationStyleEditorSheet(
-                    draft: draft,
-                    appCatalog: viewModel.appCatalog,
-                    isLoadingAppCatalog: viewModel.isLoadingAppCatalog,
-                    onEnsureAppCatalogLoaded: viewModel.ensureAppCatalogLoaded,
-                    onFindConflictingStyleName: { target, styleID in
-                        viewModel.styleNameConflicting(with: target, excluding: styleID)
-                    },
-                    modelOptions: aiSettingsViewModel.enhancementsProviderModels,
-                    isLoadingModelOptions: aiSettingsViewModel.isLoadingEnhancementsProviderModels,
-                    onRefreshModelOptions: {
-                        _ = aiSettingsViewModel.refreshEnhancementsProviderModelsManually()
-                    },
-                    providerDisplayName: viewModel.enhancementsProviderDisplayName(for:),
-                    onSave: viewModel.saveStyle,
-                    onCancel: viewModel.dismissEditor,
-                )
             }
         }
         .onDeleteCommand(perform: deleteSelectedStyle)
@@ -62,7 +48,7 @@ public struct StylesSettingsTab: View {
                 HStack {
                     Spacer()
                     Button {
-                        viewModel.openCreateStyle()
+                        onOpenEditor?(nil)
                     } label: {
                         Label("settings.styles.add".localized, systemImage: "plus")
                     }
@@ -97,10 +83,10 @@ public struct StylesSettingsTab: View {
                 },
                 onDoubleClick: {
                     selectedStyleID = style.id
-                    viewModel.openEditStyle(style)
+                    openEditor(for: style)
                 },
                 content: {
-                    styleRowContent(style, isSelected: selectedStyleID == style.id)
+                    styleRowContent(style, isSelected: selectedStyleID == style.id),
                 },
             )
 
@@ -113,7 +99,7 @@ public struct StylesSettingsTab: View {
         .contextMenu {
             Button {
                 selectedStyleID = style.id
-                viewModel.openEditStyle(style)
+                openEditor(for: style)
             } label: {
                 Label("settings.styles.edit".localized, systemImage: "pencil")
             }
@@ -165,7 +151,7 @@ public struct StylesSettingsTab: View {
         ) {
             Button {
                 selectedStyleID = style.id
-                viewModel.openEditStyle(style)
+                openEditor(for: style)
             } label: {
                 Label("settings.styles.edit".localized, systemImage: "pencil")
             }
@@ -291,6 +277,10 @@ public struct StylesSettingsTab: View {
         }
     }
 
+    private func openEditor(for style: DictationStyle) {
+        onOpenEditor?(style.id)
+    }
+
     private func deleteSelectedStyle() {
         guard let selectedStyleID else { return }
         viewModel.deleteStyle(id: selectedStyleID)
@@ -298,5 +288,8 @@ public struct StylesSettingsTab: View {
 }
 
 #Preview {
-    StylesSettingsTab()
+    StylesSettingsTab(
+        viewModel: DictationStylesSettingsViewModel(),
+        aiSettingsViewModel: AISettingsViewModel(settings: AppSettingsStore.shared),
+    )
 }

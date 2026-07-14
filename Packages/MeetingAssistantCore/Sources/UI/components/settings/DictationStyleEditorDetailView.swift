@@ -2,7 +2,7 @@ import MeetingAssistantCoreCommon
 import MeetingAssistantCoreInfrastructure
 import SwiftUI
 
-public struct DictationStyleEditorSheet: View {
+public struct DictationStyleEditorDetailView: View {
     private let appCatalog: [InstalledApplicationRecord]
     private let isLoadingAppCatalog: Bool
     private let onEnsureAppCatalogLoaded: () -> Void
@@ -13,6 +13,7 @@ public struct DictationStyleEditorSheet: View {
     private let providerDisplayName: (EnhancementsAISelection) -> String
     private let onSave: (DictationStyleEditorDraft) -> Void
     private let onCancel: () -> Void
+    private let onDelete: (() -> Void)?
 
     @State private var styleID: UUID?
     @State private var name: String
@@ -45,6 +46,7 @@ public struct DictationStyleEditorSheet: View {
         providerDisplayName: @escaping (EnhancementsAISelection) -> String,
         onSave: @escaping (DictationStyleEditorDraft) -> Void,
         onCancel: @escaping () -> Void,
+        onDelete: (() -> Void)? = nil,
     ) {
         self.appCatalog = appCatalog
         self.isLoadingAppCatalog = isLoadingAppCatalog
@@ -56,6 +58,7 @@ public struct DictationStyleEditorSheet: View {
         self.providerDisplayName = providerDisplayName
         self.onSave = onSave
         self.onCancel = onCancel
+        self.onDelete = onDelete
 
         _styleID = State(initialValue: draft.id)
         _name = State(initialValue: draft.name)
@@ -77,145 +80,172 @@ public struct DictationStyleEditorSheet: View {
     }
 
     public var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 14) {
-                Text(sheetTitle)
-                    .font(.headline)
+        VStack(spacing: 0) {
+            detailHeader
 
-                HStack(spacing: 12) {
-                    VStack(alignment: .leading, spacing: 6) {
-                        Text("settings.styles.editor.name".localized)
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                        TextField("", text: $name)
-                            .textFieldStyle(.roundedBorder)
-                    }
-
-                    VStack(alignment: .leading, spacing: 6) {
-                        Text("settings.styles.editor.icon".localized)
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                        HStack(spacing: 8) {
-                            DictationStyleIconView(
-                                iconSymbol: normalizedIconSymbol,
-                                size: 22,
-                                accessibilityLabel: "settings.styles.editor.icon".localized,
-                            )
-                            TextField("", text: $iconSymbol)
+            ScrollView {
+                VStack(alignment: .leading, spacing: 14) {
+                    HStack(spacing: 12) {
+                        VStack(alignment: .leading, spacing: 6) {
+                            Text("settings.styles.editor.name".localized)
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                            TextField("", text: $name)
                                 .textFieldStyle(.roundedBorder)
+                        }
 
-                            Menu {
-                                ForEach(DictationStyleIconCatalog.recommendedSymbols, id: \.self) { symbol in
-                                    Button {
-                                        iconSymbol = symbol
-                                    } label: {
-                                        Label(symbol, systemImage: symbol)
+                        VStack(alignment: .leading, spacing: 6) {
+                            Text("settings.styles.editor.icon".localized)
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                            HStack(spacing: 8) {
+                                DictationStyleIconView(
+                                    iconSymbol: normalizedIconSymbol,
+                                    size: 22,
+                                    accessibilityLabel: "settings.styles.editor.icon".localized,
+                                )
+                                TextField("", text: $iconSymbol)
+                                    .textFieldStyle(.roundedBorder)
+
+                                Menu {
+                                    ForEach(DictationStyleIconCatalog.recommendedSymbols, id: \.self) { symbol in
+                                        Button {
+                                            iconSymbol = symbol
+                                        } label: {
+                                            Label(symbol, systemImage: symbol)
+                                        }
                                     }
+                                } label: {
+                                    Image(systemName: "square.grid.2x2")
                                 }
-                            } label: {
-                                Image(systemName: "square.grid.2x2")
+                                .menuStyle(.borderlessButton)
+                                .accessibilityLabel("settings.styles.editor.icon_picker".localized)
                             }
-                            .menuStyle(.borderlessButton)
-                            .accessibilityLabel("settings.styles.editor.icon_picker".localized)
+                        }
+                        .frame(width: 220)
+                    }
+
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("settings.styles.editor.prompt".localized)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+
+                        Text("settings.styles.editor.prompt_hint".localized)
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+
+                        TextEditor(text: $promptInstructions)
+                            .font(.body)
+                            .frame(minHeight: 130)
+                            .padding(AppDesignSystem.Layout.textAreaPadding)
+                            .background(AppDesignSystem.Colors.subtleFill2)
+                            .clipShape(RoundedRectangle(cornerRadius: AppDesignSystem.Layout.smallCornerRadius))
+                    }
+
+                    CheckboxRow("settings.styles.editor.post_processing_enabled".localized, isOn: $postProcessingEnabled)
+                    CheckboxRow("settings.styles.editor.markdown_output".localized, isOn: $forceMarkdownOutput)
+                    CheckboxRow("settings.styles.editor.replace_base_prompt".localized, isOn: $replaceBasePrompt)
+
+                    HStack(spacing: 12) {
+                        Text("settings.styles.editor.output_language".localized)
+                            .font(.body)
+                            .fontWeight(.regular)
+
+                        Spacer()
+
+                        DSMenuPicker("settings.styles.editor.output_language".localized, selection: $outputLanguage) {
+                            ForEach(DictationOutputLanguage.allCases, id: \.self) { language in
+                                Text(language.displayName).tag(language)
+                            }
                         }
                     }
-                    .frame(width: 220)
-                }
 
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("settings.styles.editor.prompt".localized)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                    contextResourcesSection
 
-                    Text("settings.styles.editor.prompt_hint".localized)
-                        .font(.caption2)
-                        .foregroundStyle(.secondary)
+                    DSGroup("settings.enhancements.selector.dictation.title".localized, icon: "cpu") {
+                        EnhancementsModelPicker(
+                            title: "settings.enhancements.selector.dictation.title".localized,
+                            subtitle: "settings.enhancements.selector.dictation.subtitle".localized,
+                            selection: enhancementsSelection ?? .default,
+                            options: modelOptions,
+                            isLoadingOptions: isLoadingModelOptions,
+                            providerDisplayName: providerDisplayName,
+                            onRefresh: onRefreshModelOptions,
+                            onSelect: { option in
+                                enhancementsSelection = EnhancementsAISelection(
+                                    provider: option.provider,
+                                    selectedModel: option.modelID,
+                                    registrationID: option.registrationID,
+                                )
+                            },
+                        )
+                    }
 
-                    TextEditor(text: $promptInstructions)
-                        .font(.body)
-                        .frame(minHeight: 130)
-                        .padding(AppDesignSystem.Layout.textAreaPadding)
-                        .background(AppDesignSystem.Colors.subtleFill2)
-                        .clipShape(RoundedRectangle(cornerRadius: AppDesignSystem.Layout.smallCornerRadius))
-                }
-
-                CheckboxRow("settings.styles.editor.post_processing_enabled".localized, isOn: $postProcessingEnabled)
-                CheckboxRow("settings.styles.editor.markdown_output".localized, isOn: $forceMarkdownOutput)
-                CheckboxRow("settings.styles.editor.replace_base_prompt".localized, isOn: $replaceBasePrompt)
-
-                HStack(spacing: 12) {
-                    Text("settings.styles.editor.output_language".localized)
-                        .font(.body)
-                        .fontWeight(.regular)
-
-                    Spacer()
-
-                    DSMenuPicker("settings.styles.editor.output_language".localized, selection: $outputLanguage) {
-                        ForEach(DictationOutputLanguage.allCases, id: \.self) { language in
-                            Text(language.displayName).tag(language)
+                    if !isDefault {
+                        DSGroup("settings.styles.editor.targets".localized, icon: "scope") {
+                            targetsEditor
                         }
                     }
-                }
 
-                contextResourcesSection
+                    if isDefault {
+                        Text("settings.styles.editor.default_mode_hint".localized)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
 
-                DSGroup("settings.enhancements.selector.dictation.title".localized, icon: "cpu") {
-                    EnhancementsModelPicker(
-                        title: "settings.enhancements.selector.dictation.title".localized,
-                        subtitle: "settings.enhancements.selector.dictation.subtitle".localized,
-                        selection: enhancementsSelection ?? .default,
-                        options: modelOptions,
-                        isLoadingOptions: isLoadingModelOptions,
-                        providerDisplayName: providerDisplayName,
-                        onRefresh: onRefreshModelOptions,
-                        onSelect: { option in
-                            enhancementsSelection = EnhancementsAISelection(
-                                provider: option.provider,
-                                selectedModel: option.modelID,
-                                registrationID: option.registrationID,
-                            )
-                        },
-                    )
-                }
-
-                if !isDefault {
-                    DSGroup("settings.styles.editor.targets".localized, icon: "scope") {
-                        targetsEditor
+                    if let validationMessage, !validationMessage.isEmpty {
+                        Text(validationMessage)
+                            .font(.caption)
+                            .foregroundStyle(.red)
                     }
                 }
-
-                if isDefault {
-                    Text("settings.styles.editor.default_mode_hint".localized)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
-
-                if let validationMessage, !validationMessage.isEmpty {
-                    Text(validationMessage)
-                        .font(.caption)
-                        .foregroundStyle(.red)
-                }
-
-                HStack {
-                    Spacer()
-
-                    Button("common.cancel".localized) {
-                        onCancel()
-                    }
-                    .buttonStyle(.bordered)
-
-                    Button(primaryActionTitle) {
-                        saveDraft()
-                    }
-                    .buttonStyle(.borderedProminent)
-                }
+                .padding()
             }
-            .padding()
         }
-        .frame(minWidth: 700, minHeight: 720)
         .onAppear {
             onEnsureAppCatalogLoaded()
             onRefreshModelOptions()
+        }
+    }
+
+    private var detailHeader: some View {
+        HStack(spacing: 12) {
+            Button {
+                onCancel()
+            } label: {
+                HStack(spacing: 4) {
+                    Image(systemName: "chevron.left")
+                    Text("common.cancel".localized)
+                }
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("common.cancel".localized)
+
+            Spacer()
+
+            if let onDelete, styleID != nil, !isDefault {
+                Button(role: .destructive) {
+                    onDelete()
+                } label: {
+                    Label("common.delete".localized, systemImage: "trash")
+                }
+                .buttonStyle(.bordered)
+                .controlSize(.small)
+            }
+
+            Button(detailActionTitle) {
+                saveDraft()
+            }
+            .buttonStyle(.borderedProminent)
+            .controlSize(.small)
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 10)
+        .background {
+            SettingsTitleBarMaterialBackground(usesBottomFade: false)
+        }
+        .overlay(alignment: .bottom) {
+            Divider()
         }
     }
 
@@ -251,13 +281,7 @@ public struct DictationStyleEditorSheet: View {
         }
     }
 
-    private var sheetTitle: String {
-        styleID == nil
-            ? "settings.styles.editor.new_title".localized
-            : "settings.styles.editor.edit_title".localized
-    }
-
-    private var primaryActionTitle: String {
+    private var detailActionTitle: String {
         styleID == nil ? "common.create".localized : "common.save".localized
     }
 
@@ -512,40 +536,43 @@ private struct CheckboxRow: View {
 }
 
 #Preview {
-    DictationStyleEditorSheet(
-        draft: DictationStyleEditorDraft(
-            name: "Daily Notes",
-            iconSymbol: "note.text",
-            promptInstructions: "Prefer concise bullets and list action items at the end.",
-            forceMarkdownOutput: true,
-            replaceBasePrompt: false,
-            outputLanguage: .english,
-            targets: [
-                .app(bundleIdentifier: "com.tinyspeck.slackmacgap"),
-                .website(url: "docs.example.com"),
-            ],
-            contextSourcePolicy: .init(
-                isEnabled: true,
-                includeClipboard: true,
-                includeWindowOCR: false,
-                includeAccessibilityText: true,
-                redactSensitiveData: true,
+    NavigationStack {
+        DictationStyleEditorDetailView(
+            draft: DictationStyleEditorDraft(
+                name: "Daily Notes",
+                iconSymbol: "note.text",
+                promptInstructions: "Prefer concise bullets and list action items at the end.",
+                forceMarkdownOutput: true,
+                replaceBasePrompt: false,
+                outputLanguage: .english,
+                targets: [
+                    .app(bundleIdentifier: "com.tinyspeck.slackmacgap"),
+                    .website(url: "docs.example.com"),
+                ],
+                contextSourcePolicy: .init(
+                    isEnabled: true,
+                    includeClipboard: true,
+                    includeWindowOCR: false,
+                    includeAccessibilityText: true,
+                    redactSensitiveData: true,
+                ),
+                enhancementsSelection: .default,
+                isDefault: false,
             ),
-            enhancementsSelection: .default,
-            isDefault: false,
-        ),
-        appCatalog: [
-            InstalledApplicationRecord(bundleIdentifier: "com.tinyspeck.slackmacgap", displayName: "Slack"),
-            InstalledApplicationRecord(bundleIdentifier: "com.apple.Safari", displayName: "Safari"),
-        ],
-        isLoadingAppCatalog: false,
-        onEnsureAppCatalogLoaded: {},
-        onFindConflictingStyleName: { _, _ in nil },
-        modelOptions: [],
-        isLoadingModelOptions: false,
-        onRefreshModelOptions: {},
-        providerDisplayName: { $0.provider.displayName },
-        onSave: { _ in },
-        onCancel: {},
-    )
+            appCatalog: [
+                InstalledApplicationRecord(bundleIdentifier: "com.tinyspeck.slackmacgap", displayName: "Slack"),
+                InstalledApplicationRecord(bundleIdentifier: "com.apple.Safari", displayName: "Safari"),
+            ],
+            isLoadingAppCatalog: false,
+            onEnsureAppCatalogLoaded: {},
+            onFindConflictingStyleName: { _, _ in nil },
+            modelOptions: [],
+            isLoadingModelOptions: false,
+            onRefreshModelOptions: {},
+            providerDisplayName: { $0.provider.displayName },
+            onSave: { _ in },
+            onCancel: {},
+            onDelete: {},
+        )
+    }
 }

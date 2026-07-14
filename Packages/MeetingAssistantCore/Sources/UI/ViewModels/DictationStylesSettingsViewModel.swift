@@ -48,7 +48,6 @@ public struct DictationStyleEditorDraft: Equatable, Sendable {
 
 @MainActor
 public final class DictationStylesSettingsViewModel: ObservableObject {
-    @Published public var showEditor = false
     @Published public var editorDraft: DictationStyleEditorDraft?
     @Published public private(set) var appCatalog: [InstalledApplicationRecord] = []
     @Published public private(set) var isLoadingAppCatalog = false
@@ -70,46 +69,42 @@ public final class DictationStylesSettingsViewModel: ObservableObject {
         settings.dictationStyles
     }
 
-    public func openCreateStyle() {
-        editorDraft = DictationStyleEditorDraft(
-            name: "",
-            iconSymbol: "textformat",
-            promptInstructions: "",
-            postProcessingEnabled: true,
-            forceMarkdownOutput: true,
-            replaceBasePrompt: false,
-            outputLanguage: .original,
-            targets: [],
-            contextSourcePolicy: settings.currentDefaultDictationStyle().contextSourcePolicy,
-            enhancementsSelection: settings.enhancementsDictationAISelection,
-            isDefault: false,
-        )
-        showEditor = true
+    public func prepareEditor(for styleID: UUID?) {
+        if let styleID, let style = settings.dictationStyles.first(where: { $0.id == styleID }) {
+            editorDraft = DictationStyleEditorDraft(
+                id: style.id,
+                name: style.name,
+                iconSymbol: style.iconSymbol,
+                promptInstructions: style.promptInstructions,
+                postProcessingEnabled: style.postProcessingEnabled,
+                forceMarkdownOutput: style.forceMarkdownOutput,
+                replaceBasePrompt: style.replaceBasePrompt,
+                outputLanguage: style.outputLanguage,
+                targets: style.targets,
+                contextSourcePolicy: style.contextSourcePolicy,
+                enhancementsSelection: style.enhancementsSelection,
+                isDefault: style.isDefault,
+            )
+        } else {
+            editorDraft = DictationStyleEditorDraft(
+                name: "",
+                iconSymbol: "textformat",
+                promptInstructions: "",
+                postProcessingEnabled: true,
+                forceMarkdownOutput: true,
+                replaceBasePrompt: false,
+                outputLanguage: .original,
+                targets: [],
+                contextSourcePolicy: settings.currentDefaultDictationStyle().contextSourcePolicy,
+                enhancementsSelection: settings.enhancementsDictationAISelection,
+                isDefault: false,
+            )
+        }
         ensureAppCatalogLoaded()
     }
 
-    public func openEditStyle(_ style: DictationStyle) {
-        editorDraft = DictationStyleEditorDraft(
-            id: style.id,
-            name: style.name,
-            iconSymbol: style.iconSymbol,
-            promptInstructions: style.promptInstructions,
-            postProcessingEnabled: style.postProcessingEnabled,
-            forceMarkdownOutput: style.forceMarkdownOutput,
-            replaceBasePrompt: style.replaceBasePrompt,
-            outputLanguage: style.outputLanguage,
-            targets: style.targets,
-            contextSourcePolicy: style.contextSourcePolicy,
-            enhancementsSelection: style.enhancementsSelection,
-            isDefault: style.isDefault,
-        )
-        showEditor = true
-        ensureAppCatalogLoaded()
-    }
-
-    public func dismissEditor() {
+    public func clearEditor() {
         editorDraft = nil
-        showEditor = false
     }
 
     public func saveStyle(_ draft: DictationStyleEditorDraft) {
@@ -138,7 +133,7 @@ public final class DictationStylesSettingsViewModel: ObservableObject {
         }
 
         settings.dictationStyles = updatedStyles
-        dismissEditor()
+        clearEditor()
     }
 
     public func deleteStyle(id: UUID) {
