@@ -467,6 +467,12 @@
 "settings.styles.editor.selected_targets" = "Alvos selecionados";
 "settings.styles.editor.no_targets" = "Nenhum alvo selecionado ainda.";
 "settings.styles.editor.remove_target" = "Remover alvo";
+"settings.styles.editor.remove_target_format" = "Remover %@";
+"settings.styles.editor.add_app_format" = "Adicionar %@ (%@)";
+"settings.styles.editor.app_selected_format" = "%@ selecionado";
+"settings.styles.editor.app_conflict_format" = "%@ já está atribuído a outro modo.";
+"settings.styles.editor.app_conflict_named_format" = "%@ está atribuído a %@.";
+"settings.styles.editor.target_unavailable" = "App indisponível";
 "settings.styles.editor.validation.name_required" = "O nome do modo é obrigatório.";
 "settings.styles.editor.validation.targets_required" = "Selecione pelo menos um app ou site.";
 "settings.styles.editor.validation.target_conflict" = "Este alvo já pertence a outro modo.";

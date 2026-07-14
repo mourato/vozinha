@@ -8,12 +8,17 @@ public struct TriggerSelectionView: View {
     private let styleID: UUID?
     private let onFindConflictingStyleName: (DictationStyleTarget, UUID?) -> String?
     private let onApply: ([DictationStyleTarget]) -> Void
-    private let onCancel: () -> Void
 
     @State private var localTargets: [DictationStyleTarget]
     @State private var appSearchText = ""
     @State private var websiteInput = ""
     @State private var validationMessage: String?
+
+    private enum AppSelectionState {
+        case available
+        case selected
+        case conflicting(String)
+    }
 
     public init(
         initialTargets: [DictationStyleTarget],
@@ -22,24 +27,20 @@ public struct TriggerSelectionView: View {
         styleID: UUID?,
         onFindConflictingStyleName: @escaping (DictationStyleTarget, UUID?) -> String?,
         onApply: @escaping ([DictationStyleTarget]) -> Void,
-        onCancel: @escaping () -> Void,
     ) {
         self.appCatalog = appCatalog
         self.isLoadingAppCatalog = isLoadingAppCatalog
         self.styleID = styleID
         self.onFindConflictingStyleName = onFindConflictingStyleName
         self.onApply = onApply
-        self.onCancel = onCancel
         _localTargets = State(initialValue: initialTargets)
     }
 
     public var body: some View {
         ModeEditorDrawer(
-            headerStyle: .backWithAction,
+            headerStyle: .back,
             title: "settings.styles.editor.targets".localized,
-            actionTitle: "common.done".localized,
             onBack: { onApply(localTargets) },
-            onAction: { onApply(localTargets) },
             content: {
                 VStack(alignment: .leading, spacing: 14) {
                     appSearchSection
@@ -50,6 +51,7 @@ public struct TriggerSelectionView: View {
                         Text(validationMessage)
                             .font(.caption)
                             .foregroundStyle(.red)
+                            .accessibilityLabel(validationMessage)
                     }
                 }
             },
@@ -84,7 +86,7 @@ public struct TriggerSelectionView: View {
                 ScrollView {
                     LazyVStack(spacing: 4) {
                         ForEach(filteredApps) { app in
-                            appRow(app)
+                            appRow(app, state: appSelectionState(for: app))
                         }
                     }
                 }
@@ -157,7 +159,9 @@ public struct TriggerSelectionView: View {
                                 Image(systemName: "trash")
                             }
                             .buttonStyle(.borderless)
-                            .accessibilityLabel("settings.styles.editor.remove_target".localized)
+                            .accessibilityLabel(
+                                "settings.styles.editor.remove_target_format".localized(with: targetPrimaryText(target)),
+                            )
                         }
                         .padding(.horizontal, 10)
                         .padding(.vertical, 7)
@@ -177,17 +181,7 @@ public struct TriggerSelectionView: View {
 
     private var filteredApps: [InstalledApplicationRecord] {
         let query = appSearchText.trimmingCharacters(in: .whitespacesAndNewlines)
-        let selectedKeys = Set<String>(
-            localTargets.compactMap { target in
-                guard case let .app(bundleIdentifier) = target else { return nil }
-                return bundleIdentifier.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
-            },
-        )
-
         let candidates = appCatalog
-            .filter { app in
-                !selectedKeys.contains(app.bundleIdentifier.trimmingCharacters(in: .whitespacesAndNewlines).lowercased())
-            }
             .sorted {
                 let nameComparison = $0.displayName.localizedCaseInsensitiveCompare($1.displayName)
                 if nameComparison != .orderedSame {
@@ -218,7 +212,26 @@ public struct TriggerSelectionView: View {
         return normalized.contains(".") ? normalized : nil
     }
 
-    private func appRow(_ app: InstalledApplicationRecord) -> some View {
+    private func appSelectionState(for app: InstalledApplicationRecord) -> AppSelectionState {
+        let identity = app.bundleIdentifier.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        if localTargets.contains(where: { target in
+            guard case let .app(bundleIdentifier) = target else { return false }
+            return bundleIdentifier.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() == identity
+        }) {
+            return .selected
+        }
+
+        if let styleName = onFindConflictingStyleName(
+            .app(bundleIdentifier: app.bundleIdentifier),
+            styleID,
+        ) {
+            return .conflicting(styleName)
+        }
+
+        return .available
+    }
+
+    private func appRow(_ app: InstalledApplicationRecord, state: AppSelectionState) -> some View {
         Button {
             addAppTarget(app.bundleIdentifier)
         } label: {
@@ -240,9 +253,7 @@ public struct TriggerSelectionView: View {
 
                 Spacer()
 
-                Image(systemName: "plus.circle.fill")
-                    .foregroundStyle(.tint)
-                    .font(.body)
+                appStateLabel(for: state)
             }
             .padding(.horizontal, 8)
             .padding(.vertical, 4)
@@ -251,7 +262,53 @@ public struct TriggerSelectionView: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
+        .disabled(ifSelected(state))
         .frame(maxWidth: .infinity, alignment: .leading)
+        .accessibilityLabel(
+            appAccessibilityLabel(for: app, state: state),
+        )
+    }
+
+    @ViewBuilder
+    private func appStateLabel(for state: AppSelectionState) -> some View {
+        switch state {
+        case .available:
+            Image(systemName: "plus.circle.fill")
+                .foregroundStyle(.tint)
+                .font(.body)
+        case .selected:
+            Image(systemName: "checkmark.circle.fill")
+                .foregroundStyle(.secondary)
+                .font(.body)
+        case .conflicting:
+            Image(systemName: "exclamationmark.triangle.fill")
+                .foregroundStyle(.orange)
+                .font(.body)
+        }
+    }
+
+    private func ifSelected(_ state: AppSelectionState) -> Bool {
+        if case .selected = state {
+            return true
+        }
+        return false
+    }
+
+    private func appAccessibilityLabel(
+        for app: InstalledApplicationRecord,
+        state: AppSelectionState,
+    ) -> String {
+        switch state {
+        case .available:
+            return "settings.styles.editor.add_app_format".localized(with: app.displayName, app.bundleIdentifier)
+        case .selected:
+            return "settings.styles.editor.app_selected_format".localized(with: app.displayName)
+        case let .conflicting(styleName):
+            if styleName.isEmpty {
+                return "settings.styles.editor.app_conflict_format".localized(with: app.displayName)
+            }
+            return "settings.styles.editor.app_conflict_named_format".localized(with: app.displayName, styleName)
+        }
     }
 
     private func addAppTarget(_ bundleIdentifier: String) {
@@ -294,7 +351,10 @@ public struct TriggerSelectionView: View {
     private func targetPrimaryText(_ target: DictationStyleTarget) -> String {
         switch target {
         case let .app(bundleIdentifier):
-            if let app = appCatalog.first(where: { $0.bundleIdentifier.lowercased() == bundleIdentifier.lowercased() }) {
+            if let app = appCatalog.first(where: {
+                $0.bundleIdentifier.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+                    == bundleIdentifier.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+            }) {
                 return app.displayName
             }
             return bundleIdentifier
@@ -306,9 +366,15 @@ public struct TriggerSelectionView: View {
     private func targetSecondaryText(_ target: DictationStyleTarget) -> String {
         switch target {
         case let .app(bundleIdentifier):
-            bundleIdentifier
+            if appCatalog.contains(where: {
+                $0.bundleIdentifier.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+                    == bundleIdentifier.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+            }) {
+                return bundleIdentifier
+            }
+            return "settings.styles.editor.target_unavailable".localized
         case .website:
-            "settings.styles.target.website".localized
+            return "settings.styles.target.website".localized
         }
     }
 
@@ -335,29 +401,108 @@ public struct TriggerSelectionView: View {
     }
 }
 
-#Preview("Trigger Selection (Narrow)") {
+// MARK: - Preview: Empty state (no targets, empty catalog)
+
+#Preview("Empty") {
     NavigationStack {
         TriggerSelectionView(
-            initialTargets: [
-                .app(bundleIdentifier: "com.tinyspeck.slackmacgap"),
-                .website(url: "docs.example.com"),
-            ],
-            appCatalog: [
-                InstalledApplicationRecord(bundleIdentifier: "com.tinyspeck.slackmacgap", displayName: "Slack"),
-                InstalledApplicationRecord(bundleIdentifier: "com.apple.Safari", displayName: "Safari"),
-                InstalledApplicationRecord(bundleIdentifier: "com.microsoft.VSCode", displayName: "VS Code"),
-            ],
+            initialTargets: [],
+            appCatalog: [],
             isLoadingAppCatalog: false,
             styleID: nil,
             onFindConflictingStyleName: { _, _ in nil },
             onApply: { _ in },
-            onCancel: {},
         )
-        .frame(width: 360)
+        .frame(width: 400)
     }
 }
 
-#Preview("Trigger Selection (Normal)") {
+// MARK: - Preview: Loading
+
+#Preview("Loading") {
+    NavigationStack {
+        TriggerSelectionView(
+            initialTargets: [],
+            appCatalog: [],
+            isLoadingAppCatalog: true,
+            styleID: nil,
+            onFindConflictingStyleName: { _, _ in nil },
+            onApply: { _ in },
+        )
+        .frame(width: 400)
+    }
+}
+
+// MARK: - Preview: Search results with apps
+
+#Preview("Search Results") {
+    NavigationStack {
+        TriggerSelectionView(
+            initialTargets: [],
+            appCatalog: [
+                InstalledApplicationRecord(bundleIdentifier: "com.apple.Safari", displayName: "Safari"),
+                InstalledApplicationRecord(bundleIdentifier: "com.apple.TextEdit", displayName: "TextEdit"),
+                InstalledApplicationRecord(bundleIdentifier: "com.microsoft.VSCode", displayName: "VS Code"),
+                InstalledApplicationRecord(bundleIdentifier: "com.google.Chrome", displayName: "Chrome"),
+                InstalledApplicationRecord(bundleIdentifier: "com.tinyspeck.slackmacgap", displayName: "Slack"),
+            ],
+            isLoadingAppCatalog: false,
+            styleID: nil,
+            onFindConflictingStyleName: { _, _ in nil },
+            onApply: { _ in },
+        )
+        .frame(width: 400)
+    }
+}
+
+// MARK: - Preview: Selected apps and websites
+
+#Preview("Selected Targets") {
+    NavigationStack {
+        TriggerSelectionView(
+            initialTargets: [
+                .app(bundleIdentifier: "com.tinyspeck.slackmacgap"),
+                .app(bundleIdentifier: "com.microsoft.VSCode"),
+                .website(url: "docs.example.com"),
+            ],
+            appCatalog: [
+                InstalledApplicationRecord(bundleIdentifier: "com.tinyspeck.slackmacgap", displayName: "Slack"),
+                InstalledApplicationRecord(bundleIdentifier: "com.apple.Safari", displayName: "Safari"),
+                InstalledApplicationRecord(bundleIdentifier: "com.microsoft.VSCode", displayName: "VS Code"),
+            ],
+            isLoadingAppCatalog: false,
+            styleID: nil,
+            onFindConflictingStyleName: { _, _ in nil },
+            onApply: { _ in },
+        )
+        .frame(width: 400)
+    }
+}
+
+// MARK: - Preview: Conflict error
+
+#Preview("Conflict Error") {
+    NavigationStack {
+        TriggerSelectionView(
+            initialTargets: [
+                .app(bundleIdentifier: "com.tinyspeck.slackmacgap"),
+            ],
+            appCatalog: [
+                InstalledApplicationRecord(bundleIdentifier: "com.tinyspeck.slackmacgap", displayName: "Slack"),
+                InstalledApplicationRecord(bundleIdentifier: "com.apple.Safari", displayName: "Safari"),
+            ],
+            isLoadingAppCatalog: false,
+            styleID: nil,
+            onFindConflictingStyleName: { _, _ in "Meeting Notes" },
+            onApply: { _ in },
+        )
+        .frame(width: 400)
+    }
+}
+
+// MARK: - Preview: Narrow width
+
+#Preview("Narrow Width") {
     NavigationStack {
         TriggerSelectionView(
             initialTargets: [
@@ -373,8 +518,7 @@ public struct TriggerSelectionView: View {
             styleID: nil,
             onFindConflictingStyleName: { _, _ in nil },
             onApply: { _ in },
-            onCancel: {},
         )
-        .frame(width: 640)
+        .frame(width: 300)
     }
 }

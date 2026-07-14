@@ -110,14 +110,14 @@ Add previews for empty, loading, search results, selected apps/sites, conflict e
 
 ## Done criteria
 
-- [ ] Parent editor shows one concise Apps and Websites drill-down row.
-- [ ] Child route provides searchable, sorted, full-width app results with icons and identifiers.
-- [ ] Website input and selected-target rows adapt to narrow width.
-- [ ] Existing normalization, exclusivity, and persistence behavior is unchanged and tested.
-- [ ] Child route uses drawer conventions without duplicating Delete/Save.
-- [ ] Accessibility and responsive previews cover empty, loading, error, and populated states.
-- [ ] Focused tests, previews, and build pass.
-- [ ] `plans/README.md` status row is updated.
+- [x] Parent editor shows one concise Apps and Websites drill-down row.
+- [x] Child route provides searchable, sorted, full-width app results with icons and identifiers.
+- [x] Website input and selected-target rows adapt to narrow width.
+- [x] Existing normalization, exclusivity, and persistence behavior is unchanged and tested.
+- [x] Child route uses drawer conventions without duplicating Delete/Save.
+- [x] Accessibility and responsive previews cover empty, loading, error, and populated states.
+- [x] Focused tests, previews, and build pass.
+- [x] `plans/README.md` status row is updated.
 
 ## STOP conditions
 

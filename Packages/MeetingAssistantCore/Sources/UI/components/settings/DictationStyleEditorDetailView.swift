@@ -232,36 +232,6 @@ public struct DictationStyleEditorDetailView: View {
                     onOpenTriggerSelection?(currentDraft)
                 },
             )
-
-            if !targets.isEmpty {
-                VStack(spacing: 0) {
-                    ForEach(Array(targets.enumerated()), id: \.offset) { index, target in
-                        HStack(spacing: 10) {
-                            targetIcon(for: target)
-
-                            VStack(alignment: .leading, spacing: 1) {
-                                Text(targetPrimaryText(target))
-                                    .font(.subheadline)
-                                    .fontWeight(.medium)
-                                Text(targetSecondaryText(target))
-                                    .font(.caption2)
-                                    .foregroundStyle(.secondary)
-                            }
-
-                            Spacer()
-                        }
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 7)
-
-                        if index < targets.count - 1 {
-                            Divider()
-                        }
-                    }
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .background(AppDesignSystem.Colors.subtleFill2)
-                .clipShape(RoundedRectangle(cornerRadius: AppDesignSystem.Layout.smallCornerRadius))
-            }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
@@ -403,51 +373,8 @@ public struct DictationStyleEditorDetailView: View {
         return ordered
     }
 
-    private func targetPrimaryText(_ target: DictationStyleTarget) -> String {
-        switch target {
-        case let .app(bundleIdentifier):
-            if let app = appCatalog.first(where: { normalizeBundleIdentifier($0.bundleIdentifier) == normalizeBundleIdentifier(bundleIdentifier) }) {
-                return app.displayName
-            }
-            return bundleIdentifier
-        case let .website(url):
-            return url
-        }
-    }
-
-    private func targetSecondaryText(_ target: DictationStyleTarget) -> String {
-        switch target {
-        case let .app(bundleIdentifier):
-            bundleIdentifier
-        case .website:
-            "settings.styles.target.website".localized
-        }
-    }
-
-    @ViewBuilder
-    private func targetIcon(for target: DictationStyleTarget) -> some View {
-        switch target {
-        case let .app(bundleIdentifier):
-            AppIconView(
-                bundleIdentifier: bundleIdentifier,
-                fallbackSystemName: "app.fill",
-                size: 24,
-                cornerRadius: 6,
-            )
-        case .website:
-            Image(systemName: "globe")
-                .font(.body)
-                .foregroundStyle(AppDesignSystem.Colors.iconHighlight)
-                .frame(width: 24)
-        }
-    }
-
     private func targetIdentity(_ target: DictationStyleTarget) -> String {
         target.normalizedIdentity
-    }
-
-    private func normalizeBundleIdentifier(_ value: String) -> String {
-        value.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
     }
 }
 

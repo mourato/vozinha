@@ -466,6 +466,12 @@
 "settings.styles.editor.selected_targets" = "Selected targets";
 "settings.styles.editor.no_targets" = "No targets selected yet.";
 "settings.styles.editor.remove_target" = "Remove target";
+"settings.styles.editor.remove_target_format" = "Remove %@";
+"settings.styles.editor.add_app_format" = "Add %@ (%@)";
+"settings.styles.editor.app_selected_format" = "%@ selected";
+"settings.styles.editor.app_conflict_format" = "%@ is already assigned to another mode.";
+"settings.styles.editor.app_conflict_named_format" = "%@ is assigned to %@.";
+"settings.styles.editor.target_unavailable" = "Unavailable app";
 "settings.styles.editor.validation.name_required" = "Style name is required.";
 "settings.styles.editor.validation.targets_required" = "Select at least one app or website.";
 "settings.styles.editor.validation.target_conflict" = "This target already belongs to another style.";

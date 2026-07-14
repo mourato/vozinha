@@ -44,7 +44,7 @@ reason) | `REJECTED` (with a one-line rationale).
 | [069](069-establish-settings-content-surface-contract.md) | Establish a shared settings content-surface contract | P1 | M | - | DONE |
 | [070](070-build-modes-secondary-sidebar-editor.md) | Build the Modes secondary-sidebar editor | P1 | L | 069 | DONE |
 | [071](071-normalize-fluid-settings-groups.md) | Normalize fluid configuration groups and responsive rows | P1 | L | 069 | DONE |
-| [072](072-align-mode-trigger-flow-with-voiceink-reference.md) | Align the mode trigger flow with the VoiceInk reference | P2 | M | 070, 071 | TODO |
+| [072](072-align-mode-trigger-flow-with-voiceink-reference.md) | Align the mode trigger flow with the VoiceInk reference | P2 | M | 070, 071 | DONE |
 
 Plans 001–061 are completed or archived in the historical ledger. The archive preserves the original audit scope,
 findings, dependency history, status table, committee notes, and rejected

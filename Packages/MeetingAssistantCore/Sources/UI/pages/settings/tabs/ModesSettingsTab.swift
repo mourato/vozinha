@@ -135,9 +135,6 @@ public struct ModesSettingsTab: View {
                 viewModel.editorDraft?.targets = updatedTargets
                 navigationState.open(.editor(styleID: styleID))
             },
-            onCancel: {
-                navigationState.open(.editor(styleID: styleID))
-            },
         )
     }
 
