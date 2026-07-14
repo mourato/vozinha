@@ -30,6 +30,7 @@ final class PostProcessingSystemContextMetadataTests: XCTestCase {
         XCTAssertTrue(enriched.contains("- Active app: WhatsApp"))
         XCTAssertTrue(enriched.contains("<SYSTEM_CONTEXT>"))
         XCTAssertTrue(enriched.contains("</SYSTEM_CONTEXT>"))
+        XCTAssertFalse(enriched.hasPrefix("CONTEXT_METADATA"))
     }
 
     func testAugment_DoesNotDuplicateSystemFieldsIfAlreadyPresent() throws {

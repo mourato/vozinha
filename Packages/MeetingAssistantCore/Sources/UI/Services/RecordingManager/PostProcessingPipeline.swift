@@ -109,24 +109,11 @@ extension RecordingManager {
             )
         }
         let prompt = await resolvePostProcessingPrompt(
-            rawText: postProcessingInput,
+            rawText: TranscriptionOutputSanitizer.stripPromptMetadata(from: postProcessingInput),
             isDictation: isDictation,
             meetingType: type,
             settings: settings,
         )
-
-        // Construct context metadata
-        let formatter = DateFormatter()
-        formatter.dateStyle = .medium
-        formatter.timeStyle = .short
-        let contextMetadata = """
-        Current time: \(formatter.string(from: Date()))
-        Time zone: \(TimeZone.current.identifier)
-        Locale: \(Locale.current.identifier)
-        Computer name: \(Host.current().localizedName ?? "Unknown")
-        User's full name: \(NSFullUserName())
-        Application context: \(meeting?.app.displayName ?? "Unknown")
-        """
 
         transcriptionStatus.updateProgress(phase: .postProcessing, percentage: Constants.aiProcessingProgress)
         RecordingIndicatorProcessingStateStore.shared.update(
@@ -143,7 +130,6 @@ extension RecordingManager {
             kernelMode: kernelMode,
             selectionOverride: dictationSelectionOverride,
             dictationStructuredPostProcessingEnabled: settings.dictationStructuredPostProcessingEnabled,
-            contextMetadata: contextMetadata,
         )
     }
 
@@ -155,7 +141,6 @@ extension RecordingManager {
         kernelMode: IntelligenceKernelMode,
         selectionOverride: EnhancementsAISelection? = nil,
         dictationStructuredPostProcessingEnabled: Bool,
-        contextMetadata: String,
     ) async -> PostProcessingResult {
         let requestConfig = selectionOverride.map {
             settings.resolvedEnhancementsAIConfiguration(for: $0)
@@ -166,7 +151,6 @@ extension RecordingManager {
             transcription: postProcessingInput,
             mode: kernelMode,
             selectedModel: requestConfig.selectedModel,
-            contextMetadata: contextMetadata,
         )
 
         do {
@@ -369,7 +353,6 @@ extension RecordingManager {
         transcription: String,
         mode: IntelligenceKernelMode,
         selectedModel: String?,
-        contextMetadata: String,
     ) -> (systemPrompt: String, userPrompt: String) {
         let snapshotPrompt = PostProcessingPrompt(
             id: prompt.id,
@@ -385,7 +368,6 @@ extension RecordingManager {
             prompt: snapshotPrompt,
             mode: mode,
             selectedModel: selectedModel,
-            contextMetadata: contextMetadata,
         )
         return (requestPrompts.systemPrompt, requestPrompts.userPrompt)
     }

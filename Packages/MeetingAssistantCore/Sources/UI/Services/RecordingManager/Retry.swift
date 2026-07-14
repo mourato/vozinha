@@ -187,7 +187,7 @@ extension RecordingManager {
             capturePurposeOverride: transcription.meeting.capturePurpose,
         )
         let resolvedPostProcessingContext = PostProcessingSystemContextMetadata.augment(postProcessingContext)
-        let postProcessingInput = mergedPostProcessingInput(
+        let postProcessingInput = PostProcessingInputComposer.compose(
             transcriptionText: qualityProfile.normalizedTextForIntelligence,
             qualityProfile: qualityProfile,
             context: resolvedPostProcessingContext,
@@ -324,71 +324,6 @@ extension RecordingManager {
     }
 
     // MARK: - Post Processing Input
-
-    func mergedPostProcessingInput(
-        transcriptionText: String,
-        qualityProfile: TranscriptionQualityProfile,
-        context: String?,
-        meetingNotes: String?,
-        includeQualityMetadata: Bool,
-    ) -> String {
-        var blocks = [transcriptionText]
-        if includeQualityMetadata {
-            blocks.append(qualityMetadataBlock(from: qualityProfile))
-        }
-
-        if let meetingNotes {
-            let trimmedMeetingNotes = meetingNotes.trimmingCharacters(in: .whitespacesAndNewlines)
-            if !trimmedMeetingNotes.isEmpty {
-                let sanitizedMeetingNotes = MeetingNotesMarkdownSanitizer
-                    .sanitizeForPromptBlockContent(trimmedMeetingNotes)
-                blocks.append(
-                    """
-                    <MEETING_NOTES>
-                    \(sanitizedMeetingNotes)
-                    </MEETING_NOTES>
-                    """,
-                )
-            }
-        }
-
-        if let context {
-            let trimmedContext = context.trimmingCharacters(in: .whitespacesAndNewlines)
-            if !trimmedContext.isEmpty {
-                let sanitizedContext = MeetingNotesMarkdownSanitizer
-                    .sanitizeForPromptBlockContent(trimmedContext)
-                blocks.append(
-                    """
-                    <CONTEXT_METADATA>
-                    \(sanitizedContext)
-                    </CONTEXT_METADATA>
-                    """,
-                )
-            }
-        }
-
-        return blocks.joined(separator: "\n\n")
-    }
-
-    func qualityMetadataBlock(from qualityProfile: TranscriptionQualityProfile) -> String {
-        let markerLines: [String] = if qualityProfile.markers.isEmpty {
-            ["none"]
-        } else {
-            qualityProfile.markers.map { marker in
-                "- [\(marker.reason.rawValue)] \(marker.snippet) [\(marker.startTime)-\(marker.endTime)]"
-            }
-        }
-
-        return """
-        <TRANSCRIPT_QUALITY>
-        normalizationVersion: \(qualityProfile.normalizationVersion)
-        overallConfidence: \(qualityProfile.overallConfidence)
-        containsUncertainty: \(qualityProfile.containsUncertainty)
-        markers:
-        \(markerLines.joined(separator: "\n"))
-        </TRANSCRIPT_QUALITY>
-        """
-    }
 
     func recalibrateCanonicalSummary(
         _ summary: CanonicalSummary,

@@ -132,18 +132,16 @@ public enum AIPromptTemplates {
     ///   - contextMetadata: Optional context metadata.
     /// - Returns: Minimal user message with just transcript and optional context.
     public static func simpleDictationUserMessage(transcription: String, contextMetadata: String? = nil) -> String {
-        let trimmedContextMetadata = contextMetadata?.trimmingCharacters(in: .whitespacesAndNewlines)
-        let shouldInjectContextBlock = if let trimmedContextMetadata {
-            !trimmedContextMetadata.isEmpty && !containsTaggedBlock(named: "CONTEXT_METADATA", in: transcription)
-        } else {
-            false
-        }
+        let preparedInput = preparePromptInput(
+            transcription: transcription,
+            contextMetadata: contextMetadata,
+        )
 
-        let contextBlock = if shouldInjectContextBlock, let trimmedContextMetadata {
+        let contextBlock = if let contextMetadata = preparedInput.contextMetadata {
             """
 
             <CONTEXT_METADATA>
-            \(trimmedContextMetadata)
+            \(contextMetadata)
             </CONTEXT_METADATA>
             """
         } else {
@@ -154,7 +152,7 @@ public enum AIPromptTemplates {
         \(contextBlock)
 
         <TRANSCRIPT>
-        \(transcription)
+        \(preparedInput.transcription)
         </TRANSCRIPT>
         """
     }
@@ -303,18 +301,16 @@ public enum AIPromptTemplates {
         // Note: Priority instructions are now handled exclusively in systemPrompt() to avoid duplication.
         // This parameter is kept for backward compatibility but is not used in the user message.
 
-        let trimmedContextMetadata = contextMetadata?.trimmingCharacters(in: .whitespacesAndNewlines)
-        let shouldInjectContextBlock = if let trimmedContextMetadata {
-            !trimmedContextMetadata.isEmpty && !containsTaggedBlock(named: "CONTEXT_METADATA", in: transcription)
-        } else {
-            false
-        }
+        let preparedInput = preparePromptInput(
+            transcription: transcription,
+            contextMetadata: contextMetadata,
+        )
 
-        let contextBlock = if shouldInjectContextBlock, let trimmedContextMetadata {
+        let contextBlock = if let contextMetadata = preparedInput.contextMetadata {
             """
 
             <CONTEXT_METADATA>
-            \(trimmedContextMetadata)
+            \(contextMetadata)
             </CONTEXT_METADATA>
             """
         } else {
@@ -328,22 +324,78 @@ public enum AIPromptTemplates {
         \(contextBlock)
 
         <TRANSCRIPTION>
-        \(transcription)
+        \(preparedInput.transcription)
         </TRANSCRIPTION>
 
         Process the transcription above according to the instructions provided.
         """
     }
 
-    private static func containsTaggedBlock(named tag: String, in text: String) -> Bool {
-        let openTag = "<\(tag)>"
-        let closeTag = "</\(tag)>"
+    private struct PreparedPromptInput {
+        let transcription: String
+        let contextMetadata: String?
+    }
 
-        guard let openRange = text.range(of: openTag) else {
-            return false
+    private static func preparePromptInput(
+        transcription: String,
+        contextMetadata: String?,
+    ) -> PreparedPromptInput {
+        let extractedContext = extractTaggedBlocks(named: "CONTEXT_METADATA", from: transcription)
+        let transcriptionWithoutContext = removeTaggedBlocks(named: "CONTEXT_METADATA", from: transcription)
+        let contextBodies = (extractedContext + [contextMetadata ?? ""])
+            .map(normalizedContextBody)
+            .filter { !$0.isEmpty }
+            .reduce(into: [String]()) { values, body in
+                if !values.contains(body) {
+                    values.append(body)
+                }
+            }
+
+        return PreparedPromptInput(
+            transcription: transcriptionWithoutContext.trimmingCharacters(in: .whitespacesAndNewlines),
+            contextMetadata: contextBodies.isEmpty ? nil : contextBodies.joined(separator: "\n"),
+        )
+    }
+
+    private static func extractTaggedBlocks(named tag: String, from text: String) -> [String] {
+        let escapedTag = NSRegularExpression.escapedPattern(for: tag)
+        let pattern = #"<\s*"# + escapedTag + #"\s*>([\s\S]*?)<\s*/\s*"# + escapedTag + #"\s*>"#
+        guard let regex = try? NSRegularExpression(pattern: pattern, options: [.caseInsensitive]) else {
+            return []
         }
 
-        return text.range(of: closeTag, range: openRange.upperBound..<text.endIndex) != nil
+        let range = NSRange(text.startIndex..<text.endIndex, in: text)
+        return regex.matches(in: text, options: [], range: range).compactMap { match in
+            guard let bodyRange = Range(match.range(at: 1), in: text) else { return nil }
+            return String(text[bodyRange])
+        }
+    }
+
+    private static func removeTaggedBlocks(named tag: String, from text: String) -> String {
+        let escapedTag = NSRegularExpression.escapedPattern(for: tag)
+        let pattern = #"<\s*"# + escapedTag + #"\s*>[\s\S]*?<\s*/\s*"# + escapedTag + #"\s*>"#
+        guard let regex = try? NSRegularExpression(pattern: pattern, options: [.caseInsensitive]) else {
+            return text
+        }
+
+        let range = NSRange(text.startIndex..<text.endIndex, in: text)
+        return regex.stringByReplacingMatches(in: text, options: [], range: range, withTemplate: "")
+    }
+
+    private static func normalizedContextBody(_ context: String) -> String {
+        var lines = context.components(separatedBy: .newlines)
+        while let first = lines.first, first.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            lines.removeFirst()
+        }
+
+        if let first = lines.first,
+           first.trimmingCharacters(in: .whitespacesAndNewlines)
+           .compare("CONTEXT_METADATA", options: [.caseInsensitive, .diacriticInsensitive]) == .orderedSame
+        {
+            lines.removeFirst()
+        }
+
+        return lines.joined(separator: "\n").trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
     /// Appends explicit site/app priority instructions to a base system prompt.

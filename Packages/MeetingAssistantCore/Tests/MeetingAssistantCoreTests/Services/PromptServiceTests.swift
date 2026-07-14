@@ -137,6 +137,32 @@ final class PromptServiceTests: XCTestCase {
         XCTAssertEqual(contextTagCount, 1)
     }
 
+    func testSimpleDictationUserMessageSeparatesEmbeddedContextFromTranscript() throws {
+        let userMessage = AIPromptTemplates.simpleDictationUserMessage(
+            transcription: """
+            hello world
+
+            <CONTEXT_METADATA>
+            CONTEXT_METADATA
+            <ACTIVE_APP>
+            Safari
+            </ACTIVE_APP>
+            </CONTEXT_METADATA>
+            """,
+        )
+
+        let contextEnd = try XCTUnwrap(userMessage.range(of: "</CONTEXT_METADATA>"))
+        let transcriptStart = try XCTUnwrap(userMessage.range(of: "<TRANSCRIPT>"))
+        let transcriptEnd = try XCTUnwrap(userMessage.range(of: "</TRANSCRIPT>"))
+        let transcriptBody = String(userMessage[transcriptStart.upperBound..<transcriptEnd.lowerBound])
+
+        XCTAssertLessThan(contextEnd.upperBound, transcriptStart.lowerBound)
+        XCTAssertEqual(userMessage.components(separatedBy: "<CONTEXT_METADATA>").count - 1, 1)
+        XCTAssertFalse(transcriptBody.contains("CONTEXT_METADATA"))
+        XCTAssertFalse(transcriptBody.contains("<ACTIVE_APP>"))
+        XCTAssertTrue(transcriptBody.contains("hello world"))
+    }
+
     func testIsSimpleModelDetectsGptOss120b() {
         XCTAssertTrue(AIPromptTemplates.isSimpleModel("gpt-oss-120b"))
         XCTAssertTrue(AIPromptTemplates.isSimpleModel("GPT-OSS-120B"))
@@ -282,6 +308,6 @@ final class PromptServiceTests: XCTestCase {
 
         let transcriptionRange = try XCTUnwrap(userMessage.range(of: "<TRANSCRIPTION>"))
         let prefix = String(userMessage[..<transcriptionRange.lowerBound])
-        XCTAssertFalse(prefix.contains("<CONTEXT_METADATA>"))
+        XCTAssertTrue(prefix.contains("<CONTEXT_METADATA>"))
     }
 }

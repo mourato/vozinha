@@ -22,7 +22,7 @@ public enum PostProcessingSystemContextMetadata {
             fullUserName: fullUserName,
         )
 
-        var outputLines = ["CONTEXT_METADATA"]
+        var outputLines: [String] = []
         if !systemLines.isEmpty {
             outputLines.append("<SYSTEM_CONTEXT>")
             outputLines.append(contentsOf: systemLines)

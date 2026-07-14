@@ -14,7 +14,6 @@ extension TranscribeAudioUseCase {
         let availablePrompts: [DomainPostProcessingPrompt]
         let kernelMode: IntelligenceKernelMode
         let dictationStructuredPostProcessingEnabled: Bool
-        let postProcessingContext: String?
         let postProcessingModelID: String?
 
         init(
@@ -25,7 +24,6 @@ extension TranscribeAudioUseCase {
             availablePrompts: [DomainPostProcessingPrompt] = [],
             kernelMode: IntelligenceKernelMode = .meeting,
             dictationStructuredPostProcessingEnabled: Bool = false,
-            postProcessingContext: String? = nil,
             postProcessingModelID: String? = nil,
         ) {
             self.applyPostProcessing = applyPostProcessing
@@ -35,7 +33,6 @@ extension TranscribeAudioUseCase {
             self.availablePrompts = availablePrompts
             self.kernelMode = kernelMode
             self.dictationStructuredPostProcessingEnabled = dictationStructuredPostProcessingEnabled
-            self.postProcessingContext = postProcessingContext
             self.postProcessingModelID = postProcessingModelID
         }
 
@@ -91,7 +88,6 @@ extension TranscribeAudioUseCase {
                     input: postProcessingInput,
                     context: context,
                     meetingType: nil,
-                    postProcessingContext: config.postProcessingContext,
                 )
             }
 
@@ -100,7 +96,6 @@ extension TranscribeAudioUseCase {
                     input: postProcessingInput,
                     selection: selection,
                     context: context,
-                    postProcessingContext: config.postProcessingContext,
                 )
             }
 
@@ -110,7 +105,6 @@ extension TranscribeAudioUseCase {
                     input: postProcessingInput,
                     context: context,
                     meetingType: nil,
-                    postProcessingContext: config.postProcessingContext,
                 )
             }
 
@@ -118,7 +112,6 @@ extension TranscribeAudioUseCase {
                 input: postProcessingInput,
                 context: context,
                 meetingType: nil,
-                postProcessingContext: config.postProcessingContext,
             )
         } catch {
             AppLogger.error(
@@ -188,7 +181,6 @@ extension TranscribeAudioUseCase {
         input: String,
         context: PostProcessingExecutionContext,
         meetingType: String?,
-        postProcessingContext: String?,
     ) async throws -> PostProcessingResult {
         let (systemPrompt, userPrompt) = buildRequestPrompts(
             promptID: prompt.id,
@@ -197,7 +189,6 @@ extension TranscribeAudioUseCase {
             transcription: input,
             mode: context.kernelMode,
             selectedModel: context.selectedModel,
-            contextMetadata: postProcessingContext,
         )
 
         if context.useStructuredPipeline {
@@ -242,7 +233,6 @@ extension TranscribeAudioUseCase {
         input: String,
         selection: PromptSelection,
         context: PostProcessingExecutionContext,
-        postProcessingContext: String?,
     ) async throws -> PostProcessingResult {
         let meetingType = try await classifyMeeting(text: input, context: context)
         let normalizedType = meetingType?.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines).lowercased()
@@ -256,7 +246,6 @@ extension TranscribeAudioUseCase {
                 input: input,
                 context: context,
                 meetingType: meetingType,
-                postProcessingContext: postProcessingContext,
             )
         }
 
@@ -266,7 +255,6 @@ extension TranscribeAudioUseCase {
                 input: input,
                 context: context,
                 meetingType: meetingType,
-                postProcessingContext: postProcessingContext,
             )
         }
 
@@ -274,7 +262,6 @@ extension TranscribeAudioUseCase {
             input: input,
             context: context,
             meetingType: meetingType,
-            postProcessingContext: postProcessingContext,
         )
     }
 
@@ -282,7 +269,6 @@ extension TranscribeAudioUseCase {
         input: String,
         context: PostProcessingExecutionContext,
         meetingType: String?,
-        postProcessingContext: String?,
     ) async throws -> PostProcessingResult {
         if context.useStructuredPipeline {
             let structuredResult = try await context.repository.processTranscriptionStructured(
@@ -427,7 +413,6 @@ extension TranscribeAudioUseCase {
         transcription: String,
         mode: IntelligenceKernelMode,
         selectedModel: String?,
-        contextMetadata: String?,
     ) -> (systemPrompt: String, userPrompt: String) {
         let prompt = PostProcessingPrompt(
             id: promptID,
@@ -439,7 +424,6 @@ extension TranscribeAudioUseCase {
             prompt: prompt,
             mode: mode,
             selectedModel: selectedModel,
-            contextMetadata: contextMetadata,
         )
         return (requestPrompts.systemPrompt, requestPrompts.userPrompt)
     }
