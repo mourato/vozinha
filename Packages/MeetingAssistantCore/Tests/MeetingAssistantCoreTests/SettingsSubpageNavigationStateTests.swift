@@ -57,4 +57,21 @@ final class SettingsSubpageNavigationStateTests: XCTestCase {
         XCTAssertFalse(state.canGoForward)
         XCTAssertNil(state.forwardRoute)
     }
+
+    func testDictationStyleRoutesPreserveEditorChildEditorSequence() {
+        var state = SettingsSubpageNavigationState<DictationStyleRoute>()
+        let styleID = UUID()
+
+        state.open(.editor(styleID: styleID))
+        XCTAssertEqual(state.currentRoute, .editor(styleID: styleID))
+
+        state.open(.promptEditor(styleID: styleID))
+        XCTAssertEqual(state.currentRoute, .promptEditor(styleID: styleID))
+
+        state.open(.editor(styleID: styleID))
+        XCTAssertEqual(state.currentRoute, .editor(styleID: styleID))
+
+        _ = state.goBack()
+        XCTAssertNil(state.currentRoute)
+    }
 }

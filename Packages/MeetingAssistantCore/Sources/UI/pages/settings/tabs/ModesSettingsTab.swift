@@ -13,9 +13,33 @@ public struct ModesSettingsTab: View {
     }
 
     public var body: some View {
+        HStack(spacing: 0) {
+            listColumn
+                .frame(minWidth: 260, idealWidth: 300, maxWidth: 340)
+
+            Divider()
+
+            detailContent
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        }
+    }
+
+    private var listColumn: some View {
+        StylesSettingsTab(
+            viewModel: viewModel,
+            aiSettingsViewModel: aiSettingsViewModel,
+            onOpenEditor: { styleID in
+                viewModel.prepareEditor(for: styleID)
+                navigationState.open(.editor(styleID: styleID))
+            },
+        )
+    }
+
+    @ViewBuilder
+    private var detailContent: some View {
         switch navigationState.currentRoute {
         case nil:
-            stylesListPage
+            emptyDetailPlaceholder
         case let .some(route):
             switch route {
             case .editor:
@@ -26,6 +50,20 @@ public struct ModesSettingsTab: View {
                 promptEditorPage
             }
         }
+    }
+
+    private var emptyDetailPlaceholder: some View {
+        VStack(spacing: 12) {
+            Image(systemName: "paintpalette")
+                .font(.system(size: 32, weight: .light))
+                .foregroundStyle(.secondary)
+            Text("settings.styles.editor.empty_detail".localized)
+                .font(.callout)
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+                .frame(maxWidth: 280)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
     @ViewBuilder
@@ -72,7 +110,7 @@ public struct ModesSettingsTab: View {
                 )
                 .id(route)
             } else {
-                stylesListPage
+                emptyDetailPlaceholder
             }
         }
     }
@@ -116,19 +154,8 @@ public struct ModesSettingsTab: View {
                 },
             )
         } else {
-            stylesListPage
+            emptyDetailPlaceholder
         }
-    }
-
-    private var stylesListPage: some View {
-        StylesSettingsTab(
-            viewModel: viewModel,
-            aiSettingsViewModel: aiSettingsViewModel,
-            onOpenEditor: { styleID in
-                viewModel.prepareEditor(for: styleID)
-                navigationState.open(.editor(styleID: styleID))
-            },
-        )
     }
 
     private func navigateToRoot() {

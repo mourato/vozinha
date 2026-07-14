@@ -1453,6 +1453,8 @@
 "settings.styles.editor.website_input_section" = "Websites";
 "settings.styles.editor.app_search_no_match" = "No apps match your search.";
 "settings.styles.editor.validation.target_duplicate" = "This target is already added.";
+"settings.styles.editor.close" = "Close";
+"settings.styles.editor.empty_detail" = "Select a mode to edit its settings.";
 
 /* Error */
 "metrics.error.load" = "Could not load dashboard data.";

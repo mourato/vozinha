@@ -34,10 +34,13 @@ public struct TriggerSelectionView: View {
     }
 
     public var body: some View {
-        VStack(spacing: 0) {
-            detailHeader
-
-            ScrollView {
+        ModeEditorDrawer(
+            headerStyle: .backWithAction,
+            title: "settings.styles.editor.targets".localized,
+            actionTitle: "common.done".localized,
+            onBack: { onApply(localTargets) },
+            onAction: { onApply(localTargets) },
+            content: {
                 VStack(alignment: .leading, spacing: 14) {
                     appSearchSection
                     websiteInputSection
@@ -49,41 +52,8 @@ public struct TriggerSelectionView: View {
                             .foregroundStyle(.red)
                     }
                 }
-                .padding()
-            }
-        }
-        .frame(minWidth: 380)
-    }
-
-    private var detailHeader: some View {
-        HStack(spacing: 12) {
-            Button {
-                onApply(localTargets)
-            } label: {
-                HStack(spacing: 4) {
-                    Image(systemName: "chevron.left")
-                    Text("common.back".localized)
-                }
-            }
-            .buttonStyle(.plain)
-            .accessibilityLabel("common.back".localized)
-
-            Spacer()
-
-            Button("common.done".localized) {
-                onApply(localTargets)
-            }
-            .buttonStyle(.borderedProminent)
-            .controlSize(.small)
-        }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 10)
-        .background {
-            SettingsTitleBarMaterialBackground(usesBottomFade: false)
-        }
-        .overlay(alignment: .bottom) {
-            Divider()
-        }
+            },
+        )
     }
 
     private var appSearchSection: some View {

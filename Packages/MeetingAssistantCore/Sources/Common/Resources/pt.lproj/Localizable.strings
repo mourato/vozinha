@@ -1455,3 +1455,5 @@
 "settings.styles.editor.website_input_section" = "Sites";
 "settings.styles.editor.app_search_no_match" = "Nenhum app corresponde à sua busca.";
 "settings.styles.editor.validation.target_duplicate" = "Este alvo já foi adicionado.";
+"settings.styles.editor.close" = "Fechar";
+"settings.styles.editor.empty_detail" = "Selecione um modo para editar suas configurações.";

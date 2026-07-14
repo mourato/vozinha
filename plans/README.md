@@ -42,7 +42,7 @@ reason) | `REJECTED` (with a one-line rationale).
 | [067](067-redesign-mode-trigger-search-and-selection.md) | Redesign mode trigger search, selection, and removal | P1 | L | 066 | DONE |
 | [068](068-add-mode-instruction-drilldown-and-narrow-layout.md) | Add instruction drill-down and compact mode settings layout | P1 | M | 066, 067 | DONE |
 | [069](069-establish-settings-content-surface-contract.md) | Establish a shared settings content-surface contract | P1 | M | - | DONE |
-| [070](070-build-modes-secondary-sidebar-editor.md) | Build the Modes secondary-sidebar editor | P1 | L | 069 | TODO |
+| [070](070-build-modes-secondary-sidebar-editor.md) | Build the Modes secondary-sidebar editor | P1 | L | 069 | DONE |
 | [071](071-normalize-fluid-settings-groups.md) | Normalize fluid configuration groups and responsive rows | P1 | L | 069 | TODO |
 | [072](072-align-mode-trigger-flow-with-voiceink-reference.md) | Align the mode trigger flow with the VoiceInk reference | P2 | M | 070, 071 | TODO |
 

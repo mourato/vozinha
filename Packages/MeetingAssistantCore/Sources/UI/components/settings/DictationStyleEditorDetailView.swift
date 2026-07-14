@@ -86,120 +86,16 @@ public struct DictationStyleEditorDetailView: View {
     }
 
     public var body: some View {
-        VStack(spacing: 0) {
-            detailHeader
-
-            ScrollView {
-                VStack(alignment: .leading, spacing: 14) {
-                    HStack(spacing: 12) {
-                        VStack(alignment: .leading, spacing: 6) {
-                            Text("settings.styles.editor.name".localized)
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                            TextField("", text: $name)
-                                .textFieldStyle(.roundedBorder)
-                        }
-
-                        VStack(alignment: .leading, spacing: 6) {
-                            Text("settings.styles.editor.icon".localized)
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                            HStack(spacing: 8) {
-                                DictationStyleIconView(
-                                    iconSymbol: normalizedIconSymbol,
-                                    size: 22,
-                                    accessibilityLabel: "settings.styles.editor.icon".localized,
-                                )
-                                TextField("", text: $iconSymbol)
-                                    .textFieldStyle(.roundedBorder)
-
-                                Menu {
-                                    ForEach(DictationStyleIconCatalog.recommendedSymbols, id: \.self) { symbol in
-                                        Button {
-                                            iconSymbol = symbol
-                                        } label: {
-                                            Label(symbol, systemImage: symbol)
-                                        }
-                                    }
-                                } label: {
-                                    Image(systemName: "square.grid.2x2")
-                                }
-                                .menuStyle(.borderlessButton)
-                                .accessibilityLabel("settings.styles.editor.icon_picker".localized)
-                            }
-                        }
-                        .frame(width: 220)
-                    }
-
-                    SettingsDrillDownButtonRow(
-                        title: "settings.styles.editor.prompt".localized,
-                        subtitle: promptSummary,
-                        action: {
-                            onOpenPromptEditor?(currentDraft)
-                        },
-                    )
-
-                    DSGroup("settings.styles.editor.behavior".localized, icon: "gearshape.2") {
-                        CheckboxRow("settings.styles.editor.post_processing_enabled".localized, isOn: $postProcessingEnabled)
-                        CheckboxRow("settings.styles.editor.markdown_output".localized, isOn: $forceMarkdownOutput)
-                        CheckboxRow("settings.styles.editor.replace_base_prompt".localized, isOn: $replaceBasePrompt)
-
-                        Divider()
-
-                        HStack(spacing: 12) {
-                            Text("settings.styles.editor.output_language".localized)
-                                .font(.body)
-                                .fontWeight(.regular)
-                            Spacer()
-                            DSMenuPicker("settings.styles.editor.output_language".localized, selection: $outputLanguage) {
-                                ForEach(DictationOutputLanguage.allCases, id: \.self) { language in
-                                    Text(language.displayName).tag(language)
-                                }
-                            }
-                        }
-                    }
-
-                    contextResourcesSection
-
-                    DSGroup("settings.enhancements.selector.dictation.title".localized, icon: "cpu") {
-                        EnhancementsModelPicker(
-                            title: "settings.enhancements.selector.dictation.title".localized,
-                            subtitle: "settings.enhancements.selector.dictation.subtitle".localized,
-                            selection: enhancementsSelection ?? .default,
-                            options: modelOptions,
-                            isLoadingOptions: isLoadingModelOptions,
-                            providerDisplayName: providerDisplayName,
-                            onRefresh: onRefreshModelOptions,
-                            onSelect: { option in
-                                enhancementsSelection = EnhancementsAISelection(
-                                    provider: option.provider,
-                                    selectedModel: option.modelID,
-                                    registrationID: option.registrationID,
-                                )
-                            },
-                        )
-                    }
-
-                    if !isDefault {
-                        DSGroup("settings.styles.editor.targets".localized, icon: "scope") {
-                            targetsEditor
-                        }
-                    }
-
-                    if isDefault {
-                        Text("settings.styles.editor.default_mode_hint".localized)
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    }
-
-                    if let validationMessage, !validationMessage.isEmpty {
-                        Text(validationMessage)
-                            .font(.caption)
-                            .foregroundStyle(.red)
-                    }
-                }
-                .padding()
-            }
+        ModeEditorDrawer(
+            headerStyle: .close,
+            title: headerTitle,
+            iconSymbol: normalizedIconSymbol,
+            onClose: onCancel,
+            footerLeadingAction: (styleID != nil && !isDefault) ? onDelete : nil,
+            footerTrailingTitle: detailActionTitle,
+            footerTrailingAction: saveDraft,
+        ) {
+            editorForm
         }
         .onAppear {
             onEnsureAppCatalogLoaded()
@@ -207,44 +103,118 @@ public struct DictationStyleEditorDetailView: View {
         }
     }
 
-    private var detailHeader: some View {
-        HStack(spacing: 12) {
-            Button {
-                onCancel()
-            } label: {
-                HStack(spacing: 4) {
-                    Image(systemName: "chevron.left")
-                    Text("common.cancel".localized)
+    private var headerTitle: String {
+        let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        return trimmed.isEmpty ? "settings.styles.editor.new_title".localized : trimmed
+    }
+
+    private var editorForm: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            VStack(alignment: .leading, spacing: 12) {
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("settings.styles.editor.name".localized)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    TextField("", text: $name)
+                        .textFieldStyle(.roundedBorder)
+                }
+
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("settings.styles.editor.icon".localized)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    HStack(spacing: 8) {
+                        DictationStyleIconView(
+                            iconSymbol: normalizedIconSymbol,
+                            size: 22,
+                            accessibilityLabel: "settings.styles.editor.icon".localized,
+                        )
+                        TextField("", text: $iconSymbol)
+                            .textFieldStyle(.roundedBorder)
+
+                        Menu {
+                            ForEach(DictationStyleIconCatalog.recommendedSymbols, id: \.self) { symbol in
+                                Button {
+                                    iconSymbol = symbol
+                                } label: {
+                                    Label(symbol, systemImage: symbol)
+                                }
+                            }
+                        } label: {
+                            Image(systemName: "square.grid.2x2")
+                        }
+                        .menuStyle(.borderlessButton)
+                        .accessibilityLabel("settings.styles.editor.icon_picker".localized)
+                    }
                 }
             }
-            .buttonStyle(.plain)
-            .accessibilityLabel("common.cancel".localized)
 
-            Spacer()
+            SettingsDrillDownButtonRow(
+                title: "settings.styles.editor.prompt".localized,
+                subtitle: promptSummary,
+                action: {
+                    onOpenPromptEditor?(currentDraft)
+                },
+            )
 
-            if let onDelete, styleID != nil, !isDefault {
-                Button(role: .destructive) {
-                    onDelete()
-                } label: {
-                    Label("common.delete".localized, systemImage: "trash")
+            DSGroup("settings.styles.editor.behavior".localized, icon: "gearshape.2") {
+                CheckboxRow("settings.styles.editor.post_processing_enabled".localized, isOn: $postProcessingEnabled)
+                CheckboxRow("settings.styles.editor.markdown_output".localized, isOn: $forceMarkdownOutput)
+                CheckboxRow("settings.styles.editor.replace_base_prompt".localized, isOn: $replaceBasePrompt)
+
+                Divider()
+
+                HStack(spacing: 12) {
+                    Text("settings.styles.editor.output_language".localized)
+                        .font(.body)
+                        .fontWeight(.regular)
+                    Spacer()
+                    DSMenuPicker("settings.styles.editor.output_language".localized, selection: $outputLanguage) {
+                        ForEach(DictationOutputLanguage.allCases, id: \.self) { language in
+                            Text(language.displayName).tag(language)
+                        }
+                    }
                 }
-                .buttonStyle(.bordered)
-                .controlSize(.small)
             }
 
-            Button(detailActionTitle) {
-                saveDraft()
+            contextResourcesSection
+
+            DSGroup("settings.enhancements.selector.dictation.title".localized, icon: "cpu") {
+                EnhancementsModelPicker(
+                    title: "settings.enhancements.selector.dictation.title".localized,
+                    subtitle: "settings.enhancements.selector.dictation.subtitle".localized,
+                    selection: enhancementsSelection ?? .default,
+                    options: modelOptions,
+                    isLoadingOptions: isLoadingModelOptions,
+                    providerDisplayName: providerDisplayName,
+                    onRefresh: onRefreshModelOptions,
+                    onSelect: { option in
+                        enhancementsSelection = EnhancementsAISelection(
+                            provider: option.provider,
+                            selectedModel: option.modelID,
+                            registrationID: option.registrationID,
+                        )
+                    },
+                )
             }
-            .buttonStyle(.borderedProminent)
-            .controlSize(.small)
-        }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 10)
-        .background {
-            SettingsTitleBarMaterialBackground(usesBottomFade: false)
-        }
-        .overlay(alignment: .bottom) {
-            Divider()
+
+            if !isDefault {
+                DSGroup("settings.styles.editor.targets".localized, icon: "scope") {
+                    targetsEditor
+                }
+            }
+
+            if isDefault {
+                Text("settings.styles.editor.default_mode_hint".localized)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+
+            if let validationMessage, !validationMessage.isEmpty {
+                Text(validationMessage)
+                    .font(.caption)
+                    .foregroundStyle(.red)
+            }
         }
     }
 
@@ -537,5 +507,49 @@ private struct CheckboxRow: View {
             onCancel: {},
             onDelete: {},
         )
+        .frame(width: 420)
+    }
+}
+
+#Preview("Editor (Narrow)") {
+    NavigationStack {
+        DictationStyleEditorDetailView(
+            draft: DictationStyleEditorDraft(
+                name: "Daily Notes",
+                iconSymbol: "note.text",
+                promptInstructions: "Prefer concise bullets and list action items at the end.",
+                forceMarkdownOutput: true,
+                replaceBasePrompt: false,
+                outputLanguage: .english,
+                targets: [
+                    .app(bundleIdentifier: "com.tinyspeck.slackmacgap"),
+                    .website(url: "docs.example.com"),
+                ],
+                contextSourcePolicy: .init(
+                    isEnabled: true,
+                    includeClipboard: true,
+                    includeWindowOCR: false,
+                    includeAccessibilityText: true,
+                    redactSensitiveData: true,
+                ),
+                enhancementsSelection: .default,
+                isDefault: false,
+            ),
+            appCatalog: [
+                InstalledApplicationRecord(bundleIdentifier: "com.tinyspeck.slackmacgap", displayName: "Slack"),
+                InstalledApplicationRecord(bundleIdentifier: "com.apple.Safari", displayName: "Safari"),
+            ],
+            isLoadingAppCatalog: false,
+            onEnsureAppCatalogLoaded: {},
+            onFindConflictingStyleName: { _, _ in nil },
+            modelOptions: [],
+            isLoadingModelOptions: false,
+            onRefreshModelOptions: {},
+            providerDisplayName: { $0.provider.displayName },
+            onSave: { _ in },
+            onCancel: {},
+            onDelete: {},
+        )
+        .frame(width: 360)
     }
 }
