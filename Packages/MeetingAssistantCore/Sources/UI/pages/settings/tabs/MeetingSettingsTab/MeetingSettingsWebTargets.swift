@@ -5,31 +5,36 @@ import SwiftUI
 
 extension MeetingSettingsTab {
     var webTargetsSection: some View {
-        DSGroup("settings.meetings.web_targets.title".localized, icon: "globe", headerAccessory: {
-            DSInfoPopoverButton(
-                title: "settings.meetings.web_targets.title".localized,
-                message: "settings.meetings.web_targets.desc".localized,
-            )
-        }) {
-            VStack(alignment: .leading, spacing: 12) {
-                SettingsInlineList(
-                    items: webTargetsViewModel.targets,
-                    emptyText: "settings.meetings.web_targets.empty".localized,
-                    containerStyle: .plain,
-                ) { target in
-                    webTargetRow(target)
-                }
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(spacing: 8) {
+                Image(systemName: "globe")
+                    .foregroundStyle(AppDesignSystem.Colors.accent)
+                Text("settings.meetings.web_targets.title".localized)
+                    .font(.headline)
+                Spacer()
+                DSInfoPopoverButton(
+                    title: "settings.meetings.web_targets.title".localized,
+                    message: "settings.meetings.web_targets.desc".localized,
+                )
+            }
 
-                HStack {
-                    Spacer()
-                    Button {
-                        webTargetsViewModel.addTarget()
-                    } label: {
-                        Label("settings.meetings.web_targets.add".localized, systemImage: "plus")
-                    }
-                    .buttonStyle(.bordered)
-                    .controlSize(.regular)
+            SettingsInlineList(
+                items: webTargetsViewModel.targets,
+                emptyText: "settings.meetings.web_targets.empty".localized,
+                containerStyle: .plain,
+            ) { target in
+                webTargetRow(target)
+            }
+
+            HStack {
+                Spacer()
+                Button {
+                    webTargetsViewModel.addTarget()
+                } label: {
+                    Label("settings.meetings.web_targets.add".localized, systemImage: "plus")
                 }
+                .buttonStyle(.bordered)
+                .controlSize(.regular)
             }
         }
     }

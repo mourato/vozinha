@@ -21,12 +21,14 @@ public struct IntegrationsSettingsTab: View {
     public init() {}
 
     public var body: some View {
-        SettingsScrollableContent {
-            SettingsSectionHeader(
-                title: "settings.section.integrations".localized,
-                description: "settings.integrations.header_desc".localized,
-            )
-
+        SettingsFormPage {
+            VStack(alignment: .leading, spacing: 4) {
+                SettingsFormSectionHeader(title: "settings.section.integrations".localized, icon: "puzzlepiece.extension")
+                Text("settings.integrations.header_desc".localized)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+        } content: {
             integrationsSection
                 .disabled(!isIntegrationsContentEnabled)
                 .opacity(isIntegrationsContentEnabled ? 1 : CapabilityLayout.disabledOpacity)

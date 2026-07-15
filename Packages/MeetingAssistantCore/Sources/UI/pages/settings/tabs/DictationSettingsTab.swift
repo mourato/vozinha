@@ -26,12 +26,14 @@ public struct DictationSettingsTab: View {
     }
 
     private var rootPage: some View {
-        SettingsScrollableContent {
-            SettingsSectionHeader(
-                title: "settings.section.dictation".localized,
-                description: "settings.dictation.description".localized,
-            )
-
+        SettingsFormPage {
+            VStack(alignment: .leading, spacing: 4) {
+                SettingsFormSectionHeader(title: "settings.section.dictation".localized, icon: "mic.fill")
+                Text("settings.dictation.description".localized)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+        } content: {
             ShortcutSettingsSection(
                 groupTitle: "settings.shortcuts.dictation".localized,
                 descriptionText: "settings.shortcuts.dictation_desc".localized,
@@ -51,29 +53,41 @@ public struct DictationSettingsTab: View {
                 },
             )
 
-            SettingsListGroup("settings.dictation.text_handling".localized, icon: "cpu") {
-                DSToggleRow(
-                    "settings.general.auto_copy_transcription".localized,
-                    description: "settings.general.auto_copy_transcription_desc".localized,
-                    isOn: $viewModel.autoCopyTranscriptionToClipboard,
-                )
+            Section {
+                Toggle(isOn: $viewModel.autoCopyTranscriptionToClipboard) {
+                    VStack(alignment: .leading) {
+                        Text("settings.general.auto_copy_transcription".localized)
+                        Text("settings.general.auto_copy_transcription_desc".localized)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+                .toggleStyle(.checkbox)
 
-                DSToggleRow(
-                    "settings.general.auto_paste_transcription".localized,
-                    isOn: $viewModel.autoPasteTranscriptionToActiveApp,
-                )
+                Toggle("settings.general.auto_paste_transcription".localized, isOn: $viewModel.autoPasteTranscriptionToActiveApp)
+                    .toggleStyle(.checkbox)
 
-                DSToggleRow(
-                    "settings.dictation.smart_spacing".localized,
-                    description: "settings.dictation.smart_spacing_desc".localized,
-                    isOn: $viewModel.smartSpacingAndCapitalizationEnabled,
-                )
+                Toggle(isOn: $viewModel.smartSpacingAndCapitalizationEnabled) {
+                    VStack(alignment: .leading) {
+                        Text("settings.dictation.smart_spacing".localized)
+                        Text("settings.dictation.smart_spacing_desc".localized)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+                .toggleStyle(.checkbox)
 
-                DSToggleRow(
-                    "settings.dictation.smart_paragraphs".localized,
-                    description: "settings.dictation.smart_paragraphs_desc".localized,
-                    isOn: $viewModel.smartParagraphsEnabled,
-                )
+                Toggle(isOn: $viewModel.smartParagraphsEnabled) {
+                    VStack(alignment: .leading) {
+                        Text("settings.dictation.smart_paragraphs".localized)
+                        Text("settings.dictation.smart_paragraphs_desc".localized)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+                .toggleStyle(.checkbox)
+            } header: {
+                SettingsFormSectionHeader(title: "settings.dictation.text_handling".localized, icon: "cpu")
             }
 
             ServiceTranscriptionProviderSection(viewModel: serviceViewModel)

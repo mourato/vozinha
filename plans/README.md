@@ -2,7 +2,7 @@
 
 This is the active plan ledger. Historical audits, completed plan rows, review
 notes, and rejected options remain in the [2026-07-12 ledger archive](archive/2026-07-12-plan-ledger-history.md).
-Plan files are never renumbered; the next available plan number is 079.
+Plan files are never renumbered; the next available plan number is 084.
 
 ## Execution rules
 
@@ -50,7 +50,12 @@ reason) | `REJECTED` (with a one-line rationale).
 | [075](075-add-interruptible-modes-pane-transitions.md) | Add interruptible Modes pane transitions | P1 | M | 074 | DONE |
 | [076](076-harden-editor-interaction-accessibility.md) | Harden editor interaction safety and accessibility | P2 | M | 074 | DONE |
 | [077](077-add-typography-and-visual-validation-matrix.md) | Add typography and visual validation coverage | P3 | M | 073, 074, 075, 076 | DONE |
-| [078](078-match-voiceink-mode-editor-drawer-experience.md) | Replace the Modes split view with the VoiceInk-style editor drawer experience | P1 | L | - | TODO |
+| [078](078-match-voiceink-mode-editor-drawer-experience.md) | Replace the Modes split view with the VoiceInk-style editor drawer experience | P1 | L | - | DONE (merged in `a9a86350`; implementation commits include `d2c45d00`) |
+| [079](079-establish-single-form-settings-surface.md) | Establish one full-width native Form surface per settings page | P1 | M | - | DONE |
+| [080](080-migrate-primary-settings-journeys-to-form-sections.md) | Migrate primary settings journeys to shared native Form sections | P1 | L | 079 | DONE |
+| [081](081-migrate-system-settings-hierarchy-to-form-sections.md) | Migrate the complete System settings hierarchy to native Form sections | P1 | L | 079 | TODO |
+| [082](082-retire-form-islands-and-normalize-specialized-settings-surfaces.md) | Retire per-group Form islands and normalize specialized settings surfaces | P2 | M | 080, 081 | TODO |
+| [083](083-add-settings-form-visual-and-preview-gates.md) | Add route-wide visual evidence and truthful preview gates for Settings | P1 | M | 079, 080, 081, 082 | TODO |
 
 Plans 001–061 are completed or archived in the historical ledger. The archive preserves the original audit scope,
 findings, dependency history, status table, committee notes, and rejected
@@ -105,3 +110,24 @@ options verbatim for searchability.
   valid draft, persistence, privacy, localization, delete-confirmation, and
   accessibility work from those plans while replacing the presentation,
   hierarchy, trigger route, and visual-validation contract.
+- 079 replaces the per-group, scroll-disabled Form island introduced by the
+  first migration with the shared one-Form-per-page surface contract.
+- 080 and 081 both depend on 079 and are logically independent, but must be
+  executed serially because repository policy permits only one writing agent.
+- 080 owns Dictation, Meetings, Assistant, Integrations, and their nested
+  settings flows; 081 owns the complete System root/detail hierarchy.
+- 082 runs after both migrations to delete `SettingsFormGroup`, audit every
+  remaining group primitive, and preserve intentional collection/status/data
+  surfaces without mechanically forcing them into Form.
+- 083 runs last because it validates the combined route matrix and changes
+  preview tooling under `scripts/`, which requires the Full lane.
+
+## Findings considered and rejected
+
+- Converting Activity analytics, transcription History, Modes lists, monitored
+  apps/sites, provider/model catalogs, dictionary rules, or permission status
+  blocks mechanically into Form rows is rejected: these are collection,
+  status, analytics, or rich-editor surfaces rather than scalar settings.
+- Applying the Modes drawer's 400 pt width to main Settings pages is rejected:
+  the fixed width belongs only to the trailing overlay; root/detail content
+  must use the full available container width.

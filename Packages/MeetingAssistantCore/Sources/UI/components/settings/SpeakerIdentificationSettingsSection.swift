@@ -20,11 +20,15 @@ public struct SpeakerIdentificationSettingsSection: View {
     }
 
     public var body: some View {
-        DSToggleRow(
-            "settings.ai.diarization".localized,
-            description: "settings.ai.diarization_desc".localized,
-            isOn: $settings.isDiarizationEnabled,
-        )
+        Toggle(isOn: $settings.isDiarizationEnabled) {
+            VStack(alignment: .leading) {
+                Text("settings.ai.diarization".localized)
+                Text("settings.ai.diarization_desc".localized)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .toggleStyle(.checkbox)
         .onChange(of: settings.isDiarizationEnabled) { isEnabled, _ in
             guard isEnabled else { return }
             settings.minSpeakers = nil

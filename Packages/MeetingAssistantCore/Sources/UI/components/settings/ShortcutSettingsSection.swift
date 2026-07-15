@@ -25,19 +25,14 @@ public struct ShortcutSettingsSection<SettingsContent: View>: View {
     }
 
     public var body: some View {
-        DSGroup(
-            groupTitle,
-            icon: groupIcon,
-            headerAccessory: {
-                if !helperMessage.isEmpty {
-                    DSInfoPopoverButton(
-                        title: groupTitle,
-                        message: helperMessage,
-                    )
-                }
-            },
-        ) {
+        Section {
             settingsContent()
+        } header: {
+            SettingsFormSectionHeader(title: groupTitle, icon: groupIcon) {
+                if !helperMessage.isEmpty {
+                    DSInfoPopoverButton(title: groupTitle, message: helperMessage)
+                }
+            }
         }
     }
 

@@ -26,17 +26,18 @@ public struct AssistantIntegrationsSection: View {
     }
 
     public var body: some View {
-        DSGroup(
-            "settings.assistant.integrations.title".localized,
-            icon: "puzzlepiece.extension",
-        ) {
+        Section {
             VStack(alignment: .leading, spacing: 12) {
                 if showsCapabilityToggle {
-                    DSToggleRow(
-                        "settings.capabilities.assistant_integrations".localized,
-                        description: "settings.capabilities.assistant_integrations_desc".localized,
-                        isOn: $settings.isAssistantIntegrationsEnabled,
-                    )
+                    Toggle(isOn: $settings.isAssistantIntegrationsEnabled) {
+                        VStack(alignment: .leading) {
+                            Text("settings.capabilities.assistant_integrations".localized)
+                            Text("settings.capabilities.assistant_integrations_desc".localized)
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                    .toggleStyle(.checkbox)
                 }
 
                 if showsCapabilityToggle {
@@ -92,6 +93,11 @@ public struct AssistantIntegrationsSection: View {
                         .foregroundStyle(statusColor)
                 }
             }
+        } header: {
+            SettingsFormSectionHeader(
+                title: "settings.assistant.integrations.title".localized,
+                icon: "puzzlepiece.extension",
+            )
         }
     }
 

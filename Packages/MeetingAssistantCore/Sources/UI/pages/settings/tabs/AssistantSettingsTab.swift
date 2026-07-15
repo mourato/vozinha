@@ -27,11 +27,14 @@ public struct AssistantSettingsTab: View {
     public init() {}
 
     public var body: some View {
-        SettingsScrollableContent {
-            SettingsSectionHeader(
-                title: "settings.section.assistant".localized,
-                description: "settings.assistant.header_desc".localized,
-            )
+        SettingsFormPage {
+            VStack(alignment: .leading, spacing: 4) {
+                SettingsFormSectionHeader(title: "settings.section.assistant".localized, icon: "sparkles")
+                Text("settings.assistant.header_desc".localized)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+        } content: {
             assistantControlsSection
                 .disabled(!settings.isAssistantEnabled)
                 .opacity(settings.isAssistantEnabled ? 1 : CapabilityLayout.disabledOpacity)
@@ -85,90 +88,59 @@ public struct AssistantSettingsTab: View {
     }
 
     private var visualFeedbackSection: some View {
-        SettingsFormGroup(
-            "settings.assistant.visual_feedback".localized,
-            icon: "rectangle.inset.filled",
-        ) {
-            VStack(alignment: .leading, spacing: 16) {
-                HStack(spacing: 8) {
-                    previewButton
-
-                    if isPreviewRunning {
-                        Label("settings.assistant.preview_running".localized, systemImage: "waveform.path")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                            .opacity(reduceMotion ? 1 : 0.75)
-                            .animation(
-                                reduceMotion
-                                    ? nil
-                                    : .easeInOut(duration: 0.8).repeatForever(autoreverses: true),
-                                value: isPreviewRunning,
-                            )
-                    }
-
-                    Spacer()
+        Section {
+            HStack(spacing: 8) {
+                previewButton
+                if isPreviewRunning {
+                    Label("settings.assistant.preview_running".localized, systemImage: "waveform.path")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .opacity(reduceMotion ? 1 : 0.75)
+                        .animation(
+                            reduceMotion ? nil : .easeInOut(duration: 0.8).repeatForever(autoreverses: true),
+                            value: isPreviewRunning,
+                        )
                 }
+                Spacer()
+            }
 
-                Text("settings.assistant.visual_feedback_desc".localized)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+            Text("settings.assistant.visual_feedback_desc".localized)
+                .font(.caption)
+                .foregroundStyle(.secondary)
 
-                Divider()
+            Picker("settings.assistant.border_style".localized, selection: $viewModel.borderStyle) {
+                ForEach(AssistantBorderStyle.allCases, id: \.self) { style in
+                    Text(style.displayName).tag(style)
+                }
+            }
+            .pickerStyle(.segmented)
 
-                Picker("settings.assistant.border_style".localized, selection: $viewModel.borderStyle) {
-                    ForEach(AssistantBorderStyle.allCases, id: \.self) { style in
-                        Text(style.displayName).tag(style)
+            LabeledContent("settings.assistant.border_color".localized) {
+                DSThemePicker(selection: $viewModel.borderColor, circleSpacing: 4, itemFrameSize: 34)
+            }
+
+            if viewModel.borderStyle == .stroke {
+                Picker("settings.assistant.border_width".localized, selection: borderWidthSelection) {
+                    ForEach(AssistantShortcutSettingsViewModel.borderWidthOptions, id: \.self) { option in
+                        Text("\(Int(option)) pt").tag(option)
                     }
                 }
-                .pickerStyle(.segmented)
-
-                Divider()
-
-                HStack(spacing: 12) {
-                    Text("settings.assistant.border_color".localized)
-                        .font(.body)
-                        .fontWeight(.medium)
-
-                    Spacer()
-
-                    DSThemePicker(
-                        selection: $viewModel.borderColor,
-                        circleSpacing: 4,
-                        itemFrameSize: 34,
-                    )
-                }
-
-                Divider()
-
-                if viewModel.borderStyle == .stroke {
-                    Picker("settings.assistant.border_width".localized, selection: borderWidthSelection) {
-                        ForEach(AssistantShortcutSettingsViewModel.borderWidthOptions, id: \.self) { option in
-                            Text("\(Int(option)) pt").tag(option)
-                        }
-                    }
-                    .pickerStyle(.menu)
-                } else {
+                .pickerStyle(.menu)
+            } else {
+                LabeledContent("settings.assistant.glow_size".localized) {
                     HStack(spacing: 8) {
-                        Text("settings.assistant.glow_size".localized)
-                            .font(.body)
-                            .fontWeight(.medium)
-
-                        Spacer()
-
-                        HStack(spacing: 8) {
-                            TextField("", text: glowSizeInputBinding)
-                                .textFieldStyle(.roundedBorder)
-                                .multilineTextAlignment(.trailing)
-                                .frame(width: 56)
-
-                            Text("pt")
-                                .foregroundStyle(.secondary)
-                                .font(.caption)
-                        }
-
+                        TextField("", text: glowSizeInputBinding)
+                            .textFieldStyle(.roundedBorder)
+                            .multilineTextAlignment(.trailing)
+                            .frame(width: 56)
+                        Text("pt")
+                            .foregroundStyle(.secondary)
+                            .font(.caption)
                     }
                 }
             }
+        } header: {
+            SettingsFormSectionHeader(title: "settings.assistant.visual_feedback".localized, icon: "rectangle.inset.filled")
         }
     }
 
