@@ -122,97 +122,101 @@ public struct MeetingSettingsTab: View {
                 )
             }
         } content: {
-            ShortcutSettingsSection(
-                groupTitle: "settings.shortcuts.meeting".localized,
-                descriptionText: "settings.shortcuts.meeting_desc".localized,
-                settingsContent: {
-                    VStack(alignment: .leading, spacing: 12) {
-                        if let healthPresentation = shortcutsViewModel.shortcutCaptureHealthPresentation {
-                            ShortcutCaptureHealthStatusView(presentation: healthPresentation) {
-                                shortcutsViewModel.openShortcutCaptureHealthAction()
+            Group {
+                ShortcutSettingsSection(
+                    groupTitle: "settings.shortcuts.meeting".localized,
+                    descriptionText: "settings.shortcuts.meeting_desc".localized,
+                    settingsContent: {
+                        VStack(alignment: .leading, spacing: 12) {
+                            if let healthPresentation = shortcutsViewModel.shortcutCaptureHealthPresentation {
+                                ShortcutCaptureHealthStatusView(presentation: healthPresentation) {
+                                    shortcutsViewModel.openShortcutCaptureHealthAction()
+                                }
                             }
+
+                            DSModifierShortcutEditor(
+                                shortcut: $shortcutsViewModel.meetingShortcutDefinition,
+                                conflictMessage: shortcutsViewModel.meetingModifierConflictMessage,
+                            )
                         }
+                    },
+                )
 
-                        DSModifierShortcutEditor(
-                            shortcut: $shortcutsViewModel.meetingShortcutDefinition,
-                            conflictMessage: shortcutsViewModel.meetingModifierConflictMessage,
-                        )
+                Section {
+                    Toggle("settings.general.auto_start".localized, isOn: $meetingViewModel.settings.autoStartRecording)
+                        .toggleStyle(.switch)
+                    Picker(
+                        "settings.general.auto_start_confirmation_delay".localized,
+                        selection: $meetingViewModel.settings.automaticAutomaticMeetingRecordingConfirmationDelay,
+                    ) {
+                        ForEach(AppSettingsStore.AutomaticMeetingRecordingConfirmationDelay.allCases, id: \.self) { delay in
+                            Text(delay.localizedTitle).tag(delay)
+                        }
                     }
-                },
+                    .pickerStyle(.menu)
+                    SettingsExpandableSection(
+                        title: "settings.meetings.monitoring_access.button".localized,
+                        subtitle: "settings.meetings.monitoring_access.desc".localized,
+                        accessibilityHint: "settings.meetings.monitoring_access.expand_accessibility_hint".localized,
+                        isExpanded: $isMonitoringExpanded,
+                    ) {
+                        monitoringTargetsContent
+                    }
+                    Toggle("settings.general.merge_audio".localized, isOn: $meetingViewModel.settings.shouldMergeAudioFiles)
+                        .toggleStyle(.switch)
+                    SettingsExpandableSection(
+                        title: "settings.meetings.export".localized,
+                        subtitle: "settings.meetings.export_drilldown_desc".localized,
+                        accessibilityHint: "settings.meetings.export.expand_accessibility_hint".localized,
+                        isExpanded: $isExportExpanded,
+                    ) {
+                        exportSectionContent
+                    }
+                } header: {
+                    SettingsFormSectionHeader(title: "settings.meetings.workflow".localized, icon: "bolt.fill")
+                }
+
+                ServiceMeetingTranscriptionSection(viewModel: serviceViewModel)
+                meetingIntelligenceSection
+
+                Section {
+                    SpeakerIdentificationSettingsSection(settings: meetingViewModel.settings)
+                } header: {
+                    SettingsFormSectionHeader(title: "settings.meetings.speaker_identification".localized, icon: "person.wave.2.fill")
+                }
+
+                Section {
+                    Picker(
+                        "settings.meetings.notes_typography.font_family".localized,
+                        selection: $meetingViewModel.settings.meetingNotesFontFamilyKey,
+                    ) {
+                        Text("settings.meetings.notes_typography.font_system".localized)
+                            .tag(MeetingNotesTypographyDefaults.systemFontFamilyKey)
+                        ForEach(availableMeetingNotesFontFamilies, id: \.self) { family in
+                            Text(family).tag(family)
+                        }
+                    }
+                    .pickerStyle(.menu)
+                    Picker(
+                        "settings.meetings.notes_typography.font_size".localized,
+                        selection: $meetingViewModel.settings.meetingNotesFontSize,
+                    ) {
+                        ForEach(MeetingNotesTypographyDefaults.supportedFontSizes, id: \.self) { size in
+                            Text("\(Int(size))").tag(size)
+                        }
+                    }
+                    .pickerStyle(.menu)
+                } header: {
+                    SettingsFormSectionHeader(title: "settings.meetings.notes_typography.title".localized, icon: "textformat.size")
+                }
+            }
+            .disabled(!meetingViewModel.settings.isMeetingTranscriptionEnabled)
+            .opacity(meetingViewModel.settings.isMeetingTranscriptionEnabled ? 1 : CapabilityLayout.disabledOpacity)
+            .animation(
+                SettingsMotion.sectionAnimation(reduceMotion: reduceMotion),
+                value: meetingViewModel.settings.isMeetingTranscriptionEnabled,
             )
-
-            Section {
-                Toggle("settings.general.auto_start".localized, isOn: $meetingViewModel.settings.autoStartRecording)
-                    .toggleStyle(.switch)
-                Picker(
-                    "settings.general.auto_start_confirmation_delay".localized,
-                    selection: $meetingViewModel.settings.automaticAutomaticMeetingRecordingConfirmationDelay,
-                ) {
-                    ForEach(AppSettingsStore.AutomaticMeetingRecordingConfirmationDelay.allCases, id: \.self) { delay in
-                        Text(delay.localizedTitle).tag(delay)
-                    }
-                }
-                .pickerStyle(.menu)
-                SettingsExpandableSection(
-                    title: "settings.meetings.monitoring_access.button".localized,
-                    subtitle: "settings.meetings.monitoring_access.desc".localized,
-                    isExpanded: $isMonitoringExpanded,
-                ) {
-                    monitoringTargetsContent
-                }
-                Toggle("settings.general.merge_audio".localized, isOn: $meetingViewModel.settings.shouldMergeAudioFiles)
-                    .toggleStyle(.switch)
-                SettingsExpandableSection(
-                    title: "settings.meetings.export".localized,
-                    subtitle: "settings.meetings.export_drilldown_desc".localized,
-                    isExpanded: $isExportExpanded,
-                ) {
-                    exportSectionContent
-                }
-            } header: {
-                SettingsFormSectionHeader(title: "settings.meetings.workflow".localized, icon: "bolt.fill")
-            }
-
-            ServiceMeetingTranscriptionSection(viewModel: serviceViewModel)
-            meetingIntelligenceSection
-
-            Section {
-                SpeakerIdentificationSettingsSection(settings: meetingViewModel.settings)
-            } header: {
-                SettingsFormSectionHeader(title: "settings.meetings.speaker_identification".localized, icon: "person.wave.2.fill")
-            }
-
-            Section {
-                Picker(
-                    "settings.meetings.notes_typography.font_family".localized,
-                    selection: $meetingViewModel.settings.meetingNotesFontFamilyKey,
-                ) {
-                    Text("settings.meetings.notes_typography.font_system".localized)
-                        .tag(MeetingNotesTypographyDefaults.systemFontFamilyKey)
-                    ForEach(availableMeetingNotesFontFamilies, id: \.self) { family in
-                        Text(family).tag(family)
-                    }
-                }
-                .pickerStyle(.menu)
-                Picker(
-                    "settings.meetings.notes_typography.font_size".localized,
-                    selection: $meetingViewModel.settings.meetingNotesFontSize,
-                ) {
-                    ForEach(MeetingNotesTypographyDefaults.supportedFontSizes, id: \.self) { size in
-                        Text("\(Int(size))").tag(size)
-                    }
-                }
-                .pickerStyle(.menu)
-            } header: {
-                SettingsFormSectionHeader(title: "settings.meetings.notes_typography.title".localized, icon: "textformat.size")
-            }
         }
-        .disabled(!meetingViewModel.settings.isMeetingTranscriptionEnabled)
-        .opacity(meetingViewModel.settings.isMeetingTranscriptionEnabled ? 1 : CapabilityLayout.disabledOpacity)
-        .animation(
-            SettingsMotion.sectionAnimation(reduceMotion: reduceMotion),
-            value: meetingViewModel.settings.isMeetingTranscriptionEnabled,
-        )
     }
 
     private var meetingIntelligenceSection: some View {
@@ -232,6 +236,7 @@ public struct MeetingSettingsTab: View {
             SettingsExpandableSection(
                 title: "settings.meetings.prompts".localized,
                 subtitle: "settings.meetings.prompts_drilldown_desc".localized,
+                accessibilityHint: "settings.meetings.prompts.expand_accessibility_hint".localized,
                 isExpanded: $isPromptsExpanded,
             ) {
                 meetingPromptsContent
