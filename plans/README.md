@@ -2,7 +2,7 @@
 
 This is the active plan ledger. Historical audits, completed plan rows, review
 notes, and rejected options remain in the [2026-07-12 ledger archive](archive/2026-07-12-plan-ledger-history.md).
-Plan files are never renumbered; the next available plan number is 084.
+Plan files are never renumbered; the next available plan number is 087.
 
 ## Execution rules
 
@@ -56,6 +56,9 @@ reason) | `REJECTED` (with a one-line rationale).
 | [081](081-migrate-system-settings-hierarchy-to-form-sections.md) | Migrate the complete System settings hierarchy to native Form sections | P1 | L | 079 | DONE |
 | [082](082-retire-form-islands-and-normalize-specialized-settings-surfaces.md) | Retire per-group Form islands and normalize specialized settings surfaces | P2 | M | 080, 081 | DONE |
 | [083](083-add-settings-form-visual-and-preview-gates.md) | Add route-wide visual evidence and truthful preview gates for Settings | P1 | M | 079, 080, 081, 082 | TODO |
+| [084](084-slim-always-on-agent-guidance-and-validation-loop.md) | Slim always-on guidance, collapse skill routing, and unify the agent validation loop | P1 | M | - | TODO |
+| [085](085-finish-progressive-disclosure-and-prune-skill-bulk.md) | Finish progressive disclosure and prune hot-path skill reference bulk | P1 | L | 084 | TODO |
+| [086](086-auto-install-hooks-and-promote-implementer-fast.md) | Auto-install Git hooks via setup and promote allowlisted implementer-fast | P1 | M | 084 | TODO |
 
 Plans 001–061 are completed or archived in the historical ledger. The archive preserves the original audit scope,
 findings, dependency history, status table, committee notes, and rejected
@@ -121,6 +124,18 @@ options verbatim for searchability.
   surfaces without mechanically forcing them into Form.
 - 083 runs last because it validates the combined route matrix and changes
   preview tooling under `scripts/`, which requires the Full lane.
+- 084 is the agent-ops guidance diet: slim always-on `AGENTS.md`, archive live
+  `SKILLS_TAXONOMY` requirements, thin `SKILLS_INDEX`, and make `validate-agent`
+  the remembered gate with an explicit no-redundant-hook-replay loop. It must
+  land before 085/086 so routing links and Fast pointers stay coherent.
+- 085 depends on 084 and owns hot-path skill bulk only: prune/archive unused
+  `macos-app-engineering` references, make delivery/macos details reference-only,
+  and progressive-disclose `menubar` + `localization`. Guidance-only / Fast lane.
+- 086 depends on 084 and owns setup-time `core.hooksPath` installation plus an
+  allowlisted `implementer-fast` default for deterministic Low/Fast work. It does
+  **not** promote lean-code. Scripts change ⇒ Full lane.
+- 084 → 085 → (086 can proceed after 084 in parallel with 085 only if two writers
+  are forbidden by policy; default serial order is 084, then 085, then 086).
 
 ## Findings considered and rejected
 
@@ -131,3 +146,10 @@ options verbatim for searchability.
 - Applying the Modes drawer's 400 pt width to main Settings pages is rejected:
   the fixed width belongs only to the trailing overlay; root/detail content
   must use the full available container width.
+- Splitting agent-ops work into many micro-plans (AGENTS-only, INDEX-only,
+  hooks-only, etc.) is rejected for this pass: related token/loop fixes are
+  bundled into 084–086 to reduce orchestration overhead.
+- Promoting lean-code as a global default is rejected until artifact/browser
+  smoke coverage from plan 060 exists; 086 only allowlists `implementer-fast`.
+- Deleting archived macos reference dumps without a dated archive copy is
+  rejected; 085 must move unused generics under `.agents/docs/archive/`.
