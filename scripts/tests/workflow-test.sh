@@ -31,22 +31,31 @@ new_fixture() {
     mkdir -p "${fixture}/scripts/lib" \
         "${fixture}/scripts/config" \
         "${fixture}/scripts/tests" \
-        "${fixture}/Packages/MeetingAssistantCore/Tests/MeetingAssistantCoreTests"
+        "${fixture}/Packages/MeetingAssistantCore/Tests/MeetingAssistantCoreTests" \
+        "${fixture}/MeetingAssistant.xcworkspace/xcshareddata/swiftpm"
 
     cp "${SCRIPT_ROOT}/scripts/scope-check.sh" "${fixture}/scripts/scope-check.sh"
     cp "${SCRIPT_ROOT}/scripts/validate-agent.sh" "${fixture}/scripts/validate-agent.sh"
+    cp "${SCRIPT_ROOT}/scripts/hooks/pre-push" "${fixture}/scripts/hooks-pre-push"
     cp "${SCRIPT_ROOT}/scripts/lib/agent-output.sh" "${fixture}/scripts/lib/agent-output.sh"
     cp "${SCRIPT_ROOT}/scripts/config/test-target-mapping.conf" "${fixture}/scripts/config/test-target-mapping.conf"
     cp "${SCRIPT_ROOT}/scripts/tests/workflow-fixture-step.sh" "${fixture}/scripts/tests/workflow-fixture-step.sh"
     chmod +x "${fixture}/scripts/scope-check.sh"
     chmod +x "${fixture}/scripts/validate-agent.sh" "${fixture}/scripts/tests/workflow-fixture-step.sh"
+    chmod +x "${fixture}/scripts/hooks-pre-push"
 
     touch "${fixture}/Packages/MeetingAssistantCore/Tests/MeetingAssistantCoreTests/AlphaTests.swift"
     touch "${fixture}/Packages/MeetingAssistantCore/Tests/MeetingAssistantCoreTests/BetaTests.swift"
     printf '%s\n' 'fixture baseline' > "${fixture}/README.md"
     printf '%s\n' \
+        'Packages/MeetingAssistantCore/Package.resolved' \
+        'MeetingAssistant.xcworkspace/xcshareddata/swiftpm/Package.resolved' > "${fixture}/.gitignore"
+    printf '%s\n' \
         'scope-check-agent:' \
+        $'\t@if [ "$${WORKFLOW_FAIL_IF_PATH_PRESENT:-0}" = "1" ] && [ -e HEAD_ONLY_FAIL.swift ]; then echo "HEAD_REF marker present" >&2; exit 77; fi' \
         $'\t@./scripts/tests/workflow-fixture-step.sh scope-check' \
+        'validate-agent:' \
+        $'\t@./scripts/validate-agent.sh $(ARGS)' \
         'lint-strict-agent:' \
         $'\t@./scripts/tests/workflow-fixture-step.sh lint' \
         'build-test:' \
@@ -54,11 +63,252 @@ new_fixture() {
         > "${fixture}/Makefile"
 
     git -C "${fixture}" init -q
+    git -C "${fixture}" branch -M main
     git -C "${fixture}" config user.email workflow-test@example.invalid
     git -C "${fixture}" config user.name workflow-test
     git -C "${fixture}" add .
     git -C "${fixture}" commit -qm baseline
+    git -C "${fixture}" update-ref refs/remotes/origin/main HEAD
+    git -C "${fixture}" symbolic-ref refs/remotes/origin/HEAD refs/remotes/origin/main
+    git -C "${fixture}" update-ref refs/remotes/alt/main HEAD
+    git -C "${fixture}" symbolic-ref refs/remotes/alt/HEAD refs/remotes/alt/main
     printf '%s\n' "${fixture}"
+}
+
+test_deleted_paths_are_classified() {
+    local fixture
+    local base
+    local head
+    local output
+
+    fixture="$(new_fixture)"
+    printf '%s\n' 'removed source' > "${fixture}/Removed.swift"
+    printf '%s\n' 'removed test' > "${fixture}/Packages/MeetingAssistantCore/Tests/MeetingAssistantCoreTests/RemovedTests.swift"
+    printf '%s\n' 'obsolete infra' > "${fixture}/scripts/obsolete.sh"
+    git -C "${fixture}" add .
+    git -C "${fixture}" commit -qm "add deletion fixtures"
+    base="$(git -C "${fixture}" rev-parse HEAD)"
+    git -C "${fixture}" rm -q Removed.swift Packages/MeetingAssistantCore/Tests/MeetingAssistantCoreTests/RemovedTests.swift scripts/obsolete.sh
+    git -C "${fixture}" commit -qm "delete fixtures"
+    head="$(git -C "${fixture}" rev-parse HEAD)"
+    output="$(scope_output "${fixture}" "${TMP_ROOT}/deletions" --committed --base "${base}" --head "${head}")"
+    assert_contains "${output}" "Changed files: 3"
+    assert_contains "${output}" "Build/release/test infrastructure changed (scripts/obsolete.sh)"
+    assert_not_contains "${output}" "No changed files detected"
+}
+
+test_committed_tree_isolated_and_invalid_flags() {
+    local fixture
+    local base
+    local head
+    local output
+    local invalid_status
+    local result_path
+    local command_log
+
+    fixture="$(new_fixture)"
+    base="$(git -C "${fixture}" rev-parse HEAD)"
+    printf '%s\n' 'must exist in committed head' > "${fixture}/HEAD_ONLY_FAIL.swift"
+    git -C "${fixture}" add HEAD_ONLY_FAIL.swift
+    git -C "${fixture}" commit -qm "head-only marker"
+    head="$(git -C "${fixture}" rev-parse HEAD)"
+    rm -f "${fixture}/HEAD_ONLY_FAIL.swift"
+
+    set +e
+    output="$(cd "${fixture}" && WORKFLOW_FAIL_IF_PATH_PRESENT=1 MA_AGENT_LOG_DIR="${TMP_ROOT}/head-isolation" ./scripts/validate-agent.sh --lane fast --committed --base "${base}" --head "${head}" --no-reuse --agent 2>&1)"
+    invalid_status=$?
+    set -e
+    test "${invalid_status}" -eq 1
+    assert_contains "${output}" "AGENT_STATUS=FAIL"
+    result_path="$(printf '%s\n' "${output}" | sed -n 's/^AGENT_RESULT_JSON=//p' | tail -n 1)"
+    command_log="$(python3 - "${result_path}" <<'PY'
+import json
+import sys
+
+with open(sys.argv[1], encoding="utf-8") as handle:
+    print(json.load(handle)["commands"][0]["log"])
+PY
+    )"
+    assert_contains "$(cat "${command_log}")" "HEAD_REF marker present"
+
+    set +e
+    output="$(cd "${fixture}" && MA_AGENT_LOG_DIR="${TMP_ROOT}/invalid-head" ./scripts/validate-agent.sh --lane fast --committed --base "${base}" --head missing-head --agent 2>&1)"
+    invalid_status=$?
+    set -e
+    test "${invalid_status}" -eq 1
+    assert_contains "${output}" "could not materialize committed head 'missing-head'"
+    assert_not_contains "${output}" "AGENT_STATUS=PASS"
+
+    set +e
+    output="$(cd "${fixture}" && ./scripts/validate-agent.sh --lane fast --staged --committed --base "${base}" --head "${head}" 2>&1)"
+    invalid_status=$?
+    set -e
+    test "${invalid_status}" -eq 1
+    assert_contains "${output}" "--staged and --committed are mutually exclusive"
+    set +e
+    output="$(cd "${fixture}" && ./scripts/validate-agent.sh --lane fast --committed --empty-base --base "${base}" --head "${head}" 2>&1)"
+    invalid_status=$?
+    set -e
+    test "${invalid_status}" -eq 1
+    assert_contains "${output}" "--empty-base and --base are mutually exclusive"
+    test "$(git -C "${fixture}" worktree list | wc -l | tr -d ' ')" -eq 1
+}
+
+test_committed_and_staged_boundaries() {
+    local fixture
+    local base
+    local head
+    local output
+    local status
+
+    fixture="$(new_fixture)"
+    base="$(git -C "${fixture}" rev-parse HEAD)"
+    printf '%s\n' 'committed change' > "${fixture}/Committed.swift"
+    git -C "${fixture}" add Committed.swift
+    git -C "${fixture}" commit -qm committed
+    head="$(git -C "${fixture}" rev-parse HEAD)"
+    printf '%s\n' 'unstaged noise' >> "${fixture}/README.md"
+    printf '%s\n' 'untracked noise' > "${fixture}/Untracked.swift"
+    output="$(cd "${fixture}" && ./scripts/scope-check.sh --dry-run --committed --base "${base}" --head "${head}")"
+    assert_contains "${output}" "Added lines (${base} -> ${head}): 1"
+    assert_not_contains "${output}" "Untracked.swift"
+    assert_not_contains "${output}" "unstaged noise"
+    output="$(cd "${fixture}" && ./scripts/scope-check.sh --dry-run --committed --empty-base --head "${head}")"
+    assert_contains "${output}" "Added lines (empty tree -> ${head}):"
+
+    rm -f "${fixture}/Untracked.swift"
+    git -C "${fixture}" restore README.md
+    printf '%s\n' 'staged change' > "${fixture}/Alpha.swift"
+    git -C "${fixture}" add Alpha.swift
+    output="$(cd "${fixture}" && ./scripts/scope-check.sh --dry-run --staged --base "${head}")"
+    assert_contains "${output}" "Added lines (${head} -> staged index): 1"
+
+    set +e
+    printf '%s\n' 'unstaged' >> "${fixture}/README.md"
+    output="$(cd "${fixture}" && ./scripts/scope-check.sh --dry-run --staged --base "${head}" 2>&1)"
+    status=$?
+    set -e
+    test "${status}" -eq 1
+    assert_contains "${output}" "--staged requires no unstaged tracked changes"
+}
+
+test_staged_receipt_reused_after_commit() {
+    local fixture
+    local base
+    local head
+    local output
+    local log_root="${TMP_ROOT}/staged-receipt"
+
+    fixture="$(new_fixture)"
+    base="$(git -C "${fixture}" rev-parse HEAD)"
+    printf '%s\n' 'receipt change' > "${fixture}/Alpha.swift"
+    git -C "${fixture}" add Alpha.swift
+    output="$(validate_output "${fixture}" "${log_root}" --lane fast --staged --base "${base}" --no-reuse)"
+    assert_contains "${output}" "AGENT_STATUS=PASS"
+    git -C "${fixture}" commit -qm receipt
+    head="$(git -C "${fixture}" rev-parse HEAD)"
+    output="$(validate_output "${fixture}" "${log_root}" --lane fast --committed --base "${base}" --head "${head}")"
+    assert_contains "${output}" "Reusing PASS evidence"
+    assert_contains "${output}" "AGENT_REUSED=1"
+
+    fixture="$(new_fixture)"
+    base="$(git -C "${fixture}" rev-parse HEAD)"
+    printf '%s\n' 'receipt change with external input' > "${fixture}/Alpha.swift"
+    git -C "${fixture}" add Alpha.swift
+    output="$(validate_output "${fixture}" "${TMP_ROOT}/external-input" --lane fast --staged --base "${base}" --no-reuse)"
+    assert_contains "${output}" "AGENT_STATUS=PASS"
+    printf '%s\n' '{"pins": "changed after staged validation"}' > "${fixture}/Packages/MeetingAssistantCore/Package.resolved"
+    printf '%s\n' '{"pins": "workspace changed after staged validation"}' > "${fixture}/MeetingAssistant.xcworkspace/xcshareddata/swiftpm/Package.resolved"
+    git -C "${fixture}" commit -qm "external input receipt"
+    head="$(git -C "${fixture}" rev-parse HEAD)"
+    output="$(validate_output "${fixture}" "${TMP_ROOT}/external-input" --lane fast --committed --base "${base}" --head "${head}")"
+    assert_not_contains "${output}" "Reusing PASS evidence"
+    assert_contains "${output}" "AGENT_REUSED=0"
+    assert_contains "${output}" "AGENT_STATUS=PASS"
+    output="$(validate_output "${fixture}" "${TMP_ROOT}/external-input" --lane fast --committed --base "${base}" --head "${head}")"
+    assert_not_contains "${output}" "Reusing PASS evidence"
+    assert_contains "${output}" "AGENT_REUSED=0"
+    assert_contains "${output}" "AGENT_STATUS=PASS"
+}
+
+test_pre_push_protocol() {
+    local fixture
+    local base
+    local head
+    local output
+    local status
+
+    fixture="$(new_fixture)"
+    base="$(git -C "${fixture}" rev-parse HEAD)"
+    printf '%s\n' 'push change' > "${fixture}/Alpha.swift"
+    git -C "${fixture}" add Alpha.swift
+    git -C "${fixture}" commit -qm push
+    local first_head
+    first_head="$(git -C "${fixture}" rev-parse HEAD)"
+    printf '%s\n' 'second push commit' > "${fixture}/Beta.swift"
+    git -C "${fixture}" add Beta.swift
+    git -C "${fixture}" commit -qm "second push"
+    head="$(git -C "${fixture}" rev-parse HEAD)"
+    printf '%s\n' 'local-only' >> "${fixture}/README.md"
+    printf '%s\n' 'local-untracked' > "${fixture}/local-only.swift"
+    output="$(cd "${fixture}" && printf 'refs/heads/main %s refs/heads/main 0000000000000000000000000000000000000000\n' "${head}" | MA_AGENT_LOG_DIR="${TMP_ROOT}/pre-push" ./scripts/hooks-pre-push alt https://alt.example.invalid/prisma.git)"
+    assert_contains "${output}" "Validating push range: refs/heads/main"
+    assert_contains "${output}" "merge-base with refs/remotes/alt/main"
+    assert_contains "${output}" "remote: alt"
+    assert_not_contains "${output}" "alt.example.invalid"
+    assert_contains "${output}" "Push validation passed"
+    assert_not_contains "${output}" "local-only.swift"
+
+    output="$(cd "${fixture}" && printf 'refs/heads/main %s refs/heads/main %s\n' "${head}" "${first_head}" | MA_AGENT_LOG_DIR="${TMP_ROOT}/pre-push-incremental" ./scripts/hooks-pre-push alt https://alt.example.invalid/prisma.git)"
+    assert_contains "${output}" "remote refs/heads/main"
+
+    mkdir -p "${TMP_ROOT}/pre-push-output"
+    output="$(cd "${fixture}" && printf 'refs/heads/main %s refs/heads/main 0000000000000000000000000000000000000000\n' "${head}" | TMPDIR="${TMP_ROOT}/pre-push-output" MA_AGENT_LOG_DIR="${TMP_ROOT}/pre-push-direct-url" ./scripts/hooks-pre-push 'https://alice:s3cr3t@direct.example.invalid/prisma.git?token=secret#fragment')"
+    assert_contains "${output}" "remote: direct URL"
+    assert_not_contains "${output}" "s3cr3t"
+    assert_not_contains "${output}" "token=secret"
+    assert_contains "${output}" "empty tree (merge-base with refs/heads/main equals local head)"
+    assert_contains "${output}" "Running lint-strict:"
+    assert_not_contains "${output}" "No changed files detected"
+    test -z "$(find "${TMP_ROOT}/pre-push-output" -name 'prisma-pre-push.*' -print)"
+
+    output="$(cd "${fixture}" && printf 'refs/heads/main %s refs/heads/main 0000000000000000000000000000000000000000\n' "${head}" | MA_AGENT_LOG_DIR="${TMP_ROOT}/pre-push-scp" ./scripts/hooks-pre-push build.example.invalid:prisma.git)"
+    assert_contains "${output}" "remote: direct URL"
+    output="$(cd "${fixture}" && printf 'refs/heads/main %s refs/heads/main 0000000000000000000000000000000000000000\n' "${head}" | MA_AGENT_LOG_DIR="${TMP_ROOT}/pre-push-scp-user" ./scripts/hooks-pre-push alice@build.example.invalid:prisma.git)"
+    assert_contains "${output}" "remote: direct URL"
+    output="$(cd "${fixture}" && printf 'refs/heads/main %s refs/heads/main 0000000000000000000000000000000000000000\n' "${head}" | MA_AGENT_LOG_DIR="${TMP_ROOT}/pre-push-relative-repo" ./scripts/hooks-pre-push repo.git)"
+    assert_contains "${output}" "remote: direct URL"
+    output="$(cd "${fixture}" && printf 'refs/heads/main %s refs/heads/main 0000000000000000000000000000000000000000\n' "${head}" | MA_AGENT_LOG_DIR="${TMP_ROOT}/pre-push-relative-path" ./scripts/hooks-pre-push path/to/repo.git)"
+    assert_contains "${output}" "remote: direct URL"
+    mkdir -p "${fixture}/repo"
+    output="$(cd "${fixture}" && printf 'refs/heads/main %s refs/heads/main 0000000000000000000000000000000000000000\n' "${head}" | MA_AGENT_LOG_DIR="${TMP_ROOT}/pre-push-existing-path" ./scripts/hooks-pre-push repo)"
+    assert_contains "${output}" "remote: direct URL"
+
+    output="$(cd "${fixture}" && printf 'refs/tags/v1 %s refs/tags/v1 %s\n' "${head}" "${base}" | ./scripts/hooks-pre-push)"
+    assert_contains "${output}" "Skipping tag push"
+
+    set +e
+    output="$(cd "${fixture}" && printf 'refs/notes/review %s refs/notes/review %s\n' "${head}" "${base}" | ./scripts/hooks-pre-push alt https://alt.example.invalid/prisma.git 2>&1)"
+    status=$?
+    set -e
+    test "${status}" -eq 1
+    assert_contains "${output}" "unsupported local ref refs/notes/review"
+
+    output="$(cd "${fixture}" && printf 'refs/notes/review 0000000000000000000000000000000000000000 refs/notes/review %s\n' "${base}" | ./scripts/hooks-pre-push alt https://alt.example.invalid/prisma.git)"
+    assert_contains "${output}" "Skipping deleted ref refs/notes/review"
+
+    git -C "${fixture}" update-ref -d refs/remotes/alt/HEAD
+    git -C "${fixture}" update-ref -d refs/remotes/alt/main
+    output="$(cd "${fixture}" && printf 'refs/heads/main %s refs/heads/main 0000000000000000000000000000000000000000\n' "${head}" | MA_AGENT_LOG_DIR="${TMP_ROOT}/pre-push-no-tracking" ./scripts/hooks-pre-push alt https://alt.example.invalid/prisma.git)"
+    assert_contains "${output}" "empty tree (remote alt has no local default branch reference)"
+    assert_contains "${output}" "Running lint-strict:"
+
+    set +e
+    output="$(cd "${fixture}" && printf 'refs/heads/other %s refs/heads/other %s\n' "${head}" "${base}" | ./scripts/hooks-pre-push 2>&1)"
+    status=$?
+    set -e
+    test "${status}" -eq 1
+    assert_contains "${output}" "refusing to validate refs/heads/other"
 }
 
 scope_output() {
@@ -310,10 +560,15 @@ PY
 }
 
 test_committed_delta_boundaries
+test_deleted_paths_are_classified
+test_committed_tree_isolated_and_invalid_flags
 test_source_file_churn
 test_worktree_layers_are_unique
 test_repeated_file_targets_and_invalid_base
 test_schema_and_parallel_artifacts
 test_nested_commands_inherit_run_tree
 test_validate_runner_preview_and_reuse
+test_committed_and_staged_boundaries
+test_staged_receipt_reused_after_commit
+test_pre_push_protocol
 echo "WORKFLOW_TEST_STATUS=PASS"

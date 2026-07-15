@@ -10,7 +10,7 @@ Choose commands by lane:
 - Workflow fixture gate: `make workflow-test`
 - Optional comprehensive validation: `make preflight`
 
-Agent default loop: preview with `make validate-agent ARGS="--lane auto --dry-run --base main"` when needed, run the smallest changed-path check, let the staged pre-commit hook enforce Swift lint/format, then let pre-push run the compact canonical lane runner. Do not run tests before every commit by default; use targeted tests and the lane runner for final evidence.
+Agent default loop: preview with `make validate-agent ARGS="--lane auto --dry-run --base main"` when needed, run the smallest changed-path check, stage the completed slice, record final evidence with `make validate-agent ARGS="--lane auto --staged --base main --agent"`, let the staged pre-commit hook enforce Swift lint/format, then let pre-push validate the exact committed range received from Git. Compatible PASS evidence is reused across staging and commit when base/head trees, gate inputs, toolchain, lane, and runner match. Do not run tests before every commit by default; use targeted tests and the lane runner for final evidence.
 
 ## Primary Build/Test Commands
 
@@ -33,6 +33,8 @@ make test-sensitive     # Isolated sensitive subsystem suite
 make test-appkit        # Isolated AppKit lifecycle suite
 make test-parity        # Xcode parity run
 make scope-check        # Scoped validation with smart targeted mapping + escalation
+make scope-check ARGS="--committed --base <base> --head <head>"  # Committed range only
+make scope-check ARGS="--committed --empty-base --head <head>"  # Full tree from empty base
 make workflow-test      # Deterministic validation workflow fixtures (no Xcode)
 make test-ci-strict     # Xcode test run without retry/fallback
 make preflight          # Build + Test + Lint + Benchmark (full validation)
@@ -157,7 +159,10 @@ Use this sequence while implementing, then keep lane merge gates at the end:
 ```bash
 # Canonical smart command for iteration (auto-maps tests, escalates when needed)
 make scope-check
-make validate-agent ARGS="--lane auto"  # Canonical merge evidence
+make validate-agent ARGS="--lane auto"  # Canonical working-tree evidence
+make validate-agent ARGS="--lane auto --staged --base main --agent"  # Final staged evidence
+make validate-agent ARGS="--lane auto --committed --base <base> --head <head> --agent"  # Exact push range
+make validate-agent ARGS="--lane auto --committed --empty-base --head <head> --agent"  # Exact first-push tree range
 
 # Fastest confidence pass
 make test-smoke
@@ -266,8 +271,13 @@ log paths and metadata only; full logs remain on disk and prompts, transcripts,
 file contents, and secrets are never embedded in the JSON.
 
 `validate-agent` adds a content-addressed fingerprint covering the requested and
-selected lane, base commit, working-tree content representation, gate inputs,
-toolchain identities, and runner schema. Only exact `PASS` evidence with
+selected lane, base/head trees, validation content representation, gate inputs,
+external gate inputs (including `Packages/MeetingAssistantCore/Package.resolved`
+when present), toolchain identities, and runner schema. Committed mode materializes
+`HEAD_REF` in a temporary detached worktree before selecting or running the gate;
+if external inputs differ between the original checkout and materialized tree,
+reuse and PASS-cache writes are disabled for that run. Staged and committed modes
+exclude unrelated unstaged/untracked state. Only exact `PASS` evidence with
 existing child results and matching fingerprints can be reused. Use
 `--no-reuse` after flaky or inconclusive behavior; dry-run output is never proof.
 
@@ -295,7 +305,7 @@ On failure, scripts print compact excerpts to terminal while keeping full logs o
 |------|---------|
 | Local development loop | `make build && make run` |
 | Before committing | Staged SwiftFormat/SwiftLint pre-commit hook; run `make lint-fix` when it fails |
-| Before push/release (recommended) | `make deliverable-gate` |
+| Before push/release (recommended) | pre-push exact committed range; `make deliverable-gate` for high confidence |
 | Pre-merge validation | `make preflight` |
 | Fast local feedback | `make preflight-fast` |
 | Smart scoped iteration | `make scope-check` |

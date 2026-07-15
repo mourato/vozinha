@@ -15,6 +15,10 @@ source "${SCRIPT_DIR}/lib/agent-output.sh"
 
 AGENT_MODE=0
 BASE_REF=""
+HEAD_REF=""
+EMPTY_BASE=0
+STAGED_MODE=0
+COMMITTED_MODE=0
 MAX_TARGETED=8
 RUN_BUILD=1
 DRY_RUN=0
@@ -41,6 +45,10 @@ Usage: ./scripts/scope-check.sh [options]
 
 Options:
   --base REF            Compare against git ref in addition to local working tree
+  --head REF            Head ref used with --committed
+  --empty-base          Use the empty Git tree as the committed diff base
+  --staged              Validate the staged index; reject unstaged/untracked files
+  --committed           Validate the committed BASE..HEAD range only
   --max-targeted N      Maximum mapped targeted tests before escalating (default: 8)
   --no-build            Skip narrow build step before targeted tests
   --dry-run             Print decisions and commands without executing checks
@@ -103,17 +111,30 @@ collect_changed_files() {
     local changed_file_list="$1"
     : > "${changed_file_list}"
 
-    if [ -n "${BASE_REF}" ]; then
-        if ! git rev-parse --verify --quiet "${BASE_REF}" >/dev/null; then
-            echo "Error: base ref '${BASE_REF}' does not exist."
-            return 1
+    if [ "${COMMITTED_MODE}" -eq 1 ]; then
+        local committed_base="${BASE_REF}"
+        if [ "${EMPTY_BASE}" -eq 1 ]; then
+            committed_base="$(git hash-object -t tree /dev/null)"
+            DIFF_RANGE_LABEL="empty tree -> ${HEAD_REF}"
+        else
+            DIFF_RANGE_LABEL="${BASE_REF} -> ${HEAD_REF}"
         fi
-        DIFF_RANGE_LABEL="${BASE_REF} -> working tree"
+        git diff --name-only --diff-filter=ACMRD "${committed_base}" "${HEAD_REF}" >> "${changed_file_list}"
+    elif [ "${STAGED_MODE}" -eq 1 ]; then
+        DIFF_RANGE_LABEL="${BASE_REF:-HEAD} -> staged index"
+        git diff --cached --name-only --diff-filter=ACMRD ${BASE_REF:+"${BASE_REF}"} >> "${changed_file_list}"
+    else
+        if [ -n "${BASE_REF}" ]; then
+            if ! git rev-parse --verify --quiet "${BASE_REF}" >/dev/null; then
+                echo "Error: base ref '${BASE_REF}' does not exist."
+                return 1
+            fi
+            DIFF_RANGE_LABEL="${BASE_REF} -> working tree"
+        fi
+        local tracked_base="${BASE_REF:-HEAD}"
+        git diff --name-only --diff-filter=ACMRD "${tracked_base}" >> "${changed_file_list}"
+        git ls-files --others --exclude-standard >> "${changed_file_list}"
     fi
-
-    local tracked_base="${BASE_REF:-HEAD}"
-    git diff --name-only --diff-filter=ACMR "${tracked_base}" >> "${changed_file_list}"
-    git ls-files --others --exclude-standard >> "${changed_file_list}"
 
     sed '/^$/d' "${changed_file_list}" | sort -u > "${changed_file_list}.sorted"
     mv "${changed_file_list}.sorted" "${changed_file_list}"
@@ -130,6 +151,26 @@ parse_args() {
                 fi
                 BASE_REF="$2"
                 shift 2
+                ;;
+            --head)
+                if [[ $# -lt 2 ]]; then
+                    echo "Error: --head requires a ref value."
+                    exit 1
+                fi
+                HEAD_REF="$2"
+                shift 2
+                ;;
+            --empty-base)
+                EMPTY_BASE=1
+                shift
+                ;;
+            --staged)
+                STAGED_MODE=1
+                shift
+                ;;
+            --committed)
+                COMMITTED_MODE=1
+                shift
                 ;;
             --max-targeted)
                 if [[ $# -lt 2 ]]; then
@@ -172,6 +213,39 @@ parse_args() {
         echo "Error: --max-targeted must be a positive integer."
         exit 1
     fi
+    if [ "${STAGED_MODE}" -eq 1 ] && [ "${COMMITTED_MODE}" -eq 1 ]; then
+        echo "Error: --staged and --committed are mutually exclusive."
+        exit 1
+    fi
+    if [ "${EMPTY_BASE}" -eq 1 ] && [ -n "${BASE_REF}" ]; then
+        echo "Error: --empty-base and --base are mutually exclusive."
+        exit 1
+    fi
+    if [ "${COMMITTED_MODE}" -eq 1 ]; then
+        if [ "${EMPTY_BASE}" -eq 0 ] && [ -z "${BASE_REF}" ]; then
+            echo "Error: --committed requires --base or --empty-base."
+            exit 1
+        fi
+        [ -n "${HEAD_REF}" ] || { echo "Error: --committed requires --head."; exit 1; }
+        if [ "${EMPTY_BASE}" -eq 0 ]; then
+            git rev-parse --verify --quiet "${BASE_REF}^{commit}" >/dev/null || { echo "Error: base ref '${BASE_REF}' does not exist."; exit 1; }
+        fi
+        git rev-parse --verify --quiet "${HEAD_REF}^{commit}" >/dev/null || { echo "Error: head ref '${HEAD_REF}' does not exist."; exit 1; }
+    fi
+    if [ "${STAGED_MODE}" -eq 1 ]; then
+        if ! git diff --quiet; then
+            echo "Error: --staged requires no unstaged tracked changes."
+            exit 1
+        fi
+        if [ -n "$(git ls-files --others --exclude-standard)" ]; then
+            echo "Error: --staged requires no untracked files."
+            exit 1
+        fi
+        if git ls-files --unmerged --error-unmatch -- ':/' >/dev/null 2>&1; then
+            echo "Error: --staged cannot validate an unmerged index."
+            exit 1
+        fi
+    fi
 }
 
 prepare_agent_logging() {
@@ -196,8 +270,25 @@ count_added_lines() {
     local numstat
     local added
 
-    tracked_added_lines="$(git diff --numstat --diff-filter=ACMR "${tracked_base}" -- \
-        | awk '$1 ~ /^[0-9]+$/ {sum += $1} END {print sum+0}')"
+    if [ "${COMMITTED_MODE}" -eq 1 ]; then
+        local committed_base="${BASE_REF}"
+        if [ "${EMPTY_BASE}" -eq 1 ]; then
+            committed_base="$(git hash-object -t tree /dev/null)"
+        fi
+        tracked_added_lines="$(git diff --numstat --diff-filter=ACMRD "${committed_base}" "${HEAD_REF}" -- \
+            | awk '$1 ~ /^[0-9]+$/ {sum += $1} END {print sum+0}')"
+    elif [ "${STAGED_MODE}" -eq 1 ]; then
+        tracked_added_lines="$(git diff --cached --numstat --diff-filter=ACMRD ${BASE_REF:+"${BASE_REF}"} -- \
+            | awk '$1 ~ /^[0-9]+$/ {sum += $1} END {print sum+0}')"
+    else
+        tracked_added_lines="$(git diff --numstat --diff-filter=ACMRD "${tracked_base}" -- \
+            | awk '$1 ~ /^[0-9]+$/ {sum += $1} END {print sum+0}')"
+    fi
+
+    if [ "${STAGED_MODE}" -eq 1 ] || [ "${COMMITTED_MODE}" -eq 1 ]; then
+        printf '%s\n' "${tracked_added_lines}"
+        return 0
+    fi
 
     while IFS= read -r file_path; do
         [ -n "${file_path}" ] || continue

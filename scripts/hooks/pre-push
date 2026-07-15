@@ -1,22 +1,199 @@
 #!/bin/bash
-# MARK: - Pre-push Hook for MeetingAssistant
-# Ensures tests pass before pushing. Set SKIP_TESTS=1 to bypass.
+# Pre-push hook: validate exactly the commit range Git is sending.
+# Set SKIP_TESTS=1 only for an explicit emergency bypass.
 
-set -e
+set -u
+set -o pipefail
 
-if [ "${SKIP_TESTS}" = "1" ]; then
-    echo "⚠️  SKIP_TESTS=1 set. Skipping tests."
+REMOTE_ARGUMENT="${1:-origin}"
+REMOTE_NAME="${REMOTE_ARGUMENT}"
+DIRECT_URL=0
+if git remote get-url "${REMOTE_ARGUMENT}" >/dev/null 2>&1; then
+    DIRECT_URL=0
+else
+    case "${REMOTE_ARGUMENT}" in
+        *://*|*:*|/*|./*|../*|*/*|*.git)
+            DIRECT_URL=1
+            REMOTE_NAME=""
+            ;;
+        *)
+            # A configured remote name wins above; otherwise an existing
+            # path is treated as a direct Git transport.
+            if [ -e "${REMOTE_ARGUMENT}" ]; then
+                DIRECT_URL=1
+                REMOTE_NAME=""
+            fi
+            ;;
+    esac
+fi
+
+if [ "${SKIP_TESTS:-0}" = "1" ]; then
+    echo "⚠️  SKIP_TESTS=1 set. Push is proceeding without validation."
     exit 0
 fi
 
-echo "🧪 Running tests before push..."
-DEFAULT_BRANCH="$(git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's@^refs/remotes/origin/@@')"
-if [ -z "${DEFAULT_BRANCH}" ]; then
-    DEFAULT_BRANCH="main"
+current_branch_ref="$(git symbolic-ref -q HEAD 2>/dev/null || true)"
+if [ "${DIRECT_URL}" -eq 1 ]; then
+    default_branch=""
+    for candidate in main master; do
+        if git rev-parse --verify --quiet "refs/heads/${candidate}^{commit}" >/dev/null; then
+            default_branch="refs/heads/${candidate}"
+            break
+        fi
+    done
+else
+    default_branch="$(git symbolic-ref "refs/remotes/${REMOTE_NAME}/HEAD" 2>/dev/null || true)"
+fi
+if [ "${DIRECT_URL}" -eq 0 ] && [ -z "${default_branch}" ]; then
+    for candidate in main master; do
+        if git rev-parse --verify --quiet "refs/remotes/${REMOTE_NAME}/${candidate}^{commit}" >/dev/null; then
+            default_branch="refs/remotes/${REMOTE_NAME}/${candidate}"
+            break
+        fi
+    done
+fi
+if [ -n "${default_branch}" ] && ! git rev-parse --verify --quiet "${default_branch}^{commit}" >/dev/null 2>&1; then
+    default_branch=""
 fi
 
-if [ "${PUSH_CHECK_VERBOSE:-0}" = "1" ]; then
-    make validate-agent ARGS="--lane auto --base ${DEFAULT_BRANCH}"
-else
-    make validate-agent ARGS="--lane auto --base ${DEFAULT_BRANCH} --agent"
+resolve_commit() {
+    git rev-parse --verify "$1^{commit}"
+}
+
+validate_push_range() {
+    local local_ref="$1"
+    local local_sha="$2"
+    local remote_ref="$3"
+    local remote_sha="$4"
+    local base_ref
+    local empty_base=0
+    local head_ref="${local_sha}"
+    local base_display
+    local output_file
+    local status
+    local args
+    local result_path
+
+    # Deletions and tag-only pushes do not change the source tree being checked.
+    if [ "${local_sha}" = "0000000000000000000000000000000000000000" ]; then
+        echo "ℹ️  Skipping deleted ref ${local_ref}."
+        return 0
+    fi
+    case "${local_ref}" in
+        refs/tags/*)
+            echo "ℹ️  Skipping tag push ${local_ref}."
+            return 0
+            ;;
+    esac
+
+    if [ -z "${current_branch_ref}" ]; then
+        echo "Error: pre-push validation requires a checked-out local branch; received ${local_ref}." >&2
+        return 1
+    fi
+    if [ "${local_ref}" != "${current_branch_ref}" ]; then
+        echo "Error: refusing to validate ${local_ref} while ${current_branch_ref} is checked out." >&2
+        echo "       Push the checked-out branch or validate this ref explicitly outside the hook." >&2
+        return 1
+    fi
+    resolve_commit "${local_sha}" >/dev/null || {
+        echo "Error: local push head ${local_sha} is not a commit." >&2
+        return 1
+    }
+
+if [ "${remote_sha}" = "0000000000000000000000000000000000000000" ]; then
+        if [ -z "${default_branch}" ]; then
+            if [ "${DIRECT_URL}" -eq 1 ]; then
+                echo "Error: direct push URL has no local main/master branch for first-push merge-base." >&2
+                return 1
+            else
+                empty_base=1
+                base_display="empty tree (remote ${REMOTE_NAME} has no local default branch reference)"
+            fi
+        else
+            if ! resolve_commit "${default_branch}" >/dev/null 2>&1; then
+                echo "Error: first push has no usable default branch (${default_branch}) for merge-base." >&2
+                return 1
+            fi
+            base_ref="$(git merge-base "${local_sha}" "${default_branch}")" || {
+                echo "Error: could not compute merge-base for ${local_ref} and ${default_branch}." >&2
+                return 1
+            }
+            if [ "${base_ref}" = "${local_sha}" ]; then
+                empty_base=1
+                base_display="empty tree (merge-base with ${default_branch} equals local head)"
+            else
+                base_display="${base_ref} (merge-base with ${default_branch})"
+            fi
+        fi
+    else
+        base_ref="${remote_sha}"
+        base_display="${remote_sha} (remote ${remote_ref})"
+    fi
+
+    echo "🧪 Validating push range: ${local_ref}"
+    echo "   base: ${base_display}"
+    echo "   head: ${local_sha}"
+    if [ "${DIRECT_URL}" -eq 1 ]; then
+        echo "   remote: direct URL"
+    else
+        echo "   remote: ${REMOTE_NAME}"
+    fi
+    echo "   gate: auto lane over committed range only"
+
+    output_file="$(mktemp "${TMPDIR:-/tmp}/prisma-pre-push.XXXXXX")"
+    trap 'rm -f -- "${output_file:-}"; exit 130' INT TERM HUP
+    if [ "${empty_base}" -eq 1 ]; then
+        args="--lane auto --committed --empty-base --head ${head_ref}"
+    else
+        args="--lane auto --committed --base ${base_ref} --head ${head_ref}"
+    fi
+    if [ "${PUSH_CHECK_VERBOSE:-0}" != "1" ]; then
+        args="${args} --agent"
+    fi
+
+    set +e
+    make validate-agent ARGS="${args}" 2>&1 | tee "${output_file}"
+    status="${PIPESTATUS[0]}"
+    set -e
+
+    result_path="$(sed -n 's/^AGENT_RESULT_JSON=//p' "${output_file}" | tail -n 1)"
+    rm -f "${output_file}"
+    trap - INT TERM HUP
+    if [ "${status}" -ne 0 ]; then
+        echo "❌ Push validation failed for ${local_ref}." >&2
+        if [ -n "${result_path}" ]; then
+            echo "   Result artifact: ${result_path}" >&2
+        fi
+        return "${status}"
+    fi
+    if [ -n "${result_path}" ]; then
+        echo "✅ Push validation passed; result: ${result_path}"
+    else
+        echo "✅ Push validation passed."
+    fi
+    return 0
+}
+
+branch_push_seen=0
+while IFS=' ' read -r local_ref local_sha remote_ref remote_sha _; do
+    [ -n "${local_ref}" ] || continue
+    case "${local_ref}" in
+        refs/tags/*) validate_push_range "${local_ref}" "${local_sha}" "${remote_ref}" "${remote_sha}" || exit $? ;;
+        refs/heads/*)
+            branch_push_seen=$((branch_push_seen + 1))
+            validate_push_range "${local_ref}" "${local_sha}" "${remote_ref}" "${remote_sha}" || exit $?
+            ;;
+        *)
+            if [ "${local_sha}" = "0000000000000000000000000000000000000000" ]; then
+                echo "ℹ️  Skipping deleted ref ${local_ref}."
+            else
+                echo "Error: refusing to push unsupported local ref ${local_ref} without validation." >&2
+                exit 1
+            fi
+            ;;
+    esac
+done
+
+if [ "${branch_push_seen}" -eq 0 ]; then
+    echo "ℹ️  No branch commit requires pre-push validation."
 fi

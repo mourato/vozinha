@@ -153,7 +153,7 @@ Compact-mode notes:
 - Scripts emit deterministic `AGENT_*` summary lines for pass/fail parsing.
 - `*.result.json` files use schema version 2 with command summaries and the selected validation decision; they contain metadata and log paths, never prompts, transcripts, file contents, or secrets.
 - `make workflow-test` runs disposable, deterministic fixtures for diff selection, risk thresholds, result schema, quoting, invalid refs, and concurrent artifact isolation without invoking Xcode.
-- `make validate-agent` is the canonical final lane runner. Its content-addressed PASS fingerprint covers source state, gate inputs, toolchain, base, lane, and runner schema; reuse fails closed when any child result is missing, corrupt, non-PASS, or mismatched. Use `--no-reuse` after flaky or inconclusive behavior.
+- `make validate-agent` is the canonical final lane runner. Its content-addressed PASS fingerprint covers the validation scope, base/head trees, gate inputs, toolchain, lane, and runner schema; working-tree mode also covers worktree state, while staged and committed modes exclude unrelated unstaged/untracked state. Reuse fails closed when any child result is missing, corrupt, non-PASS, or mismatched. Use `--no-reuse` after flaky or inconclusive behavior.
 - Use compact mode for iteration; keep lane merge gates unchanged.
 
 Agent delivery sequence:
@@ -161,7 +161,7 @@ Agent delivery sequence:
 1. Preview the lane decision when needed with `make validate-agent ARGS="--lane auto --dry-run --base main"`; this does not prove the change.
 2. Run the smallest meaningful changed-path check: targeted tests, `make build-agent`, `make preview-check`, `make arch-check`, or `make guidance-check`.
 3. Before commit, the staged pre-commit hook runs SwiftFormat and SwiftLint for staged Swift files. Run `make lint-fix` when it fails; `SKIP_LINT=1` is an explicit emergency bypass.
-4. Before push, the pre-push hook runs `make validate-agent ARGS="--lane auto --base <default-branch> --agent"`. Set `PUSH_CHECK_VERBOSE=1` for human-readable output; `SKIP_TESTS=1` remains an emergency bypass.
+4. Before push, the pre-push hook consumes Git's stdin protocol and runs `make validate-agent ARGS="--lane auto --committed --base <remote-or-merge-base> --head <local-sha> --agent"` for the exact ref range. If a first-push merge-base equals the local head, it uses `--empty-base` so the complete tree is validated instead of an empty range. The remote name and URL come from the hook's `$1`/`$2`, but output omits complete URLs and credentials; direct URLs, including generic SSH SCP forms such as `host:path` and `user@host:path`, use local `main`/`master` only as a deterministic first-push merge-base fallback. A named remote without a usable local default reference also uses `--empty-base`. Unsupported non-branch/non-tag refs with non-zero SHAs fail closed. Committed validation materializes `HEAD_REF` in a temporary detached worktree before selecting or running the gate, compares external gate inputs such as `Package.resolved`, disables both PASS reuse and PASS-cache writes on mismatch, and cleans up on normal return or signals. Set `PUSH_CHECK_VERBOSE=1` for human-readable output; `SKIP_TESTS=1` remains an emergency bypass.
 5. Final Fast/Full evidence uses `make validate-agent`; `--no-reuse` is required after flaky or inconclusive behavior.
 6. Use `make preflight-agent` or `make deliverable-gate` for release or high-confidence validation.
 
@@ -224,7 +224,7 @@ For Full lane work, Critical and Medium review findings block handoff until fixe
 
 - Install hooks with `git config core.hooksPath scripts/hooks`.
 - `pre-commit` runs blocking lightweight staged checks for Swift files and does not run tests.
-- `pre-push` enforces compact scoped validation unless explicitly bypassed.
+- `pre-push` consumes Git's ref-update protocol and enforces compact validation over the exact committed range unless explicitly bypassed.
 - Emergency bypasses should be rare and followed by immediate remediation.
 - If tools are missing, install SwiftLint and SwiftFormat with `brew install swiftlint swiftformat`.
 
