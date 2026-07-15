@@ -143,18 +143,16 @@ public struct AssistantIntegrationEditorSheet: View {
                 .font(.caption2)
                 .foregroundStyle(.secondary)
 
-            DSToggleRow(
+            CheckboxRow(
                 "settings.assistant.integrations.editor.overlay_visibility.prompt.title".localized,
-                description: "settings.assistant.integrations.editor.overlay_visibility.prompt.description".localized,
                 isOn: Binding(
                     get: { draft.integration.showsPromptSelectorInOverlay },
                     set: { draft.integration.showsPromptSelectorInOverlay = $0 },
                 ),
             )
 
-            DSToggleRow(
+            CheckboxRow(
                 "settings.assistant.integrations.editor.overlay_visibility.language.title".localized,
-                description: "settings.assistant.integrations.editor.overlay_visibility.language.description".localized,
                 isOn: Binding(
                     get: { draft.integration.showsLanguageSelectorInOverlay },
                     set: { draft.integration.showsLanguageSelectorInOverlay = $0 },
@@ -319,6 +317,20 @@ public struct AssistantIntegrationEditorSheet: View {
             try? await Task.sleep(nanoseconds: Constants.copyFeedbackDurationNanoseconds)
             copiedPlaceholderToken = nil
         }
+    }
+}
+
+private struct CheckboxRow: View {
+    let title: String
+    @Binding var isOn: Bool
+
+    init(_ title: String, isOn: Binding<Bool>) {
+        self.title = title
+        _isOn = isOn
+    }
+
+    var body: some View {
+        Toggle(title, isOn: $isOn).toggleStyle(.checkbox).accessibilityLabel(title)
     }
 }
 
