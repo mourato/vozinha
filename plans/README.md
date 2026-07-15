@@ -2,7 +2,7 @@
 
 This is the active plan ledger. Historical audits, completed plan rows, review
 notes, and rejected options remain in the [2026-07-12 ledger archive](archive/2026-07-12-plan-ledger-history.md).
-Plan files are never renumbered; the next available plan number is 090.
+Plan files are never renumbered; the next available plan number is 093.
 
 ## Execution rules
 
@@ -62,6 +62,9 @@ reason) | `REJECTED` (with a one-line rationale).
 | [087](087-fix-pre-push-reliability-and-agent-ops-followups.md) | Fix pre-push reliability (Rust staging + reuse) and finish agent-ops follow-ups | P1 | L | 084, 085, 086 | DONE |
 | [088](088-optimize-macos-ui-swift-skills-cluster.md) | Optimize macOS UI / Apple design / Swift skills cluster (fold swiftui-pro; slim apple-design) | P1 | M | 028, 084, 085 | DONE |
 | [089](089-slim-agent-validation-loop-and-pass-reuse.md) | Slim agent validation loop and align clean-tree PASS reuse with pre-push | P1 | M | 087 | DONE |
+| [090](090-restore-immediate-settings-switches-and-document-boolean-control-rule.md) | Restore immediate-effect settings switches and document the boolean-control rule | P1 | M | - | DONE |
+| [091](091-remove-empty-meeting-transcription-form-row.md) | Remove the empty Meeting Transcription Form row before Pyannote | P1 | S | - | DONE |
+| [092](092-align-activity-index-with-settings-form-visual-contract.md) | Align Activity index groups with the Settings Form visual contract | P1 | M | - | DONE |
 
 Plans 001–061 are completed or archived in the historical ledger. The archive preserves the original audit scope,
 findings, dependency history, status table, committee notes, and rejected
@@ -158,13 +161,23 @@ options verbatim for searchability.
   `workingState` from fingerprints on clean trees so working-tree PASS reuses
   into `--committed`/pre-push, and rewrite guidance so Low/Fast defaults to
   check → commit → push without stacked dry-run/staged/Full.
+- 090 restores save-semantics boolean controls after the Form migration
+  incorrectly applied checkboxes to immediate Settings pages; it also elevates
+  the rule in `macos-app-engineering`. Independent of 091/092.
+- 091 removes the bare `Divider()` empty Form row in Meeting Transcription
+  (Pyannote). Low/Fast; independent of 090/092.
+- 092 narrows plan 082’s Activity exception: the Activity **index** adopts
+  `SettingsFormPage` chrome for visual parity, while analytics child routes
+  (More Insights, Performance, History) remain specialized. Independent of
+  090/091 content-wise; serialize writers per repo policy.
 
 ## Findings considered and rejected
 
-- Converting Activity analytics, transcription History, Modes lists, monitored
-  apps/sites, provider/model catalogs, dictionary rules, or permission status
-  blocks mechanically into Form rows is rejected: these are collection,
-  status, analytics, or rich-editor surfaces rather than scalar settings.
+- Converting Activity analytics **child** routes, transcription History, Modes
+  lists, monitored apps/sites, provider/model catalogs, dictionary rules, or
+  permission status blocks mechanically into scalar Form rows remains rejected.
+  Plan 092 only moves Activity **index** group chrome onto Form Sections while
+  keeping heatmap/calendar semantics as composed Section content.
 - Applying the Modes drawer's 400 pt width to main Settings pages is rejected:
   the fixed width belongs only to the trailing overlay; root/detail content
   must use the full available container width.
