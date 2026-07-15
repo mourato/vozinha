@@ -16,7 +16,7 @@ final class GeneralSettingsAudioDevicesTests: XCTestCase {
     }
 
     func testMicrophoneSelectionsArePersistedInSettingsStore() {
-        let viewModel = GeneralSettingsViewModel(settingsStore: settings)
+        let viewModel = GeneralSettingsViewModel(settingsStore: settings, deviceManager: GeneralSettingsAudioDeviceTestDouble())
 
         viewModel.microphoneWhenChargingUID = "charging-mic-id"
         viewModel.microphoneOnBatteryUID = "battery-mic-id"
@@ -26,7 +26,7 @@ final class GeneralSettingsAudioDevicesTests: XCTestCase {
     }
 
     func testUnavailablePersistedSelectionRemainsVisibleInDeviceList() {
-        let viewModel = GeneralSettingsViewModel(settingsStore: settings)
+        let viewModel = GeneralSettingsViewModel(settingsStore: settings, deviceManager: GeneralSettingsAudioDeviceTestDouble())
         let missingUID = "missing-device-uid-for-tests"
 
         viewModel.microphoneWhenChargingUID = missingUID
@@ -37,11 +37,11 @@ final class GeneralSettingsAudioDevicesTests: XCTestCase {
     }
 
     func testMicrophoneSelectionsSurviveViewModelReload() {
-        let firstViewModel = GeneralSettingsViewModel(settingsStore: settings)
+        let firstViewModel = GeneralSettingsViewModel(settingsStore: settings, deviceManager: GeneralSettingsAudioDeviceTestDouble())
         firstViewModel.microphoneWhenChargingUID = "charging-mic-id"
         firstViewModel.microphoneOnBatteryUID = "battery-mic-id"
 
-        let reloadedViewModel = GeneralSettingsViewModel(settingsStore: settings)
+        let reloadedViewModel = GeneralSettingsViewModel(settingsStore: settings, deviceManager: GeneralSettingsAudioDeviceTestDouble())
 
         XCTAssertEqual(reloadedViewModel.microphoneWhenChargingUID, "charging-mic-id")
         XCTAssertEqual(reloadedViewModel.microphoneOnBatteryUID, "battery-mic-id")

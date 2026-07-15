@@ -16,21 +16,21 @@ final class GeneralSettingsAudioProcessingTests: XCTestCase {
     }
 
     func testSilenceRemovalSettingIsPersistedThroughViewModelReload() {
-        let firstViewModel = GeneralSettingsViewModel(settingsStore: settings)
+        let firstViewModel = GeneralSettingsViewModel(settingsStore: settings, deviceManager: GeneralSettingsAudioDeviceTestDouble())
         firstViewModel.removeSilenceBeforeProcessing = true
 
-        let reloadedViewModel = GeneralSettingsViewModel(settingsStore: settings)
+        let reloadedViewModel = GeneralSettingsViewModel(settingsStore: settings, deviceManager: GeneralSettingsAudioDeviceTestDouble())
 
         XCTAssertTrue(settings.removeSilenceBeforeProcessing)
         XCTAssertTrue(reloadedViewModel.removeSilenceBeforeProcessing)
     }
 
     func testAudioDuckingSettingsArePersistedThroughViewModelReload() {
-        let firstViewModel = GeneralSettingsViewModel(settingsStore: settings)
+        let firstViewModel = GeneralSettingsViewModel(settingsStore: settings, deviceManager: GeneralSettingsAudioDeviceTestDouble())
         firstViewModel.recordingMediaHandlingMode = .pauseMedia
         firstViewModel.audioDuckingLevelPercent = 28
 
-        let reloadedViewModel = GeneralSettingsViewModel(settingsStore: settings)
+        let reloadedViewModel = GeneralSettingsViewModel(settingsStore: settings, deviceManager: GeneralSettingsAudioDeviceTestDouble())
 
         XCTAssertEqual(settings.recordingMediaHandlingMode, .pauseMedia)
         XCTAssertEqual(settings.audioDuckingLevelPercent, 28)

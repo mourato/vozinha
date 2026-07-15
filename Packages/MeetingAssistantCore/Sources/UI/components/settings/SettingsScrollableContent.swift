@@ -1,5 +1,11 @@
 import SwiftUI
 
+enum SettingsContentSurface {
+    static let horizontalGutter: CGFloat = 20
+    static let bottomInset: CGFloat = 20
+    static let toolbarBoundaryHeight: CGFloat = 44
+}
+
 public struct SettingsScrollableContent<Content: View>: View {
     private let spacing: CGFloat
     private let content: Content
@@ -18,7 +24,14 @@ public struct SettingsScrollableContent<Content: View>: View {
                 VStack(alignment: .leading, spacing: spacing) {
                     content
                 }
-                .padding(EdgeInsets(top: 0, leading: 20, bottom: 20, trailing: 20))
+                .padding(
+                    EdgeInsets(
+                        top: 0,
+                        leading: SettingsContentSurface.horizontalGutter,
+                        bottom: SettingsContentSurface.bottomInset,
+                        trailing: SettingsContentSurface.horizontalGutter,
+                    ),
+                )
                 .frame(
                     minWidth: geometry.size.width,
                     minHeight: geometry.size.height,
@@ -30,6 +43,31 @@ public struct SettingsScrollableContent<Content: View>: View {
             .scrollContentBackground(.hidden)
             .background(Color.clear)
             .subtleScrollbars()
+        }
+    }
+}
+
+struct SettingsChromeSafeAreaInset<LegacyHeader: View>: ViewModifier {
+    private let legacyHeader: LegacyHeader
+    private let usesToolbarChrome: Bool
+
+    init(
+        legacyHeader: LegacyHeader,
+        usesToolbarChrome: Bool,
+    ) {
+        self.legacyHeader = legacyHeader
+        self.usesToolbarChrome = usesToolbarChrome
+    }
+
+    func body(content: Content) -> some View {
+        content.safeAreaInset(edge: .top, spacing: 0) {
+            if usesToolbarChrome {
+                Color.clear
+                    .frame(height: SettingsContentSurface.toolbarBoundaryHeight)
+                    .accessibilityHidden(true)
+            } else {
+                legacyHeader
+            }
         }
     }
 }
@@ -50,7 +88,7 @@ private struct SettingsContentSurfacePreview: View {
                 }
                 .foregroundStyle(.secondary)
                 .padding(.horizontal, 20)
-                .frame(height: 44)
+                .frame(height: SettingsContentSurface.toolbarBoundaryHeight)
                 .background(SettingsTitleBarMaterialBackground())
 
                 SettingsScrollableContent {

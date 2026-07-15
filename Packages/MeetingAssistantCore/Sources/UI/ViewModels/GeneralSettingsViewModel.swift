@@ -12,6 +12,20 @@ import os
 import SwiftUI
 
 @MainActor
+public protocol GeneralSettingsAudioDeviceManaging: AnyObject {
+    var availableInputDevices: [AudioInputDevice] { get }
+    var availableInputDevicesPublisher: AnyPublisher<[AudioInputDevice], Never> { get }
+    func refreshDevices()
+}
+
+@MainActor
+extension AudioDeviceManager: GeneralSettingsAudioDeviceManaging {
+    public var availableInputDevicesPublisher: AnyPublisher<[AudioInputDevice], Never> {
+        $availableInputDevices.eraseToAnyPublisher()
+    }
+}
+
+@MainActor
 @Observable
 public final class GeneralSettingsViewModel {
     public var autoStartRecording: Bool {
@@ -224,7 +238,7 @@ public final class GeneralSettingsViewModel {
     @ObservationIgnored private let storage: StorageService
     @ObservationIgnored private let localAICacheMaintenance: LocalAICacheMaintenanceService
     @ObservationIgnored private let launchAtLoginService: any LaunchAtLoginService
-    @ObservationIgnored private let deviceManager = AudioDeviceManager()
+    @ObservationIgnored private let deviceManager: any GeneralSettingsAudioDeviceManaging
     @ObservationIgnored private var cancellables = Set<AnyCancellable>()
     private nonisolated static let logger = Logger(subsystem: AppIdentity.logSubsystem, category: "GeneralSettingsViewModel")
 
@@ -233,11 +247,13 @@ public final class GeneralSettingsViewModel {
         storage: StorageService = FileSystemStorageService.shared,
         localAICacheMaintenance: LocalAICacheMaintenanceService = .shared,
         launchAtLoginService: any LaunchAtLoginService = SystemLaunchAtLoginService(),
+        deviceManager: any GeneralSettingsAudioDeviceManaging = AudioDeviceManager(),
     ) {
         self.settingsStore = settingsStore
         self.storage = storage
         self.localAICacheMaintenance = localAICacheMaintenance
         self.launchAtLoginService = launchAtLoginService
+        self.deviceManager = deviceManager
         autoStartRecording = settingsStore.autoStartRecording
         recordingsPath = settingsStore.recordingsDirectory
         audioFormat = settingsStore.audioFormat
@@ -337,7 +353,7 @@ public final class GeneralSettingsViewModel {
     }
 
     private func setupDeviceObservation() {
-        deviceManager.$availableInputDevices
+        deviceManager.availableInputDevicesPublisher
             .receive(on: DispatchQueue.main)
             .sink { [weak self] devices in
                 self?.mergeAvailableDevices(detectedDevices: devices)

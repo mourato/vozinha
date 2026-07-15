@@ -18,10 +18,10 @@ final class GeneralSettingsAppearanceTests: XCTestCase {
     }
 
     func testAppearanceModeIsPersistedThroughViewModel() {
-        let firstViewModel = GeneralSettingsViewModel(settingsStore: settings)
+        let firstViewModel = GeneralSettingsViewModel(settingsStore: settings, deviceManager: GeneralSettingsAudioDeviceTestDouble())
         firstViewModel.appearanceMode = .dark
 
-        let reloadedViewModel = GeneralSettingsViewModel(settingsStore: settings)
+        let reloadedViewModel = GeneralSettingsViewModel(settingsStore: settings, deviceManager: GeneralSettingsAudioDeviceTestDouble())
 
         XCTAssertEqual(settings.appearanceMode, .dark)
         XCTAssertEqual(reloadedViewModel.appearanceMode, .dark)

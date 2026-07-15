@@ -20,7 +20,7 @@ final class GeneralSettingsLaunchAtLoginTests: XCTestCase {
     func testRegisterFailureRollsBackAndExposesActionableError() {
         let service = MockLaunchAtLoginService(isEnabled: false)
         service.registerError = TestLaunchAtLoginError()
-        let viewModel = GeneralSettingsViewModel(settingsStore: settings, launchAtLoginService: service)
+        let viewModel = GeneralSettingsViewModel(settingsStore: settings, launchAtLoginService: service, deviceManager: GeneralSettingsAudioDeviceTestDouble())
 
         viewModel.launchAtLogin = true
 
@@ -35,7 +35,7 @@ final class GeneralSettingsLaunchAtLoginTests: XCTestCase {
         settings.launchAtLogin = true
         let service = MockLaunchAtLoginService(isEnabled: true)
         service.unregisterError = TestLaunchAtLoginError()
-        let viewModel = GeneralSettingsViewModel(settingsStore: settings, launchAtLoginService: service)
+        let viewModel = GeneralSettingsViewModel(settingsStore: settings, launchAtLoginService: service, deviceManager: GeneralSettingsAudioDeviceTestDouble())
 
         viewModel.launchAtLogin = false
 
@@ -49,7 +49,7 @@ final class GeneralSettingsLaunchAtLoginTests: XCTestCase {
     func testRetryAfterRegisterFailureReappliesRequestedStateAndClearsError() {
         let service = MockLaunchAtLoginService(isEnabled: false)
         service.registerError = TestLaunchAtLoginError()
-        let viewModel = GeneralSettingsViewModel(settingsStore: settings, launchAtLoginService: service)
+        let viewModel = GeneralSettingsViewModel(settingsStore: settings, launchAtLoginService: service, deviceManager: GeneralSettingsAudioDeviceTestDouble())
 
         viewModel.launchAtLogin = true
         service.registerError = nil
@@ -63,7 +63,7 @@ final class GeneralSettingsLaunchAtLoginTests: XCTestCase {
 
     func testSuccessfulRegistrationClearsPreviousError() {
         let service = MockLaunchAtLoginService(isEnabled: false)
-        let viewModel = GeneralSettingsViewModel(settingsStore: settings, launchAtLoginService: service)
+        let viewModel = GeneralSettingsViewModel(settingsStore: settings, launchAtLoginService: service, deviceManager: GeneralSettingsAudioDeviceTestDouble())
 
         viewModel.launchAtLogin = true
 

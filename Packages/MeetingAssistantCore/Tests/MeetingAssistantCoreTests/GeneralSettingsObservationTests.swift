@@ -19,7 +19,7 @@ final class GeneralSettingsObservationTests: XCTestCase {
     }
 
     func testAppearanceModeChangesNotifyObservationTracking() {
-        let viewModel = GeneralSettingsViewModel(settingsStore: settings)
+        let viewModel = GeneralSettingsViewModel(settingsStore: settings, deviceManager: GeneralSettingsAudioDeviceTestDouble())
         let expectation = XCTestExpectation(description: "appearance mode change observed")
 
         withObservationTracking {
