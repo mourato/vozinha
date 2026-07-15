@@ -157,13 +157,20 @@ if [ "${remote_sha}" = "0000000000000000000000000000000000000000" ]; then
     set -e
 
     result_path="$(sed -n 's/^AGENT_RESULT_JSON=//p' "${output_file}" | tail -n 1)"
-    rm -f "${output_file}"
-    trap - INT TERM HUP
     if [ "${status}" -ne 0 ]; then
         echo "❌ Push validation failed for ${local_ref}." >&2
         if [ -n "${result_path}" ]; then
             echo "   Result artifact: ${result_path}" >&2
         fi
+        if grep -Fq '[rust-audio] expected artifact not found' "${output_file}"; then
+            echo "   Hint: Rust staging could not find libaudio_kernels_rust.dylib after cargo build." >&2
+            echo "         Check CARGO_TARGET_DIR or rerun scripts/stage-rust-audio-kernels.sh locally." >&2
+        fi
+        echo "   Tip: set PUSH_CHECK_VERBOSE=1 for full validation logs." >&2
+    fi
+    rm -f "${output_file}"
+    trap - INT TERM HUP
+    if [ "${status}" -ne 0 ]; then
         return "${status}"
     fi
     if [ -n "${result_path}" ]; then

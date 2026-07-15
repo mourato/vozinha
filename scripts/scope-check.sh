@@ -261,6 +261,13 @@ prepare_agent_logging() {
     exec > >(tee "${LOG_PATH}") 2>&1
 }
 
+count_added_lines_excluding_archive() {
+    awk -F'\t' '
+        $3 !~ /^\.agents\/docs\/archive\// && $1 ~ /^[0-9]+$/ { sum += $1 }
+        END { print sum + 0 }
+    '
+}
+
 count_added_lines() {
     local changed_file_list="$1"
     local tracked_base="${BASE_REF:-HEAD}"
@@ -276,13 +283,13 @@ count_added_lines() {
             committed_base="$(git hash-object -t tree /dev/null)"
         fi
         tracked_added_lines="$(git diff --numstat --diff-filter=ACMRD "${committed_base}" "${HEAD_REF}" -- \
-            | awk '$1 ~ /^[0-9]+$/ {sum += $1} END {print sum+0}')"
+            | count_added_lines_excluding_archive)"
     elif [ "${STAGED_MODE}" -eq 1 ]; then
         tracked_added_lines="$(git diff --cached --numstat --diff-filter=ACMRD ${BASE_REF:+"${BASE_REF}"} -- \
-            | awk '$1 ~ /^[0-9]+$/ {sum += $1} END {print sum+0}')"
+            | count_added_lines_excluding_archive)"
     else
         tracked_added_lines="$(git diff --numstat --diff-filter=ACMRD "${tracked_base}" -- \
-            | awk '$1 ~ /^[0-9]+$/ {sum += $1} END {print sum+0}')"
+            | count_added_lines_excluding_archive)"
     fi
 
     if [ "${STAGED_MODE}" -eq 1 ] || [ "${COMMITTED_MODE}" -eq 1 ]; then

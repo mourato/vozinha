@@ -103,7 +103,10 @@ if [ ! -f "${MANIFEST_PATH}" ]; then
     exit 0
 fi
 
-CARGO_ARGS=(build --manifest-path "${MANIFEST_PATH}")
+# Override ambient CARGO_TARGET_DIR so validate worktrees always stage from a
+# deterministic crate-local target directory.
+CARGO_TARGET_DIR="${CRATE_DIR}/target"
+CARGO_ARGS=(build --manifest-path "${MANIFEST_PATH}" --target-dir "${CARGO_TARGET_DIR}")
 CARGO_PROFILE_DIR="debug"
 if [ "${CONFIGURATION}" = "Release" ]; then
     CARGO_ARGS+=(--release)

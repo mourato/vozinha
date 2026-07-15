@@ -227,15 +227,14 @@ hash_external_gate_inputs() {
     for path in \
         Packages/MeetingAssistantCore/Package.resolved \
         MeetingAssistant.xcworkspace/xcshareddata/swiftpm/Package.resolved; do
-        if [ -e "${path}" ]; then
+        if ! git ls-files --error-unmatch -- "${path}" >/dev/null 2>&1; then
+            continue
+        fi
+        if [ -f "${path}" ]; then
             printf 'PATH=%s\n' "${path}"
-            if [ -f "${path}" ]; then
-                shasum -a 256 "${path}"
-            else
-                printf 'non-regular-input\n'
-            fi
+            shasum -a 256 "${path}"
         else
-            printf 'ABSENT=%s\n' "${path}"
+            printf 'ABSENT_TRACKED=%s\n' "${path}"
         fi
     done | shasum -a 256 | awk '{print $1}'
 }
@@ -533,11 +532,24 @@ print_dry_run() {
     find "${RUN_DIR}" -name '*.result.json' -delete
 }
 
+can_validate_committed_in_place() {
+    local head_commit
+    head_commit="$(git rev-parse --verify "${HEAD_REF}^{commit}")" || return 1
+    [ "$(git rev-parse HEAD)" = "${head_commit}" ] || return 1
+    git diff --quiet && git diff --cached --quiet
+}
+
 run_committed_tree() {
     local temporary_worktree
     local child_status
     local worktree_registered=0
     local checkout_external_hash
+
+    if can_validate_committed_in_place; then
+        checkout_external_hash="$(hash_external_gate_inputs)"
+        MA_VALIDATE_MATERIALIZED=1 MA_VALIDATE_CHECKOUT_EXTERNAL_INPUTS_HASH="${checkout_external_hash}" ./scripts/validate-agent.sh "$@"
+        return $?
+    fi
 
     cleanup_committed_worktree() {
         if [ "${worktree_registered}" -eq 1 ]; then

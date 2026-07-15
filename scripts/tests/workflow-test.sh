@@ -217,18 +217,31 @@ test_staged_receipt_reused_after_commit() {
     git -C "${fixture}" add Alpha.swift
     output="$(validate_output "${fixture}" "${TMP_ROOT}/external-input" --lane fast --staged --base "${base}" --no-reuse)"
     assert_contains "${output}" "AGENT_STATUS=PASS"
-    printf '%s\n' '{"pins": "changed after staged validation"}' > "${fixture}/Packages/MeetingAssistantCore/Package.resolved"
-    printf '%s\n' '{"pins": "workspace changed after staged validation"}' > "${fixture}/MeetingAssistant.xcworkspace/xcshareddata/swiftpm/Package.resolved"
+    printf '%s\n' '{"pins": "ignored local lockfile"}' > "${fixture}/Packages/MeetingAssistantCore/Package.resolved"
+    printf '%s\n' '{"pins": "ignored workspace lockfile"}' > "${fixture}/MeetingAssistant.xcworkspace/xcshareddata/swiftpm/Package.resolved"
     git -C "${fixture}" commit -qm "external input receipt"
     head="$(git -C "${fixture}" rev-parse HEAD)"
     output="$(validate_output "${fixture}" "${TMP_ROOT}/external-input" --lane fast --committed --base "${base}" --head "${head}")"
-    assert_not_contains "${output}" "Reusing PASS evidence"
-    assert_contains "${output}" "AGENT_REUSED=0"
+    assert_not_contains "${output}" "Cache disabled: External gate inputs differ"
     assert_contains "${output}" "AGENT_STATUS=PASS"
     output="$(validate_output "${fixture}" "${TMP_ROOT}/external-input" --lane fast --committed --base "${base}" --head "${head}")"
+    assert_contains "${output}" "Reusing PASS evidence"
+    assert_contains "${output}" "AGENT_REUSED=1"
+
+    fixture="$(new_fixture)"
+    base="$(git -C "${fixture}" rev-parse HEAD)"
+    printf '%s\n' '{"pins": "tracked baseline"}' > "${fixture}/Packages/MeetingAssistantCore/Package.resolved"
+    printf '%s\n' 'tracked lockfile change' > "${fixture}/Alpha.swift"
+    git -C "${fixture}" add -f Packages/MeetingAssistantCore/Package.resolved Alpha.swift
+    git -C "${fixture}" commit -qm "tracked lockfile baseline"
+    head="$(git -C "${fixture}" rev-parse HEAD)"
+    output="$(validate_output "${fixture}" "${TMP_ROOT}/tracked-external-input" --lane fast --committed --base "${base}" --head "${head}" --no-reuse)"
+    assert_contains "${output}" "AGENT_STATUS=PASS"
+    printf '%s\n' '{"pins": "dirty tracked drift"}' > "${fixture}/Packages/MeetingAssistantCore/Package.resolved"
+    output="$(validate_output "${fixture}" "${TMP_ROOT}/tracked-external-input" --lane fast --committed --base "${base}" --head "${head}")"
+    assert_contains "${output}" "Cache disabled: External gate inputs differ"
     assert_not_contains "${output}" "Reusing PASS evidence"
     assert_contains "${output}" "AGENT_REUSED=0"
-    assert_contains "${output}" "AGENT_STATUS=PASS"
 }
 
 test_pre_push_protocol() {
@@ -309,6 +322,43 @@ test_pre_push_protocol() {
     set -e
     test "${status}" -eq 1
     assert_contains "${output}" "refusing to validate refs/heads/other"
+}
+
+test_committed_in_place_clean_head() {
+    local fixture
+    local base
+    local head
+    local output
+
+    fixture="$(new_fixture)"
+    base="$(git -C "${fixture}" rev-parse HEAD)"
+    printf '%s\n' 'clean committed head' > "${fixture}/Alpha.swift"
+    git -C "${fixture}" add Alpha.swift
+    git -C "${fixture}" commit -qm "clean head"
+    head="$(git -C "${fixture}" rev-parse HEAD)"
+    output="$(validate_output "${fixture}" "${TMP_ROOT}/committed-in-place" --lane fast --committed --base "${base}" --head "${head}" --no-reuse)"
+    assert_contains "${output}" "AGENT_STATUS=PASS"
+    output="$(validate_output "${fixture}" "${TMP_ROOT}/committed-in-place" --lane fast --committed --base "${base}" --head "${head}")"
+    assert_contains "${output}" "Reusing PASS evidence"
+    test "$(git -C "${fixture}" worktree list | wc -l | tr -d ' ')" -eq 1
+}
+
+test_archive_paths_excluded_from_large_delta() {
+    local fixture
+    local base
+    local head
+    local output
+
+    fixture="$(new_fixture)"
+    base="$(git -C "${fixture}" rev-parse HEAD)"
+    mkdir -p "${fixture}/.agents/docs/archive/large-delta-fixture"
+    awk 'BEGIN { for (i = 1; i <= 301; i++) print "archive-line-" i }' > "${fixture}/.agents/docs/archive/large-delta-fixture/big.md"
+    git -C "${fixture}" add .agents/docs/archive/large-delta-fixture/big.md
+    git -C "${fixture}" commit -qm "archive-only large delta"
+    head="$(git -C "${fixture}" rev-parse HEAD)"
+    output="$(scope_output "${fixture}" "${TMP_ROOT}/archive-large-delta" --committed --base "${base}" --head "${head}")"
+    assert_contains "${output}" "Only non-code files changed"
+    assert_not_contains "${output}" "Large delta detected"
 }
 
 scope_output() {
@@ -570,7 +620,10 @@ test_nested_commands_inherit_run_tree
 test_validate_runner_preview_and_reuse
 test_committed_and_staged_boundaries
 test_staged_receipt_reused_after_commit
+test_committed_in_place_clean_head
+test_archive_paths_excluded_from_large_delta
 test_pre_push_protocol
 "${SCRIPT_ROOT}/scripts/tests/hooks-setup-test.sh"
+"${SCRIPT_ROOT}/scripts/tests/rust-audio-staging-test.sh"
 "${SCRIPT_ROOT}/scripts/tests/preview-check-test.sh"
 echo "WORKFLOW_TEST_STATUS=PASS"

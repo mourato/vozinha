@@ -223,6 +223,13 @@ find scripts/hooks -maxdepth 1 -type f ! -perm -u+x -print
 
 The `find` command must print nothing. Stale copies under `.git/hooks/` (for example `pre-push.disabled`) are ignored once `core.hooksPath` points at `scripts/hooks`.
 
+Pre-push runs `make validate-agent ARGS="--lane auto --committed ..."` over the
+exact commit range being pushed. Compatible PASS fingerprints are reused when
+external inputs are comparable. Rust audio staging uses a crate-local Cargo
+target directory even when `CARGO_TARGET_DIR` is set in the environment. Set
+`PUSH_CHECK_VERBOSE=1` for full logs on failure. `MA_RUST_AUDIO_KERNELS_BUILD=off`
+is an emergency bypass only, not a routine workaround.
+
 ## Script Support Surface
 
 Only scripts explicitly referenced by `Makefile`, `README.md`, `AGENTS.md`, or `.agents` skills/docs are treated as supported developer surface. Other scripts are ad hoc and may be removed during cleanup cycles.
@@ -286,11 +293,14 @@ file contents, and secrets are never embedded in the JSON.
 
 `validate-agent` adds a content-addressed fingerprint covering the requested and
 selected lane, base/head trees, validation content representation, gate inputs,
-external gate inputs (including `Packages/MeetingAssistantCore/Package.resolved`
-when present), toolchain identities, and runner schema. Committed mode materializes
-`HEAD_REF` in a temporary detached worktree before selecting or running the gate;
-if external inputs differ between the original checkout and materialized tree,
-reuse and PASS-cache writes are disabled for that run. Staged and committed modes
+external gate inputs (tracked `Packages/MeetingAssistantCore/Package.resolved`
+and workspace lockfiles only), toolchain identities, and runner schema.
+Committed mode materializes `HEAD_REF` in a temporary detached worktree before
+selecting or running the gate, unless the checkout is clean and `HEAD` already
+matches `HEAD_REF` (in-place committed validation). If tracked external inputs
+differ between the original checkout and materialized tree, reuse and PASS-cache
+writes are disabled for that run. Gitignored local `Package.resolved` copies do
+not participate in external-input comparison. Staged and committed modes
 exclude unrelated unstaged/untracked state. Only exact `PASS` evidence with
 existing child results and matching fingerprints can be reused. Use
 `--no-reuse` after flaky or inconclusive behavior; dry-run output is never proof.

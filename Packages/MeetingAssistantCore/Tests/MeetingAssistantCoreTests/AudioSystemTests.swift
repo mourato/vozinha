@@ -1,3 +1,4 @@
+import Atomics
 @preconcurrency import AVFoundation
 @testable import MeetingAssistantCore
 @testable import MeetingAssistantCoreAudio
@@ -101,9 +102,10 @@ final class AudioSystemTests: XCTestCase {
         let receivedBuffers = AtomicArray<AVAudioPCMBuffer>()
         let expectation = expectation(description: "Buffer callback received")
 
+        let fulfilled = ManagedAtomic<Bool>(false)
         systemRecorder.onAudioBuffer = { @Sendable buffer in
             receivedBuffers.append(buffer)
-            if receivedBuffers.count >= 3 {
+            if receivedBuffers.count >= 3, !fulfilled.exchange(true, ordering: .relaxed) {
                 expectation.fulfill()
             }
         }
@@ -135,7 +137,7 @@ final class AudioSystemTests: XCTestCase {
         systemRecorder.onAudioBuffer = { @Sendable [bufferQueue = self.bufferQueue!] buffer in
             bufferQueue.enqueue(buffer)
             let count = enqueuedCount.increment()
-            if count >= 5 {
+            if count <= 5 {
                 expectation.fulfill()
             }
         }

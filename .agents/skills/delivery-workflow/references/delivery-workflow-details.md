@@ -106,9 +106,21 @@ PR descriptions: summary, scope/risk, validation results, review findings, basel
 
 ## Hook and troubleshooting
 
-- Install hooks: `git config core.hooksPath scripts/hooks`.
+- Install hooks: `git config core.hooksPath scripts/hooks` or `make setup`.
 - `pre-commit`: blocking staged Swift lint/format; no tests.
-- `pre-push`: compact validation over the committed range unless bypassed.
+- `pre-push`: runs `validate-agent --lane auto --committed` over the exact push
+  range and reuses compatible PASS fingerprints when external inputs are
+  comparable. A clean `HEAD` matching the push head may validate in-place
+  instead of materializing a detached worktree.
+- Rust audio staging is required in `auto`/`on` modes. Do not treat
+  `MA_RUST_AUDIO_KERNELS_BUILD=off` as a routine push workaround; use it only
+  as an emergency bypass when Rust tooling is unavailable.
+- Ambient `CARGO_TARGET_DIR` no longer breaks staging: the stage script pins
+  `--target-dir` to the crate-local `Native/AudioKernelsRust/target`.
+- On failure, inspect the printed `AGENT_RESULT_JSON` path. Set
+  `PUSH_CHECK_VERBOSE=1` for full validation logs. If logs mention
+  `[rust-audio] expected artifact not found`, rerun
+  `scripts/stage-rust-audio-kernels.sh` locally before retrying.
 - Emergency bypasses (`SKIP_LINT=1`, `SKIP_TESTS=1`) should be rare with immediate remediation.
 - Missing tools: `brew install swiftlint swiftformat`.
 

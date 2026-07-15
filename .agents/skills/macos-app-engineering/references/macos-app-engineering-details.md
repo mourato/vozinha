@@ -2,18 +2,6 @@
 
 Prisma-specific Settings, SwiftUI, AppKit, preview, and UX guidance. Role, scope, and routing live in `../SKILL.md`.
 
-## Routed deeper references
-
-| Topic | File |
-|---|---|
-| Design-system components and settings rows | [design-system.md](design-system.md) |
-| SwiftUI composition, state, and performance | [swiftui-composition.md](swiftui-composition.md) |
-| SwiftUI modern-API / review pass | [swiftui-review.md](swiftui-review.md) |
-| AppKit bridging, windows, and lifecycle | [appkit-integration.md](appkit-integration.md) |
-| macOS polish, hierarchy, and native feel | [macos-polish.md](macos-polish.md) |
-| Concurrency patterns in UI code | [concurrency-patterns.md](concurrency-patterns.md) |
-| Testing and debugging UI surfaces | [testing-debugging.md](testing-debugging.md) |
-
 ## Execution sequence
 
 1. Classify risk using `AGENTS.md`.
