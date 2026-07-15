@@ -15,7 +15,6 @@ public struct MeetingSettingsTab: View {
         static let disabledOpacity = 0.58
     }
 
-    @Binding private var navigationState: MeetingSettingsNavigationState
     @StateObject var meetingViewModel: MeetingSettingsViewModel
     @StateObject private var shortcutsViewModel = ShortcutSettingsViewModel()
     @StateObject private var serviceViewModel: ServiceSettingsViewModel
@@ -26,13 +25,12 @@ public struct MeetingSettingsTab: View {
     @State private var showSummaryTemplateEditor = false
     @State private var showMonitoredAppSearchSheet = false
     @State var selectedWebTargetID: UUID?
+    @State private var isMonitoringExpanded = false
+    @State private var isExportExpanded = false
+    @State private var isPromptsExpanded = false
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
-    public init(
-        settings: AppSettingsStore = .shared,
-        navigationState: Binding<MeetingSettingsNavigationState> = .constant(MeetingSettingsNavigationState()),
-    ) {
-        _navigationState = navigationState
+    public init(settings: AppSettingsStore = .shared) {
         _meetingViewModel = StateObject(wrappedValue: MeetingSettingsViewModel(settings: settings))
         _serviceViewModel = StateObject(wrappedValue: ServiceSettingsViewModel(settings: settings))
         _aiSettingsViewModel = StateObject(wrappedValue: AISettingsViewModel(settings: settings))
@@ -49,62 +47,66 @@ public struct MeetingSettingsTab: View {
     }
 
     public var body: some View {
-        Group {
-            switch navigationState.currentRoute {
-            case .root:
-                mainPage
-            case .monitoringTargets:
-                monitoringTargetsPage
-            case .meetingPrompts:
-                meetingPromptsPage
-            case .export:
-                exportPage
+        mainPage
+            .sheet(isPresented: $meetingViewModel.showPromptEditor) {
+                PromptEditorSheet(
+                    prompt: meetingViewModel.editingPrompt,
+                    onSave: meetingViewModel.handleSavePrompt,
+                    onCancel: { meetingViewModel.showPromptEditor = false },
+                )
             }
-        }
-        .sheet(isPresented: $meetingViewModel.showPromptEditor) {
-            PromptEditorSheet(
-                prompt: meetingViewModel.editingPrompt,
-                onSave: meetingViewModel.handleSavePrompt,
-                onCancel: { meetingViewModel.showPromptEditor = false },
-            )
-        }
-        .sheet(isPresented: $showSummaryTemplateEditor) {
-            SummaryTemplateEditorSheet(
-                initialTemplate: meetingViewModel.settings.summaryTemplate,
-                onSave: { updatedTemplate in
-                    meetingViewModel.settings.summaryTemplate = updatedTemplate
-                    showSummaryTemplateEditor = false
-                },
-                onCancel: { showSummaryTemplateEditor = false },
-            )
-        }
-        .alert("settings.post_processing.delete_confirm_title".localized, isPresented: $meetingViewModel.showDeleteConfirmation) {
-            Button("common.cancel".localized, role: .cancel) {}
-            Button("common.delete".localized, role: .destructive) {
-                meetingViewModel.executeDelete()
+            .sheet(isPresented: $showSummaryTemplateEditor) {
+                SummaryTemplateEditorSheet(
+                    initialTemplate: meetingViewModel.settings.summaryTemplate,
+                    onSave: { updatedTemplate in
+                        meetingViewModel.settings.summaryTemplate = updatedTemplate
+                        showSummaryTemplateEditor = false
+                    },
+                    onCancel: { showSummaryTemplateEditor = false },
+                )
             }
-        } message: {
-            if let prompt = meetingViewModel.promptToDelete {
-                Text("settings.post_processing.delete_confirm_message".localized(with: prompt.title))
+            .alert("settings.post_processing.delete_confirm_title".localized, isPresented: $meetingViewModel.showDeleteConfirmation) {
+                Button("common.cancel".localized, role: .cancel) {}
+                Button("common.delete".localized, role: .destructive) {
+                    meetingViewModel.executeDelete()
+                }
+            } message: {
+                if let prompt = meetingViewModel.promptToDelete {
+                    Text("settings.post_processing.delete_confirm_message".localized(with: prompt.title))
+                }
             }
-        }
-        .onDeleteCommand(perform: deleteSelectedWebTarget)
-    }
-
-    private func updateNavigationState(to route: MeetingSettingsNavigationRoute) {
-        let previousRoute = navigationState.currentRoute
-        guard previousRoute != route else { return }
-
-        switch (previousRoute, route) {
-        case (_, .root):
-            navigationState.forwardRoute = previousRoute == .root ? nil : previousRoute
-        case (.root, _):
-            navigationState.forwardRoute = nil
-        default:
-            navigationState.forwardRoute = nil
-        }
-
-        navigationState.currentRoute = route
+            .onDeleteCommand(perform: deleteSelectedWebTarget)
+            .sheet(isPresented: $webTargetsViewModel.showEditor) {
+                WebMeetingTargetEditorSheet(
+                    target: webTargetsViewModel.editingTarget,
+                    onSave: webTargetsViewModel.handleSave,
+                    onCancel: { webTargetsViewModel.showEditor = false },
+                )
+            }
+            .sheet(isPresented: $showMonitoredAppSearchSheet) {
+                AppSearchSheet(
+                    viewModel: monitoredAppsViewModel,
+                    isPresented: $showMonitoredAppSearchSheet,
+                    titleKey: "settings.general.monitored_apps",
+                    descriptionKey: "settings.general.monitored_apps_desc",
+                    addButtonKey: "settings.general.monitored_apps_add",
+                )
+            }
+            .alert("settings.meetings.web_targets.delete_confirm_title".localized, isPresented: $webTargetsViewModel.showDeleteConfirmation) {
+                Button("common.cancel".localized, role: .cancel) {}
+                Button("common.delete".localized, role: .destructive) {
+                    webTargetsViewModel.executeDelete()
+                }
+            } message: {
+                if let target = webTargetsViewModel.targetToDelete {
+                    Text("settings.meetings.web_targets.delete_confirm_message".localized(with: target.displayName))
+                }
+            }
+            .onAppear {
+                if meetingViewModel.settings.autoExportSummaries {
+                    isExportExpanded = true
+                }
+            }
     }
 
     private var mainPage: some View {
@@ -147,18 +149,22 @@ public struct MeetingSettingsTab: View {
                     }
                 }
                 .pickerStyle(.menu)
-                SettingsListDrillDownButtonRow(
+                SettingsExpandableSection(
                     title: "settings.meetings.monitoring_access.button".localized,
                     subtitle: "settings.meetings.monitoring_access.desc".localized,
-                    accessibilityHint: "settings.meetings.monitoring_access.accessibility_hint".localized,
-                ) { updateNavigationState(to: .monitoringTargets) }
+                    isExpanded: $isMonitoringExpanded,
+                ) {
+                    monitoringTargetsContent
+                }
                 Toggle("settings.general.merge_audio".localized, isOn: $meetingViewModel.settings.shouldMergeAudioFiles)
                     .toggleStyle(.switch)
-                SettingsListDrillDownButtonRow(
+                SettingsExpandableSection(
                     title: "settings.meetings.export".localized,
                     subtitle: "settings.meetings.export_drilldown_desc".localized,
-                    accessibilityHint: "settings.meetings.export_drilldown_accessibility_hint".localized,
-                ) { updateNavigationState(to: .export) }
+                    isExpanded: $isExportExpanded,
+                ) {
+                    exportSectionContent
+                }
             } header: {
                 SettingsFormSectionHeader(title: "settings.meetings.workflow".localized, icon: "bolt.fill")
             }
@@ -219,12 +225,12 @@ public struct MeetingSettingsTab: View {
             Toggle("transcription.qa.title".localized, isOn: $meetingViewModel.settings.meetingQnAEnabled)
                 .toggleStyle(.switch)
 
-            SettingsListDrillDownButtonRow(
+            SettingsExpandableSection(
                 title: "settings.meetings.prompts".localized,
                 subtitle: "settings.meetings.prompts_drilldown_desc".localized,
-                accessibilityHint: "settings.meetings.prompts_drilldown_accessibility_hint".localized,
+                isExpanded: $isPromptsExpanded,
             ) {
-                updateNavigationState(to: .meetingPrompts)
+                meetingPromptsContent
             }
             .disabled(!meetingViewModel.isMeetingPostProcessingEnabled)
             .opacity(meetingViewModel.isMeetingPostProcessingEnabled ? 1 : CapabilityLayout.disabledOpacity)
@@ -233,21 +239,8 @@ public struct MeetingSettingsTab: View {
         }
     }
 
-    private var meetingPostProcessingBinding: Binding<Bool> {
-        Binding(
-            get: { meetingViewModel.isMeetingPostProcessingEnabled },
-            set: { meetingViewModel.setMeetingPostProcessingEnabled($0) },
-        )
-    }
-
-    private var monitoringTargetsPage: some View {
-        SettingsScrollableContent {
-            DSCallout(
-                kind: .info,
-                title: "settings.meetings.monitoring_access.context_title".localized,
-                message: "settings.meetings.monitoring_access.context_desc".localized,
-            )
-
+    private var monitoringTargetsContent: some View {
+        VStack(alignment: .leading, spacing: 16) {
             InstalledAppsSelectionSection(
                 titleKey: "settings.general.monitored_apps",
                 descriptionKey: "settings.general.monitored_apps_desc",
@@ -260,225 +253,168 @@ public struct MeetingSettingsTab: View {
 
             webTargetsSection
         }
-        .disabled(!meetingViewModel.settings.isMeetingTranscriptionEnabled)
-        .opacity(meetingViewModel.settings.isMeetingTranscriptionEnabled ? 1 : CapabilityLayout.disabledOpacity)
-        .animation(
-            SettingsMotion.sectionAnimation(reduceMotion: reduceMotion),
-            value: meetingViewModel.settings.isMeetingTranscriptionEnabled,
-        )
-        .sheet(isPresented: $webTargetsViewModel.showEditor) {
-            WebMeetingTargetEditorSheet(
-                target: webTargetsViewModel.editingTarget,
-                onSave: webTargetsViewModel.handleSave,
-                onCancel: { webTargetsViewModel.showEditor = false },
-            )
-        }
-        .sheet(isPresented: $showMonitoredAppSearchSheet) {
-            AppSearchSheet(
-                viewModel: monitoredAppsViewModel,
-                isPresented: $showMonitoredAppSearchSheet,
-                titleKey: "settings.general.monitored_apps",
-                descriptionKey: "settings.general.monitored_apps_desc",
-                addButtonKey: "settings.general.monitored_apps_add",
-            )
-        }
-        .alert("settings.meetings.web_targets.delete_confirm_title".localized, isPresented: $webTargetsViewModel.showDeleteConfirmation) {
-            Button("common.cancel".localized, role: .cancel) {}
-            Button("common.delete".localized, role: .destructive) {
-                webTargetsViewModel.executeDelete()
-            }
-        } message: {
-            if let target = webTargetsViewModel.targetToDelete {
-                Text("settings.meetings.web_targets.delete_confirm_message".localized(with: target.displayName))
-            }
-        }
     }
 
-    private var exportPage: some View {
-        SettingsFormPage {
-            VStack(alignment: .leading, spacing: 4) {
-                SettingsFormSectionHeader(title: "settings.meetings.export".localized, icon: "folder.fill")
-                Text("settings.meetings.export_drilldown_desc".localized)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+    private var exportSectionContent: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            Toggle(isOn: $meetingViewModel.settings.autoExportSummaries) {
+                VStack(alignment: .leading) {
+                    Text("settings.meetings.auto_export".localized)
+                    Text("settings.meetings.auto_export_desc".localized)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
             }
-        } content: {
-            Section {
-                Toggle(isOn: $meetingViewModel.settings.autoExportSummaries) {
+            .toggleStyle(.switch)
+
+            if meetingViewModel.settings.autoExportSummaries {
+                Divider()
+                    .padding(.vertical, 8)
+
+                HStack {
+                    SettingsTitleWithPopover(
+                        title: "settings.meetings.export_location".localized,
+                        helperMessage: "settings.meetings.export_location_desc".localized,
+                    )
+                    Spacer()
+                    if let url = meetingViewModel.settings.summaryExportFolder {
+                        Text(url.lastPathComponent)
+                            .foregroundStyle(.secondary)
+                            .truncationMode(.middle)
+                    } else {
+                        Text("settings.meetings.no_folder_selected".localized)
+                            .foregroundStyle(.secondary)
+                    }
+                    Button("common.select".localized) {
+                        meetingViewModel.selectExportFolder()
+                    }
+                }
+
+                Divider()
+                    .padding(.vertical, 8)
+
+                Toggle(isOn: $meetingViewModel.settings.summaryTemplateEnabled) {
                     VStack(alignment: .leading) {
-                        Text("settings.meetings.auto_export".localized)
-                        Text("settings.meetings.auto_export_desc".localized)
+                        Text("settings.meetings.template_enabled".localized)
+                        Text("settings.meetings.template_enabled_desc".localized)
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }
                 }
                 .toggleStyle(.switch)
 
-                if meetingViewModel.settings.autoExportSummaries {
-                    Divider()
+                Divider()
+                    .padding(.vertical, 8)
 
-                    HStack {
-                        SettingsTitleWithPopover(
-                            title: "settings.meetings.export_location".localized,
-                            helperMessage: "settings.meetings.export_location_desc".localized,
-                        )
-                        Spacer()
-                        if let url = meetingViewModel.settings.summaryExportFolder {
-                            Text(url.lastPathComponent)
-                                .foregroundStyle(.secondary)
-                                .truncationMode(.middle)
-                        } else {
-                            Text("settings.meetings.no_folder_selected".localized)
-                                .foregroundStyle(.secondary)
-                        }
-                        Button("common.select".localized) {
-                            meetingViewModel.selectExportFolder()
-                        }
-                    }
-
-                    Divider()
-
-                    Toggle(isOn: $meetingViewModel.settings.summaryTemplateEnabled) {
-                        VStack(alignment: .leading) {
-                            Text("settings.meetings.template_enabled".localized)
-                            Text("settings.meetings.template_enabled_desc".localized)
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                        }
-                    }
-                    .toggleStyle(.switch)
-
-                    Divider()
-
-                    Picker(
-                        "settings.meetings.export_safety_policy".localized,
-                        selection: $meetingViewModel.settings.summaryExportSafetyPolicyLevel,
-                    ) {
-                        ForEach(SummaryExportSafetyPolicyLevel.allCases, id: \.self) { level in
-                            Text(exportSafetyPolicyLabel(level)).tag(level)
-                        }
-                    }
-                    .pickerStyle(.menu)
-
-                    if meetingViewModel.settings.summaryExportFolder == nil {
-                        Text("settings.meetings.export_location_required".localized)
-                            .font(.caption)
-                            .foregroundStyle(AppDesignSystem.Colors.error)
-                    }
-
-                    if meetingViewModel.settings.summaryTemplateEnabled {
-                        Divider()
-
-                        HStack(spacing: 12) {
-                            HStack(spacing: 8) {
-                                Image(systemName: "doc.text")
-                                    .foregroundStyle(AppDesignSystem.Colors.iconHighlight)
-                                SettingsTitleWithPopover(
-                                    title: "settings.meetings.template".localized,
-                                    helperMessage: "settings.meetings.template_desc".localized,
-                                    font: .subheadline,
-                                    fontWeight: .semibold,
-                                )
-                            }
-
-                            Spacer()
-
-                            Button {
-                                showSummaryTemplateEditor = true
-                            } label: {
-                                Label("settings.meetings.template.edit".localized, systemImage: "pencil")
-                            }
-                            .buttonStyle(.bordered)
-                            .controlSize(.regular)
-                        }
-                    }
-                }
-            } header: {
-                Text("settings.meetings.export".localized)
-            }
-        }
-        .disabled(!meetingViewModel.settings.isMeetingTranscriptionEnabled)
-        .opacity(meetingViewModel.settings.isMeetingTranscriptionEnabled ? 1 : CapabilityLayout.disabledOpacity)
-        .animation(
-            SettingsMotion.sectionAnimation(reduceMotion: reduceMotion),
-            value: meetingViewModel.settings.isMeetingTranscriptionEnabled,
-        )
-    }
-
-    private var meetingPromptsPage: some View {
-        SettingsFormPage {
-            VStack(alignment: .leading, spacing: 4) {
-                SettingsFormSectionHeader(title: "settings.meetings.prompts".localized, icon: "sparkles")
-                Text("settings.meetings.prompts_drilldown_desc".localized)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
-        } content: {
-            Section {
                 Picker(
-                    "settings.meetings.summary_output_language".localized,
-                    selection: $meetingViewModel.settings.meetingSummaryOutputLanguage,
+                    "settings.meetings.export_safety_policy".localized,
+                    selection: $meetingViewModel.settings.summaryExportSafetyPolicyLevel,
                 ) {
-                    ForEach(DictationOutputLanguage.allCases, id: \.self) { language in
-                        Text(meetingSummaryOutputLanguageLabel(language)).tag(language)
+                    ForEach(SummaryExportSafetyPolicyLevel.allCases, id: \.self) { level in
+                        Text(exportSafetyPolicyLabel(level)).tag(level)
                     }
                 }
                 .pickerStyle(.menu)
 
-                Divider()
-
-                Toggle(isOn: $meetingViewModel.settings.meetingTypeAutoDetectEnabled) {
-                    VStack(alignment: .leading) {
-                        Text("settings.meetings.autodetect_type".localized)
-                        Text("settings.meetings.autodetect_type_desc".localized)
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    }
-                }
-                .toggleStyle(.switch)
-
-                HStack {
-                    Text("settings.post_processing.choose_active".localized)
+                if meetingViewModel.settings.summaryExportFolder == nil {
+                    Text("settings.meetings.export_location_required".localized)
                         .font(.caption)
-                        .foregroundStyle(.secondary)
-
-                    Spacer()
-
-                    Button {
-                        meetingViewModel.editingPrompt = nil
-                        meetingViewModel.showPromptEditor = true
-                    } label: {
-                        Label(
-                            "settings.post_processing.new_prompt".localized,
-                            systemImage: "plus",
-                        )
-                    }
-                    .buttonStyle(.bordered)
-                    .controlSize(.regular)
+                        .foregroundStyle(AppDesignSystem.Colors.error)
                 }
 
-                VStack(spacing: 8) {
-                    ForEach(meetingViewModel.availablePrompts) { prompt in
-                        promptRow(prompt: prompt)
+                if meetingViewModel.settings.summaryTemplateEnabled {
+                    Divider()
+                        .padding(.vertical, 8)
+
+                    HStack(spacing: 12) {
+                        HStack(spacing: 8) {
+                            Image(systemName: "doc.text")
+                                .foregroundStyle(AppDesignSystem.Colors.iconHighlight)
+                            SettingsTitleWithPopover(
+                                title: "settings.meetings.template".localized,
+                                helperMessage: "settings.meetings.template_desc".localized,
+                                font: .subheadline,
+                                fontWeight: .semibold,
+                            )
+                        }
+
+                        Spacer()
+
+                        Button {
+                            showSummaryTemplateEditor = true
+                        } label: {
+                            Label("settings.meetings.template.edit".localized, systemImage: "pencil")
+                        }
+                        .buttonStyle(.bordered)
+                        .controlSize(.regular)
                     }
                 }
-            } header: {
-                Text("settings.meetings.prompts".localized)
             }
         }
-        .disabled(!meetingViewModel.settings.isMeetingTranscriptionEnabled || !meetingViewModel.isMeetingPostProcessingEnabled)
-        .opacity(
-            meetingViewModel.settings.isMeetingTranscriptionEnabled && meetingViewModel.isMeetingPostProcessingEnabled
-                ? 1
-                : CapabilityLayout.disabledOpacity,
-        )
-        .animation(
-            SettingsMotion.sectionAnimation(reduceMotion: reduceMotion),
-            value: meetingViewModel.settings.isMeetingTranscriptionEnabled,
-        )
-        .animation(
-            SettingsMotion.sectionAnimation(reduceMotion: reduceMotion),
-            value: meetingViewModel.isMeetingPostProcessingEnabled,
+    }
+
+    private var meetingPromptsContent: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            Picker(
+                "settings.meetings.summary_output_language".localized,
+                selection: $meetingViewModel.settings.meetingSummaryOutputLanguage,
+            ) {
+                ForEach(DictationOutputLanguage.allCases, id: \.self) { language in
+                    Text(meetingSummaryOutputLanguageLabel(language)).tag(language)
+                }
+            }
+            .pickerStyle(.menu)
+
+            Divider()
+                .padding(.vertical, 8)
+
+            Toggle(isOn: $meetingViewModel.settings.meetingTypeAutoDetectEnabled) {
+                VStack(alignment: .leading) {
+                    Text("settings.meetings.autodetect_type".localized)
+                    Text("settings.meetings.autodetect_type_desc".localized)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            }
+            .toggleStyle(.switch)
+
+            Divider()
+                .padding(.vertical, 8)
+
+            HStack {
+                Text("settings.post_processing.choose_active".localized)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+
+                Spacer()
+
+                Button {
+                    meetingViewModel.editingPrompt = nil
+                    meetingViewModel.showPromptEditor = true
+                } label: {
+                    Label(
+                        "settings.post_processing.new_prompt".localized,
+                        systemImage: "plus",
+                    )
+                }
+                .buttonStyle(.bordered)
+                .controlSize(.regular)
+            }
+            .padding(.vertical, 4)
+
+            VStack(spacing: 8) {
+                ForEach(meetingViewModel.availablePrompts) { prompt in
+                    promptRow(prompt: prompt)
+                }
+            }
+            .padding(.top, 4)
+        }
+    }
+
+    private var meetingPostProcessingBinding: Binding<Bool> {
+        Binding(
+            get: { meetingViewModel.isMeetingPostProcessingEnabled },
+            set: { meetingViewModel.setMeetingPostProcessingEnabled($0) },
         )
     }
 

@@ -152,7 +152,6 @@
 /* Meetings Export */
 "settings.meetings.export" = "Export";
 "settings.meetings.export_drilldown_desc" = "Configure automatic note export, destination folder, template, and safety policy.";
-"settings.meetings.export_drilldown_accessibility_hint" = "Opens meeting export settings.";
 "settings.meetings.auto_export" = "Auto-export summaries";
 "settings.meetings.auto_export_desc" = "Automatically saves the meeting summary as Markdown in the selected folder.";
 "settings.meetings.export_location" = "Save to folder";
@@ -174,7 +173,6 @@
 "settings.meetings.speaker_identification" = "Speaker identification";
 "settings.meetings.prompts" = "Meeting prompts";
 "settings.meetings.prompts_drilldown_desc" = "Manage meeting summary language, type detection, and prompt choices.";
-"settings.meetings.prompts_drilldown_accessibility_hint" = "Opens meeting prompt settings.";
 "settings.meetings.post_processing_enabled" = "Meeting post-processing";
 "settings.meetings.post_processing_enabled_desc" = "Generate meeting summaries and action items after transcription.";
 "settings.meetings.autodetect_type" = "Auto-detect meeting type";
@@ -184,7 +182,6 @@
 "settings.meetings.monitoring_access.desc" = "Configure which apps and web targets are monitored to detect meetings automatically.";
 "settings.meetings.monitoring_access.button" = "Configure monitored apps and sites";
 "settings.meetings.monitoring_access.modal_title" = "Monitored apps and sites";
-"settings.meetings.monitoring_access.accessibility_hint" = "Opens monitored apps and sites settings.";
 "settings.meetings.monitoring_access.context_title" = "Monitoring scope";
 "settings.meetings.monitoring_access.context_desc" = "Choose desktop apps and web targets that should trigger automatic meeting detection.";
 "settings.meetings.web_targets.title" = "Web Meeting Targets";

@@ -38,7 +38,6 @@ public struct SettingsView: View {
     @State private var settingsSearchText = ""
     @State private var activityNavigationState = ActivitySettingsNavigationState()
     @State private var transcriptionsSearchText = ""
-    @State private var meetingNavigationState = MeetingSettingsNavigationState()
     @State private var systemRoute: SystemSettingsRoute = .root
     @State private var columnVisibility: NavigationSplitViewVisibility
     @State private var navigationService = NavigationService.shared
@@ -385,8 +384,6 @@ private extension SettingsView {
         switch selectedSection {
         case .activity:
             activityNavigationState.goBack()
-        case .meetings where meetingNavigationState.canGoBack:
-            _ = meetingNavigationState.goBack()
         case .system where systemRoute != .root:
             systemRoute = .root
         default:
@@ -398,8 +395,6 @@ private extension SettingsView {
         switch selectedSection {
         case .activity:
             activityNavigationState.goForward()
-        case .meetings where meetingNavigationState.canGoForward:
-            _ = meetingNavigationState.goForward()
         default:
             break
         }
@@ -449,8 +444,6 @@ private extension SettingsView {
         switch selectedSection {
         case .activity:
             activityNavigationState.canGoBack
-        case .meetings:
-            meetingNavigationState.canGoBack
         case .system:
             systemRoute != .root
         default:
@@ -462,8 +455,6 @@ private extension SettingsView {
         switch selectedSection {
         case .activity:
             activityNavigationState.canGoForward
-        case .meetings:
-            meetingNavigationState.canGoForward
         default:
             false
         }
@@ -486,7 +477,7 @@ private extension SettingsView {
         case .modes:
             ModesSettingsTab()
         case .meetings:
-            MeetingSettingsTab(navigationState: $meetingNavigationState)
+            MeetingSettingsTab()
         case .assistant:
             AssistantSettingsTab()
         case .integrations:

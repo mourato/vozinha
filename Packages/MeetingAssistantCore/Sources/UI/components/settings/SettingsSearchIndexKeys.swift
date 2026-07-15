@@ -190,7 +190,6 @@ extension SettingsSearchIndex {
         "settings.meetings.export_safety_policy.standard",
         "settings.meetings.export_safety_policy.strict",
         "settings.meetings.export_safety_policy_desc",
-        "settings.meetings.monitoring_access.accessibility_hint",
         "settings.meetings.monitoring_access.button",
         "settings.meetings.monitoring_access.context_desc",
         "settings.meetings.monitoring_access.context_title",
