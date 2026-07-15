@@ -52,7 +52,7 @@ struct ActivityPerformanceSheet: View {
                     MetricsDashboardPerformancePage { navigationState.open(.performanceRecording($0)) }
                 case let .some(.performanceRecording(recordingID)):
                     VStack(alignment: .leading, spacing: 12) {
-                        SettingsChildPageBackButton {
+                        SettingsChildPageBackButton(titleKey: "common.back") {
                             _ = navigationState.goBack()
                         }
                         .padding(.horizontal, 20)

@@ -101,7 +101,10 @@ public struct TranscriptionsSettingsTab: View {
         VStack(spacing: 0) {
             VStack(alignment: .leading, spacing: 16) {
                 if let onBackToActivity {
-                    SettingsChildPageBackButton(action: onBackToActivity)
+                    SettingsChildPageBackButton(
+                        titleKey: "settings.section.activity",
+                        action: onBackToActivity,
+                    )
                 }
 
                 SettingsSectionHeader(
@@ -355,16 +358,6 @@ public struct TranscriptionsSettingsTab: View {
         navigationHistory.push(.conversation(metadata.id))
         viewModel.selectedId = metadata.id
         dictationService.clearError()
-    }
-
-    private func navigateBack() {
-        guard navigationHistory.goBack() != nil else { return }
-        syncSelectionForCurrentRoute()
-    }
-
-    private func navigateForward() {
-        guard navigationHistory.goForward() != nil else { return }
-        syncSelectionForCurrentRoute()
     }
 
     private func syncSelectionForCurrentRoute() {

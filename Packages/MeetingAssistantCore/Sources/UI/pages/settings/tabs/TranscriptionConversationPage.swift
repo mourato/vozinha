@@ -46,7 +46,7 @@ struct TranscriptionConversationPage: View {
         VStack(spacing: 0) {
             if let onBack {
                 HStack {
-                    SettingsChildPageBackButton(action: onBack)
+                    SettingsChildPageBackButton(titleKey: "common.back", action: onBack)
                     Spacer()
                 }
                 .padding(.horizontal, 16)
