@@ -6,16 +6,16 @@ Git mechanics, scoped validation, hooks, and release flows. Role, lanes, and the
 
 ### Fast lane (Low risk)
 
-- Run staged lint/format when relevant.
-- Run scoped checks when behavior could change.
-- Before push/merge: `make validate-agent ARGS="--lane fast"`.
+- Run staged lint/format when Swift is touched (pre-commit does this).
+- Guidance-only: `make guidance-check` is enough before commit.
+- Before push/merge: trust pre-push `validate-agent --lane auto --committed`, or run that command once locally if you want evidence before push.
 
 ### Full lane (Medium/High risk)
 
-- During development, run scoped checks continuously.
-- Prefer `make validate-agent ARGS="--lane auto --dry-run --base main"` at most once when the gate is unclear.
-- Reserve direct `make build-test` for milestone checks; final merge evidence is owned by `make validate-agent`.
-- Before push/merge: `make validate-agent ARGS="--lane full"`.
+- During development, run the smallest changed-path checks — not Full on every slice.
+- Prefer one clean-tree `make validate-agent ARGS="--lane auto --base main --agent"` (or `--committed`) when you need local Full evidence; let pre-push reuse it.
+- Reserve direct `make build-test` / `--no-reuse` for milestones or after flaky reuse.
+- Before push/merge: pre-push or `make validate-agent ARGS="--lane full"` once — not both plus staged.
 
 `make preflight` is optional and does not replace lane merge gates.
 
@@ -77,14 +77,20 @@ make guidance-check
 
 ### Agent delivery sequence
 
-1. Preview lane when needed: `make validate-agent ARGS="--lane auto --dry-run --base main"` (planning only).
-2. Run the smallest changed-path check during iteration.
-3. Staged pre-commit hook runs SwiftFormat/SwiftLint; `SKIP_LINT=1` is emergency bypass only.
-4. Pre-push hook runs `validate-agent --committed` on the exact ref range and reuses compatible PASS evidence.
-5. Final Fast/Full evidence uses `make validate-agent`; `--no-reuse` after flaky runs.
-6. `make preflight-agent` or `make deliverable-gate` for release or high-confidence validation.
+1. Iteration: smallest changed-path check only (no Full/`build-test` per slice).
+2. Commit: staged pre-commit owns SwiftFormat/SwiftLint; `SKIP_LINT=1` is emergency only.
+3. Optional local evidence (Full/infra or unclear lane): one
+   `make validate-agent ARGS="--lane auto --base main --agent"` on a clean tree,
+   or `--committed --base <base> --head HEAD`. Skip dry-run/staged stacking.
+4. Push: pre-push runs `validate-agent --committed` and reuses compatible PASS
+   fingerprints (clean working-tree PASS with the same base/head trees counts).
+5. Guidance-only: `make guidance-check` then commit/push unless `scripts/` or
+   Makefile changed.
+6. `make preflight-agent` / `make deliverable-gate` for release or high-confidence only.
 
-Tests are not run before every commit by default.
+Tests are not run before every commit by default. `scope-check` is not a second
+merge gate — do not run it alongside `validate-agent` “for safety”.
+`MA_RUST_AUDIO_KERNELS_BUILD=off` is not a routine push workaround.
 
 ## Git workflow
 

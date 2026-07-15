@@ -68,7 +68,10 @@ Every implementation plan must include an `Execution profile`; reclassify agains
 
 ## Agent Validation Loop
 
-`make validate-agent` is the remembered merge gate. During iteration, run only the smallest changed-path check (`make build-agent`, focused tests, `make preview-check`, `make guidance-check`, etc.). Lane selection, staged evidence, hook reuse, and emergency bypasses are defined in `delivery-workflow` — do not duplicate pre-push or Full gates that hooks already enforce.
+`make validate-agent` is the remembered merge gate. Low/Fast default: smallest
+changed-path check → commit → trust pre-commit/pre-push (do not stack dry-run,
+staged validate, and Full/`--no-reuse` on every slice). Details and Full/infra
+exceptions live in `delivery-workflow`.
 
 ## Commands and Routing
 

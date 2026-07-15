@@ -343,6 +343,29 @@ test_committed_in_place_clean_head() {
     test "$(git -C "${fixture}" worktree list | wc -l | tr -d ' ')" -eq 1
 }
 
+test_clean_working_tree_pass_reused_by_committed() {
+    local fixture
+    local base
+    local head
+    local output
+    local log_root="${TMP_ROOT}/clean-wt-reuse"
+
+    fixture="$(new_fixture)"
+    base="$(git -C "${fixture}" rev-parse HEAD)"
+    printf '%s\n' 'clean working-tree receipt' > "${fixture}/Alpha.swift"
+    git -C "${fixture}" add Alpha.swift
+    git -C "${fixture}" commit -qm "clean working-tree receipt"
+    head="$(git -C "${fixture}" rev-parse HEAD)"
+    # Working-tree mode on a clean tree with the same --base must share the
+    # committed fingerprint so pre-push can reuse a just-run local PASS.
+    output="$(validate_output "${fixture}" "${log_root}" --lane fast --base "${base}" --no-reuse)"
+    assert_contains "${output}" "AGENT_STATUS=PASS"
+    assert_not_contains "${output}" "Reusing PASS evidence"
+    output="$(validate_output "${fixture}" "${log_root}" --lane fast --committed --base "${base}" --head "${head}")"
+    assert_contains "${output}" "Reusing PASS evidence"
+    assert_contains "${output}" "AGENT_REUSED=1"
+}
+
 test_archive_paths_excluded_from_large_delta() {
     local fixture
     local base
@@ -621,6 +644,7 @@ test_validate_runner_preview_and_reuse
 test_committed_and_staged_boundaries
 test_staged_receipt_reused_after_commit
 test_committed_in_place_clean_head
+test_clean_working_tree_pass_reused_by_committed
 test_archive_paths_excluded_from_large_delta
 test_pre_push_protocol
 "${SCRIPT_ROOT}/scripts/tests/hooks-setup-test.sh"

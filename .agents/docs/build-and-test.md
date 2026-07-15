@@ -10,7 +10,16 @@ Choose commands by lane:
 - Workflow fixture gate: `make workflow-test`
 - Optional comprehensive validation: `make preflight`
 
-Agent default loop: prefer `make validate-agent ARGS="--lane auto --dry-run --base main"` at most once when the gate is unclear; during iteration run only the smallest changed-path check; before commit run one `make validate-agent ARGS="--lane auto --staged --base main --agent"` when evidence is needed (otherwise rely on the staged pre-commit lint/format hook); do not re-run the Full merge gate solely because a push is coming — pre-push validates the committed range and reuses compatible PASS evidence. Treat `validate-agent` as the remembered gate; `scope-check` is an internal engine — do not run both for safety.
+Agent default loop (Low/Fast): run only the smallest changed-path check during
+iteration, commit (pre-commit owns staged Swift lint/format), and push — pre-push
+runs `validate-agent --committed` once and reuses compatible PASS evidence. Do
+**not** stack dry-run + staged validate + Full/`--no-reuse` on every slice.
+Guidance-only changes: prefer `make guidance-check`, then commit/push. Use
+`make validate-agent ARGS="--lane auto --dry-run --base main"` at most once when
+the lane is unclear; for reusable Full evidence on a clean tree prefer
+`make validate-agent ARGS="--lane auto --base main --agent"` (or `--committed`)
+once, then push. Treat `validate-agent` as the remembered gate; `scope-check` is
+an internal engine — do not run both for safety.
 
 ## Primary Build/Test Commands
 

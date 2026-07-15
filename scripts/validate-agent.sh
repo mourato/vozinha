@@ -191,6 +191,10 @@ validation_head_tree() {
     esac
 }
 
+working_tree_is_clean() {
+    git diff --quiet && git diff --cached --quiet && [ -z "$(git ls-files --others --exclude-standard)" ]
+}
+
 hash_working_state() {
     {
         printf 'HEAD=%s\n' "$(git rev-parse HEAD)"
@@ -273,7 +277,10 @@ compute_fingerprint() {
         printf 'validationScope=tree-range\n'
         printf 'baseTree=%s\n' "${base_tree}"
         printf 'headTree=%s\n' "${head_tree}"
-        if [ "${VALIDATION_MODE}" = "working-tree" ]; then
+        # Dirty working trees must salt the fingerprint. A clean tree omits
+        # workingState so a working-tree PASS with the same base/head trees can
+        # be reused by --committed / pre-push (same selected lane + toolchain).
+        if [ "${VALIDATION_MODE}" = "working-tree" ] && ! working_tree_is_clean; then
             printf 'workingState=%s\n' "$(hash_working_state)"
         fi
         printf 'gateInputs=%s\n' "$(hash_gate_inputs "${head_tree}")"
@@ -536,7 +543,7 @@ can_validate_committed_in_place() {
     local head_commit
     head_commit="$(git rev-parse --verify "${HEAD_REF}^{commit}")" || return 1
     [ "$(git rev-parse HEAD)" = "${head_commit}" ] || return 1
-    git diff --quiet && git diff --cached --quiet
+    working_tree_is_clean
 }
 
 run_committed_tree() {

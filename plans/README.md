@@ -2,7 +2,7 @@
 
 This is the active plan ledger. Historical audits, completed plan rows, review
 notes, and rejected options remain in the [2026-07-12 ledger archive](archive/2026-07-12-plan-ledger-history.md).
-Plan files are never renumbered; the next available plan number is 089.
+Plan files are never renumbered; the next available plan number is 090.
 
 ## Execution rules
 
@@ -61,6 +61,7 @@ reason) | `REJECTED` (with a one-line rationale).
 | [086](086-auto-install-hooks-and-promote-implementer-fast.md) | Auto-install Git hooks via setup and promote allowlisted implementer-fast | P1 | M | 084 | DONE |
 | [087](087-fix-pre-push-reliability-and-agent-ops-followups.md) | Fix pre-push reliability (Rust staging + reuse) and finish agent-ops follow-ups | P1 | L | 084, 085, 086 | DONE |
 | [088](088-optimize-macos-ui-swift-skills-cluster.md) | Optimize macOS UI / Apple design / Swift skills cluster (fold swiftui-pro; slim apple-design) | P1 | M | 028, 084, 085 | DONE |
+| [089](089-slim-agent-validation-loop-and-pass-reuse.md) | Slim agent validation loop and align clean-tree PASS reuse with pre-push | P1 | M | 087 | DONE |
 
 Plans 001–061 are completed or archived in the historical ledger. The archive preserves the original audit scope,
 findings, dependency history, status table, committee notes, and rejected
@@ -153,6 +154,10 @@ options verbatim for searchability.
   reopen merging `swift-conventions` with `code-quality`. Low-utility
   `.agents/docs/archive/` trees (taxonomy dump, MAE generic refs, retired
   `swiftui-pro`) are deleted rather than retained for recovery.
+- 089 depends on 087 and removes the remaining agent-ops tax: omit
+  `workingState` from fingerprints on clean trees so working-tree PASS reuses
+  into `--committed`/pre-push, and rewrite guidance so Low/Fast defaults to
+  check → commit → push without stacked dry-run/staged/Full.
 
 ## Findings considered and rejected
 
