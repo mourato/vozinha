@@ -48,8 +48,8 @@ reason) | `REJECTED` (with a one-line rationale).
 | [073](073-harden-settings-safe-area-contract.md) | Harden the settings safe-area contract | P1 | M | - | DONE |
 | [074](074-make-modes-pane-native-and-responsive.md) | Make the Modes editor pane native and responsive | P1 | L | 073 | DONE |
 | [075](075-add-interruptible-modes-pane-transitions.md) | Add interruptible Modes pane transitions | P1 | M | 074 | DONE |
-| [076](076-harden-editor-interaction-accessibility.md) | Harden editor interaction safety and accessibility | P2 | M | 074 | TODO |
-| [077](077-add-typography-and-visual-validation-matrix.md) | Add typography and visual validation coverage | P3 | M | 073, 074, 075, 076 | TODO |
+| [076](076-harden-editor-interaction-accessibility.md) | Harden editor interaction safety and accessibility | P2 | M | 074 | DONE |
+| [077](077-add-typography-and-visual-validation-matrix.md) | Add typography and visual validation coverage | P3 | M | 073, 074, 075, 076 | DONE |
 
 Plans 001–061 are completed or archived in the historical ledger. The archive preserves the original audit scope,
 findings, dependency history, status table, committee notes, and rejected

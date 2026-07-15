@@ -221,6 +221,14 @@ public struct ModesSettingsTab: View {
         .environment(\.modesReduceMotionPreview, true)
 }
 
+#Preview("Modes — Accessibility Matrix") {
+    ModesSettingsTab()
+        .frame(width: 820, height: 620)
+        .environment(\.dynamicTypeSize, .accessibility3)
+        .environment(\.modesReduceMotionPreview, true)
+        .preferredColorScheme(.dark)
+}
+
 private extension EnvironmentValues {
     @Entry var modesReduceMotionPreview: Bool = false
 }

@@ -1463,3 +1463,5 @@
 "settings.styles.editor.validation.target_duplicate" = "Este alvo já foi adicionado.";
 "settings.styles.editor.close" = "Fechar";
 "settings.styles.editor.empty_detail" = "Selecione um modo para editar suas configurações.";
+"settings.styles.editor.delete_confirmation_title" = "Excluir modo?";
+"settings.styles.editor.delete_confirmation_message" = "Isso excluirá permanentemente \"%@\".";

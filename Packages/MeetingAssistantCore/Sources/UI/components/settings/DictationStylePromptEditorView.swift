@@ -22,7 +22,7 @@ public struct DictationStylePromptEditorView: View {
         ) {
             VStack(alignment: .leading, spacing: 8) {
                 Text("settings.styles.editor.prompt_hint".localized)
-                    .font(.caption2)
+                    .font(.caption)
                     .foregroundStyle(.secondary)
 
                 TextEditor(text: $promptInstructions)

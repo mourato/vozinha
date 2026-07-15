@@ -32,6 +32,7 @@ public struct DictationStyleEditorDetailView: View {
     @State private var enhancementsSelection: EnhancementsAISelection?
     @State private var isDefault: Bool
     @State private var validationMessage: String?
+    @State private var isDeleteConfirmationPresented = false
     @FocusState private var focusedField: EditorField?
 
     private let onOpenTriggerSelection: ((DictationStyleEditorDraft) -> Void)?
@@ -96,11 +97,25 @@ public struct DictationStyleEditorDetailView: View {
             title: headerTitle,
             iconSymbol: normalizedIconSymbol,
             onClose: onCancel,
-            footerLeadingAction: (styleID != nil && !isDefault) ? onDelete : nil,
+            footerLeadingAction: (styleID != nil && !isDefault && onDelete != nil) ? {
+                isDeleteConfirmationPresented = true
+            } : nil,
             footerTrailingTitle: detailActionTitle,
             footerTrailingAction: saveDraft,
         ) {
             editorForm
+        }
+        .confirmationDialog(
+            "settings.styles.editor.delete_confirmation_title".localized,
+            isPresented: $isDeleteConfirmationPresented,
+            titleVisibility: .visible,
+        ) {
+            Button("common.delete".localized, role: .destructive) {
+                onDelete?()
+            }
+            Button("common.cancel".localized, role: .cancel) {}
+        } message: {
+            Text("settings.styles.editor.delete_confirmation_message".localized(with: headerTitle))
         }
         .onAppear {
             focusedField = .name
@@ -148,10 +163,10 @@ public struct DictationStyleEditorDetailView: View {
                                 }
                             }
                         } label: {
-                            Image(systemName: "square.grid.2x2")
+                            Label("settings.styles.editor.icon_picker".localized, systemImage: "square.grid.2x2")
                         }
+                        .labelStyle(.iconOnly)
                         .menuStyle(.borderlessButton)
-                        .accessibilityLabel("settings.styles.editor.icon_picker".localized)
                     }
                 }
             }
@@ -229,7 +244,7 @@ public struct DictationStyleEditorDetailView: View {
     private var targetsEditor: some View {
         VStack(alignment: .leading, spacing: 10) {
             Text("settings.styles.editor.targets_hint".localized)
-                .font(.caption2)
+                .font(.caption)
                 .foregroundStyle(.secondary)
 
             SettingsDrillDownButtonRow(
@@ -300,7 +315,7 @@ public struct DictationStyleEditorDetailView: View {
                 VStack(alignment: .leading, spacing: 3) {
                     CheckboxRow("settings.context_awareness.selected_text_at_start".localized, isOn: $includeSelectedTextAtStart)
                     Text("settings.context_awareness.selected_text_at_start_desc".localized)
-                        .font(.caption2)
+                        .font(.caption)
                         .foregroundStyle(.secondary)
                         .padding(.leading, 24)
                 }

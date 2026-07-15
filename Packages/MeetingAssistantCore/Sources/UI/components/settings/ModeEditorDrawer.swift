@@ -130,29 +130,20 @@ public struct ModeEditorDrawer<Content: View>: View {
     }
 
     private func closeButton(_ onClose: @escaping () -> Void) -> some View {
-        Button {
+        Button("settings.styles.editor.close".localized, systemImage: "xmark") {
             onClose()
-        } label: {
-            Image(systemName: "xmark")
-                .font(.system(size: 15, weight: .medium))
         }
+        .labelStyle(.iconOnly)
         .buttonStyle(.plain)
         .keyboardShortcut(.escape)
-        .accessibilityLabel("settings.styles.editor.close".localized)
     }
 
     private func backButton(_ onBack: @escaping () -> Void) -> some View {
-        Button {
+        Button("common.back".localized, systemImage: "chevron.left") {
             onBack()
-        } label: {
-            HStack(spacing: 4) {
-                Image(systemName: "chevron.left")
-                Text("common.back".localized)
-            }
         }
         .buttonStyle(.plain)
         .keyboardShortcut(.escape)
-        .accessibilityLabel("common.back".localized)
     }
 
     private var footer: some View {

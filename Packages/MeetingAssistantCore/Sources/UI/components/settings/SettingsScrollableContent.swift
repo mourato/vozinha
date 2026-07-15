@@ -140,3 +140,10 @@ private struct SettingsContentSurfacePreview: View {
     SettingsContentSurfacePreview()
         .frame(width: 600)
 }
+
+#Preview("Content Surface (Accessibility)") {
+    SettingsContentSurfacePreview()
+        .frame(width: 600)
+        .environment(\.dynamicTypeSize, .accessibility3)
+        .preferredColorScheme(.dark)
+}

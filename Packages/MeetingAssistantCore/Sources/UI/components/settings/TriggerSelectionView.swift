@@ -156,12 +156,13 @@ public struct TriggerSelectionView: View {
                             Button(role: .destructive) {
                                 removeTarget(at: index)
                             } label: {
-                                Image(systemName: "trash")
+                                Label(
+                                    "settings.styles.editor.remove_target_format".localized(with: targetPrimaryText(target)),
+                                    systemImage: "trash",
+                                )
                             }
+                            .labelStyle(.iconOnly)
                             .buttonStyle(.borderless)
-                            .accessibilityLabel(
-                                "settings.styles.editor.remove_target_format".localized(with: targetPrimaryText(target)),
-                            )
                         }
                         .padding(.horizontal, 10)
                         .padding(.vertical, 7)
