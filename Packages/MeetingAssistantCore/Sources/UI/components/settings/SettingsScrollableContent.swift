@@ -129,3 +129,29 @@ private struct SettingsContentSurfacePreview: View {
         .environment(\.settingsReduceTransparencyPreview, true)
         .preferredColorScheme(.dark)
 }
+
+#Preview("Ownership Matrix — Native Form") {
+    SettingsFormPage {
+        SettingsFormSectionHeader(title: "Form-owned page", icon: "rectangle.stack.fill")
+    } content: {
+        Section("Scalar settings") {
+            Picker("Mode", selection: .constant("Automatic")) {
+                Text("Automatic").tag("Automatic")
+                Text("Manual").tag("Manual")
+            }
+            Toggle("Enabled", isOn: .constant(true))
+                .toggleStyle(.checkbox)
+        }
+    }
+    .frame(width: 900, height: 260)
+}
+
+#Preview("Ownership Matrix — Dashboard ScrollView") {
+    SettingsScrollableContent {
+        SettingsSectionHeader(title: "Dashboard-owned page", description: "Collections and analytics retain the existing ScrollView owner.")
+        SettingsListGroup("Rows", icon: "list.bullet") {
+            Text("Non-Form content")
+        }
+    }
+    .frame(width: 900, height: 260)
+}

@@ -1,6 +1,7 @@
 import SwiftUI
 
-/// A grouped native macOS `Form` for related settings controls.
+/// Transitional per-group Form kept for the staged migration in Plans 080/081.
+/// New settings pages should use `SettingsFormPage` with native `Section`s.
 ///
 /// Use this for settings clusters containing labelled pickers and their
 /// directly related controls. Compact filters and action-row controls should
@@ -48,7 +49,7 @@ public struct SettingsFormGroup<Content: View>: View {
     }
 }
 
-#Preview("Settings Form Group") {
+#Preview("Settings Form Group (Transitional)") {
     SettingsFormGroup("Workflow", icon: "bolt.fill") {
         Picker("Confirmation delay", selection: .constant(6)) {
             Text("6 seconds").tag(6)
