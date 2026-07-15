@@ -58,7 +58,7 @@ reason) | `REJECTED` (with a one-line rationale).
 | [083](083-add-settings-form-visual-and-preview-gates.md) | Add route-wide visual evidence and truthful preview gates for Settings | P1 | M | 079, 080, 081, 082 | TODO |
 | [084](084-slim-always-on-agent-guidance-and-validation-loop.md) | Slim always-on guidance, collapse skill routing, and unify the agent validation loop | P1 | M | - | DONE |
 | [085](085-finish-progressive-disclosure-and-prune-skill-bulk.md) | Finish progressive disclosure and prune hot-path skill reference bulk | P1 | L | 084 | DONE |
-| [086](086-auto-install-hooks-and-promote-implementer-fast.md) | Auto-install Git hooks via setup and promote allowlisted implementer-fast | P1 | M | 084 | TODO |
+| [086](086-auto-install-hooks-and-promote-implementer-fast.md) | Auto-install Git hooks via setup and promote allowlisted implementer-fast | P1 | M | 084 | DONE |
 
 Plans 001–061 are completed or archived in the historical ledger. The archive preserves the original audit scope,
 findings, dependency history, status table, committee notes, and rejected
@@ -133,7 +133,9 @@ options verbatim for searchability.
   and progressive-disclose `menubar` + `localization`. Guidance-only / Fast lane.
 - 086 depends on 084 and owns setup-time `core.hooksPath` installation plus an
   allowlisted `implementer-fast` default for deterministic Low/Fast work. It does
-  **not** promote lean-code. Scripts change ⇒ Full lane.
+  **not** promote lean-code. Plan 060's "neither promoted globally" is superseded
+  **only** for allowlisted Fast implementer usage in repo guidance, not lean-code.
+  Scripts change ⇒ Full lane.
 - 084 → 085 → (086 can proceed after 084 in parallel with 085 only if two writers
   are forbidden by policy; default serial order is 084, then 085, then 086).
 

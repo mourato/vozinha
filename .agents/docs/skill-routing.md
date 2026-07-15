@@ -29,7 +29,7 @@ When inspecting code outside this repository, use this source order:
 | Bounded diff review | Root session, or one reviewer when an independent review is useful |
 | Broad diagnosis or planning | Root session plus one explorer; add a second only for a distinct independent question |
 | Implementation | Root plan plus one implementer in an isolated worktree; review according to risk |
-| Deterministic Low/Fast change | Explicit opt-in to `implementer-fast` in an isolated worktree |
+| Deterministic Low/Fast change | Allowlisted Low/Fast deterministic work → `implementer-fast` in an isolated worktree; otherwise normal implementer |
 | Medium/High implementation | Normal implementer, specialist skill, and Full lane gates |
 
 Delegation is not a default optimization: it must reduce uncertainty through

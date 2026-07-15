@@ -56,8 +56,10 @@ release/high-confidence flows, not duplicate mandatory merge gates.
 
 - Keep simple, serial, and bounded work in the root session. Delegate only broad work with independently verifiable tracks.
 - Start with one read-only explorer when delegation is justified; add children only for distinct questions, and keep at most one writing child in an isolated worktree.
-- `implementer-fast` is explicit opt-in for deterministic Low/Fast work only. It must not receive ambiguous, Medium, or High-risk work.
-- Medium/High implementation continues through the normal implementer, review policy, and Full validation gate.
+- **Default to `implementer-fast`** when all hold: Low risk / Fast lane, deterministic fully specified work, isolated git worktree, and scope matches the allowlist below. Otherwise use the normal implementer.
+- **Fast allowlist** (plan 060 measured candidate): docs/comments-only edits; localization key add/remove/symmetry with no behavior change; guidance-only `.agents` / `AGENTS.md` edits; constrained single-module non-functional refactor with an explicit file list.
+- **Refuse / escalate to normal implementer** for Medium/High risk, ambiguous acceptance criteria, public API or behavior changes, exploratory design, multi-skill invention, or plans/users marked Full.
+- **Lean-code remains opt-in and is not a default** (plan 060).
 - Model identifiers and global effort defaults belong to Codex config or custom agent files, not this skill.
 
 ## Evidence contract

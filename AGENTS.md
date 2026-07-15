@@ -62,7 +62,7 @@ Lane recipes, merge gates, and evidence contracts live in `delivery-workflow`. F
 
 ## Delegation
 
-Keep simple search, explanation, bounded diff review, and small deterministic changes in the root session. Delegate only broad work with independent questions; start with one explorer and add children only for distinct parallel tracks. At most one writing agent in an isolated worktree. `implementer-fast`, model identifiers, and effort defaults are owned by `delivery-workflow` and global Codex config — not this file.
+Keep simple search, explanation, bounded diff review, and small deterministic changes in the root session. Delegate only broad work with independent questions; start with one explorer and add children only for distinct parallel tracks. At most one writing agent in an isolated worktree. Allowlisted Low/Fast deterministic work defaults to `implementer-fast`; all other routing, lean-code policy, and model identifiers are owned by `delivery-workflow` and global Codex config — not this file.
 
 Every implementation plan must include an `Execution profile`; reclassify against live scope before implementation.
 
