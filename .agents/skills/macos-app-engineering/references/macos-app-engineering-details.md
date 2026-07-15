@@ -61,9 +61,30 @@ Use native picker anatomy for ordinary Settings values:
 
 Boolean controls by save semantics:
 
+Boolean settings controls follow **save semantics**, not container type.
+Immediate-effect settings (including ordinary Settings `Form` pages that write
+to `AppSettingsStore` as the user changes them) use switch/`Toggle` switch
+style or `DSToggleRow`. Draft values committed only by Save/Create/Apply use
+`.toggleStyle(.checkbox)`. Living inside a `Form` is not a reason to use
+checkboxes.
+
+Do not apply `.toggleStyle(.checkbox)` to every Toggle just because the page
+uses `SettingsFormPage`.
+
+Classification checklist:
+
+- Does changing the control persist immediately without a Save button? → switch
+- Does the value live on a draft until Save/Create/Apply/Close-commit? → checkbox
+
+Correct exemplars: `AudioSettingsTab` (immediate), `DictationStyleEditorDetailView`
+(deferred).
+
 ```swift
 // Immediate-effect setting
 DSToggleRow("Enable feature", isOn: $viewModel.isEnabled)
+// or inside Form:
+Toggle("Enable feature", isOn: $viewModel.isEnabled)
+    .toggleStyle(.switch)
 
 // Draft value committed by Save/Create
 Toggle(isOn: $draftValue) { Text("Enable feature") }

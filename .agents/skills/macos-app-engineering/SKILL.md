@@ -43,6 +43,12 @@ macOS behavior, or a SwiftUI modern-API / maintainability review pass.
 - In settings `Form` surfaces, use a native `Picker` with a visible label as
   the default value-control pattern. Reserve `DSMenuPicker` for compact
   controls outside `Form`, such as filters or fixed-width action rows.
+- Boolean settings controls follow **save semantics**, not container type.
+  Immediate-effect settings (including ordinary Settings `Form` pages that
+  write to `AppSettingsStore` as the user changes them) use switch/`Toggle`
+  switch style or `DSToggleRow`. Draft values committed only by Save/Create/
+  Apply use `.toggleStyle(.checkbox)`. Living inside a `Form` is not a reason
+  to use checkboxes.
 - Keep previews representative, deterministic, and free of network, Keychain,
   hardware, or destructive persistence side effects.
 - Respect Dynamic Type, Reduce Motion, focus, keyboard, VoiceOver, and native
