@@ -2,7 +2,7 @@
 
 This is the active plan ledger. Historical audits, completed plan rows, review
 notes, and rejected options remain in the [2026-07-12 ledger archive](archive/2026-07-12-plan-ledger-history.md).
-Plan files are never renumbered; the next available plan number is 093.
+Plan files are never renumbered; the next available plan number is 098.
 
 ## Execution rules
 
@@ -65,6 +65,11 @@ reason) | `REJECTED` (with a one-line rationale).
 | [090](090-restore-immediate-settings-switches-and-document-boolean-control-rule.md) | Restore immediate-effect settings switches and document the boolean-control rule | P1 | M | - | DONE |
 | [091](091-remove-empty-meeting-transcription-form-row.md) | Remove the empty Meeting Transcription Form row before Pyannote | P1 | S | - | DONE |
 | [092](092-align-activity-index-with-settings-form-visual-contract.md) | Align Activity index groups with the Settings Form visual contract | P1 | M | - | DONE |
+| [093](093-establish-settings-flatten-ia-and-expandable-row.md) | Establish Settings flatten IA contract and ExpandableSettingsRow | P1 | M | 079–082 (DONE) | DONE |
+| [094](094-flatten-meetings-into-single-form-page.md) | Flatten Meetings into a single Form page | P1 | L | 093 | TODO |
+| [095](095-flatten-system-settings-onto-general.md) | Flatten System settings hierarchy onto General | P1 | L | 093 | TODO |
+| [096](096-flatten-activity-drilldowns-to-sheets.md) | Flatten Activity drill-downs to sheets; localize History chrome | P1 | L | 093 | TODO |
+| [097](097-retire-settings-toolbar-navigation-chrome.md) | Retire Settings toolbar back/forward navigation chrome | P1 | M | 094, 095, 096 | TODO |
 
 Plans 001–061 are completed or archived in the historical ledger. The archive preserves the original audit scope,
 findings, dependency history, status table, committee notes, and rejected
@@ -170,14 +175,37 @@ options verbatim for searchability.
   `SettingsFormPage` chrome for visual parity, while analytics child routes
   (More Insights, Performance, History) remain specialized. Independent of
   090/091 content-wise; serialize writers per repo policy.
+- **B2 Settings flatten (093–097)** aggressively reduces *navigation* hierarchy
+  (subpages + global toolbar back/forward), inspired by VoiceInk `v2.0-beta.2`
+  expandable rows / sheets / side panels. Execute **093 → (094 ∥ 095 ∥ 096) →
+  097**. One writing agent at a time; preferred serial order after 093 is
+  094 (Meetings), 095 (System), 096 (Activity), then 097 (chrome cutover).
+  Plan 083 (visual gates) remains TODO and should be refreshed after 097 if
+  still open.
+- 093 owns the IA contract + `SettingsExpandableSection` primitive and skill
+  guidance; no product section migration.
+- 094 folds Meetings `.export` / `.meetingPrompts` / `.monitoringTargets` into
+  the root Form (expandable + existing sheets) and deletes
+  `MeetingSettingsNavigationState`.
+- 095 folds System `.permissions` / `.protectedApps` into General; keeps
+  Models / Dictionary / Audio as the only System child destinations with
+  **local** back. Does not fold those three into General.
+- 096 keeps Activity History as the only Activity subpage; Event Detail /
+  More Insights / Model Performance become sheets; History search and
+  conversation dismiss move off the global toolbar.
+- 097 removes back/forward chrome and relocates capability toggles onto their
+  pages. Do not start 097 until 094–096 preconditions pass.
 
 ## Findings considered and rejected
 
 - Converting Activity analytics **child** routes, transcription History, Modes
   lists, monitored apps/sites, provider/model catalogs, dictionary rules, or
-  permission status blocks mechanically into scalar Form rows remains rejected.
-  Plan 092 only moves Activity **index** group chrome onto Form Sections while
-  keeping heatmap/calendar semantics as composed Section content.
+  permission status blocks mechanically into scalar Form rows remains rejected
+  as a *content-type* rule (plan 082). **B2 (093–097) supersedes** the older
+  stance that those surfaces must remain *separate navigation destinations*:
+  navigation may flatten (inline expandable, sheets, local back) while the
+  specialized content chrome stays. Plan 092’s Activity index Form chrome is
+  preserved; 096 only changes how analytics/detail are presented.
 - Applying the Modes drawer's 400 pt width to main Settings pages is rejected:
   the fixed width belongs only to the trailing overlay; root/detail content
   must use the full available container width.

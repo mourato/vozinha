@@ -38,7 +38,7 @@ Prisma-specific Settings, SwiftUI, AppKit, preview, and UX guidance. Role, scope
 Search existing UI blocks before adding new ones. Common reusable blocks:
 
 - `SettingsListGroup`, `DSGroup`, `DSCard`, `DSToggleRow`
-- `SettingsDrillDownListRow`, `SettingsListDrillDownButtonRow`
+- `SettingsDrillDownListRow`, `SettingsListDrillDownButtonRow`, `SettingsExpandableSection`
 - `DSCallout`, `DSBadge`, `DSMenuPicker`, `DSThemePicker`
 
 Use `SettingsListGroup` for plain settings lists. It owns row padding and separators. Do not put `Divider()` inside `SettingsListGroup`, add manual vertical row padding, or add a local `.settingsListRow()` modifier.
@@ -49,6 +49,21 @@ Use drill-down rows consistently:
 
 - `SettingsDrillDownListRow` for `NavigationStack` secondary pages.
 - `SettingsListDrillDownButtonRow` for button-driven drill-downs inside `SettingsListGroup`.
+
+### Flatten IA: expandable disclosure vs drill-down (B2)
+
+Prefer expandable disclosure, sheets, or side panels over new drill-down subpages.
+VoiceInk `v2.0-beta.2` (`ExpandableSettingsRow` + side panels, no toolbar history)
+is behavioral inspiration only — do not copy GPL code.
+
+- `SettingsExpandableSection` — infrequent options that stay on the same Form page;
+  header toggles expansion in place with animated children in the same `Section`.
+- `SettingsListDrillDownButtonRow` / `SettingsDrillDownButtonRow` — reserved for the
+  few remaining child destinations (Activity History; System Models / Dictionary /
+  Audio until toolbar retirement). Do not replace these where a true child
+  destination remains.
+- Global Settings toolbar back/forward is retired after plan 097; use local back,
+  sheets, or expandable disclosure instead.
 
 Use native picker anatomy for ordinary Settings values:
 

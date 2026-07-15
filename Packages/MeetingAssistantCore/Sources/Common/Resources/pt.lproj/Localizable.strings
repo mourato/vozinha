@@ -1468,4 +1468,6 @@
 "settings.styles.editor.delete_confirmation_message" = "Isso excluirá permanentemente \"%@\".";
 "common.add" = "Adicionar";
 "common.selected" = "Selecionado";
+"common.expanded" = "Expandido";
+"common.collapsed" = "Recolhido";
 "settings.styles.editor.validation.icon_invalid" = "Digite um único emoji.";
