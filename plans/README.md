@@ -67,7 +67,7 @@ reason) | `REJECTED` (with a one-line rationale).
 | [092](092-align-activity-index-with-settings-form-visual-contract.md) | Align Activity index groups with the Settings Form visual contract | P1 | M | - | DONE |
 | [093](093-establish-settings-flatten-ia-and-expandable-row.md) | Establish Settings flatten IA contract and ExpandableSettingsRow | P1 | M | 079–082 (DONE) | DONE |
 | [094](094-flatten-meetings-into-single-form-page.md) | Flatten Meetings into a single Form page | P1 | L | 093 | DONE |
-| [095](095-flatten-system-settings-onto-general.md) | Flatten System settings hierarchy onto General | P1 | L | 093 | TODO |
+| [095](095-flatten-system-settings-onto-general.md) | Flatten System settings hierarchy onto General | P1 | L | 093 | DONE |
 | [096](096-flatten-activity-drilldowns-to-sheets.md) | Flatten Activity drill-downs to sheets; localize History chrome | P1 | L | 093 | TODO |
 | [097](097-retire-settings-toolbar-navigation-chrome.md) | Retire Settings toolbar back/forward navigation chrome | P1 | M | 094, 095, 096 | TODO |
 

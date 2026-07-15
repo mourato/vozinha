@@ -17,8 +17,6 @@ public enum EnhancementsSettingsContent: Sendable {
 /// Tab for configuring AI post-processing settings.
 public struct EnhancementsSettingsTab: View {
     @StateObject private var postProcessingViewModel: PostProcessingSettingsViewModel
-    @StateObject private var sensitiveAppsViewModel: InstalledAppsSelectionViewModel
-    @State private var showAppSearchSheet = false
     private let showsHeader: Bool
     private let content: EnhancementsSettingsContent
 
@@ -28,15 +26,6 @@ public struct EnhancementsSettingsTab: View {
         content: EnhancementsSettingsContent = .all,
     ) {
         _postProcessingViewModel = StateObject(wrappedValue: PostProcessingSettingsViewModel(settings: settings))
-        _sensitiveAppsViewModel = StateObject(
-            wrappedValue: InstalledAppsSelectionViewModel(
-                defaultBundleIdentifiers: [],
-                protectedBundleIdentifiers: TextContextExclusionPolicy.defaultBundleIDs,
-                hasConfigured: { true },
-                loadBundleIdentifiers: { settings.contextAwarenessExcludedBundleIDs },
-                saveBundleIdentifiers: { settings.contextAwarenessExcludedBundleIDs = $0 },
-            ),
-        )
         self.showsHeader = showsHeader
         self.content = content
     }
@@ -96,22 +85,45 @@ public struct EnhancementsSettingsTab: View {
 
     private var protectSensitiveAppsSection: some View {
         Section {
-            VStack(alignment: .leading, spacing: AppDesignSystem.Layout.itemSpacing) {
-                Text("settings.context_awareness.protect_sensitive_apps_desc".localized)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-
-                InstalledAppsSelectionList(
-                    emptyKey: "settings.context_awareness.excluded_apps_empty",
-                    addButtonKey: "settings.context_awareness.excluded_apps_add",
-                    removeButtonKey: "settings.context_awareness.excluded_apps_remove",
-                    protectedBadgeKey: "settings.context_awareness.always_excluded_badge",
-                    onAddApp: { showAppSearchSheet = true },
-                    viewModel: sensitiveAppsViewModel,
-                )
-            }
+            ProtectedAppsSettingsContent()
         } header: {
             SettingsFormSectionHeader(title: "settings.context_awareness.protect_sensitive_apps".localized, icon: "lock.shield")
+        }
+    }
+
+}
+
+/// Reusable protected-apps selection for General expandable and Enhancements tab.
+public struct ProtectedAppsSettingsContent: View {
+    @StateObject private var sensitiveAppsViewModel: InstalledAppsSelectionViewModel
+    @State private var showAppSearchSheet = false
+
+    public init(settings: AppSettingsStore = .shared) {
+        _sensitiveAppsViewModel = StateObject(
+            wrappedValue: InstalledAppsSelectionViewModel(
+                defaultBundleIdentifiers: [],
+                protectedBundleIdentifiers: TextContextExclusionPolicy.defaultBundleIDs,
+                hasConfigured: { true },
+                loadBundleIdentifiers: { settings.contextAwarenessExcludedBundleIDs },
+                saveBundleIdentifiers: { settings.contextAwarenessExcludedBundleIDs = $0 },
+            ),
+        )
+    }
+
+    public var body: some View {
+        VStack(alignment: .leading, spacing: AppDesignSystem.Layout.itemSpacing) {
+            Text("settings.context_awareness.protect_sensitive_apps_desc".localized)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+
+            InstalledAppsSelectionList(
+                emptyKey: "settings.context_awareness.excluded_apps_empty",
+                addButtonKey: "settings.context_awareness.excluded_apps_add",
+                removeButtonKey: "settings.context_awareness.excluded_apps_remove",
+                protectedBadgeKey: "settings.context_awareness.always_excluded_badge",
+                onAddApp: { showAppSearchSheet = true },
+                viewModel: sensitiveAppsViewModel,
+            )
         }
         .sheet(isPresented: $showAppSearchSheet) {
             AppSearchSheet(
@@ -123,7 +135,6 @@ public struct EnhancementsSettingsTab: View {
             )
         }
     }
-
 }
 
 private extension View {

@@ -83,7 +83,7 @@ final class SettingsSectionTests: XCTestCase {
         )
         XCTAssertEqual(
             SettingsSection.resolvedDestination(for: "permissions"),
-            SettingsDestination(section: .system, systemRoute: .permissions),
+            SettingsDestination(section: .system),
         )
         XCTAssertEqual(
             SettingsSection.resolvedDestination(for: "audio"),

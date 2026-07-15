@@ -6,8 +6,6 @@ public enum SystemSettingsRoute: Hashable, Sendable {
     case models
     case dictionary
     case sound
-    case permissions
-    case protectedApps
 }
 
 public struct SystemSettingsTab: View {
@@ -34,19 +32,13 @@ public struct SystemSettingsTab: View {
                 openModels: { route = .models },
                 openDictionary: { route = .dictionary },
                 openSound: { route = .sound },
-                openProtectedApps: { route = .protectedApps },
-                openPermissions: { route = .permissions },
             )
         case .models:
-            ModelsSettingsTab()
+            ModelsSettingsTab(onBack: { route = .root })
         case .dictionary:
-            VocabularySettingsTab()
+            VocabularySettingsTab(onBack: { route = .root })
         case .sound:
-            AudioSettingsTab()
-        case .permissions:
-            PermissionsSettingsTab()
-        case .protectedApps:
-            EnhancementsSettingsTab(content: .protectedApps)
+            AudioSettingsTab(onBack: { route = .root })
         }
     }
 }

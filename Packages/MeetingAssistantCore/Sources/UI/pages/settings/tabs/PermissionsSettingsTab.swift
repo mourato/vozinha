@@ -10,22 +10,9 @@ import SwiftUI
 
 /// Tab for managing app permissions (microphone, screen recording).
 public struct PermissionsSettingsTab: View {
-    @StateObject private var viewModel: PermissionViewModel
-    @StateObject private var shortcutSettingsViewModel = ShortcutSettingsViewModel()
-    @StateObject private var assistantShortcutSettingsViewModel = AssistantShortcutSettingsViewModel()
     private let showsHeader: Bool
 
     public init(showsHeader: Bool = true) {
-        let recordingManager = RecordingManager.shared
-        _viewModel = StateObject(wrappedValue: PermissionViewModel(
-            manager: recordingManager.permissionStatus,
-            requestMicrophone: { await recordingManager.requestPermission(for: .microphone) },
-            requestScreen: { await recordingManager.requestPermission(for: .system) },
-            openMicrophoneSettings: { recordingManager.openMicrophoneSettings() },
-            openScreenSettings: { recordingManager.openPermissionSettings() },
-            requestAccessibility: { recordingManager.requestAccessibilityPermission() },
-            openAccessibilitySettings: { recordingManager.openAccessibilitySettings() },
-        ))
         self.showsHeader = showsHeader
     }
 
@@ -40,6 +27,32 @@ public struct PermissionsSettingsTab: View {
                 }
             }
         } content: {
+            PermissionsSettingsContent()
+        }
+    }
+}
+
+/// Reusable permissions Form sections for General and standalone tabs.
+public struct PermissionsSettingsContent: View {
+    @StateObject private var viewModel: PermissionViewModel
+    @StateObject private var shortcutSettingsViewModel = ShortcutSettingsViewModel()
+    @StateObject private var assistantShortcutSettingsViewModel = AssistantShortcutSettingsViewModel()
+
+    public init() {
+        let recordingManager = RecordingManager.shared
+        _viewModel = StateObject(wrappedValue: PermissionViewModel(
+            manager: recordingManager.permissionStatus,
+            requestMicrophone: { await recordingManager.requestPermission(for: .microphone) },
+            requestScreen: { await recordingManager.requestPermission(for: .system) },
+            openMicrophoneSettings: { recordingManager.openMicrophoneSettings() },
+            openScreenSettings: { recordingManager.openPermissionSettings() },
+            requestAccessibility: { recordingManager.requestAccessibilityPermission() },
+            openAccessibilitySettings: { recordingManager.openAccessibilitySettings() },
+        ))
+    }
+
+    public var body: some View {
+        Group {
             Section {
                 PermissionStatusView(viewModel: viewModel, requiredSource: .all)
                     .padding(.top, 4)

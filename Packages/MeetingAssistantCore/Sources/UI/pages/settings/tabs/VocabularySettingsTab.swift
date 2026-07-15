@@ -9,15 +9,24 @@ public struct VocabularySettingsTab: View {
     @State private var ruleReplaceInput = ""
     @State private var selectedRuleID: UUID?
     private let showsHeader: Bool
+    private let onBack: (() -> Void)?
 
-    public init(settings: AppSettingsStore = .shared, showsHeader: Bool = true) {
+    public init(
+        settings: AppSettingsStore = .shared,
+        showsHeader: Bool = true,
+        onBack: (() -> Void)? = nil,
+    ) {
         _viewModel = StateObject(wrappedValue: VocabularySettingsViewModel(settings: settings))
         self.showsHeader = showsHeader
+        self.onBack = onBack
     }
 
     public var body: some View {
         SettingsFormPage {
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: 8) {
+                if let onBack {
+                    SettingsChildPageBackButton(action: onBack)
+                }
                 SettingsFormSectionHeader(title: "settings.section.vocabulary".localized, icon: "text.book.closed")
                 if showsHeader {
                     Text("settings.vocabulary.description".localized)

@@ -91,7 +91,7 @@ public enum SettingsSection: String, CaseIterable, Identifiable, Sendable {
         case .enhancements:
             SettingsDestination(section: .modes)
         case .permissions:
-            SettingsDestination(section: .system, systemRoute: .permissions)
+            SettingsDestination(section: .system)
         case .general:
             SettingsDestination(section: .system)
         case .audio:

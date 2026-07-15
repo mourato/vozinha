@@ -13,6 +13,7 @@ public struct GeneralSettingsTab: View {
     @State private var viewModel = GeneralSettingsViewModel()
     @StateObject private var recordingCancelShortcutViewModel = RecordingCancelShortcutSettingsViewModel()
     @State private var shortcutDoubleTapIntervalInput = ""
+    @State private var isProtectedAppsExpanded = false
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     private let showsHeader: Bool
     private let headerTitleKey: String
@@ -20,8 +21,6 @@ public struct GeneralSettingsTab: View {
     private let openModels: (() -> Void)?
     private let openDictionary: (() -> Void)?
     private let openSound: (() -> Void)?
-    private let openProtectedApps: (() -> Void)?
-    private let openPermissions: (() -> Void)?
 
     public init(
         showsHeader: Bool = true,
@@ -30,8 +29,6 @@ public struct GeneralSettingsTab: View {
         openModels: (() -> Void)? = nil,
         openDictionary: (() -> Void)? = nil,
         openSound: (() -> Void)? = nil,
-        openProtectedApps: (() -> Void)? = nil,
-        openPermissions: (() -> Void)? = nil,
     ) {
         self.showsHeader = showsHeader
         self.headerTitleKey = headerTitleKey
@@ -39,8 +36,6 @@ public struct GeneralSettingsTab: View {
         self.openModels = openModels
         self.openDictionary = openDictionary
         self.openSound = openSound
-        self.openProtectedApps = openProtectedApps
-        self.openPermissions = openPermissions
     }
 
     public var body: some View {
@@ -137,29 +132,22 @@ public struct GeneralSettingsTab: View {
 
             storageSection
 
-            if let openProtectedApps, openModels == nil, openDictionary == nil, openSound == nil {
+            if openModels != nil {
+                PermissionsSettingsContent()
+
                 Section {
-                    SettingsListDrillDownButtonRow(
+                    SettingsExpandableSection(
                         title: "settings.context_awareness.protect_sensitive_apps".localized,
                         subtitle: "settings.context_awareness.protect_sensitive_apps_desc".localized,
-                        accessibilityHint: "settings.context_awareness.protect_sensitive_apps".localized,
-                        action: openProtectedApps,
-                    )
+                        isExpanded: $isProtectedAppsExpanded,
+                    ) {
+                        ProtectedAppsSettingsContent()
+                    }
                 } header: {
-                    SettingsFormSectionHeader(title: "settings.context_awareness.protect_sensitive_apps".localized, icon: "lock.shield")
-                }
-            }
-
-            if let openPermissions, openModels == nil, openDictionary == nil, openSound == nil {
-                Section {
-                    SettingsListDrillDownButtonRow(
-                        title: "settings.section.permissions".localized,
-                        subtitle: "settings.permissions.description".localized,
-                        accessibilityHint: "settings.system.permissions.accessibility_hint".localized,
-                        action: openPermissions,
+                    SettingsFormSectionHeader(
+                        title: "settings.context_awareness.protect_sensitive_apps".localized,
+                        icon: "lock.shield",
                     )
-                } header: {
-                    SettingsFormSectionHeader(title: "settings.section.permissions".localized, icon: "checkmark.shield")
                 }
             }
         }
@@ -221,7 +209,7 @@ public struct GeneralSettingsTab: View {
 
     @ViewBuilder
     private var systemDrilldownsSection: some View {
-        if let openModels, let openDictionary, let openSound, let openPermissions {
+        if let openModels, let openDictionary, let openSound {
             Section {
                 SettingsListDrillDownButtonRow(
                     title: "settings.section.models".localized,
@@ -243,28 +231,8 @@ public struct GeneralSettingsTab: View {
                     accessibilityHint: "settings.section.audio".localized,
                     action: openSound,
                 )
-
-                SettingsListDrillDownButtonRow(
-                    title: "settings.section.permissions".localized,
-                    subtitle: "settings.permissions.description".localized,
-                    accessibilityHint: "settings.system.permissions.accessibility_hint".localized,
-                    action: openPermissions,
-                )
             } header: {
                 SettingsFormSectionHeader(title: "settings.section.settings".localized, icon: "gearshape.2")
-            }
-        }
-
-        if let openProtectedApps, openModels != nil {
-            Section {
-                SettingsListDrillDownButtonRow(
-                    title: "settings.context_awareness.protect_sensitive_apps".localized,
-                    subtitle: "settings.context_awareness.protect_sensitive_apps_desc".localized,
-                    accessibilityHint: "settings.context_awareness.protect_sensitive_apps".localized,
-                    action: openProtectedApps,
-                )
-            } header: {
-                SettingsFormSectionHeader(title: "settings.context_awareness.protect_sensitive_apps".localized, icon: "lock.shield")
             }
         }
     }

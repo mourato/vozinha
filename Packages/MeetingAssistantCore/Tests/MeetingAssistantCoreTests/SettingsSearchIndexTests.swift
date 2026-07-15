@@ -135,7 +135,7 @@ final class SettingsSearchIndexTests: XCTestCase {
         )
         XCTAssertEqual(
             SettingsSearchIndex.destination(forLocalizationKey: "settings.permissions.description"),
-            SettingsDestination(section: .system, systemRoute: .permissions),
+            SettingsDestination(section: .system),
         )
         XCTAssertEqual(
             SettingsSearchIndex.destination(forLocalizationKey: "settings.general.audio_format"),
@@ -210,7 +210,7 @@ final class SettingsSearchIndexTests: XCTestCase {
 
     func testPermissionsQueryRoutesToSystemPermissionsDestination() {
         let destination = SettingsSearchIndex.destination(forLocalizationKey: "settings.permissions.description")
-        XCTAssertEqual(destination, SettingsDestination(section: .system, systemRoute: .permissions))
+        XCTAssertEqual(destination, SettingsDestination(section: .system))
     }
 
     func testModelHubKeysRouteToSettingsSection() {
