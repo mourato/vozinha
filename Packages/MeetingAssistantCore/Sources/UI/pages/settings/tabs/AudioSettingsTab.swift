@@ -56,25 +56,29 @@ public struct AudioSettingsTab: View {
     }
 
     public var body: some View {
-        SettingsScrollableContent {
-            if showsHeader {
-                SettingsSectionHeader(
-                    title: "settings.section.audio".localized,
-                    description: "settings.general.audio_devices_desc".localized,
-                )
+        SettingsFormPage {
+            VStack(alignment: .leading, spacing: 4) {
+                SettingsFormSectionHeader(title: "settings.section.audio".localized, icon: "waveform.path")
+                if showsHeader {
+                    Text("settings.general.audio_devices_desc".localized)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
             }
-
-            SettingsFormGroup("settings.general.audio_format".localized, icon: "waveform.path") {
+        } content: {
+            Section {
                 Picker("settings.general.audio_format".localized, selection: $viewModel.audioFormat) {
                     ForEach(AppSettingsStore.AudioFormat.allCases, id: \.self) { format in
                         Text(format.displayName).tag(format)
                     }
                 }
                 .pickerStyle(.menu)
+            } header: {
+                SettingsFormSectionHeader(title: "settings.general.audio_format".localized, icon: "waveform.path")
             }
 
             // Audio Devices
-            SettingsFormGroup("settings.general.audio_devices".localized, icon: "mic.fill") {
+            Section {
                 VStack(alignment: .leading, spacing: 16) {
                     audioInputModePicker
 
@@ -147,9 +151,11 @@ public struct AudioSettingsTab: View {
                         isOn: $viewModel.autoIncreaseMicrophoneVolume,
                     )
                 }
+            } header: {
+                SettingsFormSectionHeader(title: "settings.general.audio_devices".localized, icon: "mic.fill")
             }
 
-            SettingsListGroup("settings.general.audio_processing".localized, icon: "waveform.badge.minus") {
+            Section {
                 VStack(alignment: .leading, spacing: 12) {
                     DSToggleRow(
                         "settings.general.remove_silence_before_processing".localized,
@@ -162,10 +168,12 @@ public struct AudioSettingsTab: View {
                         .foregroundStyle(.secondary)
                         .fixedSize(horizontal: false, vertical: true)
                 }
+            } header: {
+                SettingsFormSectionHeader(title: "settings.general.audio_processing".localized, icon: "waveform.badge.minus")
             }
 
             // Sound Feedback
-            SettingsFormGroup("settings.general.sound_feedback".localized, icon: "speaker.wave.2.fill") {
+            Section {
                 DSToggleRow(
                     "settings.general.sound_feedback.enabled".localized,
                     description: "settings.general.sound_feedback.enabled_desc".localized,
@@ -184,6 +192,8 @@ public struct AudioSettingsTab: View {
                     )
                     .transition(SettingsMotion.sectionTransition(reduceMotion: reduceMotion))
                 }
+            } header: {
+                SettingsFormSectionHeader(title: "settings.general.sound_feedback".localized, icon: "speaker.wave.2.fill")
             }
 
         }

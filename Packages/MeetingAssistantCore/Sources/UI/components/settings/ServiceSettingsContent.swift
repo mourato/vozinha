@@ -27,7 +27,7 @@ public struct ServiceSettingsContent: View {
     }
 
     public var body: some View {
-        VStack(alignment: .leading, spacing: AppDesignSystem.Layout.sectionSpacing) {
+        Group {
             if includeTranscriptionProviderSection {
                 ServiceTranscriptionProviderSection(viewModel: viewModel)
             }
@@ -51,7 +51,7 @@ public struct ServiceSettingsContent: View {
     }
 
     private var localModelsSection: some View {
-        DSGroup("settings.models.local_models.title".localized, icon: "internaldrive") {
+        Section {
             VStack(alignment: .leading, spacing: 12) {
                 Text("settings.models.local_models.description".localized)
                     .font(.caption)
@@ -72,6 +72,8 @@ public struct ServiceSettingsContent: View {
                     )
                 }
             }
+        } header: {
+            SettingsFormSectionHeader(title: "settings.models.local_models.title".localized, icon: "internaldrive")
         }
     }
 
@@ -129,7 +131,7 @@ public struct ServiceSettingsContent: View {
     }
 
     private var cloudModelsSection: some View {
-        SettingsFormGroup("settings.models.cloud_models.title".localized, icon: "cloud") {
+        Section {
             VStack(alignment: .leading, spacing: 16) {
                 Text("settings.models.cloud_models.description".localized)
                     .font(.caption)
@@ -139,6 +141,8 @@ public struct ServiceSettingsContent: View {
                     cloudProviderCard(provider)
                 }
             }
+        } header: {
+            SettingsFormSectionHeader(title: "settings.models.cloud_models.title".localized, icon: "cloud")
         }
     }
 
@@ -174,32 +178,30 @@ public struct ServiceSettingsContent: View {
             cloudProviderModelRow(provider)
 
             if provider.provider == .elevenLabs, !provider.isReady {
-                HStack(alignment: .firstTextBaseline, spacing: 10) {
-                    Text("settings.ai.api_key".localized)
-                        .foregroundStyle(.secondary)
-                        .frame(width: 100, alignment: .leading)
+                LabeledContent("settings.ai.api_key".localized) {
+                    HStack(spacing: 8) {
+                        SecureField(
+                            "settings.ai.api_key_placeholder".localized,
+                            text: Binding(
+                                get: { viewModel.transcriptionAPIKeyInputsByProvider[provider.provider.rawValue] ?? "" },
+                                set: { viewModel.transcriptionAPIKeyInputsByProvider[provider.provider.rawValue] = $0 },
+                            ),
+                        )
+                        .textFieldStyle(.roundedBorder)
 
-                    SecureField(
-                        "settings.ai.api_key_placeholder".localized,
-                        text: Binding(
-                            get: { viewModel.transcriptionAPIKeyInputsByProvider[provider.provider.rawValue] ?? "" },
-                            set: { viewModel.transcriptionAPIKeyInputsByProvider[provider.provider.rawValue] = $0 },
-                        ),
-                    )
-                    .textFieldStyle(.roundedBorder)
-
-                    Button("common.save".localized) {
-                        viewModel.saveTranscriptionAPIKey(
-                            viewModel.transcriptionAPIKeyInputsByProvider[provider.provider.rawValue] ?? "",
-                            for: provider.provider,
+                        Button("common.save".localized) {
+                            viewModel.saveTranscriptionAPIKey(
+                                viewModel.transcriptionAPIKeyInputsByProvider[provider.provider.rawValue] ?? "",
+                                for: provider.provider,
+                            )
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .disabled(
+                            (viewModel.transcriptionAPIKeyInputsByProvider[provider.provider.rawValue] ?? "")
+                                .trimmingCharacters(in: .whitespacesAndNewlines)
+                                .isEmpty,
                         )
                     }
-                    .buttonStyle(.borderedProminent)
-                    .disabled(
-                        (viewModel.transcriptionAPIKeyInputsByProvider[provider.provider.rawValue] ?? "")
-                            .trimmingCharacters(in: .whitespacesAndNewlines)
-                            .isEmpty,
-                    )
                 }
             }
 
@@ -245,7 +247,7 @@ public struct ServiceSettingsContent: View {
     }
 
     private var runtimeSection: some View {
-        SettingsFormGroup("settings.models.runtime.title".localized, icon: "cpu") {
+        Section {
             VStack(alignment: .leading, spacing: 12) {
                 VStack(alignment: .leading, spacing: 6) {
                     Picker(
@@ -270,11 +272,13 @@ public struct ServiceSettingsContent: View {
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
+        } header: {
+            SettingsFormSectionHeader(title: "settings.models.runtime.title".localized, icon: "cpu")
         }
     }
 
     private var statusSection: some View {
-        DSGroup("settings.models.service_status".localized, icon: "dot.radiowaves.left.and.right") {
+        Section {
             HStack {
                 VStack(alignment: .leading, spacing: 8) {
                     HStack(spacing: 6) {
@@ -310,6 +314,8 @@ public struct ServiceSettingsContent: View {
                 .buttonStyle(.bordered)
                 .disabled(viewModel.transcriptionStatus == .testing)
             }
+        } header: {
+            SettingsFormSectionHeader(title: "settings.models.service_status".localized, icon: "dot.radiowaves.left.and.right")
         }
     }
 

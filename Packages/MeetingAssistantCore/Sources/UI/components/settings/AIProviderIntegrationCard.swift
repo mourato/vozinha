@@ -38,7 +38,7 @@ public struct AIProviderIntegrationCard: View {
                 .foregroundStyle(.primary)
                 .padding(.leading, 4)
 
-            Form {
+            VStack(alignment: .leading, spacing: 8) {
                 providerRow
                 apiKeyRow
                 modelRow
@@ -55,10 +55,6 @@ public struct AIProviderIntegrationCard: View {
                 }
                 footerActions
             }
-            .formStyle(.grouped)
-            .scrollContentBackground(.hidden)
-            .scrollDisabled(true)
-            .fixedSize(horizontal: false, vertical: true)
         }
         .task {
             guard runInitialTasks else { return }

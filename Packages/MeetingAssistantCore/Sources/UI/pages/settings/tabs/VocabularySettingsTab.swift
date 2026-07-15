@@ -16,14 +16,17 @@ public struct VocabularySettingsTab: View {
     }
 
     public var body: some View {
-        SettingsScrollableContent {
-            if showsHeader {
-                SettingsSectionHeader(
-                    title: "settings.section.vocabulary".localized,
-                    description: "settings.vocabulary.description".localized,
-                )
+        SettingsFormPage {
+            VStack(alignment: .leading, spacing: 4) {
+                SettingsFormSectionHeader(title: "settings.section.vocabulary".localized, icon: "text.book.closed")
+                if showsHeader {
+                    Text("settings.vocabulary.description".localized)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
             }
-            DSGroup("settings.vocabulary.replacement_rules".localized, icon: "arrow.2.squarepath") {
+        } content: {
+            Section {
                 VStack(alignment: .leading, spacing: 12) {
                     Text("settings.vocabulary.applied_order_note".localized)
                         .font(.caption2)
@@ -50,6 +53,8 @@ public struct VocabularySettingsTab: View {
                         .controlSize(.regular)
                     }
                 }
+            } header: {
+                SettingsFormSectionHeader(title: "settings.vocabulary.replacement_rules".localized, icon: "arrow.2.squarepath")
             }
         }
         .sheet(isPresented: $viewModel.showRuleEditor) {

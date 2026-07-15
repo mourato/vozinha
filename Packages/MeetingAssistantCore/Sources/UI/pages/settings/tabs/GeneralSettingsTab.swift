@@ -44,33 +44,31 @@ public struct GeneralSettingsTab: View {
     }
 
     public var body: some View {
-        SettingsScrollableContent {
-            if showsHeader {
-                SettingsSectionHeader(
-                    title: headerTitleKey.localized,
-                    description: headerDescriptionKey.localized,
-                )
+        SettingsFormPage {
+            VStack(alignment: .leading, spacing: 4) {
+                SettingsFormSectionHeader(title: headerTitleKey.localized, icon: "gearshape.2")
+                if showsHeader {
+                    Text(headerDescriptionKey.localized)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
             }
-
+        } content: {
             systemDrilldownsSection
 
-            // Application Behavior
-            SettingsListGroup("settings.general.app_behavior".localized, icon: "app.badge") {
-                DSToggleRow(
-                    "settings.general.launch_at_login".localized,
-                    isOn: $viewModel.launchAtLogin,
-                )
-
-                DSToggleRow(
-                    "settings.general.show_in_dock".localized,
-                    description: "settings.general.show_in_dock_desc".localized,
-                    isOn: $viewModel.showInDock,
-                )
-
-                DSToggleRow(
-                    "settings.general.show_settings_on_launch".localized,
-                    isOn: $viewModel.showSettingsOnLaunch,
-                )
+            Section {
+                Toggle("settings.general.launch_at_login".localized, isOn: $viewModel.launchAtLogin)
+                    .toggleStyle(.checkbox)
+                Toggle(isOn: $viewModel.showInDock) {
+                    LabeledContent("settings.general.show_in_dock".localized) {
+                        Text("settings.general.show_in_dock_desc".localized)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+                .toggleStyle(.checkbox)
+                Toggle("settings.general.show_settings_on_launch".localized, isOn: $viewModel.showSettingsOnLaunch)
+                    .toggleStyle(.checkbox)
 
                 HStack(alignment: .center, spacing: 12) {
                     SettingsTitleWithPopover(
@@ -113,10 +111,11 @@ public struct GeneralSettingsTab: View {
                         maxInputWidth: AppDesignSystem.Layout.maxCompactTextFieldWidth,
                     )
                 }
+            } header: {
+                SettingsFormSectionHeader(title: "settings.general.app_behavior".localized, icon: "app.badge")
             }
 
-            // Appearance
-            SettingsFormGroup("settings.general.appearance".localized, icon: "paintbrush.fill") {
+            Section {
                 Picker("settings.general.language".localized, selection: $viewModel.selectedLanguage) {
                     ForEach(AppLanguage.allCases, id: \.self) { language in
                         Text(language.displayName).tag(language)
@@ -130,6 +129,8 @@ public struct GeneralSettingsTab: View {
                     }
                 }
                 .pickerStyle(.segmented)
+            } header: {
+                SettingsFormSectionHeader(title: "settings.general.appearance".localized, icon: "paintbrush.fill")
             }
 
             recordingIndicatorSection
@@ -137,24 +138,28 @@ public struct GeneralSettingsTab: View {
             storageSection
 
             if let openProtectedApps, openModels == nil, openDictionary == nil, openSound == nil {
-                SettingsListGroup("settings.context_awareness.protect_sensitive_apps".localized, icon: "lock.shield") {
+                Section {
                     SettingsListDrillDownButtonRow(
                         title: "settings.context_awareness.protect_sensitive_apps".localized,
                         subtitle: "settings.context_awareness.protect_sensitive_apps_desc".localized,
                         accessibilityHint: "settings.context_awareness.protect_sensitive_apps".localized,
                         action: openProtectedApps,
                     )
+                } header: {
+                    SettingsFormSectionHeader(title: "settings.context_awareness.protect_sensitive_apps".localized, icon: "lock.shield")
                 }
             }
 
             if let openPermissions, openModels == nil, openDictionary == nil, openSound == nil {
-                SettingsListGroup("settings.section.permissions".localized, icon: "checkmark.shield") {
+                Section {
                     SettingsListDrillDownButtonRow(
                         title: "settings.section.permissions".localized,
                         subtitle: "settings.permissions.description".localized,
                         accessibilityHint: "settings.system.permissions.accessibility_hint".localized,
                         action: openPermissions,
                     )
+                } header: {
+                    SettingsFormSectionHeader(title: "settings.section.permissions".localized, icon: "checkmark.shield")
                 }
             }
         }
@@ -217,7 +222,7 @@ public struct GeneralSettingsTab: View {
     @ViewBuilder
     private var systemDrilldownsSection: some View {
         if let openModels, let openDictionary, let openSound, let openPermissions {
-            SettingsListGroup("settings.section.settings".localized, icon: "gearshape.2") {
+            Section {
                 SettingsListDrillDownButtonRow(
                     title: "settings.section.models".localized,
                     subtitle: "settings.models.description".localized,
@@ -245,83 +250,65 @@ public struct GeneralSettingsTab: View {
                     accessibilityHint: "settings.system.permissions.accessibility_hint".localized,
                     action: openPermissions,
                 )
+            } header: {
+                SettingsFormSectionHeader(title: "settings.section.settings".localized, icon: "gearshape.2")
             }
         }
 
         if let openProtectedApps, openModels != nil {
-            SettingsListGroup("settings.context_awareness.protect_sensitive_apps".localized, icon: "lock.shield") {
+            Section {
                 SettingsListDrillDownButtonRow(
                     title: "settings.context_awareness.protect_sensitive_apps".localized,
                     subtitle: "settings.context_awareness.protect_sensitive_apps_desc".localized,
                     accessibilityHint: "settings.context_awareness.protect_sensitive_apps".localized,
                     action: openProtectedApps,
                 )
+            } header: {
+                SettingsFormSectionHeader(title: "settings.context_awareness.protect_sensitive_apps".localized, icon: "lock.shield")
             }
         }
     }
 
     private var recordingIndicatorSection: some View {
-        SettingsListGroup("settings.general.recording_indicator".localized, icon: "record.circle") {
-            DSToggleRow(
-                "settings.general.recording_indicator.enabled".localized,
-                description: "settings.general.recording_indicator.enabled_desc".localized,
-                isOn: $viewModel.recordingIndicatorEnabled.animated(),
-            )
+        Section {
+            Toggle(isOn: $viewModel.recordingIndicatorEnabled.animated()) {
+                LabeledContent("settings.general.recording_indicator.enabled".localized) {
+                    Text("settings.general.recording_indicator.enabled_desc".localized)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            }
+            .toggleStyle(.checkbox)
 
             if viewModel.recordingIndicatorEnabled {
-                HStack {
-                    Text("settings.general.recording_indicator.style".localized)
-                        .font(.body)
-
-                    Spacer()
-
-                    Picker("", selection: $viewModel.recordingIndicatorStyle) {
-                        ForEach(RecordingIndicatorStyle.allCases, id: \.self) { style in
-                            Text(style.displayName).tag(style)
-                        }
+                Picker("settings.general.recording_indicator.style".localized, selection: $viewModel.recordingIndicatorStyle) {
+                    ForEach(RecordingIndicatorStyle.allCases, id: \.self) { style in
+                        Text(style.displayName).tag(style)
                     }
-                    .labelsHidden()
-                    .pickerStyle(.segmented)
                 }
+                .pickerStyle(.segmented)
 
-                HStack {
-                    Text("settings.general.recording_indicator.position".localized)
-                        .font(.body)
-
-                    Spacer()
-
-                    Picker("", selection: $viewModel.recordingIndicatorPosition) {
-                        ForEach(RecordingIndicatorPosition.allCases, id: \.self) { pos in
-                            Text(pos.displayName).tag(pos)
-                        }
+                Picker("settings.general.recording_indicator.position".localized, selection: $viewModel.recordingIndicatorPosition) {
+                    ForEach(RecordingIndicatorPosition.allCases, id: \.self) { pos in
+                        Text(pos.displayName).tag(pos)
                     }
-                    .labelsHidden()
-                    .pickerStyle(.segmented)
                 }
+                .pickerStyle(.segmented)
 
-                HStack(spacing: 12) {
-                    SettingsTitleWithPopover(
-                        title: "settings.general.recording_indicator.animation_speed".localized,
-                        helperMessage: "settings.general.recording_indicator.animation_speed_desc".localized,
-                    )
-
-                    Spacer()
-
-                    Picker("", selection: $viewModel.recordingIndicatorAnimationSpeed) {
-                        ForEach(RecordingIndicatorAnimationSpeed.allCases, id: \.self) { speed in
-                            Text(speed.displayName).tag(speed)
-                        }
+                Picker("settings.general.recording_indicator.animation_speed".localized, selection: $viewModel.recordingIndicatorAnimationSpeed) {
+                    ForEach(RecordingIndicatorAnimationSpeed.allCases, id: \.self) { speed in
+                        Text(speed.displayName).tag(speed)
                     }
-                    .labelsHidden()
-                    .pickerStyle(.segmented)
                 }
-                .transition(SettingsMotion.sectionTransition(reduceMotion: reduceMotion))
+                .pickerStyle(.segmented)
             }
+        } header: {
+            SettingsFormSectionHeader(title: "settings.general.recording_indicator".localized, icon: "record.circle")
         }
     }
 
     private var storageSection: some View {
-        SettingsFormGroup("settings.general.storage".localized, icon: "folder.fill") {
+        Section {
             Picker("settings.general.auto_delete".localized, selection: storageRetentionBinding) {
                 ForEach(StorageRetentionOption.allCases) { option in
                     Text(option.title).tag(option)
@@ -340,6 +327,8 @@ public struct GeneralSettingsTab: View {
 
                 Spacer()
             }
+        } header: {
+            SettingsFormSectionHeader(title: "settings.general.storage".localized, icon: "folder.fill")
         }
     }
 

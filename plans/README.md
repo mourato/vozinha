@@ -53,7 +53,7 @@ reason) | `REJECTED` (with a one-line rationale).
 | [078](078-match-voiceink-mode-editor-drawer-experience.md) | Replace the Modes split view with the VoiceInk-style editor drawer experience | P1 | L | - | DONE (merged in `a9a86350`; implementation commits include `d2c45d00`) |
 | [079](079-establish-single-form-settings-surface.md) | Establish one full-width native Form surface per settings page | P1 | M | - | DONE |
 | [080](080-migrate-primary-settings-journeys-to-form-sections.md) | Migrate primary settings journeys to shared native Form sections | P1 | L | 079 | DONE |
-| [081](081-migrate-system-settings-hierarchy-to-form-sections.md) | Migrate the complete System settings hierarchy to native Form sections | P1 | L | 079 | TODO |
+| [081](081-migrate-system-settings-hierarchy-to-form-sections.md) | Migrate the complete System settings hierarchy to native Form sections | P1 | L | 079 | DONE |
 | [082](082-retire-form-islands-and-normalize-specialized-settings-surfaces.md) | Retire per-group Form islands and normalize specialized settings surfaces | P2 | M | 080, 081 | TODO |
 | [083](083-add-settings-form-visual-and-preview-gates.md) | Add route-wide visual evidence and truthful preview gates for Settings | P1 | M | 079, 080, 081, 082 | TODO |
 

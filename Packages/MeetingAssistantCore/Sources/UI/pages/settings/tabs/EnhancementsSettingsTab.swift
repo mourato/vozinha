@@ -48,18 +48,20 @@ public struct EnhancementsSettingsTab: View {
     // MARK: - Sections
 
     private var rootPage: some View {
-        SettingsScrollableContent {
-            if showsHeader {
-                SettingsSectionHeader(
-                    title: headerTitle,
-                    description: "settings.text_context.description".localized,
-                )
+        SettingsFormPage {
+            VStack(alignment: .leading, spacing: 4) {
+                SettingsFormSectionHeader(title: headerTitle, icon: "brain")
+                if showsHeader {
+                    Text("settings.text_context.description".localized)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
             }
-
+        } content: {
             switch content {
             case .all:
-                protectSensitiveAppsSection
                 mainSection
+                protectSensitiveAppsSection
             case .protectedApps:
                 protectSensitiveAppsSection
             case .postProcessing:
@@ -80,18 +82,20 @@ public struct EnhancementsSettingsTab: View {
     }
 
     private var mainSection: some View {
-        SettingsListGroup("settings.post_processing.title".localized, icon: "brain") {
+        Section {
             DSToggleRow(
                 "settings.post_processing.enabled".localized,
                 description: "settings.post_processing.description".localized,
                 isOn: $postProcessingViewModel.settings.postProcessingEnabled,
             )
 
+        } header: {
+            SettingsFormSectionHeader(title: "settings.post_processing.title".localized, icon: "brain")
         }
     }
 
     private var protectSensitiveAppsSection: some View {
-        DSGroup("settings.context_awareness.protect_sensitive_apps".localized, icon: "lock.shield") {
+        Section {
             VStack(alignment: .leading, spacing: AppDesignSystem.Layout.itemSpacing) {
                 Text("settings.context_awareness.protect_sensitive_apps_desc".localized)
                     .font(.caption)
@@ -106,6 +110,8 @@ public struct EnhancementsSettingsTab: View {
                     viewModel: sensitiveAppsViewModel,
                 )
             }
+        } header: {
+            SettingsFormSectionHeader(title: "settings.context_awareness.protect_sensitive_apps".localized, icon: "lock.shield")
         }
         .sheet(isPresented: $showAppSearchSheet) {
             AppSearchSheet(

@@ -30,23 +30,27 @@ public struct PermissionsSettingsTab: View {
     }
 
     public var body: some View {
-        SettingsScrollableContent {
-            if showsHeader {
-                SettingsSectionHeader(
-                    title: "settings.section.permissions".localized,
-                    description: "settings.permissions.description".localized,
-                )
+        SettingsFormPage {
+            VStack(alignment: .leading, spacing: 4) {
+                SettingsFormSectionHeader(title: "settings.section.permissions".localized, icon: "checkmark.shield")
+                if showsHeader {
+                    Text("settings.permissions.description".localized)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
             }
-
-            DSGroup("settings.permissions.status".localized, icon: "checkmark.shield") {
+        } content: {
+            Section {
                 PermissionStatusView(viewModel: viewModel, requiredSource: .all)
                     .padding(.top, 4)
+            } header: {
+                SettingsFormSectionHeader(title: "settings.permissions.status".localized, icon: "checkmark.shield")
             }
 
             if shortcutSettingsViewModel.shortcutCaptureHealthPresentation != nil ||
                 assistantShortcutSettingsViewModel.shortcutCaptureHealthPresentation != nil
             {
-                DSGroup("settings.shortcuts.health.title".localized, icon: "keyboard") {
+                Section {
                     VStack(alignment: .leading, spacing: 12) {
                         if let globalPresentation = shortcutSettingsViewModel.shortcutCaptureHealthPresentation {
                             ShortcutCaptureHealthStatusView(presentation: globalPresentation) {
@@ -60,23 +64,29 @@ public struct PermissionsSettingsTab: View {
                             }
                         }
                     }
+                } header: {
+                    SettingsFormSectionHeader(title: "settings.shortcuts.health.title".localized, icon: "keyboard")
                 }
             }
 
             if viewModel.allPermissionsGranted {
-                SettingsStateBlock(
-                    kind: .success,
-                    title: "common.ok".localized,
-                    message: "permissions.system_title".localized,
-                )
+                Section {
+                    SettingsStateBlock(
+                        kind: .success,
+                        title: "common.ok".localized,
+                        message: "permissions.system_title".localized,
+                    )
+                }
             } else {
-                SettingsStateBlock(
-                    kind: .warning,
-                    title: "permissions.action_required".localized,
-                    message: "permissions.warning".localized,
-                    actionTitle: "permissions.configure".localized,
-                ) {
-                    viewModel.openScreenSystemSettings()
+                Section {
+                    SettingsStateBlock(
+                        kind: .warning,
+                        title: "permissions.action_required".localized,
+                        message: "permissions.warning".localized,
+                        actionTitle: "permissions.configure".localized,
+                    ) {
+                        viewModel.openScreenSystemSettings()
+                    }
                 }
             }
         }
