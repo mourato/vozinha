@@ -152,6 +152,9 @@
 /* Meetings Export */
 "settings.meetings.export" = "Export";
 "settings.meetings.export_drilldown_desc" = "Configure automatic note export, destination folder, template, and safety policy.";
+"settings.meetings.export.expand_accessibility_hint" = "Expands export settings for summaries and templates.";
+"settings.meetings.prompts.expand_accessibility_hint" = "Expands meeting prompt and language settings.";
+"settings.meetings.monitoring_access.expand_accessibility_hint" = "Expands monitored apps and web targets.";
 "settings.meetings.auto_export" = "Auto-export summaries";
 "settings.meetings.auto_export_desc" = "Automatically saves the meeting summary as Markdown in the selected folder.";
 "settings.meetings.export_location" = "Save to folder";
