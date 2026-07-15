@@ -2,6 +2,8 @@ import MeetingAssistantCoreCommon
 import MeetingAssistantCoreInfrastructure
 import SwiftUI
 
+// preview-check: ignore — inline search requires the owning Settings search state.
+
 public struct AppSearchInlineSection: View {
     private let appCatalog: [InstalledApplicationRecord]
     private let isLoading: Bool

@@ -3,6 +3,8 @@ import MeetingAssistantCoreCommon
 import MeetingAssistantCoreInfrastructure
 import SwiftUI
 
+// preview-check: ignore — editor presentation requires the provider registration fixture.
+
 public enum EnhancementsProviderEditorMode {
     case create
     case edit

@@ -2,6 +2,8 @@ import MeetingAssistantCoreCommon
 import MeetingAssistantCoreInfrastructure
 import SwiftUI
 
+// preview-check: ignore — picker sheet requires the owning provider registration fixture.
+
 public struct EnhancementsProviderPickerSheet: View {
     let registeredBuiltInProviders: Set<AIProvider>
     let onSelect: (AIProvider) -> Void

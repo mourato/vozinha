@@ -242,8 +242,20 @@ make format              # SwiftFormat with auto-fix
 ### Specialized checks
 ```bash
 make arch-check          # Architecture boundary/access-control validation
-make preview-check       # SwiftUI preview coverage validation
+make preview-check       # Per-file SwiftUI preview declaration coverage
+./scripts/tests/preview-check-test.sh # Deterministic checker fixtures
 ```
+
+`make preview-check` verifies that each Settings SwiftUI view source file contains its own
+`#Preview` or `PreviewProvider` declaration. A file may be excluded only with
+an explicit `preview-check: ignore` or `preview-check: generated` comment.
+Pass a source directory directly to `scripts/preview-check.sh` to inspect a
+different surface. This is a declaration inventory check: it does not compile
+or render previews.
+Use `make build-agent` for app compilation. Rendered visual acceptance remains
+a manual/Xcode step and must record the inspected widths, states, appearance,
+and accessibility settings; text coverage from this script is not visual
+evidence.
 
 ## Agent Artifacts and Logging
 

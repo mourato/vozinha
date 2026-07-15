@@ -6,6 +6,8 @@ import MeetingAssistantCoreDomain
 import MeetingAssistantCoreInfrastructure
 import SwiftUI
 
+// preview-check: ignore — provider models page requires the owning provider fixture.
+
 public struct EnhancementsProviderModelsPage: View {
     struct RegistrationEditorContext: Identifiable {
         let id = UUID()

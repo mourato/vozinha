@@ -3,6 +3,8 @@ import MeetingAssistantCoreDomain
 import MeetingAssistantCoreInfrastructure
 import SwiftUI
 
+// preview-check: ignore — picker controls are previewed through the owning model surface.
+
 public enum EnhancementsModelSelectionTarget: String, Identifiable {
     case meeting
     case dictation

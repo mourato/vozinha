@@ -50,7 +50,7 @@ help:
 	@echo "  make lint-strict-agent - Run strict lint with compact output"
 	@echo "  make lint-fix       - Auto-fix linting issues"
 	@echo "  make arch-check     - Run architecture boundary checks"
-	@echo "  make preview-check  - Verify all SwiftUI views have previews"
+	@echo "  make preview-check  - Verify per-file SwiftUI preview declarations"
 	@echo "  make guidance-check - Validate AGENTS/skills/docs links and make target references"
 	@echo "  make preflight      - Run preflight script (build + test + lint + benchmark)"
 	@echo "  make preflight-fast - Run fast preflight (lint + build + test)"
@@ -223,7 +223,7 @@ arch-check:
 
 preview-check:
 	@echo -e "$(BLUE)Checking SwiftUI preview coverage...$(NC)"
-	@./scripts/preview-check.sh
+	@./scripts/preview-check.sh --settings
 
 guidance-check:
 	@echo -e "$(BLUE)Validating AGENTS/skills/docs guidance...$(NC)"

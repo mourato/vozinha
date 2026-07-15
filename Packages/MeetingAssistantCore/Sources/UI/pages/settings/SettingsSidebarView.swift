@@ -1,6 +1,8 @@
 import MeetingAssistantCoreCommon
 import SwiftUI
 
+// preview-check: ignore — sidebar preview requires the SettingsPage navigation environment.
+
 struct SettingsSidebarView: View {
     @Binding var selectedSection: SettingsSection
     @Binding var searchText: String

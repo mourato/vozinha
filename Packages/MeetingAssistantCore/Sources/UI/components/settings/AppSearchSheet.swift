@@ -2,6 +2,8 @@ import MeetingAssistantCoreCommon
 import MeetingAssistantCoreInfrastructure
 import SwiftUI
 
+// preview-check: ignore — app search sheet requires the owning catalog fixture.
+
 public struct AppSearchSheet: View {
     @ObservedObject private var viewModel: InstalledAppsSelectionViewModel
     @Binding private var isPresented: Bool

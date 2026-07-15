@@ -3,6 +3,8 @@ import MeetingAssistantCoreCommon
 import MeetingAssistantCoreInfrastructure
 import SwiftUI
 
+// preview-check: ignore — avatar state is covered by the provider integration preview.
+
 public struct EnhancementsProviderAvatar: View {
     let provider: AIProvider
     let customIconName: String?

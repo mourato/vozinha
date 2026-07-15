@@ -3,6 +3,8 @@ import MeetingAssistantCoreData
 import MeetingAssistantCoreDomain
 import SwiftUI
 
+// preview-check: ignore — performance pages are composed by the dashboard route previews.
+
 struct MetricsDashboardPerformanceWorkspace: View {
     @ObservedObject var viewModel: MetricsDashboardPerformanceViewModel
     let openRecording: (UUID) -> Void
