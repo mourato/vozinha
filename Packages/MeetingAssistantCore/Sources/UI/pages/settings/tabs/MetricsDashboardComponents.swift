@@ -8,58 +8,56 @@ struct MetricsDashboardUpcomingEventsSection: View {
     let onOpenEventDetail: (MeetingCalendarEventSnapshot) -> Void
 
     var body: some View {
-        DSGroup("metrics.calendar.upcoming.title".localized, icon: "calendar.badge.clock") {
-            VStack(alignment: .leading, spacing: 12) {
-                Text("metrics.calendar.upcoming.subtitle".localized)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+        VStack(alignment: .leading, spacing: 12) {
+            Text("metrics.calendar.upcoming.subtitle".localized)
+                .font(.caption)
+                .foregroundStyle(.secondary)
 
-                if viewModel.isLoadingCalendar {
-                    SettingsStateBlock(
-                        kind: .loading,
-                        title: "metrics.calendar.loading.title".localized,
-                        message: "metrics.calendar.loading.message".localized,
-                    )
-                } else if !viewModel.calendarPermissionState.isAuthorized {
-                    SettingsStateBlock(
-                        kind: .warning,
-                        title: "metrics.calendar.permission.title".localized,
-                        message: calendarPermissionMessage,
-                        actionTitle: calendarPermissionActionTitle,
-                    ) {
-                        if viewModel.calendarPermissionState == .notDetermined {
-                            Task { await viewModel.requestCalendarAccess() }
-                        } else {
-                            viewModel.openCalendarSettings()
-                        }
+            if viewModel.isLoadingCalendar {
+                SettingsStateBlock(
+                    kind: .loading,
+                    title: "metrics.calendar.loading.title".localized,
+                    message: "metrics.calendar.loading.message".localized,
+                )
+            } else if !viewModel.calendarPermissionState.isAuthorized {
+                SettingsStateBlock(
+                    kind: .warning,
+                    title: "metrics.calendar.permission.title".localized,
+                    message: calendarPermissionMessage,
+                    actionTitle: calendarPermissionActionTitle,
+                ) {
+                    if viewModel.calendarPermissionState == .notDetermined {
+                        Task { await viewModel.requestCalendarAccess() }
+                    } else {
+                        viewModel.openCalendarSettings()
                     }
-                } else if viewModel.upcomingEvents.isEmpty {
-                    MAEmptyStateView(
-                        iconName: "calendar.badge.exclamationmark",
-                        title: "metrics.calendar.empty.title".localized,
-                        message: "metrics.calendar.empty.message".localized,
-                        emphasis: .compact,
+                }
+            } else if viewModel.upcomingEvents.isEmpty {
+                MAEmptyStateView(
+                    iconName: "calendar.badge.exclamationmark",
+                    title: "metrics.calendar.empty.title".localized,
+                    message: "metrics.calendar.empty.message".localized,
+                    emphasis: .compact,
+                )
+            } else {
+                ForEach(viewModel.upcomingEvents, id: \.eventIdentifier) { event in
+                    UpcomingCalendarEventRow(
+                        event: event,
+                        isRecording: viewModel.isRecording,
+                        isLinked: viewModel.isLinkedEvent(event),
+                        onOpen: {
+                            onOpenEventDetail(event)
+                        },
+                        onLink: {
+                            viewModel.linkCalendarEvent(event)
+                        },
+                        onClear: {
+                            viewModel.clearLinkedCalendarEvent()
+                        },
+                        onIgnore: {
+                            viewModel.ignoreUpcomingEvent(event)
+                        },
                     )
-                } else {
-                    ForEach(viewModel.upcomingEvents, id: \.eventIdentifier) { event in
-                        UpcomingCalendarEventRow(
-                            event: event,
-                            isRecording: viewModel.isRecording,
-                            isLinked: viewModel.isLinkedEvent(event),
-                            onOpen: {
-                                onOpenEventDetail(event)
-                            },
-                            onLink: {
-                                viewModel.linkCalendarEvent(event)
-                            },
-                            onClear: {
-                                viewModel.clearLinkedCalendarEvent()
-                            },
-                            onIgnore: {
-                                viewModel.ignoreUpcomingEvent(event)
-                            },
-                        )
-                    }
                 }
             }
         }
@@ -88,75 +86,64 @@ struct MetricsDashboardActivitySection: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
-        DSGroup("metrics.activity.title".localized, icon: "calendar.badge.clock", headerAccessory: {
-            SettingsContextMenuButton(accessibilityLabel: "metrics.activity.filter.title".localized) {
-                Toggle(isOn: $viewModel.showDictations) {
-                    Text("metrics.activity.filter.dictations".localized)
-                }
-                Toggle(isOn: $viewModel.showMeetings) {
-                    Text("metrics.activity.filter.meetings".localized)
-                }
-            }
-        }, content: {
-            VStack(alignment: .leading, spacing: 8) {
-                Text("metrics.activity.subtitle".localized)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+        VStack(alignment: .leading, spacing: 8) {
+            Text("metrics.activity.subtitle".localized)
+                .font(.caption)
+                .foregroundStyle(.secondary)
 
-                if viewModel.isLoading {
-                    ProgressView()
-                        .tint(AppDesignSystem.Colors.accent)
-                        .frame(maxWidth: .infinity, minHeight: ActivityHeatmap.scrollHeight)
-                        .padding(.vertical, ActivityHeatmap.verticalPadding)
-                } else if viewModel.dailyBuckets.isEmpty {
-                    MAEmptyStateView(
-                        iconName: "chart.bar.xaxis",
-                        title: "metrics.empty.title".localized,
-                        message: "metrics.empty.subtitle".localized,
-                        emphasis: .compact,
-                    )
-                } else {
-                    HStack(alignment: .top, spacing: ActivityHeatmap.weekdayToGridSpacing) {
-                        weekdayLegendColumn
+            if viewModel.isLoading {
+                ProgressView()
+                    .tint(AppDesignSystem.Colors.accent)
+                    .frame(maxWidth: .infinity, minHeight: ActivityHeatmap.scrollHeight)
+                    .padding(.vertical, ActivityHeatmap.verticalPadding)
+            } else if viewModel.dailyBuckets.isEmpty {
+                MAEmptyStateView(
+                    iconName: "chart.bar.xaxis",
+                    title: "metrics.empty.title".localized,
+                    message: "metrics.empty.subtitle".localized,
+                    emphasis: .compact,
+                )
+            } else {
+                HStack(alignment: .top, spacing: ActivityHeatmap.weekdayToGridSpacing) {
+                    weekdayLegendColumn
 
-                        ScrollViewReader { proxy in
-                            ScrollView(.horizontal, showsIndicators: false) {
-                                VStack(alignment: .leading, spacing: ActivityHeatmap.monthToGridSpacing) {
-                                    monthHeaderRow
+                    ScrollViewReader { proxy in
+                        ScrollView(.horizontal, showsIndicators: false) {
+                            VStack(alignment: .leading, spacing: ActivityHeatmap.monthToGridSpacing) {
+                                monthHeaderRow
 
-                                    HStack(alignment: .top, spacing: ActivityHeatmap.spacing) {
-                                        ForEach(heatmapWeekColumns) { column in
-                                            VStack(spacing: ActivityHeatmap.spacing) {
-                                                ForEach(Array(column.days.enumerated()), id: \.offset) { _, bucket in
-                                                    if let bucket {
-                                                        activitySquare(for: bucket)
-                                                    } else {
-                                                        heatmapPlaceholder
-                                                    }
+                                HStack(alignment: .top, spacing: ActivityHeatmap.spacing) {
+                                    ForEach(heatmapWeekColumns) { column in
+                                        VStack(spacing: ActivityHeatmap.spacing) {
+                                            ForEach(Array(column.days.enumerated()), id: \.offset) { _, bucket in
+                                                if let bucket {
+                                                    activitySquare(for: bucket)
+                                                } else {
+                                                    heatmapPlaceholder
                                                 }
                                             }
-                                            .id("\(ActivityHeatmap.weekColumnPrefix)-\(column.id)")
                                         }
-                                        Color.clear
-                                            .frame(width: 1, height: 1)
-                                            .id(ActivityHeatmap.latestAnchorID)
+                                        .id("\(ActivityHeatmap.weekColumnPrefix)-\(column.id)")
                                     }
+                                    Color.clear
+                                        .frame(width: 1, height: 1)
+                                        .id(ActivityHeatmap.latestAnchorID)
                                 }
-                                .padding(.vertical, ActivityHeatmap.verticalPadding)
                             }
-                            .frame(height: ActivityHeatmap.scrollHeight)
-                            .onAppear {
-                                scrollToLatest(in: proxy, animated: true)
-                            }
-                            .onReceive(viewModel.$dailyBuckets.dropFirst()) { _ in
-                                scrollToLatest(in: proxy, animated: false)
-                            }
+                            .padding(.vertical, ActivityHeatmap.verticalPadding)
+                        }
+                        .frame(height: ActivityHeatmap.scrollHeight)
+                        .onAppear {
+                            scrollToLatest(in: proxy, animated: true)
+                        }
+                        .onReceive(viewModel.$dailyBuckets.dropFirst()) { _ in
+                            scrollToLatest(in: proxy, animated: false)
                         }
                     }
-                    heatmapLegend
                 }
+                heatmapLegend
             }
-        })
+        }
     }
 
     private var heatmapWeekColumns: [ActivityHeatmapWeekColumn] {
@@ -327,6 +314,21 @@ struct MetricsDashboardActivitySection: View {
     }()
 }
 
+struct MetricsDashboardActivityFilterMenu: View {
+    @ObservedObject var viewModel: MetricsDashboardViewModel
+
+    var body: some View {
+        SettingsContextMenuButton(accessibilityLabel: "metrics.activity.filter.title".localized) {
+            Toggle(isOn: $viewModel.showDictations) {
+                Text("metrics.activity.filter.dictations".localized)
+            }
+            Toggle(isOn: $viewModel.showMeetings) {
+                Text("metrics.activity.filter.meetings".localized)
+            }
+        }
+    }
+}
+
 private struct UpcomingCalendarEventRow: View {
     let event: MeetingCalendarEventSnapshot
     let isRecording: Bool
@@ -402,10 +404,6 @@ private struct UpcomingCalendarEventRow: View {
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.horizontal, 12)
-        .padding(.vertical, 10)
-        .background(AppDesignSystem.Colors.settingsInlineBackground(intensity: .regular))
-        .clipShape(RoundedRectangle(cornerRadius: AppDesignSystem.Layout.smallCornerRadius))
     }
 
     private var timeLabel: String {
@@ -458,7 +456,14 @@ struct MetricStatCard: View {
 }
 
 #Preview("Dashboard Activity") {
-    MetricsDashboardActivitySection(viewModel: MetricsDashboardViewModel())
-        .padding()
-        .frame(width: 720)
+    Form {
+        Section {
+            MetricsDashboardActivitySection(viewModel: MetricsDashboardViewModel())
+        } header: {
+            SettingsFormSectionHeader(title: "Transcription Activity", icon: "calendar.badge.clock")
+        }
+    }
+    .formStyle(.grouped)
+    .padding()
+    .frame(width: 720)
 }
