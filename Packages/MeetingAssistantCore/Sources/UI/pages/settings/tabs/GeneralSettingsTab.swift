@@ -58,7 +58,7 @@ public struct GeneralSettingsTab: View {
 
             Section {
                 Toggle("settings.general.launch_at_login".localized, isOn: $viewModel.launchAtLogin)
-                    .toggleStyle(.checkbox)
+                    .toggleStyle(.switch)
                 Toggle(isOn: $viewModel.showInDock) {
                     LabeledContent("settings.general.show_in_dock".localized) {
                         Text("settings.general.show_in_dock_desc".localized)
@@ -66,9 +66,9 @@ public struct GeneralSettingsTab: View {
                             .foregroundStyle(.secondary)
                     }
                 }
-                .toggleStyle(.checkbox)
+                .toggleStyle(.switch)
                 Toggle("settings.general.show_settings_on_launch".localized, isOn: $viewModel.showSettingsOnLaunch)
-                    .toggleStyle(.checkbox)
+                    .toggleStyle(.switch)
 
                 HStack(alignment: .center, spacing: 12) {
                     SettingsTitleWithPopover(
@@ -278,7 +278,7 @@ public struct GeneralSettingsTab: View {
                         .foregroundStyle(.secondary)
                 }
             }
-            .toggleStyle(.checkbox)
+            .toggleStyle(.switch)
 
             if viewModel.recordingIndicatorEnabled {
                 Picker("settings.general.recording_indicator.style".localized, selection: $viewModel.recordingIndicatorStyle) {

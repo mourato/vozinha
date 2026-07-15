@@ -43,7 +43,7 @@ public struct SettingsFormPage<Header: View, Content: View>: View {
             }
             .pickerStyle(.menu)
             Toggle("Automatically start recording", isOn: .constant(true))
-                .toggleStyle(.checkbox)
+                .toggleStyle(.switch)
         }
         Section("Details") {
             SettingsDrillDownButtonRow(
@@ -64,7 +64,7 @@ public struct SettingsFormPage<Header: View, Content: View>: View {
     } content: {
         Section("Workflow") {
             Toggle("Automatically start recording", isOn: .constant(true))
-                .toggleStyle(.checkbox)
+                .toggleStyle(.switch)
         }
         Section("Details") {
             Text("A standard-width native grouped Form.")
@@ -82,7 +82,7 @@ public struct SettingsFormPage<Header: View, Content: View>: View {
                 Text("10 seconds").tag(10)
             }
             Toggle("Automatically start recording", isOn: .constant(false))
-                .toggleStyle(.checkbox)
+                .toggleStyle(.switch)
         }
         Section("Details") {
             Text("Accessibility-sized content remains readable across the full available settings surface.")

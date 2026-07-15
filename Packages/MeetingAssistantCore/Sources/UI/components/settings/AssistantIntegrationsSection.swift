@@ -37,7 +37,7 @@ public struct AssistantIntegrationsSection: View {
                                 .foregroundStyle(.secondary)
                         }
                     }
-                    .toggleStyle(.checkbox)
+                    .toggleStyle(.switch)
                 }
 
                 if showsCapabilityToggle {

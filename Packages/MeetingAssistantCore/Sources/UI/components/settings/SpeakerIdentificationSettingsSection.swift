@@ -28,7 +28,7 @@ public struct SpeakerIdentificationSettingsSection: View {
                     .foregroundStyle(.secondary)
             }
         }
-        .toggleStyle(.checkbox)
+        .toggleStyle(.switch)
         .onChange(of: settings.isDiarizationEnabled) { isEnabled, _ in
             guard isEnabled else { return }
             settings.minSpeakers = nil

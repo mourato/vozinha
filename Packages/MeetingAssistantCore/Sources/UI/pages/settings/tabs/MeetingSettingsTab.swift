@@ -137,7 +137,7 @@ public struct MeetingSettingsTab: View {
 
             Section {
                 Toggle("settings.general.auto_start".localized, isOn: $meetingViewModel.settings.autoStartRecording)
-                    .toggleStyle(.checkbox)
+                    .toggleStyle(.switch)
                 Picker(
                     "settings.general.auto_start_confirmation_delay".localized,
                     selection: $meetingViewModel.settings.automaticAutomaticMeetingRecordingConfirmationDelay,
@@ -153,7 +153,7 @@ public struct MeetingSettingsTab: View {
                     accessibilityHint: "settings.meetings.monitoring_access.accessibility_hint".localized,
                 ) { updateNavigationState(to: .monitoringTargets) }
                 Toggle("settings.general.merge_audio".localized, isOn: $meetingViewModel.settings.shouldMergeAudioFiles)
-                    .toggleStyle(.checkbox)
+                    .toggleStyle(.switch)
                 SettingsListDrillDownButtonRow(
                     title: "settings.meetings.export".localized,
                     subtitle: "settings.meetings.export_drilldown_desc".localized,
@@ -208,7 +208,7 @@ public struct MeetingSettingsTab: View {
     private var meetingIntelligenceSection: some View {
         Section {
             Toggle("settings.meetings.post_processing_enabled".localized, isOn: meetingPostProcessingBinding)
-                .toggleStyle(.checkbox)
+                .toggleStyle(.switch)
 
             EnhancementsModelSelectionControl(
                 target: .meeting,
@@ -217,7 +217,7 @@ public struct MeetingSettingsTab: View {
             )
 
             Toggle("transcription.qa.title".localized, isOn: $meetingViewModel.settings.meetingQnAEnabled)
-                .toggleStyle(.checkbox)
+                .toggleStyle(.switch)
 
             SettingsListDrillDownButtonRow(
                 title: "settings.meetings.prompts".localized,
@@ -312,7 +312,7 @@ public struct MeetingSettingsTab: View {
                             .foregroundStyle(.secondary)
                     }
                 }
-                .toggleStyle(.checkbox)
+                .toggleStyle(.switch)
 
                 if meetingViewModel.settings.autoExportSummaries {
                     Divider()
@@ -346,7 +346,7 @@ public struct MeetingSettingsTab: View {
                                 .foregroundStyle(.secondary)
                         }
                     }
-                    .toggleStyle(.checkbox)
+                    .toggleStyle(.switch)
 
                     Divider()
 
@@ -435,7 +435,7 @@ public struct MeetingSettingsTab: View {
                             .foregroundStyle(.secondary)
                     }
                 }
-                .toggleStyle(.checkbox)
+                .toggleStyle(.switch)
 
                 HStack {
                     Text("settings.post_processing.choose_active".localized)

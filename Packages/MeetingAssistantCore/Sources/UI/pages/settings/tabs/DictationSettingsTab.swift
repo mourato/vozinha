@@ -62,10 +62,10 @@ public struct DictationSettingsTab: View {
                             .foregroundStyle(.secondary)
                     }
                 }
-                .toggleStyle(.checkbox)
+                .toggleStyle(.switch)
 
                 Toggle("settings.general.auto_paste_transcription".localized, isOn: $viewModel.autoPasteTranscriptionToActiveApp)
-                    .toggleStyle(.checkbox)
+                    .toggleStyle(.switch)
 
                 Toggle(isOn: $viewModel.smartSpacingAndCapitalizationEnabled) {
                     VStack(alignment: .leading) {
@@ -75,7 +75,7 @@ public struct DictationSettingsTab: View {
                             .foregroundStyle(.secondary)
                     }
                 }
-                .toggleStyle(.checkbox)
+                .toggleStyle(.switch)
 
                 Toggle(isOn: $viewModel.smartParagraphsEnabled) {
                     VStack(alignment: .leading) {
@@ -85,7 +85,7 @@ public struct DictationSettingsTab: View {
                             .foregroundStyle(.secondary)
                     }
                 }
-                .toggleStyle(.checkbox)
+                .toggleStyle(.switch)
             } header: {
                 SettingsFormSectionHeader(title: "settings.dictation.text_handling".localized, icon: "cpu")
             }
