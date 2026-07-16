@@ -13,6 +13,10 @@ enum SettingsMotion {
         AppleMotion.animation(reduceMotion: reduceMotion, kind: .default)
     }
 
+    static func expandableAnimation(reduceMotion: Bool) -> Animation? {
+        AppleMotion.disclosureAnimation(reduceMotion: reduceMotion)
+    }
+
     static func sidePanelAnimation(reduceMotion: Bool) -> Animation {
         reduceMotion ? .easeOut(duration: 0.12) : .smooth(duration: 0.32)
     }

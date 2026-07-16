@@ -102,6 +102,14 @@ Apple deliberately replaces the physics trio (mass/stiffness/damping) with two d
 - Start most of the UI with **`dampingFraction: 1.0`** (critically damped) — elegant and not distracting.
 - Add bounce (**`dampingFraction` ~`0.8`**) **only when the gesture itself carried momentum** (a flick, a throw, the release of a drag). Overshoot on a menu that just appeared with fade looks wrong; overshoot on a card you threw looks right.
 
+**Settings Form disclosure exception:** Prefer springs for gesture-driven / interruptible
+surfaces. For **Form row height disclosure** (show/hide nested settings under a header),
+prefer a short `easeInOut(~0.2s)` via `AppleMotion.disclosureAnimation` because
+layout-height interpolation reads mushy with `defaultSpring` (0.35). Reduce Motion still
+substitutes opacity-only transition + fade timing (`AppleMotion.reduceMotionFadeDuration`,
+kept independent from `disclosureDuration`). Do not stack multiple animation
+modifiers for one disclosure toggle.
+
 **Concrete values Apple uses:**
 
 | Interaction                   | Damping | Response |

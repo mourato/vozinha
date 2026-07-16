@@ -32,6 +32,26 @@ final class AppleMotionTests: XCTestCase {
         )
     }
 
+    func testDisclosureAndReduceMotionFadeDurationsStayIndependent() {
+        XCTAssertEqual(AppleMotion.disclosureDuration, 0.2)
+        XCTAssertEqual(AppleMotion.reduceMotionFadeDuration, 0.2)
+        XCTAssertEqual(AppleMotion.disclosureDuration(reduceMotion: false), AppleMotion.disclosureDuration)
+        XCTAssertEqual(AppleMotion.disclosureDuration(reduceMotion: true), AppleMotion.reduceMotionFadeDuration)
+    }
+
+    func testDisclosureAnimationUsesDurationPolicyForReduceMotion() {
+        XCTAssertNotNil(AppleMotion.disclosureAnimation(reduceMotion: false))
+        XCTAssertNotNil(AppleMotion.disclosureAnimation(reduceMotion: true))
+        XCTAssertEqual(
+            AppleMotion.disclosureDuration(reduceMotion: true),
+            AppleMotion.reduceMotionFadeDuration,
+        )
+        XCTAssertEqual(
+            AppleMotion.disclosureDuration(reduceMotion: false),
+            AppleMotion.disclosureDuration,
+        )
+    }
+
     func testRecordingIndicatorHoverConstantsStayStable() {
         XCTAssertEqual(AppDesignSystem.Layout.recordingIndicatorHoverEnterResponse, 0.22)
         XCTAssertEqual(AppDesignSystem.Layout.recordingIndicatorHoverEnterDamping, 0.86)

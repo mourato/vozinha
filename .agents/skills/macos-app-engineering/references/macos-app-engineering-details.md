@@ -58,6 +58,28 @@ is behavioral inspiration only — do not copy GPL code.
 
 - `SettingsExpandableSection` — infrequent options that stay on the same Form page;
   header toggles expansion in place with animated children in the same `Section`.
+
+**Motion contract for `SettingsExpandableSection`:**
+
+- Use `SettingsMotion.expandableAnimation(reduceMotion:)` /
+  `AppleMotion.disclosureAnimation` — **not** `sectionAnimation` / `defaultSpring`.
+- Drive expand/collapse with a **single** `withAnimation` (no stacked `.animation` /
+  `.settingsAnimated` on the same disclosure).
+- Transition: `sectionTransition` (move from top + opacity; opacity-only when Reduce Motion).
+- Nest expanded content with top `spacing12` + leading `spacing4`; do **not** insert a
+  chrome `Divider` in the expandable primitive (content may still contain its own separators).
+- VoiceInk `v2.0-beta.2` Form `ExpandableSettingsRow` is behavioral inspiration only
+  (short easeInOut disclosure) — do not copy GPL; do not confuse with VoiceInk **card**
+  expands that use spring + scale.
+- Keep `Button` accessibility traits; honor Reduce Motion.
+- Keep `disclosureDuration` and `reduceMotionFadeDuration` as separate constants
+  (same default value is fine; do not wire RM fade through disclosure duration).
+
+**Modes list Form shell:** use `SettingsFormPage` with page header
+`SettingsFormSectionHeader` + caption. Place **Add Mode** as a trailing bordered
+button at the bottom of the list `Section` (Vocabulary pattern) — not as a page-header
+accessory — so the control does not clip under Dynamic Type / narrow widths.
+
 - `SettingsListDrillDownButtonRow` / `SettingsDrillDownButtonRow` — reserved for the
   few remaining child destinations (Activity History; System Models / Dictionary /
   Audio until toolbar retirement). Do not replace these where a true child

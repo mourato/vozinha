@@ -2,6 +2,9 @@ import SwiftUI
 
 /// Form-friendly expandable disclosure for infrequent options that stay on the same page.
 ///
+/// Expand/collapse uses `SettingsMotion.expandableAnimation` (short easeInOut disclosure
+/// timing), not `sectionAnimation` / `defaultSpring`.
+///
 /// Prefer this over `SettingsListDrillDownButtonRow` / `SettingsDrillDownButtonRow` when
 /// content should expand in place rather than navigate to a child destination.
 public struct SettingsExpandableSection<Content: View>: View {
@@ -30,7 +33,7 @@ public struct SettingsExpandableSection<Content: View>: View {
     public var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             Button {
-                withAnimation(SettingsMotion.sectionAnimation(reduceMotion: reduceMotion)) {
+                withAnimation(SettingsMotion.expandableAnimation(reduceMotion: reduceMotion)) {
                     isExpanded.toggle()
                 }
             } label: {
@@ -46,10 +49,6 @@ public struct SettingsExpandableSection<Content: View>: View {
                         .font(.caption.weight(.semibold))
                         .foregroundStyle(.secondary)
                         .rotationEffect(.degrees(isExpanded ? 90 : 0))
-                        .animation(
-                            SettingsMotion.sectionAnimation(reduceMotion: reduceMotion),
-                            value: isExpanded,
-                        )
                 }
                 .contentShape(Rectangle())
             }
@@ -59,14 +58,12 @@ public struct SettingsExpandableSection<Content: View>: View {
             .modifier(OptionalExpandableAccessibilityHintModifier(accessibilityHint: accessibilityHint))
 
             if isExpanded {
-                Divider()
-                    .padding(.vertical, 8)
-
                 content
+                    .padding(.top, AppDesignSystem.Layout.spacing12)
+                    .padding(.leading, AppDesignSystem.Layout.spacing4)
                     .transition(SettingsMotion.sectionTransition(reduceMotion: reduceMotion))
             }
         }
-        .settingsAnimated(reduceMotion: reduceMotion, value: isExpanded)
     }
 }
 
