@@ -176,5 +176,5 @@ fi
 echo ""
 echo "🎉 All pre-commit checks passed!"
 echo ""
-echo "💡 Tip: pre-push validates or reuses the exact committed range; required review remains separate"
+echo "💡 Tip: run end-of-task validate-agent before push when behavior changed; required review remains separate"
 echo ""

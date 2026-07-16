@@ -279,7 +279,7 @@ compute_fingerprint() {
         printf 'headTree=%s\n' "${head_tree}"
         # Dirty working trees must salt the fingerprint. A clean tree omits
         # workingState so a working-tree PASS with the same base/head trees can
-        # be reused by --committed / pre-push (same selected lane + toolchain).
+        # be reused by a later --committed validate-agent (same selected lane + toolchain).
         if [ "${VALIDATION_MODE}" = "working-tree" ] && ! working_tree_is_clean; then
             printf 'workingState=%s\n' "$(hash_working_state)"
         fi

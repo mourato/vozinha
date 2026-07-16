@@ -54,7 +54,7 @@ make lint-strict-agent                                # end of task when Swift c
 make validate-agent ARGS="--lane auto --base main --agent"  # end of task when behavior changed
 ```
 
-The pre-commit hook applies SwiftFormat and SwiftLint autofix to staged Swift files (re-staging fixes) and does not run tests. The pre-push hook uses Option C: light when auto=Fast (relies on end-of-task module validation), mandatory Full `validate-agent` when auto=Full. Use `PUSH_CHECK_VERBOSE=1` for verbose Full-path output. `SKIP_LINT=1` and `SKIP_TESTS=1` are explicit emergency bypasses. Full-lane changes still require end-of-task strict lint and affected-module or Full validation before push.
+The pre-commit hook applies SwiftFormat and SwiftLint autofix to staged Swift files (re-staging fixes) and does not run tests. The pre-push hook does not run build or test validation — end-of-task development owns `validate-agent` (auto/Full as lane requires). `SKIP_LINT=1` and `SKIP_TESTS=1` are explicit emergency bypasses for local validation commands.
 
 ### Make targets
 

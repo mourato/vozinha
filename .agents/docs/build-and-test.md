@@ -12,13 +12,14 @@ Choose commands by lane:
 
 Agent default loop (Low/Fast): run only the smallest changed-path check during
 iteration; end of task run strict lint when Swift changed and affected-module
-`validate-agent --lane auto` when behavior changed; commit (pre-commit applies
-staged SwiftFormat/SwiftLint autofix); pre-push then validates or reuses the
-exact committed range. Fast uses canonical auto validation and Full uses the
-mandatory Full gate. Do **not** stack manual working-tree, staged, and committed
-gates. Guidance-only ranges run `guidance-check` without product tests. Use
+`validate-agent --lane auto` when behavior changed (escalate to Full when the
+lane requires it); commit (pre-commit applies staged SwiftFormat/SwiftLint
+autofix); push. Pre-push does **not** run build or test validation — that
+evidence is owned by the development stage. Do **not** stack manual
+working-tree, staged, and committed gates. Guidance-only ranges use
+`make guidance-check`. Use
 `make validate-agent ARGS="--lane auto --dry-run --base main"` at most once when
-the lane is unclear; for reusable Full evidence on a clean tree prefer
+the lane is unclear; for Full evidence on a clean tree prefer
 `make validate-agent ARGS="--lane auto --base main --agent"` (or `--committed`)
 once before push when behavior changed. Treat `validate-agent` as the remembered
 technical gate; it proves checks, not merge approval. Required review remains
@@ -237,15 +238,12 @@ find scripts/hooks -maxdepth 1 -type f ! -perm -u+x -print
 
 The `find` command must print nothing. Stale copies under `.git/hooks/` (for example `pre-push.disabled`) are ignored once `core.hooksPath` points at `scripts/hooks`.
 
-Pre-push classifies the exact commit range using the same auto-lane decision as
-`validate-agent`, then validates or reuses that range. Fast runs
-`validate-agent --lane auto --committed`; Full runs mandatory
-`validate-agent --lane full --committed`. Compatible PASS fingerprints avoid
-duplicate execution. Guidance-only Fast ranges run `guidance-check` without
-product tests. Rust audio staging uses a crate-local Cargo target directory even
-when `CARGO_TARGET_DIR` is set in the environment. Set `PUSH_CHECK_VERBOSE=1`
-for full logs on failure. `MA_RUST_AUDIO_KERNELS_BUILD=off` is an emergency
-bypass only, not a routine workaround.
+Pre-push acknowledges the push range and enforces basic ref safety; it does not
+run `validate-agent`, build, or tests. Complete end-of-task
+`validate-agent --lane auto` (or Full when required) during development before
+pushing. Rust audio staging uses a crate-local Cargo target directory even when
+`CARGO_TARGET_DIR` is set in the environment. `MA_RUST_AUDIO_KERNELS_BUILD=off`
+is an emergency bypass only, not a routine workaround.
 
 ## Script Support Surface
 
@@ -349,7 +347,7 @@ On failure, scripts print compact excerpts to terminal while keeping full logs o
 |------|---------|
 | Local development loop | `make build && make run` |
 | Before committing | Pre-commit applies staged SwiftFormat/SwiftLint autofix; fix residual lint manually |
-| Before push/release (recommended) | End-of-task `validate-agent --lane auto` for behavior changes; pre-push validates/reuses the exact Fast or Full committed range |
+| Before push/release (recommended) | End-of-task `validate-agent --lane auto` (or Full) for behavior changes; pre-push does not re-run build/test |
 | Pre-merge validation | `make preflight` |
 | Fast local feedback | `make preflight-fast` |
 | Smart scoped iteration | `make scope-check` |

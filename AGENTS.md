@@ -75,11 +75,12 @@ Every implementation plan must include an `Execution profile`; reclassify agains
 
 `make validate-agent` is the remembered technical validation gate; it proves
 checks, not merge approval. End-of-task: strict lint on any Swift delta, then
-affected-module `validate-agent --lane auto` when behavior changes. Commit
-(pre-commit applies staged format/lint-fix); pre-push then validates or reuses
-the exact committed range. Guidance-only ranges run `guidance-check` without
-product tests. Do not stack manual working-tree, staged, and committed gates;
-required review remains separate. Details live in `delivery-workflow`.
+affected-module `validate-agent --lane auto` when behavior changes (escalate to
+Full when the lane requires it). Commit (pre-commit applies staged
+format/lint-fix). Pre-push does not run build or test validation — that
+evidence is owned by the development stage. Guidance-only ranges use
+`make guidance-check`. Do not stack manual working-tree, staged, and committed
+gates; required review remains separate. Details live in `delivery-workflow`.
 
 ## Commands and Routing
 

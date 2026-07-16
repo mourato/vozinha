@@ -26,27 +26,27 @@ delivery, review gates, or evidence reporting.
 | Risk | Triggers | Lane |
 |---|---|---|
 | Low | Docs/comments, localization, constrained non-functional refactor | Fast |
-| Medium | One-subsystem feature/bugfix, one-package API, UI state logic | Full |
+| Medium | One-subsystem feature/bug fix, one-package API, UI state logic | Full |
 | High | Audio, concurrency, persistence, security, cross-module architecture, build/release infrastructure, 300+ added lines, or more than 8 production source files | Full |
 
 Automatic committed-range classification is conservative: production Swift is Full because scripts cannot prove a semantic Low/non-functional change.
 
 When uncertain, choose the higher lane. During iteration use targeted tests,
 `make build-agent`, and the smallest changed-path check. Final technical
-evidence is owned by `make validate-agent` (usually via the pre-push hook):
+evidence is owned by end-of-task `make validate-agent` during development — not
+by pre-push:
 
 ```bash
-make validate-agent ARGS="--lane auto --base main"
+make validate-agent ARGS="--lane auto --base main --agent"
 make validate-agent ARGS="--lane auto --committed --base main --head HEAD --agent"
 make validate-agent ARGS="--lane full --no-reuse --agent"
 ```
 
 Auto selects the lane before expensive work. Full executes strict lint then
-build-test once. Pre-push always validates or reuses the exact committed range:
-Fast runs canonical auto validation, while Full runs the mandatory Full gate.
-`make preflight` and `make deliverable-gate` remain explicit
-release/high-confidence flows, not duplicate technical gates. Validation
-evidence proves checks only; required review remains separate.
+build-test once. Pre-push does **not** run build or test validation; it only
+acknowledges the push range. `make preflight` and `make deliverable-gate`
+remain explicit release/high-confidence flows, not duplicate technical gates.
+Validation evidence proves checks only; required review remains separate.
 
 ## Agent validation loop
 
@@ -55,8 +55,8 @@ evidence proves checks only; required review remains separate.
 | During task | Behavior/Swift changed | Targeted unit tests for the slice |
 | End of task/plan | Any `.swift` touched | Fail-closed lint on the delta (`make lint-strict-agent` or equivalent scoped strict check) |
 | End of task/plan | Behavior changed | `make validate-agent ARGS="--lane auto --base main --agent"` on a clean tree (or `--committed` after commit) — Fast scoped path, not optional |
-| Escalate to Full | Auto/Full triggers | `make validate-agent ARGS="--lane full ..."` or let Option-C pre-push run Full |
-| Guidance-only | No Swift / no scripts | `make guidance-check`; pre-push records it in the Fast result without product tests |
+| Escalate to Full | Auto/Full triggers | `make validate-agent ARGS="--lane full ..."` during development before push |
+| Guidance-only | No Swift / no scripts | `make guidance-check` during development |
 
 Vocabulary:
 
@@ -70,27 +70,28 @@ Default for Low/Fast (including guidance-only and allowlisted `implementer-fast`
    focused tests, `make build-agent`, `make preview-check`, etc.). Do **not** run
    Full `build-test`, dry-run, or staged validate on every slice.
 2. End of task: run strict lint when Swift changed; run affected-module
-   `validate-agent --lane auto` when behavior changed.
+   `validate-agent --lane auto` when behavior changed (escalate to Full when
+   required).
 3. Commit. Pre-commit applies staged SwiftFormat/SwiftLint autofix and re-stages.
-4. Push. Pre-push owns the exact committed range: Fast runs or reuses canonical
-   `validate-agent --lane auto --committed`; Full runs or reuses mandatory
-   `validate-agent --lane full --committed`.
+4. Push. Pre-push does not re-run build/test; development already owns that
+   evidence.
 
 Use a heavier local gate only when needed:
 
 - **Lane unclear (Medium/High or mixed files):** at most one
   `make validate-agent ARGS="--lane auto --dry-run --base main"`.
-- **Need evidence before push (Full / infra):** one
+- **Need Full / infra evidence:** one
   `make validate-agent ARGS="--lane auto --base main --agent"` on a **clean**
-  tree (or `--committed --base <base> --head HEAD`), then push — do not also run
-  staged + working-tree Full + pre-push Full.
+  tree (or `--committed --base <base> --head HEAD`) before push — do not also
+  stack staged + working-tree Full runs.
 - **Guidance-only** (`.agents` / `AGENTS.md` / docs, no `scripts/` or product
-  Swift): use `make guidance-check` during iteration; pre-push includes it in
-  the Fast technical result without running product tests.
+  Swift): use `make guidance-check` during iteration; do not expect pre-push
+  to record product tests.
 - `make scope-check` is an internal engine — do not run it “for safety” alongside
   `validate-agent`.
 - `SKIP_LINT=1` / `SKIP_TESTS=1` / `MA_RUST_AUDIO_KERNELS_BUILD=off` are emergency
-  bypasses only.
+  bypasses only (`SKIP_TESTS` no longer affects pre-push because pre-push does
+  not run tests).
 
 ## Agent execution constraints
 

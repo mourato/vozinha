@@ -1,6 +1,7 @@
 #!/bin/bash
-# Pre-push hook: validate exactly the commit range Git is sending.
-# Set SKIP_TESTS=1 only for an explicit emergency bypass.
+# Pre-push hook: acknowledges the push range without running build or test
+# validation. Technical validation (lint / build / tests via validate-agent)
+# is owned by end-of-task development, not by this hook.
 
 set -u
 set -o pipefail
@@ -27,112 +28,13 @@ else
     esac
 fi
 
-if [ "${SKIP_TESTS:-0}" = "1" ]; then
-    echo "⚠️  SKIP_TESTS=1 set. Push is proceeding without validation."
-    exit 0
-fi
-
 current_branch_ref="$(git symbolic-ref -q HEAD 2>/dev/null || true)"
-if [ "${DIRECT_URL}" -eq 1 ]; then
-    default_branch=""
-    for candidate in main master; do
-        if git rev-parse --verify --quiet "refs/heads/${candidate}^{commit}" >/dev/null; then
-            default_branch="refs/heads/${candidate}"
-            break
-        fi
-    done
-else
-    default_branch="$(git symbolic-ref "refs/remotes/${REMOTE_NAME}/HEAD" 2>/dev/null || true)"
-fi
-if [ "${DIRECT_URL}" -eq 0 ] && [ -z "${default_branch}" ]; then
-    for candidate in main master; do
-        if git rev-parse --verify --quiet "refs/remotes/${REMOTE_NAME}/${candidate}^{commit}" >/dev/null; then
-            default_branch="refs/remotes/${REMOTE_NAME}/${candidate}"
-            break
-        fi
-    done
-fi
-if [ -n "${default_branch}" ] && ! git rev-parse --verify --quiet "${default_branch}^{commit}" >/dev/null 2>&1; then
-    default_branch=""
-fi
 
-resolve_commit() {
-    git rev-parse --verify "$1^{commit}"
-}
-
-resolve_auto_lane() {
-    local base_ref="$1"
-    local head_ref="$2"
-    local empty_base="$3"
-    local scope_log
-    local scope_args
-    local result_path
-    local selected_lane
-
-    scope_log="$(mktemp "${TMPDIR:-/tmp}/prisma-pre-push-scope.XXXXXX")"
-    if [ "${empty_base}" -eq 1 ]; then
-        scope_args="--committed --empty-base --head ${head_ref}"
-    else
-        scope_args="--committed --base ${base_ref} --head ${head_ref}"
-    fi
-
-    set +e
-    ./scripts/scope-check.sh --dry-run --agent ${scope_args} > "${scope_log}" 2>&1
-    local scope_status=$?
-    set -e
-
-    if [ "${scope_status}" -ne 0 ]; then
-        echo "Error: could not resolve auto lane for push range." >&2
-        cat "${scope_log}" >&2
-        rm -f "${scope_log}"
-        return 1
-    fi
-
-    result_path="$(sed -n 's/^AGENT_RESULT_JSON=//p' "${scope_log}" | tail -n 1)"
-    if [ -z "${result_path}" ] || [ ! -f "${result_path}" ]; then
-        echo "Error: scope-check did not produce a machine-readable lane decision." >&2
-        cat "${scope_log}" >&2
-        rm -f "${scope_log}"
-        return 1
-    fi
-
-    selected_lane="$(python3 - "${result_path}" <<'PY'
-import json
-import sys
-
-with open(sys.argv[1], encoding="utf-8") as handle:
-    decision = json.load(handle).get("decision", {})
-lane = decision.get("selectedLane")
-if lane not in {"fast", "full"}:
-    raise SystemExit(1)
-print(lane)
-PY
-    )" || {
-        echo "Error: invalid lane decision in ${result_path}." >&2
-        rm -f "${scope_log}"
-        return 1
-    }
-
-    rm -f "${scope_log}"
-    printf '%s' "${selected_lane}"
-}
-
-validate_push_range() {
+acknowledge_push_range() {
     local local_ref="$1"
     local local_sha="$2"
     local remote_ref="$3"
     local remote_sha="$4"
-    local base_ref
-    local empty_base=0
-    local head_ref="${local_sha}"
-    local base_display
-    local output_file
-    local status
-    local args
-    local result_path
-    local requested_lane
-    local reused
-    local expected_base
 
     # Deletions and tag-only pushes do not change the source tree being checked.
     if [ "${local_sha}" = "0000000000000000000000000000000000000000" ]; then
@@ -147,167 +49,32 @@ validate_push_range() {
     esac
 
     if [ -z "${current_branch_ref}" ]; then
-        echo "Error: pre-push validation requires a checked-out local branch; received ${local_ref}." >&2
+        echo "Error: pre-push requires a checked-out local branch; received ${local_ref}." >&2
         return 1
     fi
     if [ "${local_ref}" != "${current_branch_ref}" ]; then
-        echo "Error: refusing to validate ${local_ref} while ${current_branch_ref} is checked out." >&2
-        echo "       Push the checked-out branch or validate this ref explicitly outside the hook." >&2
+        echo "Error: refusing to push ${local_ref} while ${current_branch_ref} is checked out." >&2
+        echo "       Push the checked-out branch or push this ref explicitly outside the hook." >&2
         return 1
     fi
-    resolve_commit "${local_sha}" >/dev/null || {
+    if ! git rev-parse --verify "${local_sha}^{commit}" >/dev/null 2>&1; then
         echo "Error: local push head ${local_sha} is not a commit." >&2
         return 1
-    }
-
-if [ "${remote_sha}" = "0000000000000000000000000000000000000000" ]; then
-        if [ -z "${default_branch}" ]; then
-            if [ "${DIRECT_URL}" -eq 1 ]; then
-                echo "Error: direct push URL has no local main/master branch for first-push merge-base." >&2
-                return 1
-            else
-                empty_base=1
-                base_display="empty tree (remote ${REMOTE_NAME} has no local default branch reference)"
-            fi
-        else
-            if ! resolve_commit "${default_branch}" >/dev/null 2>&1; then
-                echo "Error: first push has no usable default branch (${default_branch}) for merge-base." >&2
-                return 1
-            fi
-            base_ref="$(git merge-base "${local_sha}" "${default_branch}")" || {
-                echo "Error: could not compute merge-base for ${local_ref} and ${default_branch}." >&2
-                return 1
-            }
-            if [ "${base_ref}" = "${local_sha}" ]; then
-                empty_base=1
-                base_display="empty tree (merge-base with ${default_branch} equals local head)"
-            else
-                base_display="${base_ref} (merge-base with ${default_branch})"
-            fi
-        fi
-    else
-        base_ref="${remote_sha}"
-        base_display="${remote_sha} (remote ${remote_ref})"
     fi
 
-    echo "🧪 Validating push range: ${local_ref}"
-    echo "   base: ${base_display}"
+    echo "ℹ️  Pre-push: ${local_ref} → ${remote_ref}"
     echo "   head: ${local_sha}"
+    if [ "${remote_sha}" = "0000000000000000000000000000000000000000" ]; then
+        echo "   remote: new ref"
+    else
+        echo "   remote tip: ${remote_sha}"
+    fi
     if [ "${DIRECT_URL}" -eq 1 ]; then
-        echo "   remote: direct URL"
+        echo "   transport: direct URL"
     else
         echo "   remote: ${REMOTE_NAME}"
     fi
-    local selected_lane
-    selected_lane="$(resolve_auto_lane "${base_ref:-}" "${head_ref}" "${empty_base}")" || return 1
-    echo "   gate: Option C (auto=${selected_lane} over committed range)"
-
-    if [ "${selected_lane}" = "fast" ]; then
-        requested_lane="auto"
-        echo "   Fast push: running canonical validate-agent --lane auto"
-    else
-        requested_lane="full"
-        echo "   Full push: running mandatory validate-agent --lane full"
-    fi
-
-    output_file="$(mktemp "${TMPDIR:-/tmp}/prisma-pre-push.XXXXXX")"
-    trap 'rm -f -- "${output_file:-}"; exit 130' INT TERM HUP
-    if [ "${empty_base}" -eq 1 ]; then
-        args="--lane ${requested_lane} --committed --empty-base --head ${head_ref}"
-    else
-        args="--lane ${requested_lane} --committed --base ${base_ref} --head ${head_ref}"
-    fi
-    if [ "${PUSH_CHECK_VERBOSE:-0}" != "1" ]; then
-        args="${args} --agent"
-    fi
-
-    set +e
-    make validate-agent ARGS="${args}" 2>&1 | tee "${output_file}"
-    status="${PIPESTATUS[0]}"
-    set -e
-
-    result_path="$(sed -n 's/^AGENT_RESULT_JSON=//p' "${output_file}" | tail -n 1)"
-    reused="$(sed -n 's/^AGENT_REUSED=//p' "${output_file}" | tail -n 1)"
-    if [ -z "${result_path}" ]; then
-        result_path="$(sed -n 's/^Validation result:.*; result=//p' "${output_file}" | tail -n 1)"
-    fi
-    if [ -z "${reused}" ]; then
-        if grep -Fq 'Reusing PASS evidence:' "${output_file}"; then
-            reused=1
-        else
-            reused=0
-        fi
-    fi
-    expected_base="${base_ref:-}"
-    if [ "${empty_base}" -eq 1 ]; then
-        expected_base=""
-    fi
-    if [ "${status}" -eq 0 ]; then
-        if [ -z "${result_path}" ] || [ ! -f "${result_path}" ]; then
-            echo "Error: validate-agent produced incomplete aggregate evidence." >&2
-            status=1
-        elif [ "${reused}" != "0" ] && [ "${reused}" != "1" ]; then
-            echo "Error: validate-agent produced incomplete aggregate evidence." >&2
-            status=1
-        elif ! python3 - "${result_path}" "${selected_lane}" "${expected_base}" "${head_ref}" <<'PY'
-import json
-import sys
-
-path, expected_lane, expected_base, expected_head = sys.argv[1:]
-try:
-    with open(path, encoding="utf-8") as handle:
-        result = json.load(handle)
-    commands = result.get("commands")
-    if result.get("schemaVersion") != 2 or result.get("step") != "validate-agent":
-        raise ValueError("schema")
-    if result.get("status") != "PASS" or result.get("dryRun") is not False:
-        raise ValueError("status")
-    if result.get("decision", {}).get("selectedLane") != expected_lane:
-        raise ValueError("lane")
-    if result.get("validationMode") != "committed":
-        raise ValueError("mode")
-    if result.get("base") != expected_base or result.get("head") != expected_head:
-        raise ValueError("range")
-    if not result.get("validationFingerprint") or not commands or not result.get("childResults"):
-        raise ValueError("aggregate")
-    if any(command.get("status") != "PASS" for command in commands):
-        raise ValueError("commands")
-except (OSError, ValueError, json.JSONDecodeError):
-    raise SystemExit(1)
-PY
-        then
-            echo "Error: validate-agent produced invalid aggregate evidence." >&2
-            status=1
-        fi
-    fi
-    if [ "${status}" -ne 0 ]; then
-        echo "❌ Push validation failed for ${local_ref}." >&2
-        if [ -n "${result_path}" ]; then
-            echo "   Result artifact: ${result_path}" >&2
-        fi
-        if grep -Fq '[rust-audio] expected artifact not found' "${output_file}"; then
-            echo "   Hint: Rust staging could not find libaudio_kernels_rust.dylib after cargo build." >&2
-            echo "         Check CARGO_TARGET_DIR or rerun scripts/stage-rust-audio-kernels.sh locally." >&2
-        fi
-        echo "   Tip: set PUSH_CHECK_VERBOSE=1 for full validation logs." >&2
-    fi
-    rm -f "${output_file}"
-    trap - INT TERM HUP
-    if [ "${status}" -ne 0 ]; then
-        return "${status}"
-    fi
-    if [ "${selected_lane}" = "fast" ]; then
-        if [ "${reused}" = "1" ]; then
-            echo "✅ Fast technical validation reused compatible PASS evidence."
-        else
-            echo "✅ Fast technical validation executed for the exact pushed range."
-        fi
-    fi
-    if [ -n "${result_path}" ]; then
-        echo "✅ Push validation passed; result: ${result_path}"
-    else
-        echo "✅ Push validation passed."
-    fi
+    echo "   note: build/test gates are owned by end-of-task development, not by this hook."
     return 0
 }
 
@@ -315,16 +82,16 @@ branch_push_seen=0
 while IFS=' ' read -r local_ref local_sha remote_ref remote_sha _; do
     [ -n "${local_ref}" ] || continue
     case "${local_ref}" in
-        refs/tags/*) validate_push_range "${local_ref}" "${local_sha}" "${remote_ref}" "${remote_sha}" || exit $? ;;
+        refs/tags/*) acknowledge_push_range "${local_ref}" "${local_sha}" "${remote_ref}" "${remote_sha}" || exit $? ;;
         refs/heads/*)
             branch_push_seen=$((branch_push_seen + 1))
-            validate_push_range "${local_ref}" "${local_sha}" "${remote_ref}" "${remote_sha}" || exit $?
+            acknowledge_push_range "${local_ref}" "${local_sha}" "${remote_ref}" "${remote_sha}" || exit $?
             ;;
         *)
             if [ "${local_sha}" = "0000000000000000000000000000000000000000" ]; then
                 echo "ℹ️  Skipping deleted ref ${local_ref}."
             else
-                echo "Error: refusing to push unsupported local ref ${local_ref} without validation." >&2
+                echo "Error: refusing to push unsupported local ref ${local_ref}." >&2
                 exit 1
             fi
             ;;
@@ -332,5 +99,5 @@ while IFS=' ' read -r local_ref local_sha remote_ref remote_sha _; do
 done
 
 if [ "${branch_push_seen}" -eq 0 ]; then
-    echo "ℹ️  No branch commit requires pre-push validation."
+    echo "ℹ️  No branch commit requires pre-push acknowledgment."
 fi

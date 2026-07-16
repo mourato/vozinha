@@ -246,12 +246,12 @@ test_staged_receipt_reused_after_commit() {
     assert_contains "${output}" "AGENT_REUSED=0"
 }
 
-test_pre_push_full_scripts_change() {
+test_pre_push_skips_build_and_test() {
     local fixture
     local base
     local head
     local output
-    local step_log="${TMP_ROOT}/pre-push-full-steps.log"
+    local step_log="${TMP_ROOT}/pre-push-no-steps.log"
 
     fixture="$(new_fixture)"
     base="$(git -C "${fixture}" rev-parse HEAD)"
@@ -260,14 +260,15 @@ test_pre_push_full_scripts_change() {
     git -C "${fixture}" add scripts/push-infra.sh
     git -C "${fixture}" commit -qm "scripts push fixture"
     head="$(git -C "${fixture}" rev-parse HEAD)"
+    : > "${step_log}"
     output="$(cd "${fixture}" && printf 'refs/heads/main %s refs/heads/main %s\n' "${head}" "${base}" | WORKFLOW_STEP_LOG="${step_log}" MA_AGENT_LOG_DIR="${TMP_ROOT}/pre-push-scripts" ./scripts/hooks-pre-push)"
-    assert_contains "${output}" "gate: Option C (auto=full"
-    assert_contains "${output}" "Full push: running mandatory validate-agent --lane full"
-    assert_contains "${output}" "Running lint-strict:"
-    assert_contains "${output}" "Running build-test:"
-    assert_contains "${output}" "Push validation passed"
-    test "$(grep -Fxc 'lint' "${step_log}")" -eq 1
-    test "$(grep -Fxc 'build-test' "${step_log}")" -eq 1
+    assert_contains "${output}" "Pre-push: refs/heads/main"
+    assert_contains "${output}" "build/test gates are owned by end-of-task development"
+    assert_not_contains "${output}" "gate: Option C"
+    assert_not_contains "${output}" "Running lint-strict:"
+    assert_not_contains "${output}" "Running build-test:"
+    assert_not_contains "${output}" "AGENT_STATUS="
+    test ! -s "${step_log}"
 }
 
 test_pre_commit_staged_format() {
@@ -357,7 +358,8 @@ EOF
     assert_contains "${output}" "Applying SwiftFormat"
     assert_contains "${output}" "Re-staging formatted Swift files"
     assert_contains "${output}" "pre-commit checks passed"
-    assert_contains "${output}" "pre-push validates or reuses the exact committed range"
+    assert_contains "${output}" "run end-of-task validate-agent before push when behavior changed"
+    assert_not_contains "${output}" "pre-push validates or reuses the exact committed range"
     assert_not_contains "${output}" "pre-push is light unless auto=Full"
 
     staged_blob="$(git -C "${fixture}" show :Staged.swift)"
@@ -437,87 +439,12 @@ EOF
     fi
 }
 
-test_pre_push_fast_failure_and_guidance_gate() {
-    local fixture
-    local base
-    local head
-    local output
-    local status
-    local guidance_step_log="${TMP_ROOT}/pre-push-guidance-steps.log"
-    local broken_guidance_step_log="${TMP_ROOT}/pre-push-broken-guidance-steps.log"
-
-    fixture="$(new_fixture)"
-    base="$(git -C "${fixture}" rev-parse HEAD)"
-    printf '%s\n' 'fast failure' > "${fixture}/Alpha.swift"
-    git -C "${fixture}" add Alpha.swift
-    git -C "${fixture}" commit -qm "fast failure fixture"
-    head="$(git -C "${fixture}" rev-parse HEAD)"
-    set +e
-    output="$(cd "${fixture}" && printf 'refs/heads/main %s refs/heads/main %s\n' "${head}" "${base}" | WORKFLOW_FAIL_STEP=scope-check MA_AGENT_LOG_DIR="${TMP_ROOT}/pre-push-fast-failure" ./scripts/hooks-pre-push 2>&1)"
-    status=$?
-    set -e
-    test "${status}" -ne 0
-    assert_contains "${output}" "Fast push: running canonical validate-agent --lane auto"
-    assert_contains "${output}" "Push validation failed"
-
-    fixture="$(new_fixture)"
-    base="$(git -C "${fixture}" rev-parse HEAD)"
-    printf '%s\n' '# Fixture guidance' > "${fixture}/AGENTS.md"
-    git -C "${fixture}" add AGENTS.md
-    git -C "${fixture}" commit -qm "guidance fixture"
-    head="$(git -C "${fixture}" rev-parse HEAD)"
-    output="$(cd "${fixture}" && printf 'refs/heads/main %s refs/heads/main %s\n' "${head}" "${base}" | WORKFLOW_USE_REAL_SCOPE_CHECK=1 WORKFLOW_STEP_LOG="${guidance_step_log}" MA_AGENT_LOG_DIR="${TMP_ROOT}/pre-push-guidance" ./scripts/hooks-pre-push)"
-    assert_contains "${output}" "gate: Option C (auto=fast"
-    assert_contains "${output}" "Fast technical validation executed for the exact pushed range."
-    test "$(grep -Fxc 'guidance' "${guidance_step_log}")" -eq 1
-    assert_not_contains "$(cat "${guidance_step_log}")" "build-test"
-
-    set +e
-    output="$(cd "${fixture}" && printf 'refs/heads/main %s refs/heads/main %s\n' "${head}" "${base}" | WORKFLOW_USE_REAL_SCOPE_CHECK=1 WORKFLOW_FAIL_STEP=guidance WORKFLOW_STEP_LOG="${broken_guidance_step_log}" MA_AGENT_LOG_DIR="${TMP_ROOT}/pre-push-broken-guidance" ./scripts/hooks-pre-push 2>&1)"
-    status=$?
-    set -e
-    test "${status}" -ne 0
-    assert_contains "${output}" "Push validation failed"
-    test "$(grep -Fxc 'guidance' "${broken_guidance_step_log}")" -eq 1
-    assert_not_contains "$(cat "${broken_guidance_step_log}")" "build-test"
-}
-
-test_pre_push_rejects_invalid_fresh_results() {
-    local fixture
-    local base
-    local head
-    local kind
-    local output
-    local status
-
-    for kind in malformed fail schema fingerprint; do
-        fixture="$(new_fixture)"
-        base="$(git -C "${fixture}" rev-parse HEAD)"
-        printf '%s\n' "invalid fresh ${kind}" > "${fixture}/Alpha.swift"
-        git -C "${fixture}" add Alpha.swift
-        git -C "${fixture}" commit -qm "invalid fresh ${kind} fixture"
-        head="$(git -C "${fixture}" rev-parse HEAD)"
-
-        set +e
-        output="$(cd "${fixture}" && printf 'refs/heads/main %s refs/heads/main %s\n' "${head}" "${base}" | WORKFLOW_INVALID_RESULT_STEP=scope-check WORKFLOW_INVALID_RESULT_KIND="${kind}" MA_AGENT_LOG_DIR="${TMP_ROOT}/pre-push-invalid-${kind}" ./scripts/hooks-pre-push 2>&1)"
-        status=$?
-        set -e
-
-        test "${status}" -ne 0
-        assert_contains "${output}" "Fresh validation result failed schema-v2 verification."
-        assert_contains "${output}" "Push validation failed"
-        assert_not_contains "${output}" "Push validation passed"
-        test -z "$(find "${TMP_ROOT}/pre-push-invalid-${kind}/validate-agent-index" -name '*.result.json' -print 2>/dev/null)"
-    done
-}
-
 test_pre_push_protocol() {
     local fixture
     local base
     local head
     local output
     local status
-    local fast_step_log="${TMP_ROOT}/pre-push-fast-steps.log"
 
     fixture="$(new_fixture)"
     base="$(git -C "${fixture}" rev-parse HEAD)"
@@ -532,57 +459,40 @@ test_pre_push_protocol() {
     head="$(git -C "${fixture}" rev-parse HEAD)"
     printf '%s\n' 'local-only' >> "${fixture}/README.md"
     printf '%s\n' 'local-untracked' > "${fixture}/local-only.swift"
-    output="$(cd "${fixture}" && printf 'refs/heads/main %s refs/heads/main 0000000000000000000000000000000000000000\n' "${head}" | WORKFLOW_STEP_LOG="${fast_step_log}" MA_AGENT_LOG_DIR="${TMP_ROOT}/pre-push" ./scripts/hooks-pre-push alt https://alt.example.invalid/prisma.git)"
-    assert_contains "${output}" "Validating push range: refs/heads/main"
-    assert_contains "${output}" "merge-base with refs/remotes/alt/main"
+    output="$(cd "${fixture}" && printf 'refs/heads/main %s refs/heads/main 0000000000000000000000000000000000000000\n' "${head}" | MA_AGENT_LOG_DIR="${TMP_ROOT}/pre-push" ./scripts/hooks-pre-push alt https://alt.example.invalid/prisma.git)"
+    assert_contains "${output}" "Pre-push: refs/heads/main"
     assert_contains "${output}" "remote: alt"
-    assert_contains "${output}" "gate: Option C (auto=fast"
-    assert_contains "${output}" "Fast push: running canonical validate-agent --lane auto"
+    assert_contains "${output}" "build/test gates are owned by end-of-task development"
     assert_not_contains "${output}" "alt.example.invalid"
-    assert_contains "${output}" "AGENT_REUSED=0"
-    assert_contains "${output}" "Fast technical validation executed for the exact pushed range."
-    assert_contains "${output}" "Push validation passed"
+    assert_not_contains "${output}" "gate: Option C"
     assert_not_contains "${output}" "Running lint-strict:"
     assert_not_contains "${output}" "Running build-test:"
+    assert_not_contains "${output}" "AGENT_STATUS="
     assert_not_contains "${output}" "local-only.swift"
-    test "$(grep -Fxc 'scope-check' "${fast_step_log}")" -eq 1
-
-    output="$(cd "${fixture}" && printf 'refs/heads/main %s refs/heads/main 0000000000000000000000000000000000000000\n' "${head}" | WORKFLOW_STEP_LOG="${fast_step_log}" MA_AGENT_LOG_DIR="${TMP_ROOT}/pre-push" ./scripts/hooks-pre-push alt https://alt.example.invalid/prisma.git)"
-    assert_contains "${output}" "AGENT_REUSED=1"
-    assert_contains "${output}" "Fast technical validation reused compatible PASS evidence."
-    test "$(grep -Fxc 'scope-check' "${fast_step_log}")" -eq 1
 
     output="$(cd "${fixture}" && printf 'refs/heads/main %s refs/heads/main %s\n' "${head}" "${first_head}" | MA_AGENT_LOG_DIR="${TMP_ROOT}/pre-push-incremental" ./scripts/hooks-pre-push alt https://alt.example.invalid/prisma.git)"
-    assert_contains "${output}" "remote refs/heads/main"
-    assert_contains "${output}" "gate: Option C (auto=fast"
-    assert_contains "${output}" "Fast technical validation executed for the exact pushed range."
-    assert_contains "${output}" "Push validation passed"
+    assert_contains "${output}" "remote tip: ${first_head}"
+    assert_contains "${output}" "build/test gates are owned by end-of-task development"
     assert_not_contains "${output}" "Running lint-strict:"
     assert_not_contains "${output}" "Running build-test:"
 
-    mkdir -p "${TMP_ROOT}/pre-push-output"
-    output="$(cd "${fixture}" && printf 'refs/heads/main %s refs/heads/main 0000000000000000000000000000000000000000\n' "${head}" | TMPDIR="${TMP_ROOT}/pre-push-output" PUSH_CHECK_VERBOSE=1 MA_AGENT_LOG_DIR="${TMP_ROOT}/pre-push-direct-url" ./scripts/hooks-pre-push 'https://alice:s3cr3t@direct.example.invalid/prisma.git?token=secret#fragment')"
-    assert_contains "${output}" "remote: direct URL"
+    output="$(cd "${fixture}" && printf 'refs/heads/main %s refs/heads/main 0000000000000000000000000000000000000000\n' "${head}" | MA_AGENT_LOG_DIR="${TMP_ROOT}/pre-push-direct-url" ./scripts/hooks-pre-push 'https://alice:s3cr3t@direct.example.invalid/prisma.git?token=secret#fragment')"
+    assert_contains "${output}" "transport: direct URL"
     assert_not_contains "${output}" "s3cr3t"
     assert_not_contains "${output}" "token=secret"
-    assert_contains "${output}" "empty tree (merge-base with refs/heads/main equals local head)"
-    assert_contains "${output}" "gate: Option C (auto=full"
-    assert_contains "${output}" "Full push: running mandatory validate-agent --lane full"
-    assert_contains "${output}" "Running lint-strict:"
-    assert_not_contains "${output}" "No changed files detected"
-    test -z "$(find "${TMP_ROOT}/pre-push-output" -name 'prisma-pre-push.*' -print)"
+    assert_not_contains "${output}" "AGENT_STATUS="
 
     output="$(cd "${fixture}" && printf 'refs/heads/main %s refs/heads/main 0000000000000000000000000000000000000000\n' "${head}" | MA_AGENT_LOG_DIR="${TMP_ROOT}/pre-push-scp" ./scripts/hooks-pre-push build.example.invalid:prisma.git)"
-    assert_contains "${output}" "remote: direct URL"
+    assert_contains "${output}" "transport: direct URL"
     output="$(cd "${fixture}" && printf 'refs/heads/main %s refs/heads/main 0000000000000000000000000000000000000000\n' "${head}" | MA_AGENT_LOG_DIR="${TMP_ROOT}/pre-push-scp-user" ./scripts/hooks-pre-push alice@build.example.invalid:prisma.git)"
-    assert_contains "${output}" "remote: direct URL"
+    assert_contains "${output}" "transport: direct URL"
     output="$(cd "${fixture}" && printf 'refs/heads/main %s refs/heads/main 0000000000000000000000000000000000000000\n' "${head}" | MA_AGENT_LOG_DIR="${TMP_ROOT}/pre-push-relative-repo" ./scripts/hooks-pre-push repo.git)"
-    assert_contains "${output}" "remote: direct URL"
+    assert_contains "${output}" "transport: direct URL"
     output="$(cd "${fixture}" && printf 'refs/heads/main %s refs/heads/main 0000000000000000000000000000000000000000\n' "${head}" | MA_AGENT_LOG_DIR="${TMP_ROOT}/pre-push-relative-path" ./scripts/hooks-pre-push path/to/repo.git)"
-    assert_contains "${output}" "remote: direct URL"
+    assert_contains "${output}" "transport: direct URL"
     mkdir -p "${fixture}/repo"
     output="$(cd "${fixture}" && printf 'refs/heads/main %s refs/heads/main 0000000000000000000000000000000000000000\n' "${head}" | MA_AGENT_LOG_DIR="${TMP_ROOT}/pre-push-existing-path" ./scripts/hooks-pre-push repo)"
-    assert_contains "${output}" "remote: direct URL"
+    assert_contains "${output}" "transport: direct URL"
 
     output="$(cd "${fixture}" && printf 'refs/tags/v1 %s refs/tags/v1 %s\n' "${head}" "${base}" | ./scripts/hooks-pre-push)"
     assert_contains "${output}" "Skipping tag push"
@@ -597,19 +507,12 @@ test_pre_push_protocol() {
     output="$(cd "${fixture}" && printf 'refs/notes/review 0000000000000000000000000000000000000000 refs/notes/review %s\n' "${base}" | ./scripts/hooks-pre-push alt https://alt.example.invalid/prisma.git)"
     assert_contains "${output}" "Skipping deleted ref refs/notes/review"
 
-    git -C "${fixture}" update-ref -d refs/remotes/alt/HEAD
-    git -C "${fixture}" update-ref -d refs/remotes/alt/main
-    output="$(cd "${fixture}" && printf 'refs/heads/main %s refs/heads/main 0000000000000000000000000000000000000000\n' "${head}" | MA_AGENT_LOG_DIR="${TMP_ROOT}/pre-push-no-tracking" ./scripts/hooks-pre-push alt https://alt.example.invalid/prisma.git)"
-    assert_contains "${output}" "empty tree (remote alt has no local default branch reference)"
-    assert_contains "${output}" "gate: Option C (auto=full"
-    assert_contains "${output}" "Running lint-strict:"
-
     set +e
     output="$(cd "${fixture}" && printf 'refs/heads/other %s refs/heads/other %s\n' "${head}" "${base}" | ./scripts/hooks-pre-push 2>&1)"
     status=$?
     set -e
     test "${status}" -eq 1
-    assert_contains "${output}" "refusing to validate refs/heads/other"
+    assert_contains "${output}" "refusing to push refs/heads/other"
 }
 
 test_committed_in_place_clean_head() {
@@ -645,7 +548,7 @@ test_clean_working_tree_pass_reused_by_committed() {
     git -C "${fixture}" commit -qm "clean working-tree receipt"
     head="$(git -C "${fixture}" rev-parse HEAD)"
     # Working-tree mode on a clean tree with the same --base must share the
-    # committed fingerprint so pre-push can reuse a just-run local PASS.
+    # committed fingerprint so a later --committed validate-agent can reuse a just-run local PASS.
     output="$(validate_output "${fixture}" "${log_root}" --lane fast --base "${base}" --no-reuse)"
     assert_contains "${output}" "AGENT_STATUS=PASS"
     assert_not_contains "${output}" "Reusing PASS evidence"
@@ -937,10 +840,8 @@ test_staged_receipt_reused_after_commit
 test_committed_in_place_clean_head
 test_clean_working_tree_pass_reused_by_committed
 test_archive_paths_excluded_from_large_delta
-test_pre_push_full_scripts_change
+test_pre_push_skips_build_and_test
 test_pre_commit_staged_format
-test_pre_push_fast_failure_and_guidance_gate
-test_pre_push_rejects_invalid_fresh_results
 test_pre_push_protocol
 source "${SCRIPT_ROOT}/scripts/tests/scope-classification-test.sh"
 "${SCRIPT_ROOT}/scripts/tests/guidance-validation-test.sh"

@@ -10,7 +10,7 @@ Git mechanics, scoped validation, hooks, and release flows. Role, lanes, and the
 - End of task when Swift touched: fail-closed lint on the delta (`make lint-strict-agent` or equivalent).
 - End of task when behavior changed: one `make validate-agent ARGS="--lane auto --base main --agent"` (or `--committed`) on a clean tree.
 - Commit: pre-commit applies staged SwiftFormat/SwiftLint autofix and re-stages.
-- Push: pre-push runs or reuses canonical auto validation for the exact committed range.
+- Push: pre-push does not run build/test; development already owns validation evidence.
 
 ### Full lane (Medium/High risk)
 
@@ -18,7 +18,7 @@ Git mechanics, scoped validation, hooks, and release flows. Role, lanes, and the
 - End of task: strict lint + affected-module or Full validation as lane requires.
 - Prefer one clean-tree `make validate-agent ARGS="--lane auto --base main --agent"` (or `--committed`) when you need local Full evidence.
 - Reserve direct `make build-test` / `--no-reuse` for milestones or after flaky reuse.
-- Push: when auto=Full, pre-push runs mandatory `validate-agent --lane full --committed`; do not stack duplicate Full runs.
+- Push: pre-push does not re-run Full; complete `validate-agent` during development before pushing.
 
 `make preflight` is optional and does not replace lane technical validation gates.
 
@@ -89,12 +89,10 @@ make guidance-check
 4. Optional local evidence (Full/infra or unclear lane): one
    `make validate-agent ARGS="--lane auto --base main --agent"` on a clean tree,
    or `--committed --base <base> --head HEAD`. Skip dry-run/staged stacking.
-5. Push: pre-push validates or reuses the exact committed range. Fast uses
-   `validate-agent --lane auto --committed`; Full uses mandatory
-   `validate-agent --lane full --committed`. A clean working-tree PASS with the
-   same base/head trees can still be reused.
-6. Guidance-only: use `make guidance-check` during iteration; the Fast pushed
-   range records that command without running product tests.
+5. Push: pre-push only acknowledges the range; it does not run build or test
+   validation. Complete `validate-agent` in development before pushing.
+6. Guidance-only: use `make guidance-check` during iteration; do not expect
+   pre-push to run product tests.
 7. `make preflight-agent` / `make deliverable-gate` for release or high-confidence only.
 
 Tests are not run before every commit by default. `scope-check` is not a second
@@ -123,17 +121,19 @@ PR descriptions: summary, scope/risk, validation results, review findings, basel
 
 - Install hooks: `git config core.hooksPath scripts/hooks` or `make setup`.
 - `pre-commit`: applies staged SwiftFormat write + SwiftLint `--fix`, re-stages, then fails closed on residual lint; no tests.
-- `pre-push`: resolves auto lane via `scope-check --dry-run`, then validates or reuses the exact range. **Fast** uses `validate-agent --lane auto --committed`; **Full** uses mandatory `validate-agent --lane full --committed`. Compatible PASS fingerprints avoid duplicate execution.
-- Rust audio staging is required in `auto`/`on` modes. Do not treat
-  `MA_RUST_AUDIO_KERNELS_BUILD=off` as a routine push workaround; use it only
+- `pre-push`: acknowledges the push range and enforces basic ref safety; it does
+  **not** run `validate-agent`, build, or tests. End-of-task development owns
+  those gates.
+- Rust audio staging is required in `auto`/`on` modes during local
+  `validate-agent` / `build-test`. Do not treat
+  `MA_RUST_AUDIO_KERNELS_BUILD=off` as a routine workaround; use it only
   as an emergency bypass when Rust tooling is unavailable.
 - Ambient `CARGO_TARGET_DIR` no longer breaks staging: the stage script pins
   `--target-dir` to the crate-local `Native/AudioKernelsRust/target`.
-- On failure, inspect the printed `AGENT_RESULT_JSON` path. Set
-  `PUSH_CHECK_VERBOSE=1` for full validation logs. If logs mention
-  `[rust-audio] expected artifact not found`, rerun
+- On local validation failure, inspect the printed `AGENT_RESULT_JSON` path. If
+  logs mention `[rust-audio] expected artifact not found`, rerun
   `scripts/stage-rust-audio-kernels.sh` locally before retrying.
-- Emergency bypasses (`SKIP_LINT=1`, `SKIP_TESTS=1`) should be rare with immediate remediation.
+- Emergency bypasses (`SKIP_LINT=1`, `SKIP_TESTS=1`) should be rare with immediate remediation. `SKIP_TESTS` does not affect pre-push.
 - Missing tools: `brew install swiftlint swiftformat`.
 
 ## Preflight and deliverable-gate
