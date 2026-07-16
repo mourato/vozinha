@@ -19,6 +19,7 @@ public struct ModeEditorDrawer<Content: View>: View {
     private let footerTrailingAction: () -> Void
     private let content: Content
     @FocusState private var isNameFocused: Bool
+    @AccessibilityFocusState private var isNameAccessibilityFocused: Bool
 
     public init(
         headerStyle: HeaderStyle,
@@ -83,6 +84,7 @@ public struct ModeEditorDrawer<Content: View>: View {
                         .textFieldStyle(.plain)
                         .font(.headline.weight(.semibold))
                         .focused($isNameFocused)
+                        .accessibilityFocused($isNameAccessibilityFocused)
                         .accessibilityLabel("settings.styles.editor.name".localized)
                 } else if !iconSymbol.isEmpty {
                     DictationStyleIconView(iconSymbol: iconSymbol, size: 24, accessibilityLabel: title)
@@ -118,6 +120,7 @@ public struct ModeEditorDrawer<Content: View>: View {
         .onAppear {
             if headerStyle == .close, name != nil {
                 isNameFocused = true
+                isNameAccessibilityFocused = true
             }
         }
     }

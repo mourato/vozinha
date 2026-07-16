@@ -412,7 +412,7 @@ rg -n 'SettingsScrollableContent|SettingsSectionHeader|settings\.section\.rules_
 ```
 
 → **no** matches for `SettingsScrollableContent`, `SettingsSectionHeader`, or
-`settings.section.rules_per_app`.  
+`settings.section.rules_per_app`.
 → **no** UI use of `settings.styles.title` in this file (search-index files may still reference it elsewhere).
 
 ### Step 2: Confirm Modes shell still owns the drawer

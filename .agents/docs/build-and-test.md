@@ -234,11 +234,13 @@ find scripts/hooks -maxdepth 1 -type f ! -perm -u+x -print
 
 The `find` command must print nothing. Stale copies under `.git/hooks/` (for example `pre-push.disabled`) are ignored once `core.hooksPath` points at `scripts/hooks`.
 
-Pre-push runs `make validate-agent ARGS="--lane auto --committed ..."` over the
-exact commit range being pushed. Compatible PASS fingerprints are reused when
-external inputs are comparable. Rust audio staging uses a crate-local Cargo
-target directory even when `CARGO_TARGET_DIR` is set in the environment. Set
-`PUSH_CHECK_VERBOSE=1` for full logs on failure. `MA_RUST_AUDIO_KERNELS_BUILD=off`
+Pre-push classifies the exact commit range using the same auto-lane decision as
+`validate-agent`. Option C keeps Fast pushes light and relies on the required
+end-of-task affected-module validation; Full ranges run mandatory
+`validate-agent --lane full --committed`, reusing compatible PASS fingerprints
+when external inputs are comparable. Rust audio staging uses a crate-local
+Cargo target directory even when `CARGO_TARGET_DIR` is set in the environment.
+Set `PUSH_CHECK_VERBOSE=1` for full logs on failure. `MA_RUST_AUDIO_KERNELS_BUILD=off`
 is an emergency bypass only, not a routine workaround.
 
 ## Script Support Surface

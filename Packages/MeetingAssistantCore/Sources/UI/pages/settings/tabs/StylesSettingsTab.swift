@@ -61,6 +61,7 @@ public struct StylesSettingsTab: View {
             }
         }
         .onDeleteCommand(perform: deleteSelectedStyle)
+        .accessibilityHidden(!isListFocusEnabled)
     }
 
     @ViewBuilder
@@ -162,6 +163,7 @@ public struct StylesSettingsTab: View {
             }
             .labelStyle(.iconOnly)
             .buttonStyle(.borderless)
+            .focusable(isListFocusEnabled)
             .help("settings.styles.edit".localized)
             .accessibilityLabel("settings.styles.edit".localized)
 
@@ -185,6 +187,7 @@ public struct StylesSettingsTab: View {
                     Label("settings.styles.remove".localized, systemImage: "trash")
                 }
             }
+            .focusable(isListFocusEnabled)
         }
     }
 

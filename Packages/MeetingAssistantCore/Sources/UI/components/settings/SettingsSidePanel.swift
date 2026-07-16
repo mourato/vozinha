@@ -29,9 +29,9 @@ private struct SettingsSidePanelModifier<PanelContent: View>: ViewModifier {
         ZStack(alignment: .trailing) {
             content
 
-            if isPresented {
-                GeometryReader { geometry in
-                    ZStack(alignment: .trailing) {
+            GeometryReader { geometry in
+                ZStack(alignment: .trailing) {
+                    if isPresented {
                         Button("") {
                             onDismiss()
                         }
@@ -40,7 +40,10 @@ private struct SettingsSidePanelModifier<PanelContent: View>: ViewModifier {
                         .contentShape(Rectangle())
                         .accessibilityHidden(true)
                         .keyboardShortcut(.escape)
+                        .transition(.identity)
+                    }
 
+                    if isPresented {
                         panelContent()
                             .frame(width: SettingsSidePanelLayout.resolvedWidth(
                                 requested: width,
@@ -50,14 +53,16 @@ private struct SettingsSidePanelModifier<PanelContent: View>: ViewModifier {
                             .background(surface)
                             .overlay(separator, alignment: .leading)
                             .overlay(separator, alignment: .trailing)
+                            .transition(SettingsMotion.sidePanelTransition(reduceMotion: reduceMotion))
+                            .zIndex(1)
                     }
                 }
-                // Expand under the transparent titlebar so the drawer is flush
-                // with the window top (VoiceInk SidePanel contract / Scenario A).
-                .ignoresSafeArea()
-                .transition(SettingsMotion.sidePanelTransition(reduceMotion: reduceMotion))
-                .zIndex(1)
             }
+            // Keep the overlay host stable and extend only through the transparent
+            // titlebar. The dismiss layer stays fixed while the drawer transitions.
+            .ignoresSafeArea(edges: .top)
+            .allowsHitTesting(isPresented)
+            .zIndex(1)
         }
         .animation(SettingsMotion.sidePanelAnimation(reduceMotion: reduceMotion), value: isPresented)
     }

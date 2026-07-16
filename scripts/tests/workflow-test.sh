@@ -269,7 +269,13 @@ test_pre_commit_staged_format() {
     local fixture
     local toolchain_dir
     local output
+    local partial_index_after
+    local partial_index_before
+    local partial_worktree_after
+    local partial_worktree_before
     local staged_blob
+    local spaced_staged_blob
+    local status
     local unstaged_blob
 
     fixture="$(new_fixture)"
@@ -339,7 +345,8 @@ EOF
     git -C "${fixture}" commit -qm "tracked swift fixtures"
     printf 'UNFORMATTED let staged = 2\n' > "${fixture}/Staged.swift"
     printf 'UNFORMATTED let unstaged = 3\n' > "${fixture}/Unstaged.swift"
-    git -C "${fixture}" add Staged.swift
+    printf 'UNFORMATTED let spaced = 4\n' > "${fixture}/Path With Space.swift"
+    git -C "${fixture}" add Staged.swift "Path With Space.swift"
 
     output="$(cd "${fixture}" && PATH="${toolchain_dir}:${PATH}" ./scripts/hooks/pre-commit 2>&1)"
     assert_contains "${output}" "Applying SwiftFormat"
@@ -347,15 +354,18 @@ EOF
     assert_contains "${output}" "pre-commit checks passed"
 
     staged_blob="$(git -C "${fixture}" show :Staged.swift)"
+    spaced_staged_blob="$(git -C "${fixture}" show ':Path With Space.swift')"
     unstaged_blob="$(cat "${fixture}/Unstaged.swift")"
     printf '%s' "${staged_blob}" | grep -Fq 'UNFORMATTED' && fail "staged index still contains UNFORMATTED"
+    printf '%s' "${spaced_staged_blob}" | grep -Fq 'UNFORMATTED' && fail "spaced staged path still contains UNFORMATTED"
+    assert_contains "${spaced_staged_blob}" "let spaced = 4"
     printf '%s' "${unstaged_blob}" | grep -Fq 'UNFORMATTED' || fail "unstaged working tree should remain unformatted"
 
     printf 'LINTFAIL let blocked = 1\n' > "${fixture}/Blocked.swift"
     git -C "${fixture}" add Blocked.swift
     set +e
     output="$(cd "${fixture}" && PATH="${toolchain_dir}:${PATH}" ./scripts/hooks/pre-commit 2>&1)"
-    local status=$?
+    status=$?
     set -e
     test "${status}" -eq 1
     assert_contains "${output}" "SwiftLint violations remain"
@@ -364,6 +374,60 @@ EOF
     rm -f "${fixture}/Blocked.swift"
     output="$(cd "${fixture}" && PATH="${toolchain_dir}:${PATH}" SKIP_LINT=1 ./scripts/hooks/pre-commit 2>&1)"
     assert_contains "${output}" "Lint/format checks skipped via SKIP_LINT=1"
+
+    printf 'let original = 1\n' > "${fixture}/Partial.swift"
+    git -C "${fixture}" add Partial.swift
+    git -C "${fixture}" commit -qm "partial staging baseline"
+    printf 'UNFORMATTED let stagedPartial = 2\n' > "${fixture}/Partial.swift"
+    git -C "${fixture}" add Partial.swift
+    printf 'UNFORMATTED let stagedPartial = 2\nlet unstagedPartial = 3\n' > "${fixture}/Partial.swift"
+    partial_index_before="$(git -C "${fixture}" show :Partial.swift)"
+    partial_worktree_before="$(cat "${fixture}/Partial.swift")"
+    cat > "${fixture}/scripts/hooks/first-commit-version-bump.sh" <<'EOF'
+#!/bin/bash
+printf 'called\n' > .daily-bump-called
+printf 'let bumpAbsorbedUserWork = true\n' >> Partial.swift
+git add Partial.swift
+EOF
+    chmod +x "${fixture}/scripts/hooks/first-commit-version-bump.sh"
+
+    set +e
+    output="$(cd "${fixture}" && PATH="${toolchain_dir}:${PATH}" FORCE_DAILY_VERSION_BUMP=1 SKIP_LINT=1 ./scripts/hooks/pre-commit 2>&1)"
+    status=$?
+    set -e
+
+    test "${status}" -eq 1
+    assert_contains "${output}" "Cannot autofix partially staged Swift files"
+    assert_contains "${output}" "Partial.swift"
+    partial_index_after="$(git -C "${fixture}" show :Partial.swift)"
+    partial_worktree_after="$(cat "${fixture}/Partial.swift")"
+    test "${partial_index_after}" = "${partial_index_before}" || fail "partial-staging hook changed the index"
+    test "${partial_worktree_after}" = "${partial_worktree_before}" || fail "partial-staging hook changed the worktree"
+    test "${partial_index_after}" != "${partial_worktree_after}" || fail "partial-staging fixture did not preserve distinct index and worktree content"
+    test ! -e "${fixture}/.daily-bump-called" || fail "daily bump ran before the partial-staging preflight"
+
+    fixture="$(new_fixture)"
+    mkdir -p "${fixture}/scripts/hooks" \
+        "${fixture}/Packages/MeetingAssistantCore/Sources/Common"
+    cp "${SCRIPT_ROOT}/scripts/hooks/pre-commit" "${fixture}/scripts/hooks/pre-commit"
+    chmod +x "${fixture}/scripts/hooks/pre-commit"
+    touch "${fixture}/.swiftformat" "${fixture}/.swiftlint.yml"
+    cat > "${fixture}/scripts/hooks/first-commit-version-bump.sh" <<'EOF'
+#!/bin/bash
+printf 'called\n' > .daily-bump-called
+printf 'UNFORMATTED public let appVersion = "2.0"\n' > Packages/MeetingAssistantCore/Sources/Common/AppVersion.swift
+git add Packages/MeetingAssistantCore/Sources/Common/AppVersion.swift
+EOF
+    chmod +x "${fixture}/scripts/hooks/first-commit-version-bump.sh"
+
+    output="$(cd "${fixture}" && PATH="${toolchain_dir}:${PATH}" FORCE_DAILY_VERSION_BUMP=1 ./scripts/hooks/pre-commit 2>&1)"
+    assert_contains "${output}" "Found 1 staged Swift file"
+    assert_contains "${output}" "Applying SwiftFormat"
+    test -e "${fixture}/.daily-bump-called" || fail "clean daily bump fixture was not invoked"
+    staged_blob="$(git -C "${fixture}" show :Packages/MeetingAssistantCore/Sources/Common/AppVersion.swift)"
+    if printf '%s' "${staged_blob}" | grep -Fq 'UNFORMATTED'; then
+        fail "AppVersion.swift staged by daily bump was not formatted"
+    fi
 }
 
 test_pre_push_protocol() {

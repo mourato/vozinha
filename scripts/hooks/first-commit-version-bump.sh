@@ -62,6 +62,29 @@ if [[ ! "${current_build}" =~ ^[0-9]+$ ]]; then
 fi
 next_build="$((current_build + 1))"
 
+# bump-version.sh rewrites and git-adds these complete paths. Once a bump is
+# known to be necessary, fail before mutation if any contains unstaged work.
+bump_paths=(
+    "App/Info.plist"
+    "MeetingAssistantAI/Resources/Info.plist"
+    "Packages/MeetingAssistantCore/Sources/Common/AppVersion.swift"
+)
+dirty_bump_paths=()
+for file in "${bump_paths[@]}"; do
+    if ! git diff --quiet -- "${file}"; then
+        dirty_bump_paths+=("${file}")
+    fi
+done
+
+if [[ "${#dirty_bump_paths[@]}" -gt 0 ]]; then
+    echo "❌ Cannot run the daily version bump with unstaged changes in version files:"
+    for file in "${dirty_bump_paths[@]}"; do
+        printf '   - %s\n' "${file}"
+    done
+    echo "   Stage or stash those changes, then retry."
+    exit 1
+fi
+
 "${BUMP_SCRIPT}" --version "${target_version}" --build "${next_build}" >/dev/null
 git add App/Info.plist MeetingAssistantAI/Resources/Info.plist \
     Packages/MeetingAssistantCore/Sources/Common/AppVersion.swift
