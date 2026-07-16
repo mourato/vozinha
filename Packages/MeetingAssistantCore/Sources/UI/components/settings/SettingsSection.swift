@@ -70,9 +70,9 @@ public enum SettingsSection: String, CaseIterable, Identifiable, Sendable {
 
     public var isLegacyRedirect: Bool {
         switch self {
-        case .metrics, .transcriptions, .models, .enhancements, .vocabulary, .permissions, .general, .intelligence, .audio, .assistant, .integrations:
+        case .metrics, .transcriptions, .models, .enhancements, .vocabulary, .permissions, .general, .intelligence, .audio, .dictation, .assistant, .integrations:
             true
-        case .activity, .dictation, .modes, .meetings, .system:
+        case .activity, .modes, .meetings, .system:
             false
         }
     }

@@ -118,6 +118,15 @@ final class SettingsSectionTests: XCTestCase {
         XCTAssertEqual(SettingsSection.resolvedVisibleSection(for: "audio"), .system)
     }
 
+    func testLegacyRedirect_DictationAssistantAndIntegrationsMapToModes() {
+        XCTAssertEqual(SettingsSection.dictation.visibleSection, .modes)
+        XCTAssertEqual(SettingsSection.assistant.visibleSection, .modes)
+        XCTAssertEqual(SettingsSection.integrations.visibleSection, .modes)
+        XCTAssertTrue(SettingsSection.dictation.isLegacyRedirect)
+        XCTAssertTrue(SettingsSection.assistant.isLegacyRedirect)
+        XCTAssertTrue(SettingsSection.integrations.isLegacyRedirect)
+    }
+
     func testResolvedDestination_PreservesModesSubroutes() {
         XCTAssertEqual(
             SettingsSection.resolvedDestination(for: "assistant"),
