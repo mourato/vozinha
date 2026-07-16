@@ -6,7 +6,8 @@
 - **Effort**: M
 - **Risk/lane**: High/Full
 - **Depends on**: 098, 099, 100
-- **Status**: IN PROGRESS
+- **Status**: DONE
+- **Completed**: 2026-07-16
 
 ## Execution profile
 
@@ -47,3 +48,13 @@ Plans 098 and 099 were marked `DONE` before their implementation commits. This f
 - A required fix would weaken fail-closed linting, `SKIP_LINT` emergency semantics, or Full-lane validation.
 - Focus containment requires replacing the canonical Modes navigation/focus owner.
 - Validation reveals a new non-baseline regression outside this plan's scope.
+
+## Completion evidence
+
+- `make validate-agent ARGS="--lane full --committed --base main --head HEAD --no-reuse --agent"`: PASS in 130s, 0 errors; fingerprint `e554a29bbaccff67f596e41bc4b7ba4b50faa335c271a95f709ca10d1cfa17d9`.
+- `make workflow-test`: PASS.
+- Focused Modes, AppleMotion, and navigation tests: 78 passed, 0 failed.
+- `make build-agent`: PASS.
+- `make preview-check`: limited by the pre-existing `ActivitySettingsSheets.swift` baseline failure; no regression was attributed to this plan.
+- `make guidance-check`: limited in the isolated worktree because sibling references were absent.
+- Accessibility structure and focus ownership were verified through code review and tests. No live manual VoiceOver session was performed.

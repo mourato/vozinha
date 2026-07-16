@@ -73,7 +73,7 @@ reason) | `REJECTED` (with a one-line rationale).
 | [098](098-migrate-modes-list-to-settings-form-page.md) | Migrate Modes list into SettingsFormPage | P1 | M | 079, 082 | DONE |
 | [099](099-polish-settings-expandable-disclosure-motion.md) | Polish Form expandable disclosure motion and document the contract | P1 | M | 093 (DONE) | DONE |
 | [100](100-pre-commit-format-option-c-pre-push.md) | Pre-commit staged format, agent lint/test ladder, Option-C pre-push | P1 | L | 087, 089 | DONE |
-| [101](101-remediate-daily-review-findings.md) | Remediate daily review findings across hooks and Modes drawer | P1 | M | 098, 099, 100 | IN PROGRESS |
+| [101](101-remediate-daily-review-findings.md) | Remediate daily review findings across hooks and Modes drawer | P1 | M | 098, 099, 100 | DONE |
 
 Plans 001–061 are completed or archived in the historical ledger. The archive preserves the original audit scope,
 findings, dependency history, status table, committee notes, and rejected
