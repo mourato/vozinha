@@ -99,6 +99,22 @@ final class TranscriptionDeliveryServiceTests: XCTestCase {
         XCTAssertEqual(mockPasteboard.storedString, kDictationText)
     }
 
+    func testDeliver_SnapshottedPolicyDisablesCopyDespiteGlobalEnabled() {
+        let meeting = Meeting(app: .unknown)
+        let transcription = Transcription(meeting: meeting, text: kDictationText, rawText: kDictationText)
+        let settings = makeSettings(autoCopy: true, autoPaste: false)
+        let policy = DictationTextHandlingPolicy(autoCopyToClipboard: false, autoPasteToActiveApp: false)
+
+        TranscriptionDeliveryService.deliver(
+            transcription: transcription,
+            textPolicy: policy,
+            settings: settings,
+            pasteboard: mockPasteboard,
+        )
+
+        XCTAssertNil(mockPasteboard.storedString)
+    }
+
     func testDeliver_UnknownAppWithMeetingSource_DoesNotCopyToClipboard() {
         let meeting = Meeting(app: .unknown)
         let transcription = Transcription(meeting: meeting, text: kMeetingText, rawText: kMeetingText)
