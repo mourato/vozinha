@@ -12,6 +12,7 @@ import SwiftUI
 public struct GeneralSettingsTab: View {
     @State private var viewModel = GeneralSettingsViewModel()
     @StateObject private var recordingCancelShortcutViewModel = RecordingCancelShortcutSettingsViewModel()
+    @StateObject private var shortcutSettingsViewModel = ShortcutSettingsViewModel()
     @State private var shortcutDoubleTapIntervalInput = ""
     @State private var isProtectedAppsExpanded = false
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -53,6 +54,25 @@ public struct GeneralSettingsTab: View {
             }
         } content: {
             systemDrilldownsSection
+
+            ShortcutSettingsSection(
+                groupTitle: "settings.shortcuts.dictation".localized,
+                descriptionText: "settings.shortcuts.dictation_desc".localized,
+                settingsContent: {
+                    VStack(alignment: .leading, spacing: 12) {
+                        if let healthPresentation = shortcutSettingsViewModel.shortcutCaptureHealthPresentation {
+                            ShortcutCaptureHealthStatusView(presentation: healthPresentation) {
+                                shortcutSettingsViewModel.openShortcutCaptureHealthAction()
+                            }
+                        }
+
+                        DSModifierShortcutEditor(
+                            shortcut: $shortcutSettingsViewModel.dictationShortcutDefinition,
+                            conflictMessage: shortcutSettingsViewModel.dictationModifierConflictMessage,
+                        )
+                    }
+                },
+            )
 
             Section {
                 Toggle("settings.general.launch_at_login".localized, isOn: $viewModel.launchAtLogin)

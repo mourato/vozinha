@@ -240,9 +240,7 @@ private extension SettingsView {
             ModelsSettingsTab()
         case .vocabulary:
             VocabularySettingsTab()
-        case .dictation:
-            DictationSettingsTab()
-        case .modes:
+        case .dictation, .modes:
             ModesSettingsTab()
         case .meetings:
             MeetingSettingsTab()

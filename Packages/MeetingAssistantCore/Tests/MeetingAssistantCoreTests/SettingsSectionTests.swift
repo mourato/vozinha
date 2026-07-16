@@ -5,7 +5,7 @@ final class SettingsSectionTests: XCTestCase {
     func testPrimarySections_OrderStartsWithCaptureWorkflows() {
         XCTAssertEqual(
             SettingsSection.primarySections,
-            [.activity, .dictation, .modes, .meetings, .assistant, .integrations],
+            [.activity, .modes, .meetings, .assistant, .integrations],
         )
     }
 
@@ -19,7 +19,7 @@ final class SettingsSectionTests: XCTestCase {
     func testVisibleSections_OrderMatchesProductConcepts() {
         XCTAssertEqual(
             SettingsSection.visibleSections,
-            [.activity, .dictation, .modes, .meetings, .assistant, .integrations, .system],
+            [.activity, .modes, .meetings, .assistant, .integrations, .system],
         )
     }
 
@@ -109,7 +109,7 @@ final class SettingsSectionTests: XCTestCase {
 
     func testResolvedVisibleSection_ParsesNewRawValues() {
         XCTAssertEqual(SettingsSection.resolvedVisibleSection(for: "activity"), .activity)
-        XCTAssertEqual(SettingsSection.resolvedVisibleSection(for: "dictation"), .dictation)
+        XCTAssertEqual(SettingsSection.resolvedVisibleSection(for: "dictation"), .modes)
         XCTAssertEqual(SettingsSection.resolvedVisibleSection(for: "modes"), .modes)
         XCTAssertEqual(SettingsSection.resolvedVisibleSection(for: "intelligence"), .system)
         XCTAssertEqual(SettingsSection.resolvedVisibleSection(for: "system"), .system)

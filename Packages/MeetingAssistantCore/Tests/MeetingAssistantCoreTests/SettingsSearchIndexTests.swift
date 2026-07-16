@@ -52,7 +52,7 @@ final class SettingsSearchIndexTests: XCTestCase {
     func testSectionMappingRoutesDictationModelSelectorToDictationSection() {
         let section = SettingsSearchIndex.section(forLocalizationKey: "settings.enhancements.selector.dictation.title")
 
-        XCTAssertEqual(section, .dictation)
+        XCTAssertEqual(section, .modes)
     }
 
     func testSectionMappingRoutesMeetingModelSelectorToMeetingsSection() {
@@ -120,11 +120,11 @@ final class SettingsSearchIndexTests: XCTestCase {
         )
         XCTAssertEqual(
             SettingsSearchIndex.destination(forLocalizationKey: "settings.models.routing.active_model"),
-            SettingsSection.dictation.destination,
+            SettingsDestination(section: .modes),
         )
         XCTAssertEqual(
             SettingsSearchIndex.destination(forLocalizationKey: "settings.service.transcription_provider.provider.title"),
-            SettingsSection.dictation.destination,
+            SettingsDestination(section: .modes),
         )
     }
 

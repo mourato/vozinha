@@ -30,6 +30,13 @@ public struct DictationStyleEditorDetailView: View {
     @State private var includeSelectedTextAtStart: Bool
     @State private var redactSensitiveData: Bool
     @State private var enhancementsSelection: EnhancementsAISelection?
+    @State private var autoCopyToClipboard: Bool
+    @State private var autoPasteToActiveApp: Bool
+    @State private var smartSpacingAndCapitalization: Bool
+    @State private var smartParagraphs: Bool
+    @State private var transcriptionProviderRawValue: String
+    @State private var transcriptionModelID: String
+    @State private var transcriptionInputLanguageCode: String?
     @State private var isDefault: Bool
     @State private var validationMessage: String?
     @State private var isDeleteConfirmationPresented = false
@@ -78,6 +85,13 @@ public struct DictationStyleEditorDetailView: View {
         _includeSelectedTextAtStart = State(initialValue: policy?.includeSelectedTextAtStart ?? false)
         _redactSensitiveData = State(initialValue: policy?.redactSensitiveData ?? true)
         _enhancementsSelection = State(initialValue: draft.enhancementsSelection)
+        _autoCopyToClipboard = State(initialValue: draft.textHandlingPolicy.autoCopyToClipboard)
+        _autoPasteToActiveApp = State(initialValue: draft.textHandlingPolicy.autoPasteToActiveApp)
+        _smartSpacingAndCapitalization = State(initialValue: draft.textHandlingPolicy.smartSpacingAndCapitalization)
+        _smartParagraphs = State(initialValue: draft.textHandlingPolicy.smartParagraphs)
+        _transcriptionProviderRawValue = State(initialValue: draft.transcriptionConfiguration.selection.provider.rawValue)
+        _transcriptionModelID = State(initialValue: draft.transcriptionConfiguration.selection.selectedModel)
+        _transcriptionInputLanguageCode = State(initialValue: draft.transcriptionConfiguration.inputLanguageCode)
         _isDefault = State(initialValue: draft.isDefault)
     }
 
@@ -156,6 +170,23 @@ public struct DictationStyleEditorDetailView: View {
                 .pickerStyle(.menu)
             }
 
+            Section {
+                SettingsCheckboxRow("settings.general.auto_copy_transcription".localized, isOn: $autoCopyToClipboard)
+                SettingsCheckboxRow("settings.general.auto_paste_transcription".localized, isOn: $autoPasteToActiveApp)
+                SettingsCheckboxRow("settings.dictation.smart_spacing".localized, isOn: $smartSpacingAndCapitalization)
+                SettingsCheckboxRow("settings.dictation.smart_paragraphs".localized, isOn: $smartParagraphs)
+            } header: {
+                SettingsFormSectionHeader(title: "settings.dictation.text_handling".localized, icon: "cpu")
+            }
+
+            Section {
+                transcriptionProviderPicker
+                activeModelLabel
+                inputLanguagePicker
+            } header: {
+                SettingsFormSectionHeader(title: "settings.models.routing.title".localized, icon: "arrow.triangle.branch")
+            }
+
             Section("settings.styles.editor.context_sources".localized) {
                 SettingsCheckboxRow("settings.context_awareness.accessibility_text".localized, isOn: $includeAccessibilityText)
                 SettingsCheckboxRow("settings.context_awareness.selected_text_at_start".localized, isOn: $includeSelectedTextAtStart)
@@ -200,6 +231,56 @@ public struct DictationStyleEditorDetailView: View {
         return value.isEmpty ? "textformat" : value
     }
 
+    @ViewBuilder
+    private var transcriptionProviderPicker: some View {
+        let providers = TranscriptionProvider.allCases
+        Picker(
+            "settings.service.transcription_provider.provider".localized,
+            selection: $transcriptionProviderRawValue,
+        ) {
+            ForEach(providers, id: \.rawValue) { provider in
+                Text(provider.displayName).tag(provider.rawValue)
+            }
+        }
+        .pickerStyle(.segmented)
+        .onChange(of: transcriptionProviderRawValue) { _, newRawValue in
+            if let provider = TranscriptionProvider(rawValue: newRawValue) {
+                transcriptionModelID = provider.defaultModelID
+            }
+        }
+    }
+
+    private var activeModelLabel: some View {
+        LabeledContent("settings.models.routing.active_model".localized) {
+            let provider = TranscriptionProvider(rawValue: transcriptionProviderRawValue) ?? .local
+            Text(provider.displayName(forModelID: transcriptionModelID))
+                .fontWeight(.medium)
+        }
+    }
+
+    @ViewBuilder
+    private var inputLanguagePicker: some View {
+        let hints = TranscriptionInputLanguageHint.allCases
+        Picker(
+            "settings.service.transcription_provider.input_language".localized,
+            selection: Binding(
+                get: { transcriptionInputLanguageCode ?? TranscriptionInputLanguageHint.automatic.rawValue },
+                set: { newValue in
+                    transcriptionInputLanguageCode = newValue == TranscriptionInputLanguageHint.automatic.rawValue ? nil : newValue
+                },
+            ),
+        ) {
+            ForEach(hints, id: \.rawValue) { hint in
+                Text(hint.displayName).tag(hint.rawValue)
+            }
+        }
+        .pickerStyle(.menu)
+
+        Text("settings.service.transcription_provider.input_language.help".localized)
+            .font(.caption)
+            .foregroundStyle(.secondary)
+    }
+
     private var currentDraft: DictationStyleEditorDraft {
         DictationStyleEditorDraft(
             id: styleID, name: name, iconSymbol: normalizedIconSymbol, promptInstructions: promptInstructions,
@@ -209,7 +290,27 @@ public struct DictationStyleEditorDetailView: View {
                 includeClipboard: includeClipboard, includeWindowOCR: includeWindowOCR,
                 includeAccessibilityText: includeAccessibilityText, includeSelectedTextAtStart: includeSelectedTextAtStart,
                 redactSensitiveData: redactSensitiveData,
-            ), enhancementsSelection: enhancementsSelection, isDefault: isDefault,
+            ), enhancementsSelection: enhancementsSelection, textHandlingPolicy: textHandlingPolicy,
+            transcriptionConfiguration: transcriptionConfiguration, isDefault: isDefault,
+        )
+    }
+
+    private var textHandlingPolicy: DictationTextHandlingPolicy {
+        DictationTextHandlingPolicy(
+            autoCopyToClipboard: autoCopyToClipboard,
+            autoPasteToActiveApp: autoPasteToActiveApp,
+            smartSpacingAndCapitalization: smartSpacingAndCapitalization,
+            smartParagraphs: smartParagraphs,
+        )
+    }
+
+    private var transcriptionConfiguration: DictationTranscriptionConfiguration {
+        DictationTranscriptionConfiguration(
+            selection: TranscriptionProviderSelection(
+                provider: TranscriptionProvider(rawValue: transcriptionProviderRawValue) ?? .local,
+                selectedModel: transcriptionModelID,
+            ),
+            inputLanguageCode: transcriptionInputLanguageCode,
         )
     }
 
@@ -232,7 +333,8 @@ public struct DictationStyleEditorDetailView: View {
             promptInstructions: promptInstructions.trimmingCharacters(in: .whitespacesAndNewlines),
             postProcessingEnabled: postProcessingEnabled, forceMarkdownOutput: forceMarkdownOutput,
             replaceBasePrompt: replaceBasePrompt, outputLanguage: outputLanguage, targets: normalizedTargets,
-            contextSourcePolicy: currentDraft.contextSourcePolicy, enhancementsSelection: enhancementsSelection, isDefault: isDefault,
+            contextSourcePolicy: currentDraft.contextSourcePolicy, enhancementsSelection: enhancementsSelection,
+            textHandlingPolicy: textHandlingPolicy, transcriptionConfiguration: transcriptionConfiguration, isDefault: isDefault,
         ))
     }
 

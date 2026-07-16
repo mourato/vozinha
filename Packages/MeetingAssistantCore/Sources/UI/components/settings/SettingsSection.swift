@@ -48,7 +48,6 @@ public enum SettingsSection: String, CaseIterable, Identifiable, Sendable {
 
     public static let primarySections: [SettingsSection] = [
         .activity,
-        .dictation,
         .modes,
         .meetings,
         .assistant,
@@ -62,7 +61,6 @@ public enum SettingsSection: String, CaseIterable, Identifiable, Sendable {
     public static var visibleSections: [SettingsSection] {
         [
             .activity,
-            .dictation,
             .modes,
             .meetings,
             .assistant,
@@ -108,7 +106,9 @@ public enum SettingsSection: String, CaseIterable, Identifiable, Sendable {
             SettingsDestination(section: .system, systemRoute: .sound)
         case .intelligence:
             SettingsDestination(section: .system, systemRoute: .models)
-        case .activity, .dictation, .modes, .meetings, .assistant, .integrations, .system:
+        case .dictation:
+            SettingsDestination(section: .modes)
+        case .activity, .modes, .meetings, .assistant, .integrations, .system:
             SettingsDestination(section: self)
         }
     }
@@ -147,7 +147,7 @@ public enum SettingsSection: String, CaseIterable, Identifiable, Sendable {
         case .metrics: "chart.pie.fill"
         case .general: "gearshape.2"
         case .dictation: "microphone"
-        case .modes: "paintpalette"
+        case .modes: "mic.fill"
         case .meetings: "bubble.left.and.text.bubble.right"
         case .audio: "speaker.wave.2"
         case .assistant: "sparkle"
