@@ -176,7 +176,7 @@ public struct DictationStyleEditorDetailView: View {
                 SettingsCheckboxRow("settings.dictation.smart_spacing".localized, isOn: $smartSpacingAndCapitalization)
                 SettingsCheckboxRow("settings.dictation.smart_paragraphs".localized, isOn: $smartParagraphs)
             } header: {
-                SettingsFormSectionHeader(title: "settings.dictation.text_handling".localized, icon: "cpu")
+                SettingsFormSectionHeader(title: "settings.dictation.text_handling".localized, icon: "text.alignleft")
             }
 
             Section {
