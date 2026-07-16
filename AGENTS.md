@@ -58,7 +58,7 @@ If a task would violate a hard constraint or needs an exceptional workflow: stop
 | Medium | One-subsystem feature/bugfix, one-package public API, or UI state logic without High triggers | Full |
 | High | Audio, concurrency, persistence, security, cross-module architecture, build/release infrastructure, 300+ added lines, or more than 8 source files | Full |
 
-Lane recipes, merge gates, and evidence contracts live in `delivery-workflow`. Full-lane review uses the thermo-nuclear semaforo: fix all Critical and Medium findings before merge.
+Lane recipes, technical validation gates, and evidence contracts live in `delivery-workflow`. Full-lane review uses the thermo-nuclear semaforo: fix all Critical and Medium findings before merge.
 
 ## Delegation
 
@@ -68,11 +68,13 @@ Every implementation plan must include an `Execution profile`; reclassify agains
 
 ## Agent Validation Loop
 
-`make validate-agent` is the remembered merge gate. End-of-task: strict lint on
-any Swift delta, then affected-module `validate-agent --lane auto` when behavior
-changes. Commit (pre-commit applies staged format/lint-fix); push is light unless
-auto=Full (Option C). Do not stack dry-run, staged validate, and Full/`--no-reuse`
-on every slice. Details live in `delivery-workflow`.
+`make validate-agent` is the remembered technical validation gate; it proves
+checks, not merge approval. End-of-task: strict lint on any Swift delta, then
+affected-module `validate-agent --lane auto` when behavior changes. Commit
+(pre-commit applies staged format/lint-fix); pre-push then validates or reuses
+the exact committed range. Guidance-only ranges run `guidance-check` without
+product tests. Do not stack manual working-tree, staged, and committed gates;
+required review remains separate. Details live in `delivery-workflow`.
 
 ## Commands and Routing
 

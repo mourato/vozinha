@@ -130,6 +130,9 @@ validate_push_range() {
     local status
     local args
     local result_path
+    local requested_lane
+    local reused
+    local expected_base
 
     # Deletions and tag-only pushes do not change the source tree being checked.
     if [ "${local_sha}" = "0000000000000000000000000000000000000000" ]; then
@@ -200,20 +203,19 @@ if [ "${remote_sha}" = "0000000000000000000000000000000000000000" ]; then
     echo "   gate: Option C (auto=${selected_lane} over committed range)"
 
     if [ "${selected_lane}" = "fast" ]; then
-        echo "ℹ️  Fast push: relying on end-of-task validate-agent --lane auto evidence."
-        echo "   Pre-push does not re-run scoped tests, test-full, or build-test."
-        echo "✅ Push validation passed (light)."
-        return 0
+        requested_lane="auto"
+        echo "   Fast push: running canonical validate-agent --lane auto"
+    else
+        requested_lane="full"
+        echo "   Full push: running mandatory validate-agent --lane full"
     fi
-
-    echo "   Full push: running mandatory validate-agent --lane full"
 
     output_file="$(mktemp "${TMPDIR:-/tmp}/prisma-pre-push.XXXXXX")"
     trap 'rm -f -- "${output_file:-}"; exit 130' INT TERM HUP
     if [ "${empty_base}" -eq 1 ]; then
-        args="--lane full --committed --empty-base --head ${head_ref}"
+        args="--lane ${requested_lane} --committed --empty-base --head ${head_ref}"
     else
-        args="--lane full --committed --base ${base_ref} --head ${head_ref}"
+        args="--lane ${requested_lane} --committed --base ${base_ref} --head ${head_ref}"
     fi
     if [ "${PUSH_CHECK_VERBOSE:-0}" != "1" ]; then
         args="${args} --agent"
@@ -225,6 +227,59 @@ if [ "${remote_sha}" = "0000000000000000000000000000000000000000" ]; then
     set -e
 
     result_path="$(sed -n 's/^AGENT_RESULT_JSON=//p' "${output_file}" | tail -n 1)"
+    reused="$(sed -n 's/^AGENT_REUSED=//p' "${output_file}" | tail -n 1)"
+    if [ -z "${result_path}" ]; then
+        result_path="$(sed -n 's/^Validation result:.*; result=//p' "${output_file}" | tail -n 1)"
+    fi
+    if [ -z "${reused}" ]; then
+        if grep -Fq 'Reusing PASS evidence:' "${output_file}"; then
+            reused=1
+        else
+            reused=0
+        fi
+    fi
+    expected_base="${base_ref:-}"
+    if [ "${empty_base}" -eq 1 ]; then
+        expected_base=""
+    fi
+    if [ "${status}" -eq 0 ]; then
+        if [ -z "${result_path}" ] || [ ! -f "${result_path}" ]; then
+            echo "Error: validate-agent produced incomplete aggregate evidence." >&2
+            status=1
+        elif [ "${reused}" != "0" ] && [ "${reused}" != "1" ]; then
+            echo "Error: validate-agent produced incomplete aggregate evidence." >&2
+            status=1
+        elif ! python3 - "${result_path}" "${selected_lane}" "${expected_base}" "${head_ref}" <<'PY'
+import json
+import sys
+
+path, expected_lane, expected_base, expected_head = sys.argv[1:]
+try:
+    with open(path, encoding="utf-8") as handle:
+        result = json.load(handle)
+    commands = result.get("commands")
+    if result.get("schemaVersion") != 2 or result.get("step") != "validate-agent":
+        raise ValueError("schema")
+    if result.get("status") != "PASS" or result.get("dryRun") is not False:
+        raise ValueError("status")
+    if result.get("decision", {}).get("selectedLane") != expected_lane:
+        raise ValueError("lane")
+    if result.get("validationMode") != "committed":
+        raise ValueError("mode")
+    if result.get("base") != expected_base or result.get("head") != expected_head:
+        raise ValueError("range")
+    if not result.get("validationFingerprint") or not commands or not result.get("childResults"):
+        raise ValueError("aggregate")
+    if any(command.get("status") != "PASS" for command in commands):
+        raise ValueError("commands")
+except (OSError, ValueError, json.JSONDecodeError):
+    raise SystemExit(1)
+PY
+        then
+            echo "Error: validate-agent produced invalid aggregate evidence." >&2
+            status=1
+        fi
+    fi
     if [ "${status}" -ne 0 ]; then
         echo "❌ Push validation failed for ${local_ref}." >&2
         if [ -n "${result_path}" ]; then
@@ -240,6 +295,13 @@ if [ "${remote_sha}" = "0000000000000000000000000000000000000000" ]; then
     trap - INT TERM HUP
     if [ "${status}" -ne 0 ]; then
         return "${status}"
+    fi
+    if [ "${selected_lane}" = "fast" ]; then
+        if [ "${reused}" = "1" ]; then
+            echo "✅ Fast technical validation reused compatible PASS evidence."
+        else
+            echo "✅ Fast technical validation executed for the exact pushed range."
+        fi
     fi
     if [ -n "${result_path}" ]; then
         echo "✅ Push validation passed; result: ${result_path}"

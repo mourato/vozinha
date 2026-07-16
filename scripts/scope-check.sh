@@ -464,6 +464,7 @@ main() {
     local module_count=0
     local targeted_count=0
     local code_relevant=0
+    local guidance_relevant=0
     local should_run_full=0
     local should_run_intermediate=0
     local reason
@@ -496,6 +497,12 @@ main() {
         case "${file_path}" in
             *.swift|*.m|*.mm|*.h|*.c|*.cpp|Makefile|Package.swift|scripts/*|.github/workflows/*|*.xcodeproj/*|*.xcworkspace/*)
                 code_relevant=1
+                ;;
+        esac
+
+        case "${file_path}" in
+            AGENTS.md|.agents/docs/*|.agents/skills/*)
+                guidance_relevant=1
                 ;;
         esac
 
@@ -533,6 +540,12 @@ main() {
 
     if [ "${source_files_changed}" -gt 8 ]; then
         append_line_once "High source-file churn detected (${source_files_changed} files > 8)" "${full_reasons_file}"
+    fi
+
+    if [ "${guidance_relevant}" -eq 1 ]; then
+        echo "- Running guidance gate..."
+        run_cmd "make guidance-check" || return $?
+        echo "  Guidance passed."
     fi
 
     if [ "${code_relevant}" -eq 0 ]; then

@@ -2,7 +2,7 @@
 
 This is the active plan ledger. Historical audits, completed plan rows, review
 notes, and rejected options remain in the [2026-07-12 ledger archive](archive/2026-07-12-plan-ledger-history.md).
-Plan files are never renumbered; the next available plan number is 102.
+Plan files are never renumbered; the next available plan number is 106.
 
 ## Execution rules
 
@@ -74,6 +74,10 @@ reason) | `REJECTED` (with a one-line rationale).
 | [099](099-polish-settings-expandable-disclosure-motion.md) | Polish Form expandable disclosure motion and document the contract | P1 | M | 093 (DONE) | DONE |
 | [100](100-pre-commit-format-option-c-pre-push.md) | Pre-commit staged format, agent lint/test ladder, Option-C pre-push | P1 | L | 087, 089 | DONE |
 | [101](101-remediate-daily-review-findings.md) | Remediate daily review findings across hooks and Modes drawer | P1 | M | 098, 099, 100 | DONE |
+| [102](102-close-fast-validation-gate.md) | Make Fast and guidance pushes pass a real technical gate | P0 | M | - | DONE |
+| [103](103-align-auto-lane-with-risk-policy.md) | Make auto lane conservative for product Swift changes | P0 | M | 102 | TODO |
+| [104](104-centralize-agent-routing-ownership.md) | Make `agent-ops` the single owner of delegation and profile selection | P1 | S | 103 | TODO |
+| [105](105-prune-agent-operational-context.md) | Prune dead agent context and make guidance drift fail closed | P1 | L | 104 | TODO |
 
 Plans 001–061 are completed or archived in the historical ledger. The archive preserves the original audit scope,
 findings, dependency history, status table, committee notes, and rejected
@@ -215,6 +219,12 @@ options verbatim for searchability.
 - **B2 sequence (093–097) is complete** — Settings navigation flatten ships
   expandable disclosure, inline System/Meetings content, Activity sheets, and
   title-only toolbar chrome.
+- **Agent-operations remediation (102–105)** is strictly serial:
+  **102 → 103 → 104 → 105**. Plan 102 closes the fail-open Fast/guidance gate;
+  103 makes automatic risk classification conservative; 104 removes competing
+  routing ownership; 105 runs last because it archives completed plans and
+  strengthens the validator against the dead context identified by this audit.
+  Plan 083 remains independent and must not be folded into this sequence.
 
 ## Findings considered and rejected
 

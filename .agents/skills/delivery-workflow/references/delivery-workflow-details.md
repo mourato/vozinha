@@ -10,7 +10,7 @@ Git mechanics, scoped validation, hooks, and release flows. Role, lanes, and the
 - End of task when Swift touched: fail-closed lint on the delta (`make lint-strict-agent` or equivalent).
 - End of task when behavior changed: one `make validate-agent ARGS="--lane auto --base main --agent"` (or `--committed`) on a clean tree.
 - Commit: pre-commit applies staged SwiftFormat/SwiftLint autofix and re-stages.
-- Push: Option C light path when auto=Fast — no scoped tests on push; end-of-task module validation is mandatory.
+- Push: pre-push runs or reuses canonical auto validation for the exact committed range.
 
 ### Full lane (Medium/High risk)
 
@@ -20,13 +20,13 @@ Git mechanics, scoped validation, hooks, and release flows. Role, lanes, and the
 - Reserve direct `make build-test` / `--no-reuse` for milestones or after flaky reuse.
 - Push: when auto=Full, pre-push runs mandatory `validate-agent --lane full --committed`; do not stack duplicate Full runs.
 
-`make preflight` is optional and does not replace lane merge gates.
+`make preflight` is optional and does not replace lane technical validation gates.
 
 ### Evidence contract
 
 Every handoff, commit, or PR must state: risk/lane, reusable-block decision, files inspected, commands and results, escalation rationale, known baseline failures, and review outcome.
 
-A dry-run is planning evidence only. Fast/Full evidence must include the final `make validate-agent` aggregate and thermo-nuclear semaforo review when required.
+A dry-run is planning evidence only. Fast/Full evidence must include the final `make validate-agent` aggregate. That aggregate proves technical checks only; thermo-nuclear semaforo review remains separate when required.
 
 ## Scoped validation
 
@@ -37,7 +37,7 @@ Iteration order:
 3. Scope checks: `make preview-check`, `make arch-check`, or `make guidance-check`.
 4. Full suite: `make build-test` when lane or escalation requires it.
 
-Canonical final evidence: `make validate-agent`. Use `make scope-check` only as an ad-hoc changed-path preview engine — not as a duplicate merge gate.
+Canonical final technical evidence: `make validate-agent`. Use `make scope-check` only as an ad-hoc changed-path preview engine — not as a duplicate gate.
 
 Escalate to `make build-test` when infrastructure, cross-module/public API, audio/persistence/concurrency/security paths, large deltas, or flaky scoped checks demand it.
 
@@ -88,15 +88,16 @@ make guidance-check
 4. Optional local evidence (Full/infra or unclear lane): one
    `make validate-agent ARGS="--lane auto --base main --agent"` on a clean tree,
    or `--committed --base <base> --head HEAD`. Skip dry-run/staged stacking.
-5. Push: Option C — light when auto=Fast (relies on end-of-task module validation);
-   mandatory Full `validate-agent --committed` when auto=Full. A clean working-tree
-   PASS with the same base/head trees can still be reused on the Full path.
-6. Guidance-only: `make guidance-check` then commit/push unless `scripts/` or
-   Makefile changed (then auto=Full on push).
+5. Push: pre-push validates or reuses the exact committed range. Fast uses
+   `validate-agent --lane auto --committed`; Full uses mandatory
+   `validate-agent --lane full --committed`. A clean working-tree PASS with the
+   same base/head trees can still be reused.
+6. Guidance-only: use `make guidance-check` during iteration; the Fast pushed
+   range records that command without running product tests.
 7. `make preflight-agent` / `make deliverable-gate` for release or high-confidence only.
 
 Tests are not run before every commit by default. `scope-check` is not a second
-merge gate — do not run it alongside `validate-agent` “for safety”.
+technical gate — do not run it alongside `validate-agent` “for safety”.
 `MA_RUST_AUDIO_KERNELS_BUILD=off` is not a routine push workaround.
 
 ## Git workflow
@@ -121,7 +122,7 @@ PR descriptions: summary, scope/risk, validation results, review findings, basel
 
 - Install hooks: `git config core.hooksPath scripts/hooks` or `make setup`.
 - `pre-commit`: applies staged SwiftFormat write + SwiftLint `--fix`, re-stages, then fails closed on residual lint; no tests.
-- `pre-push`: Option C — resolves auto lane via `scope-check --dry-run`; **Fast** pushes are light (no scoped tests/build-test); **Full** pushes run mandatory `validate-agent --lane full --committed` and reuse compatible PASS fingerprints when valid.
+- `pre-push`: resolves auto lane via `scope-check --dry-run`, then validates or reuses the exact range. **Fast** uses `validate-agent --lane auto --committed`; **Full** uses mandatory `validate-agent --lane full --committed`. Compatible PASS fingerprints avoid duplicate execution.
 - Rust audio staging is required in `auto`/`on` modes. Do not treat
   `MA_RUST_AUDIO_KERNELS_BUILD=off` as a routine push workaround; use it only
   as an emergency bypass when Rust tooling is unavailable.
@@ -139,4 +140,4 @@ PR descriptions: summary, scope/risk, validation results, review findings, basel
 - `make preflight`: build + test + lint + benchmark (optional comprehensive validation).
 - `make preflight-fast`: lint + build + test (skips benchmark).
 - `make deliverable-gate`: build-test + lint + ci-release-parity for release confidence.
-- These do not replace mandatory Fast/Full lane merge gates.
+- These do not replace mandatory Fast/Full technical validation gates.

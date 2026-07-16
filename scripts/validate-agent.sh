@@ -432,7 +432,7 @@ emit_agent_result() {
 run_step() {
     local name="$1"
     local command="$2"
-    local log_path="${RUN_DIR}/${name}.log"
+    local log_path="${RUN_DIR}/validate-agent-${name}.log"
     local started
     local ended
     local exit_code

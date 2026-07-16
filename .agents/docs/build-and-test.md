@@ -6,22 +6,23 @@ This document provides comprehensive CLI and workflow reference for building, te
 
 Choose commands by lane:
 
-- Canonical Fast/Full/auto merge gate: `make validate-agent ARGS="--lane auto"`
+- Canonical Fast/Full/auto technical gate: `make validate-agent ARGS="--lane auto"`
 - Workflow fixture gate: `make workflow-test`
 - Optional comprehensive validation: `make preflight`
 
 Agent default loop (Low/Fast): run only the smallest changed-path check during
 iteration; end of task run strict lint when Swift changed and affected-module
 `validate-agent --lane auto` when behavior changed; commit (pre-commit applies
-staged SwiftFormat/SwiftLint autofix); push — Option C is light when auto=Fast
-and mandatory Full when auto=Full. Do **not** stack dry-run + staged validate +
-Full/`--no-reuse` on every slice. Guidance-only changes: prefer
-`make guidance-check`, then commit/push. Use
+staged SwiftFormat/SwiftLint autofix); pre-push then validates or reuses the
+exact committed range. Fast uses canonical auto validation and Full uses the
+mandatory Full gate. Do **not** stack manual working-tree, staged, and committed
+gates. Guidance-only ranges run `guidance-check` without product tests. Use
 `make validate-agent ARGS="--lane auto --dry-run --base main"` at most once when
 the lane is unclear; for reusable Full evidence on a clean tree prefer
 `make validate-agent ARGS="--lane auto --base main --agent"` (or `--committed`)
 once before push when behavior changed. Treat `validate-agent` as the remembered
-gate; `scope-check` is an internal engine — do not run both for safety.
+technical gate; it proves checks, not merge approval. Required review remains
+separate. `scope-check` is an internal engine — do not run both for safety.
 
 ## Primary Build/Test Commands
 
@@ -152,7 +153,7 @@ make test-ci-strict      # Strict xcodebuild parity mode
 | `make test-appkit` | Overlay lifecycle coverage | AppKit-specific changes |
 | `make test-parity` | Xcode parity diagnostics | Build-system parity checks |
 | `make scope-check` | Smart scoped validation + escalation | Iteration feedback |
-| `make validate-agent` | Fingerprinted Fast/Full/auto evidence | Merge gate |
+| `make validate-agent` | Fingerprinted Fast/Full/auto evidence | Technical validation gate |
 | `make preflight` | Build + test + lint + benchmark | Optional comprehensive pass |
 
 ### Run specific tests
@@ -165,7 +166,7 @@ make test-ci-strict      # Strict xcodebuild parity mode
 
 ### Scoped iteration workflow (faster feedback)
 
-Use this sequence while implementing, then keep lane merge gates at the end:
+Use this sequence while implementing, then keep lane technical gates at the end:
 
 ```bash
 # Canonical smart command for iteration (auto-maps tests, escalates when needed)
@@ -235,13 +236,14 @@ find scripts/hooks -maxdepth 1 -type f ! -perm -u+x -print
 The `find` command must print nothing. Stale copies under `.git/hooks/` (for example `pre-push.disabled`) are ignored once `core.hooksPath` points at `scripts/hooks`.
 
 Pre-push classifies the exact commit range using the same auto-lane decision as
-`validate-agent`. Option C keeps Fast pushes light and relies on the required
-end-of-task affected-module validation; Full ranges run mandatory
-`validate-agent --lane full --committed`, reusing compatible PASS fingerprints
-when external inputs are comparable. Rust audio staging uses a crate-local
-Cargo target directory even when `CARGO_TARGET_DIR` is set in the environment.
-Set `PUSH_CHECK_VERBOSE=1` for full logs on failure. `MA_RUST_AUDIO_KERNELS_BUILD=off`
-is an emergency bypass only, not a routine workaround.
+`validate-agent`, then validates or reuses that range. Fast runs
+`validate-agent --lane auto --committed`; Full runs mandatory
+`validate-agent --lane full --committed`. Compatible PASS fingerprints avoid
+duplicate execution. Guidance-only Fast ranges run `guidance-check` without
+product tests. Rust audio staging uses a crate-local Cargo target directory even
+when `CARGO_TARGET_DIR` is set in the environment. Set `PUSH_CHECK_VERBOSE=1`
+for full logs on failure. `MA_RUST_AUDIO_KERNELS_BUILD=off` is an emergency
+bypass only, not a routine workaround.
 
 ## Script Support Surface
 
@@ -317,6 +319,7 @@ not participate in external-input comparison. Staged and committed modes
 exclude unrelated unstaged/untracked state. Only exact `PASS` evidence with
 existing child results and matching fingerprints can be reused. Use
 `--no-reuse` after flaky or inconclusive behavior; dry-run output is never proof.
+A technical PASS does not replace required review or grant merge approval.
 
 On failure, scripts print compact excerpts to terminal while keeping full logs on disk.
 
@@ -342,7 +345,7 @@ On failure, scripts print compact excerpts to terminal while keeping full logs o
 |------|---------|
 | Local development loop | `make build && make run` |
 | Before committing | Pre-commit applies staged SwiftFormat/SwiftLint autofix; fix residual lint manually |
-| Before push/release (recommended) | End-of-task `validate-agent --lane auto` for behavior changes; pre-push Option C (light Fast, mandatory Full) |
+| Before push/release (recommended) | End-of-task `validate-agent --lane auto` for behavior changes; pre-push validates/reuses the exact Fast or Full committed range |
 | Pre-merge validation | `make preflight` |
 | Fast local feedback | `make preflight-fast` |
 | Smart scoped iteration | `make scope-check` |
