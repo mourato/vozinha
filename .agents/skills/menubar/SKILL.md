@@ -47,5 +47,5 @@ Read [menubar patterns](references/menubar-patterns.md) for code samples and dee
 
 ## References
 
-- [MenuBar.swift](App/AppDelegate/MenuBar.swift)
-- [FloatingRecordingIndicatorView.swift](Packages/MeetingAssistantCore/Sources/UI/components/recording/FloatingRecordingIndicatorView/FloatingRecordingIndicatorView.swift)
+- [MenuBar.swift](../../../App/AppDelegate/MenuBar.swift)
+- [FloatingRecordingIndicatorView.swift](../../../Packages/MeetingAssistantCore/Sources/UI/components/recording/FloatingRecordingIndicatorView/FloatingRecordingIndicatorView.swift)

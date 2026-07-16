@@ -146,6 +146,40 @@ test_broken_nested_markdown_link() {
         "Missing local reference 'missing.md'"
 }
 
+test_markdown_link_does_not_fall_back_to_repo_root() {
+    local fixture
+
+    fixture="$(new_fixture markdown-shadow-collision)"
+    add_skill "${fixture}"
+    printf '%s\n' '# Nested guidance' '' '[Shadow](AGENTS.md)' \
+        > "${fixture}/.agents/skills/fixture-skill/references/nested.md"
+    expect_fail markdown-shadow-collision "${fixture}" \
+        '.agents/skills/fixture-skill/references/nested.md' \
+        "Missing local reference 'AGENTS.md'"
+}
+
+test_valid_explicit_parent_reference() {
+    local fixture
+
+    fixture="$(new_fixture valid-explicit-parent-reference)"
+    add_skill "${fixture}"
+    printf '%s\n' '# Nested guidance' '' '[Skill](../SKILL.md)' \
+        > "${fixture}/.agents/skills/fixture-skill/references/nested.md"
+    expect_pass valid-explicit-parent-reference "${fixture}"
+}
+
+test_invalid_explicit_parent_reference() {
+    local fixture
+
+    fixture="$(new_fixture invalid-explicit-parent-reference)"
+    add_skill "${fixture}"
+    printf '%s\n' '# Nested guidance' '' '[Missing](../missing.md)' \
+        > "${fixture}/.agents/skills/fixture-skill/references/nested.md"
+    expect_fail invalid-explicit-parent-reference "${fixture}" \
+        '.agents/skills/fixture-skill/references/nested.md' \
+        "Missing local reference '../missing.md'"
+}
+
 test_broken_inline_reference() {
     local fixture
 
@@ -168,6 +202,16 @@ test_valid_inline_reference() {
     printf '%s\n' '' 'Read `references/existing.md`.' \
         >> "${fixture}/.agents/skills/fixture-skill/SKILL.md"
     expect_pass valid-inline-reference "${fixture}"
+}
+
+test_inline_repo_root_reference_stays_valid() {
+    local fixture
+
+    fixture="$(new_fixture valid-inline-repo-root-reference)"
+    add_skill "${fixture}"
+    printf '%s\n' '' 'Read `AGENTS.md`.' \
+        >> "${fixture}/.agents/skills/fixture-skill/SKILL.md"
+    expect_pass valid-inline-repo-root-reference "${fixture}"
 }
 
 test_hidden_and_unexpected_skill_children() {
@@ -195,8 +239,12 @@ test_empty_local_skill_directory_is_ignored() {
 test_valid_nested_reference
 test_orphan_skill_directory
 test_broken_nested_markdown_link
+test_markdown_link_does_not_fall_back_to_repo_root
+test_valid_explicit_parent_reference
+test_invalid_explicit_parent_reference
 test_broken_inline_reference
 test_valid_inline_reference
+test_inline_repo_root_reference_stays_valid
 test_hidden_and_unexpected_skill_children
 test_empty_local_skill_directory_is_ignored
 

@@ -22,7 +22,7 @@
 - **Priority**: P1
 - **Effort**: M
 - **Risk**: HIGH
-- **Depends on**: `plans/079-establish-single-form-settings-surface.md`, `plans/080-migrate-primary-settings-journeys-to-form-sections.md`, `plans/081-migrate-system-settings-hierarchy-to-form-sections.md`, `plans/082-retire-form-islands-and-normalize-specialized-settings-surfaces.md`
+- **Depends on**: `plans/archive/completed/079-establish-single-form-settings-surface.md`, `plans/archive/completed/080-migrate-primary-settings-journeys-to-form-sections.md`, `plans/archive/completed/081-migrate-system-settings-hierarchy-to-form-sections.md`, `plans/archive/completed/082-retire-form-islands-and-normalize-specialized-settings-surfaces.md`
 - **Category**: tests
 - **Planned at**: commit `a9a86350`, 2026-07-15
 

@@ -63,7 +63,7 @@ def parse_make_targets(makefile_path: Path) -> set[str]:
     return targets
 
 
-def resolve_local_path(source_file: Path, reference: str) -> Path | None:
+def clean_local_reference(reference: str) -> str | None:
     clean_reference = reference.split("#", 1)[0].strip()
     if not clean_reference:
         return None
@@ -72,20 +72,26 @@ def resolve_local_path(source_file: Path, reference: str) -> Path | None:
     if any(token in clean_reference for token in ("*", "{", "}", "...")):
         return None
 
-    if clean_reference.startswith("./") or clean_reference.startswith("../"):
+    return clean_reference.replace("%20", " ")
+
+
+def resolve_markdown_path(source_file: Path, reference: str) -> Path | None:
+    clean_reference = clean_local_reference(reference)
+    if clean_reference is None:
+        return None
+
+    return (source_file.parent / clean_reference).resolve()
+
+
+def resolve_inline_path(source_file: Path, reference: str) -> Path | None:
+    clean_reference = clean_local_reference(reference)
+    if clean_reference is None:
+        return None
+
+    if clean_reference.startswith(("./", "../", "references/", "assets/")):
         source_relative = (source_file.parent / clean_reference).resolve()
         if source_relative.exists():
             return source_relative
-
-        root_relative = (ROOT / clean_reference.removeprefix("./")).resolve()
-        if root_relative.exists():
-            return root_relative
-
-        return source_relative
-
-    sibling_candidate = (source_file.parent / clean_reference).resolve()
-    if sibling_candidate.exists():
-        return sibling_candidate
 
     return (ROOT / clean_reference).resolve()
 
@@ -121,22 +127,29 @@ def validate_path_references(markdown_file: Path, text: str) -> list[str]:
     errors: list[str] = []
     text_without_code_blocks = FENCED_CODE_BLOCK_RE.sub("", text)
 
-    references = {match.group(1) for match in MARKDOWN_LINK_RE.finditer(text_without_code_blocks)}
-    references.update(match.group(1) for match in INLINE_PATH_RE.finditer(text_without_code_blocks))
+    reference_groups = (
+        (
+            {match.group(1) for match in MARKDOWN_LINK_RE.finditer(text_without_code_blocks)},
+            resolve_markdown_path,
+        ),
+        (
+            {match.group(1) for match in INLINE_PATH_RE.finditer(text_without_code_blocks)},
+            resolve_inline_path,
+        ),
+    )
 
-    for reference in sorted(references):
-        if not looks_like_local_reference(reference):
-            continue
-        if "%20" in reference:
-            reference = reference.replace("%20", " ")
+    for references, resolver in reference_groups:
+        for reference in sorted(references):
+            if not looks_like_local_reference(reference):
+                continue
 
-        local_path = resolve_local_path(markdown_file, reference)
-        if local_path is None:
-            continue
-        if not local_path.exists():
-            errors.append(
-                f"Missing local reference '{reference}' in {markdown_file.relative_to(ROOT)}"
-            )
+            local_path = resolver(markdown_file, reference)
+            if local_path is None:
+                continue
+            if not local_path.exists():
+                errors.append(
+                    f"Missing local reference '{reference}' in {markdown_file.relative_to(ROOT)}"
+                )
 
     return errors
 
