@@ -6,6 +6,8 @@ import MeetingAssistantCoreDomain
 import MeetingAssistantCoreInfrastructure
 import SwiftUI
 
+// MARK: - Settings View
+
 // MARK: - Layout Constants
 
 private enum LayoutConstants {
@@ -37,6 +39,7 @@ public struct SettingsView: View {
     @State private var expandProtectedApps = false
     @State private var columnVisibility: NavigationSplitViewVisibility
     @State private var navigationService = NavigationService.shared
+    @State private var requestedModesSubroute: DictationStyleRoute?
 
     @MainActor
     public init() {
@@ -197,6 +200,9 @@ private extension SettingsView {
         if destination.section == .system {
             systemRoute = destination.systemRoute ?? .root
         }
+        if destination.section == .modes || destination.section == .assistant || destination.section == .integrations {
+            requestedModesSubroute = destination.modesSubroute
+        }
         consumePendingActivityRoute()
     }
 
@@ -241,13 +247,11 @@ private extension SettingsView {
         case .vocabulary:
             VocabularySettingsTab()
         case .dictation, .modes:
-            ModesSettingsTab()
+            ModesSettingsTab(initialRoute: $requestedModesSubroute)
         case .meetings:
             MeetingSettingsTab()
-        case .assistant:
-            AssistantSettingsTab()
-        case .integrations:
-            IntegrationsSettingsTab()
+        case .assistant, .integrations:
+            ModesSettingsTab(initialRoute: $requestedModesSubroute)
         case .audio:
             SystemSettingsTab(route: .constant(.sound))
         case .enhancements:

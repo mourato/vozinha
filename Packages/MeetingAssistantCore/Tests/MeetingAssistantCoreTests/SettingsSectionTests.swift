@@ -5,7 +5,7 @@ final class SettingsSectionTests: XCTestCase {
     func testPrimarySections_OrderStartsWithCaptureWorkflows() {
         XCTAssertEqual(
             SettingsSection.primarySections,
-            [.activity, .modes, .meetings, .assistant, .integrations],
+            [.activity, .modes, .meetings],
         )
     }
 
@@ -19,7 +19,7 @@ final class SettingsSectionTests: XCTestCase {
     func testVisibleSections_OrderMatchesProductConcepts() {
         XCTAssertEqual(
             SettingsSection.visibleSections,
-            [.activity, .modes, .meetings, .assistant, .integrations, .system],
+            [.activity, .modes, .meetings, .system],
         )
     }
 
@@ -111,9 +111,22 @@ final class SettingsSectionTests: XCTestCase {
         XCTAssertEqual(SettingsSection.resolvedVisibleSection(for: "activity"), .activity)
         XCTAssertEqual(SettingsSection.resolvedVisibleSection(for: "dictation"), .modes)
         XCTAssertEqual(SettingsSection.resolvedVisibleSection(for: "modes"), .modes)
+        XCTAssertEqual(SettingsSection.resolvedVisibleSection(for: "assistant"), .modes)
+        XCTAssertEqual(SettingsSection.resolvedVisibleSection(for: "integrations"), .modes)
         XCTAssertEqual(SettingsSection.resolvedVisibleSection(for: "intelligence"), .system)
         XCTAssertEqual(SettingsSection.resolvedVisibleSection(for: "system"), .system)
         XCTAssertEqual(SettingsSection.resolvedVisibleSection(for: "audio"), .system)
+    }
+
+    func testResolvedDestination_PreservesModesSubroutes() {
+        XCTAssertEqual(
+            SettingsSection.resolvedDestination(for: "assistant"),
+            SettingsDestination(section: .modes, modesSubroute: .assistant),
+        )
+        XCTAssertEqual(
+            SettingsSection.resolvedDestination(for: "integrations"),
+            SettingsDestination(section: .modes, modesSubroute: .integrations),
+        )
     }
 
     func testOldRawValuesStillParseAsSettingsSection() {

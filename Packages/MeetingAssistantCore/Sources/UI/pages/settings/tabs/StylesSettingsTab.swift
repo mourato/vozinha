@@ -10,6 +10,8 @@ public struct StylesSettingsTab: View {
     private let isListFocusEnabled: Bool
     @State private var selectedStyleID: UUID?
     private let onOpenEditor: ((UUID?) -> Void)?
+    private let onOpenAssistant: (() -> Void)?
+    private let onOpenIntegrations: (() -> Void)?
 
     public init(
         viewModel: DictationStylesSettingsViewModel,
@@ -18,6 +20,8 @@ public struct StylesSettingsTab: View {
         accessibilityFocusedStyle: AccessibilityFocusState<DictationStyleFocusTarget?>.Binding? = nil,
         isListFocusEnabled: Bool = true,
         onOpenEditor: ((UUID?) -> Void)? = nil,
+        onOpenAssistant: (() -> Void)? = nil,
+        onOpenIntegrations: (() -> Void)? = nil,
     ) {
         _viewModel = ObservedObject(wrappedValue: viewModel)
         _aiSettingsViewModel = ObservedObject(wrappedValue: aiSettingsViewModel)
@@ -25,6 +29,8 @@ public struct StylesSettingsTab: View {
         self.accessibilityFocusedStyle = accessibilityFocusedStyle
         self.isListFocusEnabled = isListFocusEnabled
         self.onOpenEditor = onOpenEditor
+        self.onOpenAssistant = onOpenAssistant
+        self.onOpenIntegrations = onOpenIntegrations
     }
 
     public var body: some View {
@@ -57,6 +63,31 @@ public struct StylesSettingsTab: View {
                             isFocusEnabled: isListFocusEnabled,
                         )
                     }
+                }
+            }
+
+            if onOpenAssistant != nil || onOpenIntegrations != nil {
+                Section {
+                    if let onOpenAssistant {
+                        SettingsListDrillDownButtonRow(
+                            title: "settings.section.assistant".localized,
+                            subtitle: "settings.assistant.header_desc".localized,
+                            action: onOpenAssistant,
+                        )
+                    }
+
+                    if let onOpenIntegrations {
+                        SettingsListDrillDownButtonRow(
+                            title: "settings.section.integrations".localized,
+                            subtitle: "settings.integrations.header_desc".localized,
+                            action: onOpenIntegrations,
+                        )
+                    }
+                } header: {
+                    SettingsFormSectionHeader(
+                        title: "settings.section.ai".localized,
+                        icon: "sparkles",
+                    )
                 }
             }
         }

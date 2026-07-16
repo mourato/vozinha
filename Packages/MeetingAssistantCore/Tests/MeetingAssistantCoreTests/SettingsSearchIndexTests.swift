@@ -28,7 +28,7 @@ final class SettingsSearchIndexTests: XCTestCase {
     func testSectionMappingRoutesIntegrationKeysToIntegrationsSection() {
         let section = SettingsSearchIndex.section(forLocalizationKey: "settings.integrations.header_desc")
 
-        XCTAssertEqual(section, .integrations)
+        XCTAssertEqual(section, .modes)
     }
 
     func testSectionMappingRoutesMeetingCapabilityKeyToMeetingsSection() {
@@ -40,7 +40,7 @@ final class SettingsSearchIndexTests: XCTestCase {
     func testSectionMappingRoutesIntegrationCapabilityKeyToIntegrationsSection() {
         let section = SettingsSearchIndex.section(forLocalizationKey: "settings.capabilities.assistant_integrations")
 
-        XCTAssertEqual(section, .integrations)
+        XCTAssertEqual(section, .modes)
     }
 
     func testSectionMappingRoutesStylesKeysToModesSection() {

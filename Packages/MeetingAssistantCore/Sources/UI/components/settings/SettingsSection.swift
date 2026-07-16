@@ -5,6 +5,7 @@ public struct SettingsDestination: Equatable, Sendable {
     public let activityRoute: ActivitySettingsRoute?
     public let activityPendingSheet: ActivityPendingSheet?
     public let systemRoute: SystemSettingsRoute?
+    public let modesSubroute: DictationStyleRoute?
     public let expandProtectedApps: Bool
 
     public init(
@@ -12,12 +13,14 @@ public struct SettingsDestination: Equatable, Sendable {
         activityRoute: ActivitySettingsRoute? = nil,
         activityPendingSheet: ActivityPendingSheet? = nil,
         systemRoute: SystemSettingsRoute? = nil,
+        modesSubroute: DictationStyleRoute? = nil,
         expandProtectedApps: Bool = false,
     ) {
         self.section = section
         self.activityRoute = activityRoute
         self.activityPendingSheet = activityPendingSheet
         self.systemRoute = systemRoute
+        self.modesSubroute = modesSubroute
         self.expandProtectedApps = expandProtectedApps
     }
 }
@@ -50,8 +53,6 @@ public enum SettingsSection: String, CaseIterable, Identifiable, Sendable {
         .activity,
         .modes,
         .meetings,
-        .assistant,
-        .integrations,
     ]
 
     public static let settingsSections: [SettingsSection] = [
@@ -63,17 +64,15 @@ public enum SettingsSection: String, CaseIterable, Identifiable, Sendable {
             .activity,
             .modes,
             .meetings,
-            .assistant,
-            .integrations,
             .system,
         ]
     }
 
     public var isLegacyRedirect: Bool {
         switch self {
-        case .metrics, .transcriptions, .models, .enhancements, .vocabulary, .permissions, .general, .intelligence, .audio:
+        case .metrics, .transcriptions, .models, .enhancements, .vocabulary, .permissions, .general, .intelligence, .audio, .assistant, .integrations:
             true
-        case .activity, .dictation, .modes, .meetings, .assistant, .integrations, .system:
+        case .activity, .dictation, .modes, .meetings, .system:
             false
         }
     }
@@ -108,7 +107,11 @@ public enum SettingsSection: String, CaseIterable, Identifiable, Sendable {
             SettingsDestination(section: .system, systemRoute: .models)
         case .dictation:
             SettingsDestination(section: .modes)
-        case .activity, .modes, .meetings, .assistant, .integrations, .system:
+        case .assistant:
+            SettingsDestination(section: .modes, modesSubroute: .assistant)
+        case .integrations:
+            SettingsDestination(section: .modes, modesSubroute: .integrations)
+        case .activity, .modes, .meetings, .system:
             SettingsDestination(section: self)
         }
     }

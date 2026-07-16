@@ -10,10 +10,12 @@ public struct ModesSettingsTab: View {
     @AccessibilityFocusState private var accessibilityFocusedStyle: DictationStyleFocusTarget?
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.modesReduceMotionPreview) private var reduceMotionPreview
+    @Binding private var initialRoute: DictationStyleRoute?
 
-    public init(settings: AppSettingsStore = .shared) {
+    public init(settings: AppSettingsStore = .shared, initialRoute: Binding<DictationStyleRoute?> = .constant(nil)) {
         _viewModel = StateObject(wrappedValue: DictationStylesSettingsViewModel(settings: settings))
         _aiSettingsViewModel = StateObject(wrappedValue: AISettingsViewModel(settings: settings))
+        _initialRoute = initialRoute
     }
 
     public var body: some View {
@@ -29,6 +31,20 @@ public struct ModesSettingsTab: View {
                         .focusSection()
                 }
             }
+            .onAppear {
+                consumeInitialRoute()
+            }
+            .onChange(of: initialRoute) { _, newValue in
+                if newValue != nil {
+                    consumeInitialRoute()
+                }
+            }
+    }
+
+    private func consumeInitialRoute() {
+        guard let route = initialRoute else { return }
+        initialRoute = nil
+        openRoute(route)
     }
 
     private var isEditorPresented: Bool {
@@ -48,6 +64,16 @@ public struct ModesSettingsTab: View {
                 accessibilityFocusedStyle = nil
                 openRoute(.editor(styleID: styleID))
             },
+            onOpenAssistant: {
+                focusedStyle = nil
+                accessibilityFocusedStyle = nil
+                openRoute(.assistant)
+            },
+            onOpenIntegrations: {
+                focusedStyle = nil
+                accessibilityFocusedStyle = nil
+                openRoute(.integrations)
+            },
         )
     }
 
@@ -58,6 +84,14 @@ public struct ModesSettingsTab: View {
             editorPage(styleID: styleID)
         case let .promptEditor(styleID):
             promptEditorPage(styleID: styleID)
+        case .assistant:
+            AssistantSettingsContent(
+                onClose: { _ = navigationState.goBack() },
+            )
+        case .integrations:
+            IntegrationsSettingsContent(
+                onClose: { _ = navigationState.goBack() },
+            )
         }
     }
 
@@ -118,7 +152,7 @@ public struct ModesSettingsTab: View {
     private var routeStyleID: UUID? {
         switch navigationState.currentRoute {
         case let .editor(styleID), let .promptEditor(styleID): styleID
-        case nil: nil
+        case .assistant, .integrations, nil: nil
         }
     }
 
