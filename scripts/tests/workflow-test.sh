@@ -244,6 +244,128 @@ test_staged_receipt_reused_after_commit() {
     assert_contains "${output}" "AGENT_REUSED=0"
 }
 
+test_pre_push_full_scripts_change() {
+    local fixture
+    local base
+    local head
+    local output
+
+    fixture="$(new_fixture)"
+    base="$(git -C "${fixture}" rev-parse HEAD)"
+    printf '%s\n' '#!/bin/bash' 'echo infra' > "${fixture}/scripts/push-infra.sh"
+    chmod +x "${fixture}/scripts/push-infra.sh"
+    git -C "${fixture}" add scripts/push-infra.sh
+    git -C "${fixture}" commit -qm "scripts push fixture"
+    head="$(git -C "${fixture}" rev-parse HEAD)"
+    output="$(cd "${fixture}" && printf 'refs/heads/main %s refs/heads/main %s\n' "${head}" "${base}" | MA_AGENT_LOG_DIR="${TMP_ROOT}/pre-push-scripts" ./scripts/hooks-pre-push)"
+    assert_contains "${output}" "gate: Option C (auto=full"
+    assert_contains "${output}" "Full push: running mandatory validate-agent --lane full"
+    assert_contains "${output}" "Running lint-strict:"
+    assert_contains "${output}" "Running build-test:"
+    assert_contains "${output}" "Push validation passed"
+}
+
+test_pre_commit_staged_format() {
+    local fixture
+    local toolchain_dir
+    local output
+    local staged_blob
+    local unstaged_blob
+
+    fixture="$(new_fixture)"
+    toolchain_dir="${TMP_ROOT}/pre-commit-tools"
+    mkdir -p "${toolchain_dir}"
+
+    cat > "${toolchain_dir}/swiftformat" <<'EOF'
+#!/bin/bash
+file=""
+lint=0
+for arg in "$@"; do
+    case "$arg" in
+        --lint) lint=1 ;;
+        --config) ;;
+        *) file="$arg" ;;
+    esac
+done
+[ -n "$file" ] || exit 0
+if [ "$lint" -eq 1 ]; then
+    grep -q 'UNFORMATTED' "$file" && exit 1 || exit 0
+fi
+if grep -q 'UNFORMATTED' "$file"; then
+    sed -i.bak 's/UNFORMATTED//' "$file"
+    rm -f "${file}.bak"
+fi
+exit 0
+EOF
+
+    cat > "${toolchain_dir}/swiftlint" <<'EOF'
+#!/bin/bash
+fix=0
+quiet=0
+files=()
+for arg in "$@"; do
+    case "$arg" in
+        --fix) fix=1 ;;
+        --config|--quiet) ;;
+        lint) ;;
+        *) files+=("$arg") ;;
+    esac
+done
+if [ "$fix" -eq 1 ]; then
+    for f in "${files[@]}"; do
+        [ -f "$f" ] || continue
+        if grep -q 'AUTOFIX' "$f"; then
+            sed -i.bak 's/AUTOFIX//' "$f"
+            rm -f "${f}.bak"
+        fi
+    done
+fi
+for f in "${files[@]}"; do
+    [ -f "$f" ] || continue
+    grep -q 'LINTFAIL' "$f" && exit 1
+done
+exit 0
+EOF
+    chmod +x "${toolchain_dir}/swiftformat" "${toolchain_dir}/swiftlint"
+
+    mkdir -p "${fixture}/scripts/hooks"
+    cp "${SCRIPT_ROOT}/scripts/hooks/pre-commit" "${fixture}/scripts/hooks/pre-commit"
+    chmod +x "${fixture}/scripts/hooks/pre-commit"
+    touch "${fixture}/.swiftformat" "${fixture}/.swiftlint.yml"
+
+    printf 'UNFORMATTED let staged = 1\n' > "${fixture}/Staged.swift"
+    printf 'UNFORMATTED let unstaged = 2\n' > "${fixture}/Unstaged.swift"
+    git -C "${fixture}" add Staged.swift Unstaged.swift
+    git -C "${fixture}" commit -qm "tracked swift fixtures"
+    printf 'UNFORMATTED let staged = 2\n' > "${fixture}/Staged.swift"
+    printf 'UNFORMATTED let unstaged = 3\n' > "${fixture}/Unstaged.swift"
+    git -C "${fixture}" add Staged.swift
+
+    output="$(cd "${fixture}" && PATH="${toolchain_dir}:${PATH}" ./scripts/hooks/pre-commit 2>&1)"
+    assert_contains "${output}" "Applying SwiftFormat"
+    assert_contains "${output}" "Re-staging formatted Swift files"
+    assert_contains "${output}" "pre-commit checks passed"
+
+    staged_blob="$(git -C "${fixture}" show :Staged.swift)"
+    unstaged_blob="$(cat "${fixture}/Unstaged.swift")"
+    printf '%s' "${staged_blob}" | grep -Fq 'UNFORMATTED' && fail "staged index still contains UNFORMATTED"
+    printf '%s' "${unstaged_blob}" | grep -Fq 'UNFORMATTED' || fail "unstaged working tree should remain unformatted"
+
+    printf 'LINTFAIL let blocked = 1\n' > "${fixture}/Blocked.swift"
+    git -C "${fixture}" add Blocked.swift
+    set +e
+    output="$(cd "${fixture}" && PATH="${toolchain_dir}:${PATH}" ./scripts/hooks/pre-commit 2>&1)"
+    local status=$?
+    set -e
+    test "${status}" -eq 1
+    assert_contains "${output}" "SwiftLint violations remain"
+
+    git -C "${fixture}" restore --staged Blocked.swift
+    rm -f "${fixture}/Blocked.swift"
+    output="$(cd "${fixture}" && PATH="${toolchain_dir}:${PATH}" SKIP_LINT=1 ./scripts/hooks/pre-commit 2>&1)"
+    assert_contains "${output}" "Lint/format checks skipped via SKIP_LINT=1"
+}
+
 test_pre_push_protocol() {
     local fixture
     local base
@@ -268,12 +390,20 @@ test_pre_push_protocol() {
     assert_contains "${output}" "Validating push range: refs/heads/main"
     assert_contains "${output}" "merge-base with refs/remotes/alt/main"
     assert_contains "${output}" "remote: alt"
+    assert_contains "${output}" "gate: Option C (auto=fast"
+    assert_contains "${output}" "Fast push: relying on end-of-task validate-agent --lane auto evidence."
     assert_not_contains "${output}" "alt.example.invalid"
-    assert_contains "${output}" "Push validation passed"
+    assert_contains "${output}" "Push validation passed (light)"
+    assert_not_contains "${output}" "Running lint-strict:"
+    assert_not_contains "${output}" "Running build-test:"
     assert_not_contains "${output}" "local-only.swift"
 
     output="$(cd "${fixture}" && printf 'refs/heads/main %s refs/heads/main %s\n' "${head}" "${first_head}" | MA_AGENT_LOG_DIR="${TMP_ROOT}/pre-push-incremental" ./scripts/hooks-pre-push alt https://alt.example.invalid/prisma.git)"
     assert_contains "${output}" "remote refs/heads/main"
+    assert_contains "${output}" "gate: Option C (auto=fast"
+    assert_contains "${output}" "Push validation passed (light)"
+    assert_not_contains "${output}" "Running lint-strict:"
+    assert_not_contains "${output}" "Running build-test:"
 
     mkdir -p "${TMP_ROOT}/pre-push-output"
     output="$(cd "${fixture}" && printf 'refs/heads/main %s refs/heads/main 0000000000000000000000000000000000000000\n' "${head}" | TMPDIR="${TMP_ROOT}/pre-push-output" MA_AGENT_LOG_DIR="${TMP_ROOT}/pre-push-direct-url" ./scripts/hooks-pre-push 'https://alice:s3cr3t@direct.example.invalid/prisma.git?token=secret#fragment')"
@@ -281,6 +411,8 @@ test_pre_push_protocol() {
     assert_not_contains "${output}" "s3cr3t"
     assert_not_contains "${output}" "token=secret"
     assert_contains "${output}" "empty tree (merge-base with refs/heads/main equals local head)"
+    assert_contains "${output}" "gate: Option C (auto=full"
+    assert_contains "${output}" "Full push: running mandatory validate-agent --lane full"
     assert_contains "${output}" "Running lint-strict:"
     assert_not_contains "${output}" "No changed files detected"
     test -z "$(find "${TMP_ROOT}/pre-push-output" -name 'prisma-pre-push.*' -print)"
@@ -314,6 +446,7 @@ test_pre_push_protocol() {
     git -C "${fixture}" update-ref -d refs/remotes/alt/main
     output="$(cd "${fixture}" && printf 'refs/heads/main %s refs/heads/main 0000000000000000000000000000000000000000\n' "${head}" | MA_AGENT_LOG_DIR="${TMP_ROOT}/pre-push-no-tracking" ./scripts/hooks-pre-push alt https://alt.example.invalid/prisma.git)"
     assert_contains "${output}" "empty tree (remote alt has no local default branch reference)"
+    assert_contains "${output}" "gate: Option C (auto=full"
     assert_contains "${output}" "Running lint-strict:"
 
     set +e
@@ -646,6 +779,8 @@ test_staged_receipt_reused_after_commit
 test_committed_in_place_clean_head
 test_clean_working_tree_pass_reused_by_committed
 test_archive_paths_excluded_from_large_delta
+test_pre_push_full_scripts_change
+test_pre_commit_staged_format
 test_pre_push_protocol
 "${SCRIPT_ROOT}/scripts/tests/hooks-setup-test.sh"
 "${SCRIPT_ROOT}/scripts/tests/rust-audio-staging-test.sh"
