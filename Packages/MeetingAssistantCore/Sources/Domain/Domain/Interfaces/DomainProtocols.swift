@@ -103,6 +103,33 @@ public protocol TranscriptionRepositoryPurposeDiarized: Sendable {
     ) async throws -> DomainTranscriptionResponse
 }
 
+public struct DomainTranscriptionRequestConfiguration: Codable, Hashable, Sendable {
+    public let providerID: String
+    public let modelID: String
+    public let inputLanguageCode: String?
+
+    public init(providerID: String, modelID: String, inputLanguageCode: String?) {
+        self.providerID = providerID
+        self.modelID = modelID
+        self.inputLanguageCode = inputLanguageCode
+    }
+}
+
+public protocol TranscriptionRepositoryConfigurationAware: Sendable {
+    func transcribe(
+        audioURL: URL,
+        onProgress: (@Sendable (Double) -> Void)?,
+        configuration: DomainTranscriptionRequestConfiguration,
+        diarizationEnabledOverride: Bool?,
+        capturePurpose: CapturePurpose,
+    ) async throws -> DomainTranscriptionResponse
+
+    func transcribe(
+        samples: [Float],
+        configuration: DomainTranscriptionRequestConfiguration,
+    ) async throws -> DomainTranscriptionResponse
+}
+
 @MainActor
 public protocol TranscriptionRepositoryFinalDiarization: Sendable {
     func diarize(audioURL: URL) async throws -> [SpeakerTimelineSegment]
@@ -156,6 +183,34 @@ public protocol PostProcessingRepository: Sendable {
         _ transcription: String,
         with prompt: DomainPostProcessingPrompt,
         mode: IntelligenceKernelMode,
+    ) async throws -> DomainPostProcessingResult
+}
+
+public struct DomainPostProcessingSelection: Codable, Hashable, Sendable {
+    public let providerID: String
+    public let modelID: String
+    public let registrationID: UUID?
+
+    public init(providerID: String, modelID: String, registrationID: UUID?) {
+        self.providerID = providerID
+        self.modelID = modelID
+        self.registrationID = registrationID
+    }
+}
+
+public protocol PostProcessingRepositorySelectionAware: Sendable {
+    func processTranscription(
+        _ transcription: String,
+        with prompt: DomainPostProcessingPrompt,
+        mode: IntelligenceKernelMode,
+        selection: DomainPostProcessingSelection,
+    ) async throws -> String
+
+    func processTranscriptionStructured(
+        _ transcription: String,
+        with prompt: DomainPostProcessingPrompt,
+        mode: IntelligenceKernelMode,
+        selection: DomainPostProcessingSelection,
     ) async throws -> DomainPostProcessingResult
 }
 

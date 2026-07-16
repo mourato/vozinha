@@ -8,15 +8,18 @@ public struct DictationContextSnapshot {
     public let bundleIdentifier: String?
     public let activeURL: URL?
     public let outputLanguageOverride: DictationOutputLanguage?
+    public let style: DictationStyle?
 
     public init(
         bundleIdentifier: String?,
         activeURL: URL?,
         outputLanguageOverride: DictationOutputLanguage?,
+        style: DictationStyle? = nil,
     ) {
         self.bundleIdentifier = bundleIdentifier
         self.activeURL = activeURL
         self.outputLanguageOverride = outputLanguageOverride
+        self.style = style
     }
 }
 
@@ -175,7 +178,10 @@ public final class PostProcessingConfigurationProvider {
         settings: AppSettingsStore,
         dictationContext: DictationContextSnapshot,
     ) -> DictationStyle? {
-        settings.effectiveDictationStyle(
+        if let style = dictationContext.style {
+            return style
+        }
+        return settings.effectiveDictationStyle(
             bundleIdentifier: dictationContext.bundleIdentifier,
             activeURL: dictationContext.activeURL,
         )

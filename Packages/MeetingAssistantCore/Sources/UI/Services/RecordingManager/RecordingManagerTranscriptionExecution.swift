@@ -39,13 +39,6 @@ extension RecordingManager {
         sessionID: UUID? = nil,
         selectionOverride: TranscriptionProviderSelection? = nil,
     ) async throws -> TranscriptionResponse {
-        if let selectionOverride, let client = transcriptionClient as? TranscriptionClient {
-            client.selectionOverride = selectionOverride
-        }
-        defer {
-            (transcriptionClient as? TranscriptionClient)?.selectionOverride = nil
-        }
-
         updateVisibleTranscriptionProgress(
             phase: .processing,
             percentage: Constants.processingProgress,
@@ -59,6 +52,21 @@ extension RecordingManager {
                     sessionID: sessionID,
                 )
             }
+        }
+
+        if let selectionOverride,
+           let configuredClient = transcriptionClient as? any TranscriptionServiceConfigurationAware
+        {
+            return try await configuredClient.transcribe(
+                audioURL: audioURL,
+                onProgress: onProgress,
+                executionMode: capturePurpose == .dictation ? .dictation : .meeting,
+                diarizationEnabledOverride: diarizationEnabledOverride,
+                selection: selectionOverride,
+                inputLanguageCode: AppSettingsStore.shared.resolvedTranscriptionInputLanguageCode(
+                    for: capturePurpose == .dictation ? .dictation : .meeting,
+                ),
+            )
         }
 
         if let diarizationAwareClient = transcriptionClient as? any TranscriptionServicePurposeDiarized {

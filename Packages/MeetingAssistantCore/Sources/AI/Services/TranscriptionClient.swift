@@ -10,7 +10,7 @@ import os.log
 /// Client for communicating with the local FluidAudio transcription service.
 /// Adapts the local model manager to the existing client interface.
 @MainActor
-public class TranscriptionClient: ObservableObject, TranscriptionService, TranscriptionServiceDiarizationOverride, TranscriptionServicePurposeAware, TranscriptionServicePurposeDiarized, TranscriptionServiceFinalDiarization {
+public class TranscriptionClient: ObservableObject, TranscriptionService, TranscriptionServiceConfigurationAware, TranscriptionServiceDiarizationOverride, TranscriptionServicePurposeAware, TranscriptionServicePurposeDiarized, TranscriptionServiceFinalDiarization {
     public static let shared = TranscriptionClient()
 
     private let logger = Logger(subsystem: AppIdentity.logSubsystem, category: "TranscriptionClient")
@@ -225,10 +225,76 @@ public class TranscriptionClient: ObservableObject, TranscriptionService, Transc
         onProgress: (@Sendable (Double) -> Void)?,
         executionMode: TranscriptionExecutionMode,
         diarizationEnabledOverride: Bool?,
+        selection: TranscriptionProviderSelection,
+        inputLanguageCode: String?,
     ) async throws -> TranscriptionResponse {
-        let selection = selectionOverride ?? settingsStore.resolvedTranscriptionSelection(for: executionMode)
+        try await transcribeConfigured(
+            audioURL: audioURL,
+            onProgress: onProgress,
+            executionMode: executionMode,
+            diarizationEnabledOverride: diarizationEnabledOverride,
+            selection: selection,
+            inputLanguageCode: inputLanguageCode,
+        )
+    }
+
+    public func transcribe(
+        samples: [Float],
+        selection: TranscriptionProviderSelection,
+        inputLanguageCode: String?,
+    ) async throws -> TranscriptionResponse {
+        try await transcribe(samples: samples, inputLanguageCode: inputLanguageCode, selection: selection)
+    }
+
+    private func transcribe(
+        samples: [Float],
+        inputLanguageCode: String,
+        selection: TranscriptionProviderSelection,
+    ) async throws -> TranscriptionResponse {
+        try await transcribe(samples: samples, inputLanguageCode: Optional(inputLanguageCode), selection: selection)
+    }
+
+    private func transcribe(
+        samples: [Float],
+        inputLanguageCode: String?,
+        selection: TranscriptionProviderSelection,
+    ) async throws -> TranscriptionResponse {
+        AppLogger.info("Transcribing in-memory samples", category: .transcriptionEngine, extra: ["sampleCount": samples.count])
+        guard selection.provider == .local else {
+            throw TranscriptionError.transcriptionFailed("Incremental transcription requires a local provider")
+        }
+        return try await LocalTranscriptionClient.shared.transcribe(
+            samples: samples,
+            inputLanguageHintCode: inputLanguageCode,
+            modelID: selection.selectedModel,
+        )
+    }
+
+    public func transcribe(
+        audioURL: URL,
+        onProgress: (@Sendable (Double) -> Void)?,
+        executionMode: TranscriptionExecutionMode,
+        diarizationEnabledOverride: Bool?,
+    ) async throws -> TranscriptionResponse {
+        try await transcribeConfigured(
+            audioURL: audioURL,
+            onProgress: onProgress,
+            executionMode: executionMode,
+            diarizationEnabledOverride: diarizationEnabledOverride,
+            selection: selectionOverride ?? settingsStore.resolvedTranscriptionSelection(for: executionMode),
+            inputLanguageCode: settingsStore.resolvedTranscriptionInputLanguageCode(for: executionMode),
+        )
+    }
+
+    private func transcribeConfigured(
+        audioURL: URL,
+        onProgress: (@Sendable (Double) -> Void)?,
+        executionMode: TranscriptionExecutionMode,
+        diarizationEnabledOverride: Bool?,
+        selection: TranscriptionProviderSelection,
+        inputLanguageCode: String?,
+    ) async throws -> TranscriptionResponse {
         selectionOverride = nil
-        let inputLanguageCode = settingsStore.resolvedTranscriptionInputLanguageCode(for: executionMode)
         let backend = resolvedBackend(for: selection)
         let implementationLabel = switch backend {
         case .xpc:

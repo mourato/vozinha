@@ -67,10 +67,12 @@ public final class TranscribeAudioUseCase: Sendable {
         contextItems: [TranscriptionContextItem] = [],
         vocabularyReplacementRules: [VocabularyReplacementRule] = [],
         diarizationEnabledOverride: Bool? = nil,
+        transcriptionConfiguration: DomainTranscriptionRequestConfiguration? = nil,
         applyPostProcessing: Bool = false,
         postProcessingPrompt: DomainPostProcessingPrompt? = nil,
         defaultPostProcessingPrompt: DomainPostProcessingPrompt? = nil,
         postProcessingIdentity: ModelPerformanceModelIdentity? = nil,
+        postProcessingSelection: DomainPostProcessingSelection? = nil,
         autoDetectMeetingType: Bool = false,
         availablePrompts: [DomainPostProcessingPrompt] = [],
         postProcessingContext: String? = nil,
@@ -86,7 +88,17 @@ public final class TranscribeAudioUseCase: Sendable {
             let transcriptionStartTime = Date()
             let response: DomainTranscriptionResponse
             do {
-                if let diarizationPurposeAwareRepository = transcriptionRepository as? any TranscriptionRepositoryPurposeDiarized {
+                if let transcriptionConfiguration,
+                   let configurationAwareRepository = transcriptionRepository as? any TranscriptionRepositoryConfigurationAware
+                {
+                    response = try await configurationAwareRepository.transcribe(
+                        audioURL: audioURL,
+                        onProgress: onTranscriptionProgress,
+                        configuration: transcriptionConfiguration,
+                        diarizationEnabledOverride: diarizationEnabledOverride,
+                        capturePurpose: meeting.capturePurpose,
+                    )
+                } else if let diarizationPurposeAwareRepository = transcriptionRepository as? any TranscriptionRepositoryPurposeDiarized {
                     response = try await diarizationPurposeAwareRepository.transcribe(
                         audioURL: audioURL,
                         onProgress: onTranscriptionProgress,
@@ -163,6 +175,7 @@ public final class TranscribeAudioUseCase: Sendable {
         postProcessingPrompt: DomainPostProcessingPrompt? = nil,
         defaultPostProcessingPrompt: DomainPostProcessingPrompt? = nil,
         postProcessingIdentity: ModelPerformanceModelIdentity? = nil,
+        postProcessingSelection: DomainPostProcessingSelection? = nil,
         autoDetectMeetingType: Bool = false,
         availablePrompts: [DomainPostProcessingPrompt] = [],
         postProcessingContext: String? = nil,
@@ -204,6 +217,7 @@ public final class TranscribeAudioUseCase: Sendable {
                 kernelMode: kernelMode,
                 dictationStructuredPostProcessingEnabled: dictationStructuredPostProcessingEnabled,
                 postProcessingModelID: postProcessingIdentity?.modelID,
+                selection: postProcessingSelection,
             )
             let shouldAttemptPostProcessing = postProcessingConfig.shouldRunPostProcessing(postProcessingRepository: postProcessingRepository)
 

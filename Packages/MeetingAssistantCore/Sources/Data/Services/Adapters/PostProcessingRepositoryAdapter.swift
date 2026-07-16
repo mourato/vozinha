@@ -7,7 +7,7 @@ import MeetingAssistantCoreInfrastructure
 
 /// Adapter que implementa PostProcessingRepository usando PostProcessingService existente
 @MainActor
-public final class PostProcessingRepositoryAdapter: PostProcessingRepository {
+public final class PostProcessingRepositoryAdapter: PostProcessingRepository, PostProcessingRepositorySelectionAware {
     private let postProcessingService: any PostProcessingServiceProtocol
     private let settings: AppSettingsStore
 
@@ -116,6 +116,46 @@ public final class PostProcessingRepositoryAdapter: PostProcessingRepository {
             transcription,
             with: legacyPrompt,
             mode: mode,
+        )
+    }
+
+    public func processTranscription(
+        _ transcription: String,
+        with prompt: DomainPostProcessingPrompt,
+        mode: IntelligenceKernelMode,
+        selection: DomainPostProcessingSelection,
+    ) async throws -> String {
+        let legacyPrompt = PostProcessingPrompt(id: prompt.id, title: prompt.title, promptText: prompt.content, isActive: true)
+        let aiSelection = EnhancementsAISelection(
+            provider: AIProvider(rawValue: selection.providerID) ?? .openai,
+            selectedModel: selection.modelID,
+            registrationID: selection.registrationID,
+        )
+        return try await postProcessingService.processTranscription(
+            transcription,
+            with: legacyPrompt,
+            mode: mode,
+            selectionOverride: aiSelection,
+            systemPromptOverride: nil,
+        )
+    }
+
+    public func processTranscriptionStructured(
+        _ transcription: String,
+        with prompt: DomainPostProcessingPrompt,
+        mode: IntelligenceKernelMode,
+        selection: DomainPostProcessingSelection,
+    ) async throws -> DomainPostProcessingResult {
+        let legacyPrompt = PostProcessingPrompt(id: prompt.id, title: prompt.title, promptText: prompt.content, isActive: true)
+        return try await postProcessingService.processTranscriptionStructured(
+            transcription,
+            with: legacyPrompt,
+            mode: mode,
+            selectionOverride: EnhancementsAISelection(
+                provider: AIProvider(rawValue: selection.providerID) ?? .openai,
+                selectedModel: selection.modelID,
+                registrationID: selection.registrationID,
+            ),
         )
     }
 

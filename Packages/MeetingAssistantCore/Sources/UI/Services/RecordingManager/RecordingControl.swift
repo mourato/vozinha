@@ -25,6 +25,12 @@ extension RecordingManager {
             dictationSessionOutputLanguageOverride: dictationSessionOutputLanguageOverride,
             dictationStartBundleIdentifier: dictationStartBundleIdentifier,
             dictationStartURL: dictationStartURL,
+            dictationStyleID: activeDictationStyleSnapshot?.id,
+            dictationTextHandlingPolicy: activeDictationStyleSnapshot?.textHandlingPolicy,
+            dictationTranscriptionConfiguration: activeDictationStyleSnapshot?.transcriptionConfiguration,
+            dictationEnhancementsSelection: activeDictationStyleSnapshot?.enhancementsSelection,
+            dictationPostProcessingEnabled: activeDictationStyleSnapshot?.postProcessingEnabled,
+            dictationStyle: activeDictationStyleSnapshot,
         )
     }
 }

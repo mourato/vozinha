@@ -32,7 +32,10 @@ extension RecordingManager {
         }
 
         guard let recorder = micRecorder as? AudioRecorder else { return }
-        let transcriptionClientBox = UncheckedTranscriptionServiceBox(transcriptionClient)
+        let transcriptionClientBox = UncheckedTranscriptionServiceBox(
+            transcriptionClient,
+            configuration: activeDictationStyleSnapshot?.transcriptionConfiguration,
+        )
 
         let coordinator = IncrementalDictationTranscriptionCoordinator(
             transcriptionID: meeting.id,

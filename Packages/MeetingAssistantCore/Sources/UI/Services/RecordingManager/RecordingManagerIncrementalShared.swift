@@ -26,14 +26,25 @@ extension RecordingManager {
 
     final class UncheckedTranscriptionServiceBox: @unchecked Sendable {
         @MainActor private let value: any TranscriptionService
+        @MainActor private let configuration: DictationTranscriptionConfiguration?
 
-        @MainActor init(_ value: any TranscriptionService) {
+        @MainActor init(_ value: any TranscriptionService, configuration: DictationTranscriptionConfiguration? = nil) {
             self.value = value
+            self.configuration = configuration
         }
 
         @MainActor
         func transcribe(samples: [Float]) async throws -> TranscriptionResponse {
-            try await value.transcribe(samples: samples)
+            if let configuration,
+               let configuredValue = value as? any TranscriptionServiceConfigurationAware
+            {
+                return try await configuredValue.transcribe(
+                    samples: samples,
+                    selection: configuration.selection,
+                    inputLanguageCode: configuration.inputLanguageCode,
+                )
+            }
+            return try await value.transcribe(samples: samples)
         }
     }
 

@@ -6,7 +6,7 @@ import MeetingAssistantCoreInfrastructure
 
 /// Adapter que implementa TranscriptionRepository usando TranscriptionClient existente
 @MainActor
-public final class TranscriptionRepositoryAdapter: TranscriptionRepository, TranscriptionRepositoryDiarizationOverride, TranscriptionRepositoryPurposeAware, TranscriptionRepositoryPurposeDiarized, TranscriptionRepositoryFinalDiarization {
+public final class TranscriptionRepositoryAdapter: TranscriptionRepository, TranscriptionRepositoryConfigurationAware, TranscriptionRepositoryDiarizationOverride, TranscriptionRepositoryPurposeAware, TranscriptionRepositoryPurposeDiarized, TranscriptionRepositoryFinalDiarization {
     private let transcriptionService: any TranscriptionService
 
     public init(transcriptionService: any TranscriptionService) {
@@ -105,6 +105,44 @@ public final class TranscriptionRepositoryAdapter: TranscriptionRepository, Tran
         samples: [Float],
     ) async throws -> DomainTranscriptionResponse {
         let response = try await transcriptionService.transcribe(samples: samples)
+        return mapToDomainResponse(response)
+    }
+
+    public func transcribe(
+        audioURL: URL,
+        onProgress: (@Sendable (Double) -> Void)?,
+        configuration: DomainTranscriptionRequestConfiguration,
+        diarizationEnabledOverride: Bool?,
+        capturePurpose: CapturePurpose,
+    ) async throws -> DomainTranscriptionResponse {
+        guard let service = transcriptionService as? any TranscriptionServiceConfigurationAware,
+              let provider = TranscriptionProvider(rawValue: configuration.providerID)
+        else {
+            return try await transcribe(audioURL: audioURL, onProgress: onProgress, diarizationEnabledOverride: diarizationEnabledOverride, capturePurpose: capturePurpose)
+        }
+        let response = try await service.transcribe(
+            audioURL: audioURL,
+            onProgress: onProgress,
+            executionMode: capturePurpose == .dictation ? .dictation : .meeting,
+            diarizationEnabledOverride: diarizationEnabledOverride,
+            selection: TranscriptionProviderSelection(provider: provider, selectedModel: configuration.modelID),
+            inputLanguageCode: configuration.inputLanguageCode,
+        )
+        return mapToDomainResponse(response)
+    }
+
+    public func transcribe(
+        samples: [Float],
+        configuration: DomainTranscriptionRequestConfiguration,
+    ) async throws -> DomainTranscriptionResponse {
+        guard let service = transcriptionService as? any TranscriptionServiceConfigurationAware,
+              let provider = TranscriptionProvider(rawValue: configuration.providerID)
+        else { return try await transcribe(samples: samples) }
+        let response = try await service.transcribe(
+            samples: samples,
+            selection: TranscriptionProviderSelection(provider: provider, selectedModel: configuration.modelID),
+            inputLanguageCode: configuration.inputLanguageCode,
+        )
         return mapToDomainResponse(response)
     }
 

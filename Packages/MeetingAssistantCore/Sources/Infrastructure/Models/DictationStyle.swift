@@ -79,6 +79,56 @@ public struct DictationContextSourcePolicy: Codable, Hashable, Sendable {
     }
 }
 
+public struct DictationTextHandlingPolicy: Codable, Hashable, Sendable {
+    public var autoCopyToClipboard: Bool
+    public var autoPasteToActiveApp: Bool
+    public var smartSpacingAndCapitalization: Bool
+    public var smartParagraphs: Bool
+
+    public init(
+        autoCopyToClipboard: Bool = true,
+        autoPasteToActiveApp: Bool = false,
+        smartSpacingAndCapitalization: Bool = true,
+        smartParagraphs: Bool = true,
+    ) {
+        self.autoCopyToClipboard = autoCopyToClipboard
+        self.autoPasteToActiveApp = autoPasteToActiveApp
+        self.smartSpacingAndCapitalization = smartSpacingAndCapitalization
+        self.smartParagraphs = smartParagraphs
+    }
+}
+
+public struct DictationTranscriptionConfiguration: Codable, Hashable, Sendable {
+    public var selection: TranscriptionProviderSelection
+    public var inputLanguageCode: String?
+
+    public init(
+        selection: TranscriptionProviderSelection = .default,
+        inputLanguageCode: String? = nil,
+    ) {
+        self.selection = selection
+        self.inputLanguageCode = inputLanguageCode
+    }
+
+    public func normalized() -> Self {
+        let trimmedLanguage = inputLanguageCode?.trimmingCharacters(in: .whitespacesAndNewlines)
+        return Self(
+            selection: TranscriptionProviderSelection(
+                provider: selection.provider,
+                selectedModel: selection.provider.normalizedModelID(selection.selectedModel),
+            ),
+            inputLanguageCode: trimmedLanguage?.isEmpty == false ? trimmedLanguage : nil,
+        )
+    }
+
+    /// Custom hash(into:) is required because TranscriptionProviderSelection is Equatable but not Hashable.
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(selection.provider)
+        hasher.combine(selection.selectedModel)
+        hasher.combine(inputLanguageCode)
+    }
+}
+
 public enum DictationStyleTarget: Hashable, Codable, Sendable {
     case app(bundleIdentifier: String)
     case website(url: String)
@@ -175,6 +225,8 @@ public enum DictationStyleTarget: Hashable, Codable, Sendable {
 }
 
 public struct DictationStyle: Identifiable, Codable, Hashable, Sendable {
+    public static let currentConfigurationSchemaVersion = 1
+
     private enum CodingKeys: String, CodingKey {
         case id
         case name
@@ -188,6 +240,9 @@ public struct DictationStyle: Identifiable, Codable, Hashable, Sendable {
         case contextSourcePolicy
         case enhancementsSelection
         case isDefault
+        case textHandlingPolicy
+        case transcriptionConfiguration
+        case configurationSchemaVersion
     }
 
     public let id: UUID
@@ -202,6 +257,9 @@ public struct DictationStyle: Identifiable, Codable, Hashable, Sendable {
     public var contextSourcePolicy: DictationContextSourcePolicy?
     public var enhancementsSelection: EnhancementsAISelection?
     public var isDefault: Bool
+    public var textHandlingPolicy: DictationTextHandlingPolicy
+    public var transcriptionConfiguration: DictationTranscriptionConfiguration
+    public let configurationSchemaVersion: Int
 
     public init(
         id: UUID = UUID(),
@@ -216,6 +274,9 @@ public struct DictationStyle: Identifiable, Codable, Hashable, Sendable {
         contextSourcePolicy: DictationContextSourcePolicy? = nil,
         enhancementsSelection: EnhancementsAISelection? = nil,
         isDefault: Bool = false,
+        textHandlingPolicy: DictationTextHandlingPolicy = .init(),
+        transcriptionConfiguration: DictationTranscriptionConfiguration = .init(),
+        configurationSchemaVersion: Int = DictationStyle.currentConfigurationSchemaVersion,
     ) {
         self.id = id
         self.name = name.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -229,6 +290,9 @@ public struct DictationStyle: Identifiable, Codable, Hashable, Sendable {
         self.contextSourcePolicy = contextSourcePolicy
         self.enhancementsSelection = enhancementsSelection
         self.isDefault = isDefault
+        self.textHandlingPolicy = textHandlingPolicy
+        self.transcriptionConfiguration = transcriptionConfiguration.normalized()
+        self.configurationSchemaVersion = configurationSchemaVersion
     }
 
     public init(from decoder: Decoder) throws {
@@ -248,6 +312,9 @@ public struct DictationStyle: Identifiable, Codable, Hashable, Sendable {
         contextSourcePolicy = try container.decodeIfPresent(DictationContextSourcePolicy.self, forKey: .contextSourcePolicy)
         enhancementsSelection = try container.decodeIfPresent(EnhancementsAISelection.self, forKey: .enhancementsSelection)
         isDefault = try container.decodeIfPresent(Bool.self, forKey: .isDefault) ?? false
+        textHandlingPolicy = try container.decodeIfPresent(DictationTextHandlingPolicy.self, forKey: .textHandlingPolicy) ?? .init()
+        transcriptionConfiguration = try (container.decodeIfPresent(DictationTranscriptionConfiguration.self, forKey: .transcriptionConfiguration) ?? .init()).normalized()
+        configurationSchemaVersion = try container.decodeIfPresent(Int.self, forKey: .configurationSchemaVersion) ?? 0
     }
 
     var normalizedName: String {

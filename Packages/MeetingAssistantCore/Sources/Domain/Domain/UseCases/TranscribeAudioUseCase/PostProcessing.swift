@@ -15,6 +15,7 @@ extension TranscribeAudioUseCase {
         let kernelMode: IntelligenceKernelMode
         let dictationStructuredPostProcessingEnabled: Bool
         let postProcessingModelID: String?
+        let selection: DomainPostProcessingSelection?
 
         init(
             applyPostProcessing: Bool,
@@ -25,6 +26,7 @@ extension TranscribeAudioUseCase {
             kernelMode: IntelligenceKernelMode = .meeting,
             dictationStructuredPostProcessingEnabled: Bool = false,
             postProcessingModelID: String? = nil,
+            selection: DomainPostProcessingSelection? = nil,
         ) {
             self.applyPostProcessing = applyPostProcessing
             self.postProcessingPrompt = postProcessingPrompt
@@ -34,6 +36,7 @@ extension TranscribeAudioUseCase {
             self.kernelMode = kernelMode
             self.dictationStructuredPostProcessingEnabled = dictationStructuredPostProcessingEnabled
             self.postProcessingModelID = postProcessingModelID
+            self.selection = selection
         }
 
         func shouldRunPostProcessing(postProcessingRepository: PostProcessingRepository?) -> Bool {
@@ -140,6 +143,7 @@ extension TranscribeAudioUseCase {
         let useStructuredPipeline: Bool
         let qualityProfile: TranscriptionQualityProfile
         let selectedModel: String?
+        let selection: DomainPostProcessingSelection?
     }
 
     private struct PromptSelection {
@@ -163,6 +167,7 @@ extension TranscribeAudioUseCase {
             useStructuredPipeline: useStructuredPipeline,
             qualityProfile: qualityProfile,
             selectedModel: config.postProcessingModelID,
+            selection: config.selection,
         )
     }
 
@@ -192,11 +197,17 @@ extension TranscribeAudioUseCase {
         )
 
         if context.useStructuredPipeline {
-            let structuredResult = try await context.repository.processTranscriptionStructured(
-                input,
-                with: prompt,
-                mode: context.kernelMode,
-            )
+            let structuredResult: DomainPostProcessingResult = if let selection = context.selection,
+                                                                  let repository = context.repository as? any PostProcessingRepositorySelectionAware
+            {
+                try await repository.processTranscriptionStructured(input, with: prompt, mode: context.kernelMode, selection: selection)
+            } else {
+                try await context.repository.processTranscriptionStructured(
+                    input,
+                    with: prompt,
+                    mode: context.kernelMode,
+                )
+            }
             return PostProcessingResult(
                 processedContent: structuredResult.processedText,
                 canonicalSummary: recalibrateCanonicalSummary(
@@ -212,11 +223,17 @@ extension TranscribeAudioUseCase {
             )
         }
 
-        let processedContent = try await context.repository.processTranscription(
-            input,
-            with: prompt,
-            mode: context.kernelMode,
-        )
+        let processedContent: String = if let selection = context.selection,
+                                          let repository = context.repository as? any PostProcessingRepositorySelectionAware
+        {
+            try await repository.processTranscription(input, with: prompt, mode: context.kernelMode, selection: selection)
+        } else {
+            try await context.repository.processTranscription(
+                input,
+                with: prompt,
+                mode: context.kernelMode,
+            )
+        }
         return PostProcessingResult(
             processedContent: processedContent,
             canonicalSummary: nil,

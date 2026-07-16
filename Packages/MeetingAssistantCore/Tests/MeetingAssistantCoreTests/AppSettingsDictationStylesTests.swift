@@ -122,6 +122,60 @@ final class AppSettingsDictationStylesTests: XCTestCase {
         XCTAssertTrue(style.postProcessingEnabled)
     }
 
+    func testDictationStyles_LegacyModesMigrateGlobalConfigurationExactlyOnce() throws {
+        let legacyPayload = """
+        [{
+          "id": "00000000-0000-0000-0000-000000000021",
+          "name": "Legacy",
+          "promptInstructions": "",
+          "forceMarkdownOutput": false,
+          "replaceBasePrompt": false,
+          "outputLanguage": "original",
+          "targets": [],
+          "isDefault": false
+        }]
+        """
+        let legacyStyles = try JSONDecoder().decode([DictationStyle].self, from: Data(legacyPayload.utf8))
+        let textPolicy = DictationTextHandlingPolicy(autoCopyToClipboard: false, autoPasteToActiveApp: true, smartSpacingAndCapitalization: false, smartParagraphs: true)
+        let transcription = TranscriptionProviderSelection(provider: .groq, selectedModel: " whisper-large-v3 ")
+        let migrated = AppSettingsStore.migrateLegacyDictationStyles(
+            legacyStyles,
+            dictationSelection: EnhancementsAISelection(provider: .openai, selectedModel: "custom"),
+            transcriptionSelection: transcription,
+            inputLanguageCode: "pt-BR",
+            textHandlingPolicy: textPolicy,
+        )
+
+        XCTAssertEqual(migrated.count, 1)
+        XCTAssertEqual(migrated[0].textHandlingPolicy, textPolicy)
+        XCTAssertEqual(migrated[0].transcriptionConfiguration.selection.provider, .groq)
+        XCTAssertEqual(migrated[0].transcriptionConfiguration.selection.selectedModel, "whisper-large-v3")
+        XCTAssertEqual(migrated[0].transcriptionConfiguration.inputLanguageCode, "pt-BR")
+        XCTAssertEqual(migrated[0].configurationSchemaVersion, DictationStyle.currentConfigurationSchemaVersion)
+        XCTAssertEqual(AppSettingsStore.migrateLegacyDictationStyles(
+            migrated,
+            dictationSelection: EnhancementsAISelection(provider: .anthropic, selectedModel: "changed"),
+            transcriptionSelection: .default,
+            inputLanguageCode: nil,
+            textHandlingPolicy: .init(),
+        ), migrated)
+    }
+
+    func testDictationStyle_NewPayloadNormalizesUnknownLocalModel() {
+        let style = DictationStyle(
+            name: "Mode",
+            promptInstructions: "",
+            forceMarkdownOutput: false,
+            replaceBasePrompt: false,
+            targets: [],
+            transcriptionConfiguration: DictationTranscriptionConfiguration(
+                selection: TranscriptionProviderSelection(provider: .local, selectedModel: "unknown-model"),
+            ),
+        )
+
+        XCTAssertEqual(style.transcriptionConfiguration.selection.selectedModel, TranscriptionProvider.localModelID)
+    }
+
     func testDictationStyles_PersistPerModePostProcessingValue() {
         settings.dictationStyles = [
             DictationStyle(

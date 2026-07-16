@@ -19,6 +19,7 @@ extension RecordingManagerTests {
         let originalDictationPrompts = settings.dictationPrompts
         let originalSelectedPromptId = settings.selectedPromptId
         let originalDictationSelectedPromptId = settings.dictationSelectedPromptId
+        let originalDictationStyles = settings.dictationStyles
 
         let meetingPrompt = PostProcessingPrompt(
             title: "Meeting Prompt Test",
@@ -30,6 +31,7 @@ extension RecordingManagerTests {
             promptText: "DICTATION_PROMPT_SENTINEL",
             isActive: true,
         )
+        let dictationSelection = EnhancementsAISelection(provider: .openai, selectedModel: "gpt-4o-mini")
 
         defer {
             settings.postProcessingEnabled = originalPostProcessing
@@ -39,11 +41,33 @@ extension RecordingManagerTests {
             settings.dictationPrompts = originalDictationPrompts
             settings.selectedPromptId = originalSelectedPromptId
             settings.dictationSelectedPromptId = originalDictationSelectedPromptId
+            settings.dictationStyles = originalDictationStyles
         }
 
         settings.postProcessingEnabled = true
         settings.enhancementsAISelection = EnhancementsAISelection(provider: .openai, selectedModel: "gpt-4o-mini")
-        settings.enhancementsDictationAISelection = EnhancementsAISelection(provider: .openai, selectedModel: "gpt-4o-mini")
+        settings.enhancementsDictationAISelection = dictationSelection
+        // Apply enhancementsSelection to the default dictation style so the snapshot picks it up.
+        var updatedStyles = settings.dictationStyles
+        if let defaultIndex = updatedStyles.firstIndex(where: { $0.isDefault }) {
+            updatedStyles[defaultIndex] = DictationStyle(
+                id: updatedStyles[defaultIndex].id,
+                name: updatedStyles[defaultIndex].name,
+                iconSymbol: updatedStyles[defaultIndex].iconSymbol,
+                promptInstructions: updatedStyles[defaultIndex].promptInstructions,
+                postProcessingEnabled: true,
+                forceMarkdownOutput: updatedStyles[defaultIndex].forceMarkdownOutput,
+                replaceBasePrompt: updatedStyles[defaultIndex].replaceBasePrompt,
+                outputLanguage: updatedStyles[defaultIndex].outputLanguage,
+                targets: updatedStyles[defaultIndex].targets,
+                contextSourcePolicy: updatedStyles[defaultIndex].contextSourcePolicy,
+                enhancementsSelection: dictationSelection,
+                isDefault: true,
+                textHandlingPolicy: updatedStyles[defaultIndex].textHandlingPolicy,
+                transcriptionConfiguration: updatedStyles[defaultIndex].transcriptionConfiguration,
+            )
+        }
+        settings.dictationStyles = updatedStyles
         settings.meetingPrompts = [meetingPrompt]
         settings.dictationPrompts = [dictationPrompt]
         settings.selectedPromptId = meetingPrompt.id
@@ -74,6 +98,7 @@ extension RecordingManagerTests {
         let originalDictationPrompts = settings.dictationPrompts
         let originalSelectedPromptId = settings.selectedPromptId
         let originalDictationSelectedPromptId = settings.dictationSelectedPromptId
+        let originalDictationStyles = settings.dictationStyles
 
         let meetingPrompt = PostProcessingPrompt(
             title: "Meeting Prompt Test 2",
@@ -94,6 +119,7 @@ extension RecordingManagerTests {
             settings.dictationPrompts = originalDictationPrompts
             settings.selectedPromptId = originalSelectedPromptId
             settings.dictationSelectedPromptId = originalDictationSelectedPromptId
+            settings.dictationStyles = originalDictationStyles
         }
 
         settings.postProcessingEnabled = true

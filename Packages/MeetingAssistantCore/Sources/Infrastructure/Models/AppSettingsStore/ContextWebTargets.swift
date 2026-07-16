@@ -110,6 +110,8 @@ extension AppSettingsStore {
         includeAccessibilityText: Bool,
         redactSensitiveData: Bool,
         dictationSelection: EnhancementsAISelection,
+        textHandlingPolicy: DictationTextHandlingPolicy = .init(),
+        transcriptionConfiguration: DictationTranscriptionConfiguration = .init(),
     ) -> DictationStyle {
         DictationStyle(
             id: defaultDictationModeID,
@@ -130,6 +132,8 @@ extension AppSettingsStore {
             ),
             enhancementsSelection: dictationSelection,
             isDefault: true,
+            textHandlingPolicy: textHandlingPolicy,
+            transcriptionConfiguration: transcriptionConfiguration,
         )
     }
 
@@ -181,6 +185,8 @@ extension AppSettingsStore {
                     contextSourcePolicy: style.contextSourcePolicy,
                     enhancementsSelection: style.enhancementsSelection,
                     isDefault: false,
+                    textHandlingPolicy: style.textHandlingPolicy,
+                    transcriptionConfiguration: style.transcriptionConfiguration,
                 ),
             )
         }
@@ -210,7 +216,43 @@ extension AppSettingsStore {
             contextSourcePolicy: source.contextSourcePolicy ?? fallback.contextSourcePolicy,
             enhancementsSelection: source.enhancementsSelection ?? fallback.enhancementsSelection,
             isDefault: true,
+            textHandlingPolicy: source.textHandlingPolicy,
+            transcriptionConfiguration: source.transcriptionConfiguration,
         )
+    }
+
+    public static func migrateLegacyDictationStyles(
+        _ styles: [DictationStyle],
+        dictationSelection: EnhancementsAISelection,
+        transcriptionSelection: TranscriptionProviderSelection,
+        inputLanguageCode: String?,
+        textHandlingPolicy: DictationTextHandlingPolicy,
+    ) -> [DictationStyle] {
+        styles.map { style in
+            guard style.configurationSchemaVersion < DictationStyle.currentConfigurationSchemaVersion else {
+                return style
+            }
+
+            return DictationStyle(
+                id: style.id,
+                name: style.name,
+                iconSymbol: style.iconSymbol,
+                promptInstructions: style.promptInstructions,
+                postProcessingEnabled: style.postProcessingEnabled,
+                forceMarkdownOutput: style.forceMarkdownOutput,
+                replaceBasePrompt: style.replaceBasePrompt,
+                outputLanguage: style.outputLanguage,
+                targets: style.targets,
+                contextSourcePolicy: style.contextSourcePolicy,
+                enhancementsSelection: style.enhancementsSelection ?? dictationSelection,
+                isDefault: style.isDefault,
+                textHandlingPolicy: textHandlingPolicy,
+                transcriptionConfiguration: DictationTranscriptionConfiguration(
+                    selection: transcriptionSelection,
+                    inputLanguageCode: inputLanguageCode,
+                ),
+            )
+        }
     }
 
     private func deduplicatedNormalizedBundleIdentifiers(_ identifiers: [String]) -> [String] {

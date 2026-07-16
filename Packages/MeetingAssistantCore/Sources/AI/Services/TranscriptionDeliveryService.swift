@@ -13,6 +13,7 @@ public struct TranscriptionDeliveryService {
     public static func deliver(
         transcription: Transcription,
         recordingSource: RecordingSource? = nil,
+        textPolicy: DictationTextHandlingPolicy? = nil,
         settings: DeliverySettingsConfig = AppSettingsStore.shared,
         pasteboard: PasteboardServiceProtocol = PasteboardService.shared,
     ) {
@@ -20,8 +21,8 @@ public struct TranscriptionDeliveryService {
         let shouldAutoPaste: Bool
 
         if isDictationDelivery(transcription: transcription, recordingSource: recordingSource) {
-            shouldAutoCopy = settings.autoCopyTranscriptionToClipboard
-            shouldAutoPaste = settings.autoPasteTranscriptionToActiveApp
+            shouldAutoCopy = textPolicy?.autoCopyToClipboard ?? settings.autoCopyTranscriptionToClipboard
+            shouldAutoPaste = textPolicy?.autoPasteToActiveApp ?? settings.autoPasteTranscriptionToActiveApp
         } else {
             shouldAutoCopy = false
             shouldAutoPaste = false
@@ -34,6 +35,7 @@ public struct TranscriptionDeliveryService {
             transcription: transcription,
             shouldDeliver: shouldAutoCopy || shouldAutoPaste,
             settings: settings,
+            textPolicy: textPolicy,
         ) {
             SmartParagraphFormatter.format(dictatedText: baseText)
         } else {
@@ -45,6 +47,7 @@ public struct TranscriptionDeliveryService {
             transcription: transcription,
             shouldDeliver: shouldAutoCopy || shouldAutoPaste,
             settings: settings,
+            textPolicy: textPolicy,
         ) {
             let cursorContext = cursorTextContextProvider.fetchCursorTextContext()
             textToCopy = SmartSpacingFormatter.format(dictatedText: paragraphFormattedText, cursorContext: cursorContext)
@@ -94,9 +97,10 @@ public struct TranscriptionDeliveryService {
         transcription: Transcription,
         shouldDeliver: Bool,
         settings: DeliverySettingsConfig,
+        textPolicy: DictationTextHandlingPolicy?,
     ) -> Bool {
         shouldDeliver
-            && settings.smartSpacingAndCapitalizationEnabled
+            && (textPolicy?.smartSpacingAndCapitalization ?? settings.smartSpacingAndCapitalizationEnabled)
             && transcription.capturePurpose == .dictation
     }
 
@@ -104,9 +108,10 @@ public struct TranscriptionDeliveryService {
         transcription: Transcription,
         shouldDeliver: Bool,
         settings: DeliverySettingsConfig,
+        textPolicy: DictationTextHandlingPolicy?,
     ) -> Bool {
         shouldDeliver
-            && settings.smartParagraphsEnabled
+            && (textPolicy?.smartParagraphs ?? settings.smartParagraphsEnabled)
             && transcription.capturePurpose == .dictation
     }
 

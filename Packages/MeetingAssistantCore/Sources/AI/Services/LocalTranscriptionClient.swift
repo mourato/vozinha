@@ -91,11 +91,11 @@ public class LocalTranscriptionClient {
     public func transcribe(
         samples: [Float],
         inputLanguageHintCode: String? = nil,
+        modelID: String = MeetingAssistantCoreInfrastructure.TranscriptionProvider.localModelID,
     ) async throws -> TranscriptionResponse {
         logger.info("Starting local in-memory transcription for \(samples.count) samples")
 
-        let dictationModelID = AppSettingsStore.shared.resolvedTranscriptionSelection(for: .dictation).selectedModel
-        let selectedModel = LocalTranscriptionModel(rawValue: dictationModelID) ?? .parakeetTdt06BV3
+        let selectedModel = LocalTranscriptionModel(rawValue: modelID) ?? .parakeetTdt06BV3
 
         await ensureASRModelLoaded(for: selectedModel)
 

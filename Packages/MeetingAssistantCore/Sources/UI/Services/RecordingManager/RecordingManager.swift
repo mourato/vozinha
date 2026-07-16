@@ -126,6 +126,7 @@ public class RecordingManager: ObservableObject, RecordingServiceProtocol {
     var activePostProcessingKernelMode: IntelligenceKernelMode?
     var dictationStartBundleIdentifier: String?
     var dictationStartURL: URL?
+    var activeDictationStyleSnapshot: DictationStyle?
     var activeTranscriptionSessionIDs = Set<UUID>()
     var foregroundTranscriptionSessionID: UUID?
     var incrementalDictationCoordinator: IncrementalDictationTranscriptionCoordinator?
@@ -153,6 +154,48 @@ public class RecordingManager: ObservableObject, RecordingServiceProtocol {
         let dictationSessionOutputLanguageOverride: DictationOutputLanguage?
         let dictationStartBundleIdentifier: String?
         let dictationStartURL: URL?
+        let dictationStyleID: UUID?
+        let dictationTextHandlingPolicy: DictationTextHandlingPolicy?
+        let dictationTranscriptionConfiguration: DictationTranscriptionConfiguration?
+        let dictationEnhancementsSelection: EnhancementsAISelection?
+        let dictationPostProcessingEnabled: Bool?
+        let dictationStyle: DictationStyle?
+
+        init(
+            id: UUID,
+            meeting: Meeting,
+            recordingSource: RecordingSource,
+            kernelMode: IntelligenceKernelMode,
+            postProcessingContext: String?,
+            postProcessingContextItems: [TranscriptionContextItem],
+            meetingNotesContent: MeetingNotesContent,
+            dictationSessionOutputLanguageOverride: DictationOutputLanguage?,
+            dictationStartBundleIdentifier: String?,
+            dictationStartURL: URL?,
+            dictationStyleID: UUID? = nil,
+            dictationTextHandlingPolicy: DictationTextHandlingPolicy? = nil,
+            dictationTranscriptionConfiguration: DictationTranscriptionConfiguration? = nil,
+            dictationEnhancementsSelection: EnhancementsAISelection? = nil,
+            dictationPostProcessingEnabled: Bool? = nil,
+            dictationStyle: DictationStyle? = nil,
+        ) {
+            self.id = id
+            self.meeting = meeting
+            self.recordingSource = recordingSource
+            self.kernelMode = kernelMode
+            self.postProcessingContext = postProcessingContext
+            self.postProcessingContextItems = postProcessingContextItems
+            self.meetingNotesContent = meetingNotesContent
+            self.dictationSessionOutputLanguageOverride = dictationSessionOutputLanguageOverride
+            self.dictationStartBundleIdentifier = dictationStartBundleIdentifier
+            self.dictationStartURL = dictationStartURL
+            self.dictationStyleID = dictationStyleID
+            self.dictationTextHandlingPolicy = dictationTextHandlingPolicy
+            self.dictationTranscriptionConfiguration = dictationTranscriptionConfiguration
+            self.dictationEnhancementsSelection = dictationEnhancementsSelection
+            self.dictationPostProcessingEnabled = dictationPostProcessingEnabled
+            self.dictationStyle = dictationStyle
+        }
     }
 
     // MARK: - Constants

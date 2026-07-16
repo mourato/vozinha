@@ -104,6 +104,7 @@ public extension RecordingManager {
             dictationSessionOutputLanguageOverride = nil
             dictationStartBundleIdentifier = nil
             dictationStartURL = nil
+            activeDictationStyleSnapshot = nil
             activeStartTelemetry = nil
             clearPostProcessingReadinessWarning()
             await RecordingExclusivityCoordinator.shared.endRecording()
@@ -137,6 +138,7 @@ public extension RecordingManager {
         dictationSessionOutputLanguageOverride = nil
         dictationStartBundleIdentifier = nil
         dictationStartURL = nil
+        activeDictationStyleSnapshot = nil
         activeStartTelemetry = nil
         clearPostProcessingReadinessWarning()
         await RecordingExclusivityCoordinator.shared.endRecording()
@@ -228,7 +230,7 @@ private extension RecordingManager {
         if currentMeeting?.id == session.id {
             currentMeeting?.state = .completed
         }
-        TranscriptionDeliveryService.deliver(transcription: transcription, recordingSource: session.recordingSource)
+        TranscriptionDeliveryService.deliver(transcription: transcription, recordingSource: session.recordingSource, textPolicy: session.dictationTextHandlingPolicy)
         completeVisibleTranscription(success: true, sessionID: session.id)
         notifySuccess(for: transcription)
         scheduleStatusReset(sessionID: session.id)

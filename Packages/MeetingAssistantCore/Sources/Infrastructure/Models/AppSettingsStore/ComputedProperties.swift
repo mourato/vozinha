@@ -13,6 +13,16 @@ public extension AppSettingsStore {
             includeAccessibilityText: contextAwarenessIncludeAccessibilityText,
             redactSensitiveData: contextAwarenessRedactSensitiveData,
             dictationSelection: enhancementsDictationAISelection,
+            textHandlingPolicy: DictationTextHandlingPolicy(
+                autoCopyToClipboard: autoCopyTranscriptionToClipboard,
+                autoPasteToActiveApp: autoPasteTranscriptionToActiveApp,
+                smartSpacingAndCapitalization: smartSpacingAndCapitalizationEnabled,
+                smartParagraphs: smartParagraphsEnabled,
+            ),
+            transcriptionConfiguration: DictationTranscriptionConfiguration(
+                selection: resolvedTranscriptionSelection(for: .dictation),
+                inputLanguageCode: resolvedTranscriptionInputLanguageCode(for: .dictation),
+            ),
         )
     }
 

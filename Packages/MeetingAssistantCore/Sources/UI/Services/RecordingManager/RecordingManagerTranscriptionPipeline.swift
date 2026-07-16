@@ -67,6 +67,7 @@ extension RecordingManager {
             TranscriptionDeliveryService.deliver(
                 transcription: transcription,
                 recordingSource: session.recordingSource,
+                textPolicy: session.dictationTextHandlingPolicy,
             )
 
             completeVisibleTranscription(success: true, sessionID: session.id)
@@ -165,10 +166,20 @@ extension RecordingManager {
             contextItems: config.postProcessingContextItems,
             vocabularyReplacementRules: settings.vocabularyReplacementRules,
             diarizationEnabledOverride: diarizationEnabledOverride,
+            transcriptionConfiguration: config.dictationTranscriptionConfiguration.map {
+                DomainTranscriptionRequestConfiguration(
+                    providerID: $0.selection.provider.rawValue,
+                    modelID: $0.selection.selectedModel,
+                    inputLanguageCode: $0.inputLanguageCode,
+                )
+            },
             applyPostProcessing: config.applyPostProcessing,
             postProcessingPrompt: config.postProcessingPrompt,
             defaultPostProcessingPrompt: config.defaultPostProcessingPrompt,
             postProcessingIdentity: config.postProcessingIdentity,
+            postProcessingSelection: config.dictationEnhancementsSelection.map {
+                DomainPostProcessingSelection(providerID: $0.provider.rawValue, modelID: $0.selectedModel, registrationID: $0.registrationID)
+            },
             autoDetectMeetingType: config.autoDetectMeetingType,
             availablePrompts: config.availablePrompts,
             postProcessingContext: config.postProcessingContext,

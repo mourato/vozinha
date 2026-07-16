@@ -63,6 +63,15 @@ extension AppSettingsStore {
         let dictation = loadDictationRulesAndWebTargets(
             contextAwareness: contextAwareness,
             dictationSelection: ai.enhancementsDictationAISelection,
+            transcriptionSelection: ai.transcriptionDictationSelection,
+            inputLanguageCode: postProcessing.transcriptionInputLanguageHint.languageCode,
+            textHandlingPolicy: DictationTextHandlingPolicy(
+                autoCopyToClipboard: UserDefaults.standard.object(forKey: "autoCopyTranscriptionToClipboard") == nil
+                    ? true : UserDefaults.standard.bool(forKey: "autoCopyTranscriptionToClipboard"),
+                autoPasteToActiveApp: UserDefaults.standard.bool(forKey: "autoPasteTranscriptionToActiveApp"),
+                smartSpacingAndCapitalization: smartSpacingAndCapitalizationEnabled,
+                smartParagraphs: smartParagraphsEnabled,
+            ),
         )
         let ui = loadUIAndIndicatorSettings()
         let defaults = UserDefaults.standard
@@ -540,6 +549,9 @@ extension AppSettingsStore {
     static func loadDictationRulesAndWebTargets(
         contextAwareness: ContextAwarenessSettingsValues,
         dictationSelection: EnhancementsAISelection,
+        transcriptionSelection: TranscriptionProviderSelection = .default,
+        inputLanguageCode: String? = nil,
+        textHandlingPolicy: DictationTextHandlingPolicy = .init(),
     ) -> DictationRulesAndWebTargetsValues {
         let defaultDictationStyle = defaultDictationStyle(
             contextAwarenessEnabled: contextAwareness.contextAwarenessEnabled,
@@ -548,13 +560,32 @@ extension AppSettingsStore {
             includeAccessibilityText: contextAwareness.contextAwarenessIncludeAccessibilityText,
             redactSensitiveData: contextAwareness.contextAwarenessRedactSensitiveData,
             dictationSelection: dictationSelection,
+            textHandlingPolicy: textHandlingPolicy,
+            transcriptionConfiguration: DictationTranscriptionConfiguration(
+                selection: transcriptionSelection,
+                inputLanguageCode: inputLanguageCode,
+            ),
         )
+
+        let loadedStyles = loadDecoded([DictationStyle].self, forKey: Keys.dictationStyles) ?? [defaultDictationStyle]
+        let migratedStyles = migrateLegacyDictationStyles(
+            loadedStyles,
+            dictationSelection: dictationSelection,
+            transcriptionSelection: transcriptionSelection,
+            inputLanguageCode: inputLanguageCode,
+            textHandlingPolicy: textHandlingPolicy,
+        )
+        if migratedStyles != loadedStyles {
+            if let data = try? JSONEncoder().encode(migratedStyles) {
+                UserDefaults.standard.set(data, forKey: Keys.dictationStyles)
+            }
+        }
 
         return DictationRulesAndWebTargetsValues(
             markdownTargetBundleIdentifiers: loadDecoded([String].self, forKey: Keys.markdownTargetBundleIdentifiers) ?? defaultMarkdownTargetBundleIdentifiers,
             dictationAppRules: normalizedDictationAppRules(loadDecoded([DictationAppRule].self, forKey: Keys.dictationAppRules) ?? defaultDictationAppRules),
             dictationStyles: normalizedDictationStyles(
-                loadDecoded([DictationStyle].self, forKey: Keys.dictationStyles) ?? defaultDictationStyles,
+                migratedStyles,
                 defaultStyle: defaultDictationStyle,
             ),
             vocabularyReplacementRules: normalizedVocabularyReplacementRules(loadDecoded([VocabularyReplacementRule].self, forKey: Keys.vocabularyReplacementRules) ?? []),

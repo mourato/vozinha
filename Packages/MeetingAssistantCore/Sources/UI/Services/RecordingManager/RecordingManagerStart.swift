@@ -182,6 +182,7 @@ extension RecordingManager {
         currentCapturePurpose = meeting.capturePurpose
         postProcessingContext = nil
         postProcessingContextItems = []
+        activeDictationStyleSnapshot = nil
         restoreMeetingNotesIfNeeded(for: meeting.id)
         isMeetingNotesPanelVisible = false
 
@@ -190,6 +191,7 @@ extension RecordingManager {
                 bundleIdentifier: resolvedContext.appBundleIdentifier,
                 activeURL: resolvedContext.activeBrowserURL,
             )
+            activeDictationStyleSnapshot = dictationStyle
             let selectedTextCapture = await contextCaptureService.captureSelectedTextAtDictationStart(
                 contextSourcePolicy: dictationStyle.contextSourcePolicy,
             )

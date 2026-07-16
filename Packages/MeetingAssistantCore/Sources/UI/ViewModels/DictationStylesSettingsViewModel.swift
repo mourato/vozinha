@@ -15,6 +15,8 @@ public struct DictationStyleEditorDraft: Equatable, Sendable {
     public var targets: [DictationStyleTarget]
     public var contextSourcePolicy: DictationContextSourcePolicy?
     public var enhancementsSelection: EnhancementsAISelection?
+    public var textHandlingPolicy: DictationTextHandlingPolicy
+    public var transcriptionConfiguration: DictationTranscriptionConfiguration
     public var isDefault: Bool
 
     public init(
@@ -29,6 +31,8 @@ public struct DictationStyleEditorDraft: Equatable, Sendable {
         targets: [DictationStyleTarget],
         contextSourcePolicy: DictationContextSourcePolicy?,
         enhancementsSelection: EnhancementsAISelection?,
+        textHandlingPolicy: DictationTextHandlingPolicy = .init(),
+        transcriptionConfiguration: DictationTranscriptionConfiguration = .init(),
         isDefault: Bool,
     ) {
         self.id = id
@@ -42,6 +46,8 @@ public struct DictationStyleEditorDraft: Equatable, Sendable {
         self.targets = targets
         self.contextSourcePolicy = contextSourcePolicy
         self.enhancementsSelection = enhancementsSelection
+        self.textHandlingPolicy = textHandlingPolicy
+        self.transcriptionConfiguration = transcriptionConfiguration
         self.isDefault = isDefault
     }
 }
@@ -83,6 +89,8 @@ public final class DictationStylesSettingsViewModel: ObservableObject {
                 targets: style.targets,
                 contextSourcePolicy: style.contextSourcePolicy,
                 enhancementsSelection: style.enhancementsSelection,
+                textHandlingPolicy: style.textHandlingPolicy,
+                transcriptionConfiguration: style.transcriptionConfiguration,
                 isDefault: style.isDefault,
             )
         } else {
@@ -97,6 +105,8 @@ public final class DictationStylesSettingsViewModel: ObservableObject {
                 targets: [],
                 contextSourcePolicy: settings.currentDefaultDictationStyle().contextSourcePolicy,
                 enhancementsSelection: settings.enhancementsDictationAISelection,
+                textHandlingPolicy: settings.currentDefaultDictationStyle().textHandlingPolicy,
+                transcriptionConfiguration: settings.currentDefaultDictationStyle().transcriptionConfiguration,
                 isDefault: false,
             )
         }
@@ -123,6 +133,8 @@ public final class DictationStylesSettingsViewModel: ObservableObject {
             contextSourcePolicy: draft.contextSourcePolicy,
             enhancementsSelection: draft.enhancementsSelection,
             isDefault: draft.isDefault,
+            textHandlingPolicy: draft.textHandlingPolicy,
+            transcriptionConfiguration: draft.transcriptionConfiguration,
         )
 
         var updatedStyles = settings.dictationStyles
