@@ -24,7 +24,7 @@ Status values: `TODO` | `IN PROGRESS` | `DONE` | `BLOCKED` | `REJECTED`.
 | [104](104-centralize-agent-routing-ownership.md) | Make `agent-ops` the single owner of delegation and profile selection | P1 | S | 103 | DONE |
 | [105](105-prune-agent-operational-context.md) | Prune dead agent context and make guidance drift fail closed | P1 | L | 104 | DONE |
 | [106](106-snapshot-mode-dictation-configuration.md) | Persist and snapshot dictation configuration per mode | P0 | L | - | DONE |
-| [107](107-relocate-dictation-settings-into-mode-drawer.md) | Relocate Dictation settings into the mode drawer and retire the tab | P0 | L | 106 | TODO |
+| [107](107-relocate-dictation-settings-into-mode-drawer.md) | Relocate Dictation settings into the mode drawer and retire the tab | P0 | L | 106 | DONE |
 | [108](108-move-assistant-integrations-into-drawers.md) | Move Assistant and Integrations into Dictation Modes drawers | P0 | L | 107 | TODO |
 | [109](109-promote-dictionary-and-add-vocabulary-workflow.md) | Promote Dictionary and add a separate vocabulary workflow | P1 | L | 108 | TODO |
 | [110](110-wire-vocabulary-through-transcription.md) | Wire vocabulary snapshots through transcription and enhancement | P1 | L | 109 | TODO |
