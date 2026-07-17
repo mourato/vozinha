@@ -156,7 +156,7 @@ at the owning UI boundary. Run architecture, lint, Full validation, and review.
 - [x] All execution paths use one immutable snapshot.
 - [x] No adapter reads persistence or logs terms.
 - [x] Any external disclosure is localized and accurate.
-- [x] Full validation and review: `make validate-agent --lane auto` Full PASS after remediating dictation legacy-redirect baseline; privacy reviewer still required before merge.
+- [x] Full validation and review: Full `validate-agent` PASS; privacy review completed with disclosure/wire-limit tighten (`dde4da0c`); merged to `main`.
 
 ## STOP conditions
 
