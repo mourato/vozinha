@@ -50,6 +50,7 @@ public struct SettingsView: View {
         .background(SettingsWindowConfigurator())
         .frame(minWidth: LayoutConstants.windowWidth, minHeight: LayoutConstants.windowHeight)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .ignoresSafeArea(.container, edges: .top)
         .onAppear {
             syncSidebarVisibilityFromStore()
             if let sectionId = navigationService.requestedSettingsSection,
