@@ -1,4 +1,5 @@
 @testable import MeetingAssistantCoreAI
+import MeetingAssistantCoreDomain
 import XCTest
 
 final class GroqVocabularyRequestTests: XCTestCase {
@@ -30,5 +31,24 @@ final class GroqVocabularyRequestTests: XCTestCase {
         let text = String(bytes: body, encoding: .utf8) ?? ""
 
         XCTAssertFalse(text.contains("name=\"prompt\""))
+    }
+
+    func testMultipartBody_EnforcesGroqCharacterBudget() throws {
+        let huge = Array(repeating: "ABCDEFGHIJ", count: 100).joined(separator: ", ")
+        let body = GroqTranscriptionClient.multipartBody(
+            boundary: "bound",
+            fileData: Data("audio".utf8),
+            fileName: "clip.wav",
+            modelID: "whisper-large-v3-turbo",
+            inputLanguageCode: nil,
+            vocabularyHint: huge,
+        )
+        let text = String(bytes: body, encoding: .utf8) ?? ""
+        XCTAssertTrue(text.contains("name=\"prompt\""))
+        let capped = VocabularyProviderHints.capGroqPrompt(huge)
+        XCTAssertNotNil(capped)
+        XCTAssertLessThanOrEqual(try XCTUnwrap(capped?.count), VocabularyProviderHints.groqMaxCharacters)
+        XCTAssertTrue(try text.contains(XCTUnwrap(capped)))
+        XCTAssertFalse(text.contains(huge))
     }
 }

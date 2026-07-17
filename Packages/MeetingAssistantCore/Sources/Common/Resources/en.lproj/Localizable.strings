@@ -1479,7 +1479,7 @@
 "settings.dictionary.workflow.substitutions" = "Substitutions";
 "settings.dictionary.workflow.vocabulary" = "Vocabulary";
 "settings.dictionary.vocabulary.description" = "Add terms that the transcription should recognize. Separate multiple terms with commas.";
-"settings.dictionary.vocabulary.external_disclosure" = "When Groq or ElevenLabs is selected, vocabulary terms may be sent to that provider as recognition hints (prompt / keyterms). Local transcription keeps terms on this device.";
+"settings.dictionary.vocabulary.external_disclosure" = "Term strings (not definitions) may leave this device as ASR hints when Groq or ElevenLabs is selected—provider limits may send only a subset—and as spelling context when remote AI enhancement runs. Local ASR alone does not send terms off-device; remote enhancement still can.";
 "settings.dictionary.vocabulary.add_placeholder" = "e.g. SwiftUI, Metal, CoreML";
 "settings.dictionary.vocabulary.empty" = "No vocabulary terms added yet.";
 "settings.dictionary.vocabulary.added_count" = "%d term(s) added.";

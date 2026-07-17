@@ -117,7 +117,7 @@ public final class ElevenLabsTranscriptionClient {
         if let inputLanguageCode = normalizedLanguageCode(inputLanguageCode) {
             appendField("language_code", value: inputLanguageCode, boundary: boundary, to: &body)
         }
-        for keyterm in vocabularyKeyterms where !keyterm.isEmpty {
+        for keyterm in VocabularyProviderHints.capElevenLabsKeyterms(vocabularyKeyterms) {
             appendField("keyterms", value: keyterm, boundary: boundary, to: &body)
         }
 

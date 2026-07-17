@@ -552,7 +552,7 @@ public class TranscriptionClient: ObservableObject, TranscriptionService, Transc
                 extra: [
                     "words": response.text.split(separator: " ").count,
                     "model": response.model,
-                    "keytermCount": vocabularyKeyterms.count,
+                    "hasVocabularyKeyterms": !vocabularyKeyterms.isEmpty,
                 ],
             )
             return response

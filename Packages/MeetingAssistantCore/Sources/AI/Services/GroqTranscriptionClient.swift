@@ -107,7 +107,9 @@ public final class GroqTranscriptionClient {
         if let inputLanguageCode = normalizedLanguageCode(inputLanguageCode) {
             appendField("language", value: inputLanguageCode, boundary: boundary, to: &body)
         }
-        if let vocabularyHint, !vocabularyHint.isEmpty {
+        if let vocabularyHint = VocabularyProviderHints.capGroqPrompt(vocabularyHint),
+           !vocabularyHint.isEmpty
+        {
             appendField("prompt", value: vocabularyHint, boundary: boundary, to: &body)
         }
 

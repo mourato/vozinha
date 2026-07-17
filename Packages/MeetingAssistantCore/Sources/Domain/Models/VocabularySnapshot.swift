@@ -8,6 +8,12 @@ public struct VocabularyProviderHints: Sendable, Hashable, Codable, Equatable {
     public let groqPrompt: String?
     public let elevenLabsKeyterms: [String]
 
+    /// Conservative Groq Whisper `prompt` character budget (~224 tokens).
+    public static let groqMaxCharacters = 800
+    /// ElevenLabs Scribe v2 batch keyterm limits (official docs).
+    public static let elevenLabsMaxTerms = 1_000
+    public static let elevenLabsMaxCharactersPerTerm = 50
+
     public init(groqPrompt: String?, elevenLabsKeyterms: [String]) {
         self.groqPrompt = groqPrompt
         self.elevenLabsKeyterms = elevenLabsKeyterms
@@ -19,6 +25,64 @@ public struct VocabularyProviderHints: Sendable, Hashable, Codable, Equatable {
     }
 
     public static let empty = VocabularyProviderHints(groqPrompt: nil, elevenLabsKeyterms: [])
+
+    /// Re-applies provider limits for defense-in-depth at the wire boundary.
+    public func enforcingWireLimits() -> VocabularyProviderHints {
+        VocabularyProviderHints(
+            groqPrompt: Self.capGroqPrompt(groqPrompt),
+            elevenLabsKeyterms: Self.capElevenLabsKeyterms(elevenLabsKeyterms),
+        )
+    }
+
+    /// Caps an already-joined Groq prompt to whole comma-separated terms.
+    public static func capGroqPrompt(
+        _ prompt: String?,
+        maxCharacters: Int = groqMaxCharacters,
+    ) -> String? {
+        guard let prompt else { return nil }
+        let terms = prompt
+            .split(separator: ",", omittingEmptySubsequences: false)
+            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .filter { !$0.isEmpty }
+        guard !terms.isEmpty else { return nil }
+
+        var parts: [String] = []
+        var used = 0
+        for term in terms {
+            let separator = parts.isEmpty ? 0 : 2
+            let nextLength = used + separator + term.count
+            guard nextLength <= maxCharacters else { break }
+            parts.append(term)
+            used = nextLength
+        }
+        guard !parts.isEmpty else { return nil }
+        return parts.joined(separator: ", ")
+    }
+
+    /// Caps ElevenLabs keyterms to documented length/count and unsupported-character rules.
+    public static func capElevenLabsKeyterms(
+        _ keyterms: [String],
+        maxTerms: Int = elevenLabsMaxTerms,
+        maxCharactersPerTerm: Int = elevenLabsMaxCharactersPerTerm,
+    ) -> [String] {
+        var result: [String] = []
+        result.reserveCapacity(min(keyterms.count, maxTerms))
+        for raw in keyterms {
+            guard result.count < maxTerms else { break }
+            let value = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !value.isEmpty else { continue }
+            guard value.count <= maxCharactersPerTerm else { continue }
+            guard !containsElevenLabsUnsupportedCharacters(value) else { continue }
+            result.append(value)
+        }
+        return result
+    }
+
+    private static let elevenLabsUnsupportedCharacters = CharacterSet(charactersIn: "<>{}[]\\")
+
+    private static func containsElevenLabsUnsupportedCharacters(_ value: String) -> Bool {
+        value.unicodeScalars.contains { elevenLabsUnsupportedCharacters.contains($0) }
+    }
 }
 
 /// An immutable snapshot of vocabulary state captured at session start.
@@ -32,8 +96,9 @@ public struct VocabularyProviderHints: Sendable, Hashable, Codable, Equatable {
 /// Sources: Groq OpenAI-compatible Whisper `prompt`; ElevenLabs Scribe v2
 /// [keyterm prompting](https://elevenlabs.io/docs/eleven-api/guides/how-to/speech-to-text/batch/keyterm-prompting)
 /// (`keyterms`, max 1000 terms × 50 chars). Remote providers receive term
-/// strings only (definitions omitted); terms leave the device when Groq or
-/// ElevenLabs is selected.
+/// strings only (definitions omitted). Terms leave the device for Groq or
+/// ElevenLabs ASR hints, and also when remote AI enhancement receives the
+/// escaped `<VOCABULARY>` post-processing block.
 ///
 /// | Provider | Vocabulary hint via | Supported? | Parameter | Notes |
 /// |---|---|---|---|---|
@@ -68,7 +133,7 @@ public struct VocabularySnapshot: Sendable, Hashable, Equatable {
 
     /// Projects terms into a Groq Whisper `prompt` under a conservative character budget.
     /// Whole terms only — stops before exceeding `maxCharacters`.
-    public func projectedGroqPrompt(maxCharacters: Int = 800) -> String? {
+    public func projectedGroqPrompt(maxCharacters: Int = VocabularyProviderHints.groqMaxCharacters) -> String? {
         let termStrings = terms.map(\.term).filter { !$0.isEmpty }
         guard !termStrings.isEmpty else { return nil }
 
@@ -92,21 +157,14 @@ public struct VocabularySnapshot: Sendable, Hashable, Equatable {
     /// containing ElevenLabs-unsupported characters (`<>{}[]\`) are also skipped.
     /// Cap at `maxTerms` (documented batch limit: 1000).
     public func projectedElevenLabsKeyterms(
-        maxTerms: Int = 1_000,
-        maxCharactersPerTerm: Int = 50,
+        maxTerms: Int = VocabularyProviderHints.elevenLabsMaxTerms,
+        maxCharactersPerTerm: Int = VocabularyProviderHints.elevenLabsMaxCharactersPerTerm,
     ) -> [String] {
-        var result: [String] = []
-        result.reserveCapacity(min(terms.count, maxTerms))
-
-        for term in terms {
-            guard result.count < maxTerms else { break }
-            let value = term.term
-            guard !value.isEmpty else { continue }
-            guard value.count <= maxCharactersPerTerm else { continue }
-            guard !Self.containsElevenLabsUnsupportedCharacters(value) else { continue }
-            result.append(value)
-        }
-        return result
+        VocabularyProviderHints.capElevenLabsKeyterms(
+            terms.map(\.term),
+            maxTerms: maxTerms,
+            maxCharactersPerTerm: maxCharactersPerTerm,
+        )
     }
 
     /// Prepends this snapshot's vocabulary context block to the base
@@ -152,23 +210,15 @@ public struct VocabularySnapshot: Sendable, Hashable, Equatable {
         rules.filter { !$0.find.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
     }
 
-    private static let elevenLabsUnsupportedCharacters = CharacterSet(charactersIn: "<>{}[]\\")
-
-    private static func containsElevenLabsUnsupportedCharacters(_ value: String) -> Bool {
-        value.unicodeScalars.contains { elevenLabsUnsupportedCharacters.contains($0) }
-    }
-
-    /// Strips control characters, neutralizes `</VOCABULARY>` injection, and escapes quotes.
+    /// Strips control characters, neutralizes vocabulary delimiter tags, and escapes quotes.
     private static func escapeTermForPostProcessing(_ term: String) -> String {
         let withoutControls = String(
             term.unicodeScalars.filter { !CharacterSet.controlCharacters.contains($0) },
         )
-        let withoutClosingTag = withoutControls.replacingOccurrences(
-            of: "</VOCABULARY>",
-            with: "",
-            options: .caseInsensitive,
-        )
-        return withoutClosingTag
+        let withoutDelimiterTags = withoutControls
+            .replacingOccurrences(of: "</VOCABULARY>", with: "", options: .caseInsensitive)
+            .replacingOccurrences(of: "<VOCABULARY>", with: "", options: .caseInsensitive)
+        return withoutDelimiterTags
             .replacingOccurrences(of: "\\", with: "\\\\")
             .replacingOccurrences(of: "\"", with: "\\\"")
     }

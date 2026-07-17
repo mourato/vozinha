@@ -37,11 +37,12 @@ final class VocabularySessionSnapshotTests: XCTestCase {
         let hints = VocabularyProviderHints(groqPrompt: "SecretTerm", elevenLabsKeyterms: ["SecretTerm"])
         let extras: [String: Any] = [
             "hasVocabularyHints": !hints.isEmpty,
-            "keytermCount": hints.elevenLabsKeyterms.count,
+            "hasVocabularyKeyterms": !hints.elevenLabsKeyterms.isEmpty,
         ]
 
         let serialized = extras.map { "\($0.key)=\($0.value)" }.joined(separator: ",")
         XCTAssertFalse(serialized.contains("SecretTerm"))
         XCTAssertTrue(serialized.contains("hasVocabularyHints=true"))
+        XCTAssertTrue(serialized.contains("hasVocabularyKeyterms=true"))
     }
 }
