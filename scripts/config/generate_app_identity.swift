@@ -50,6 +50,7 @@ APP_LOG_DIR_NAME = \(value("persistence", "logDirectory"))
 KEYCHAIN_SERVICE_ID = \(value("technical", "keychainService"))
 APP_LOG_SUBSYSTEM = \(value("technical", "logSubsystem"))
 HOTKEY_SIGNATURE_SEED = \(value("persistence", "hotkeySignatureSeed"))
+
 """
 
 let swift = """
