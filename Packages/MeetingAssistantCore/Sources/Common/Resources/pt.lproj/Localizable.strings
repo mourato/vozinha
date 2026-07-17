@@ -1502,3 +1502,6 @@
 "settings.dictionary.import.result.rules" = "%d regra(s) de substituição importada(s).";
 "settings.dictionary.import.result.skipped" = "%d duplicata(s) ignorada(s).";
 "settings.dictionary.import.result.nothing" = "Nada novo para importar.";
+"settings.dictionary.quick_add.title" = "Adição Rápida";
+"settings.dictionary.quick_add.shortcut" = "Atalho de adição rápida";
+"settings.dictionary.quick_add.close" = "Fechar";

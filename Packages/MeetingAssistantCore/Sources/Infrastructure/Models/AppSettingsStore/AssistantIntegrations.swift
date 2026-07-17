@@ -62,6 +62,19 @@ public extension AppSettingsStore {
             )
         }
 
+        if let dictionaryQuickAddShortcutDefinition,
+           !dictionaryQuickAddShortcutDefinition.isEmpty,
+           GlobalHotkeyMapper.descriptor(for: dictionaryQuickAddShortcutDefinition) != nil
+        {
+            bindings.append(
+                ShortcutBinding(
+                    actionID: .dictionaryQuickAdd,
+                    actionDisplayName: "settings.dictionary.quick_add.shortcut".localized,
+                    shortcut: dictionaryQuickAddShortcutDefinition,
+                ),
+            )
+        }
+
         for integration in assistantIntegrations where integration.isEnabled {
             let resolvedShortcut = integration.shortcutDefinition
                 .flatMap {

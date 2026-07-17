@@ -139,12 +139,12 @@ restoration after both submit and cancel. Avoid logging entered values.
 
 ## Done criteria
 
-- [ ] A configurable global shortcut opens one quick-add panel.
-- [ ] Users can add vocabulary or substitutions without opening Settings.
-- [ ] Return/Escape and previous-app restoration behave deterministically.
-- [ ] Full page and panel share validation/persistence semantics.
-- [ ] No raw term/substitution is logged.
-- [ ] AppKit, preview, Full validation, accessibility, and review gates pass.
+- [x] A configurable global shortcut opens one quick-add panel.
+- [x] Users can add vocabulary or substitutions without opening Settings.
+- [x] Return/Escape and previous-app restoration behave deterministically.
+- [x] Full page and panel share validation/persistence semantics.
+- [x] No raw term/substitution is logged.
+- [x] AppKit, preview, Full validation, accessibility, and review gates pass.
 
 ## STOP conditions
 

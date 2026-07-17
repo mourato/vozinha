@@ -50,6 +50,7 @@ public extension AppSettingsStore {
         assistantShortcutDefinition = Self.defaultAssistantShortcutDefinition
         meetingShortcutDefinition = Self.defaultMeetingShortcutDefinition
         cancelRecordingShortcutDefinition = nil
+        dictionaryQuickAddShortcutDefinition = nil
         dictationModifierShortcutGesture = nil
         assistantModifierShortcutGesture = nil
         meetingModifierShortcutGesture = nil

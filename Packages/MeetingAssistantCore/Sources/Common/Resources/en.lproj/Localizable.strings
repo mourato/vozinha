@@ -1503,3 +1503,6 @@
 "settings.dictionary.import.result.rules" = "%d substitution rule(s) imported.";
 "settings.dictionary.import.result.skipped" = "%d duplicate(s) skipped.";
 "settings.dictionary.import.result.nothing" = "Nothing new to import.";
+"settings.dictionary.quick_add.title" = "Quick Add";
+"settings.dictionary.quick_add.shortcut" = "Quick-add shortcut";
+"settings.dictionary.quick_add.close" = "Close";

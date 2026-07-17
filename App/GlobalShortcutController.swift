@@ -125,6 +125,7 @@ final class GlobalShortcutController {
         observeRegistrationInputs(settings.$dictationModifierShortcutGesture.map { _ in () }.eraseToAnyPublisher())
         observeRegistrationInputs(settings.$meetingModifierShortcutGesture.map { _ in () }.eraseToAnyPublisher())
         observeRegistrationInputs(settings.$isMeetingTranscriptionEnabled.map { _ in () }.eraseToAnyPublisher())
+        observeRegistrationInputs(settings.$dictionaryQuickAddShortcutDefinition.map { _ in () }.eraseToAnyPublisher())
 
         observeResetOnly(settings.$shortcutActivationMode.map { _ in () }.eraseToAnyPublisher())
         observeResetOnly(settings.$dictationShortcutActivationMode.map { _ in () }.eraseToAnyPublisher())
@@ -214,7 +215,31 @@ final class GlobalShortcutController {
             registrations.append(meetingRegistration)
         }
 
+        if let dictionaryRegistration = dictionaryQuickAddRegistration() {
+            registrations.append(dictionaryRegistration)
+        }
+
         hotkeyBackend.registerAll(registrations)
+    }
+
+    private func dictionaryQuickAddRegistration() -> HotkeyRegistration? {
+        guard let definition = settings.dictionaryQuickAddShortcutDefinition,
+              let descriptor = GlobalHotkeyMapper.descriptor(for: definition)
+        else {
+            return nil
+        }
+
+        return HotkeyRegistration(
+            id: "global.dictionaryQuickAdd",
+            keyCode: descriptor.keyCode,
+            modifiers: descriptor.modifiers,
+            onKeyDown: {
+                Task { @MainActor in
+                    DictionaryQuickAddPanelController.shared.show()
+                }
+            },
+            onKeyUp: {},
+        )
     }
 
     private func inHouseRegistration(for type: ShortcutType) -> HotkeyRegistration? {
@@ -260,9 +285,14 @@ final class GlobalShortcutController {
     }
 
     func expectedShortcutCaptureBackends() -> ShortcutCaptureBackendExpectation {
+        let hasDictionaryQuickAddShortcut = settings.dictionaryQuickAddShortcutDefinition.map {
+            GlobalHotkeyMapper.descriptor(for: $0) != nil
+        } ?? false
+
         let hasAnyGlobalShortcut = hotkeyBackend.registeredHotkeyCount > 0
             || isCustomShortcutEnabled(for: .dictation)
             || isCustomShortcutEnabled(for: .meeting)
+            || hasDictionaryQuickAddShortcut
 
         return ShortcutCaptureBackendExpectation(
             needsGlobalCapture: hasAnyGlobalShortcut,
