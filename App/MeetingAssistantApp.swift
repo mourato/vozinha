@@ -183,6 +183,8 @@ struct MeetingAssistantCommands: Commands {
     @Environment(\.openWindow) private var openWindow
 
     var body: some Commands {
+        // `let _ =` keeps this side effect out of CommandsBuilder.buildExpression;
+        // a bare `_ =` fails Release/WMO with "type '()' cannot conform to 'Commands'".
         _ = configureSettingsSceneOpener()
 
         CommandGroup(replacing: .appSettings) {
