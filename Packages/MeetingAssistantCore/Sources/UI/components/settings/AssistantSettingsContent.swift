@@ -36,10 +36,10 @@ public struct AssistantSettingsContent: View {
 
     public var body: some View {
         ModeEditorDrawer(
-            headerStyle: .back,
+            headerStyle: .close,
             title: "settings.section.assistant".localized,
-            iconSymbol: "sparkles",
-            onBack: onClose,
+            iconSymbol: "sparkle",
+            onClose: onClose,
         ) {
             Form {
                 Section {

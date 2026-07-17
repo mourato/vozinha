@@ -29,10 +29,10 @@ public struct IntegrationsSettingsContent: View {
 
     public var body: some View {
         ModeEditorDrawer(
-            headerStyle: .back,
+            headerStyle: .close,
             title: "settings.section.integrations".localized,
             iconSymbol: "puzzlepiece.extension",
-            onBack: onClose,
+            onClose: onClose,
         ) {
             Form {
                 Section {

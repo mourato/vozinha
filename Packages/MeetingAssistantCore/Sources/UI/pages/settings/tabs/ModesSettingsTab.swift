@@ -23,7 +23,7 @@ public struct ModesSettingsTab: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
             .settingsSidePanel(
                 isPresented: isEditorPresented,
-                onDismiss: dismissEditor,
+                onDismiss: dismissPresentedRoute,
             ) {
                 if let route = navigationState.currentRoute {
                     routeContent(for: route)
@@ -85,13 +85,9 @@ public struct ModesSettingsTab: View {
         case let .promptEditor(styleID):
             promptEditorPage(styleID: styleID)
         case .assistant:
-            AssistantSettingsContent(
-                onClose: { _ = navigationState.goBack() },
-            )
+            AssistantSettingsContent(onClose: dismissPresentedRoute)
         case .integrations:
-            IntegrationsSettingsContent(
-                onClose: { _ = navigationState.goBack() },
-            )
+            IntegrationsSettingsContent(onClose: dismissPresentedRoute)
         }
     }
 
@@ -114,7 +110,7 @@ public struct ModesSettingsTab: View {
                     let savedID = viewModel.saveStyle(draft)
                     closePanel(focusTarget: .style(savedID))
                 },
-                onCancel: dismissEditor,
+                onCancel: dismissPresentedRoute,
                 onDelete: styleID == nil ? nil : {
                     if let styleID {
                         viewModel.deleteStyle(id: styleID)
@@ -143,17 +139,20 @@ public struct ModesSettingsTab: View {
         }
     }
 
-    private func dismissEditor() {
-        let styleID = routeStyleID
-        viewModel.clearEditor()
-        closePanel(focusTarget: .forStyleID(styleID))
-    }
-
-    private var routeStyleID: UUID? {
+    private func dismissPresentedRoute() {
+        let focusTarget: DictationStyleFocusTarget
         switch navigationState.currentRoute {
-        case let .editor(styleID), let .promptEditor(styleID): styleID
-        case .assistant, .integrations, nil: nil
+        case let .editor(styleID), let .promptEditor(styleID):
+            viewModel.clearEditor()
+            focusTarget = .forStyleID(styleID)
+        case .assistant:
+            focusTarget = .assistant
+        case .integrations:
+            focusTarget = .integrations
+        case nil:
+            return
         }
+        closePanel(focusTarget: focusTarget)
     }
 
     private func closePanel(focusTarget: DictationStyleFocusTarget) {

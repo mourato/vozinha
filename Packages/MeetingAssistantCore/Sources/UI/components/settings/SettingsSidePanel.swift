@@ -32,15 +32,16 @@ private struct SettingsSidePanelModifier<PanelContent: View>: ViewModifier {
             GeometryReader { geometry in
                 ZStack(alignment: .trailing) {
                     if isPresented {
-                        Button("") {
-                            onDismiss()
-                        }
-                        .buttonStyle(.plain)
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                        .contentShape(Rectangle())
-                        .accessibilityHidden(true)
-                        .keyboardShortcut(.escape)
-                        .transition(.identity)
+                        // Clear outside layer. Prefer Color.clear + contentShape over an
+                        // empty-title Button, which can lose hit testing on macOS.
+                        // Escape stays on ModeEditorDrawer close/back so nested prompt
+                        // routes can return to the editor before dismissing the panel.
+                        Color.clear
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                            .contentShape(Rectangle())
+                            .onTapGesture(perform: onDismiss)
+                            .accessibilityHidden(true)
+                            .transition(.identity)
                     }
 
                     if isPresented {
@@ -113,10 +114,14 @@ private struct SidePanelPreview: View {
         Text("Stable underlying list")
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
             .padding()
-            .settingsSidePanel(isPresented: isPresented, onDismiss: { isPresented = false }) {
-                Text("400 pt editor")
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-            }
+            .settingsSidePanel(
+                isPresented: isPresented,
+                onDismiss: { isPresented = false },
+                content: {
+                    Text("400 pt editor")
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                },
+            )
             .frame(width: 900, height: 640)
     }
 }
