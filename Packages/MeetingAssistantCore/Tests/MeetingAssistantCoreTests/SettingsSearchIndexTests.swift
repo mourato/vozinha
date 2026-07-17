@@ -223,10 +223,15 @@ final class SettingsSearchIndexTests: XCTestCase {
         XCTAssertEqual(transcriptionSection, .system)
     }
 
-    func testHistoryKeysPreserveActivityHistoryDestination() {
+    func testHistoryKeysRouteToHistorySection() {
         let destination = SettingsSearchIndex.destination(forLocalizationKey: "settings.section.history")
 
-        XCTAssertEqual(destination, SettingsDestination(section: .activity, activityRoute: .history))
+        XCTAssertEqual(destination, SettingsDestination(section: .history))
+
+        let transcriptionDestination = SettingsSearchIndex.destination(
+            forLocalizationKey: "settings.transcriptions.search_placeholder",
+        )
+        XCTAssertEqual(transcriptionDestination, SettingsDestination(section: .history))
     }
 
     func testMetricsKeysPreserveActivityModelPerformanceDestination() {
@@ -236,7 +241,6 @@ final class SettingsSearchIndexTests: XCTestCase {
             destination,
             SettingsDestination(
                 section: .activity,
-                activityRoute: .root,
                 activityPendingSheet: .performance,
             ),
         )

@@ -14,7 +14,6 @@ public struct TranscriptionsSettingsTab: View {
     @StateObject private var viewModel = TranscriptionSettingsViewModel()
     @StateObject private var dictationService = MeetingQuestionDictationService()
     @Binding private var navigationHistory: TranscriptionsNavigationHistory
-    private let onBackToActivity: (() -> Void)?
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     private var currentRoute: TranscriptionsPageRoute {
@@ -23,10 +22,8 @@ public struct TranscriptionsSettingsTab: View {
 
     public init(
         navigationHistory: Binding<TranscriptionsNavigationHistory> = .constant(TranscriptionsNavigationHistory()),
-        onBackToActivity: (() -> Void)? = nil,
     ) {
         _navigationHistory = navigationHistory
-        self.onBackToActivity = onBackToActivity
     }
 
     public var body: some View {
@@ -100,13 +97,6 @@ public struct TranscriptionsSettingsTab: View {
     private var listPage: some View {
         VStack(spacing: 0) {
             VStack(alignment: .leading, spacing: 16) {
-                if let onBackToActivity {
-                    SettingsChildPageBackButton(
-                        titleKey: "settings.section.activity",
-                        action: onBackToActivity,
-                    )
-                }
-
                 SettingsSectionHeader(
                     title: "settings.section.history".localized,
                     description: "settings.transcriptions.items_found".localized(with: viewModel.filteredTranscriptions.count),

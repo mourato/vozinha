@@ -147,7 +147,7 @@ final class AppCommandRouter: ObservableObject {
         if let openHistoryHandler {
             openHistoryHandler()
         } else {
-            NavigationService.shared.openActivityHistory()
+            NavigationService.shared.openHistory()
         }
     }
 

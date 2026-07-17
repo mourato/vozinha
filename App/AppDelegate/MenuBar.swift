@@ -402,7 +402,7 @@ extension AppDelegate {
     @objc func openHistory() {
         performAfterMenuDismissal { [weak self] in
             self?.promoteAppForWindowPresentation()
-            NavigationService.shared.openActivityHistory()
+            NavigationService.shared.openHistory()
         }
     }
 

@@ -2,7 +2,6 @@ import MeetingAssistantCoreCommon
 
 public struct SettingsDestination: Equatable, Sendable {
     public let section: SettingsSection
-    public let activityRoute: ActivitySettingsRoute?
     public let activityPendingSheet: ActivityPendingSheet?
     public let systemRoute: SystemSettingsRoute?
     public let modesSubroute: DictationStyleRoute?
@@ -10,14 +9,12 @@ public struct SettingsDestination: Equatable, Sendable {
 
     public init(
         section: SettingsSection,
-        activityRoute: ActivitySettingsRoute? = nil,
         activityPendingSheet: ActivityPendingSheet? = nil,
         systemRoute: SystemSettingsRoute? = nil,
         modesSubroute: DictationStyleRoute? = nil,
         expandProtectedApps: Bool = false,
     ) {
         self.section = section
-        self.activityRoute = activityRoute
         self.activityPendingSheet = activityPendingSheet
         self.systemRoute = systemRoute
         self.modesSubroute = modesSubroute
@@ -34,6 +31,7 @@ public enum SettingsSection: String, CaseIterable, Identifiable, Sendable {
     case assistant
     case integrations
     case meetings
+    case history
     case transcriptions
     case general
     case models
@@ -54,6 +52,7 @@ public enum SettingsSection: String, CaseIterable, Identifiable, Sendable {
         .activity,
         .modes,
         .meetings,
+        .history,
         .dictionary,
     ]
 
@@ -66,6 +65,7 @@ public enum SettingsSection: String, CaseIterable, Identifiable, Sendable {
             .activity,
             .modes,
             .meetings,
+            .history,
             .dictionary,
             .system,
         ]
@@ -75,7 +75,7 @@ public enum SettingsSection: String, CaseIterable, Identifiable, Sendable {
         switch self {
         case .metrics, .transcriptions, .models, .enhancements, .vocabulary, .permissions, .general, .intelligence, .audio, .dictation, .assistant, .integrations:
             true
-        case .activity, .modes, .meetings, .dictionary, .system:
+        case .activity, .modes, .meetings, .history, .dictionary, .system:
             false
         }
     }
@@ -89,11 +89,10 @@ public enum SettingsSection: String, CaseIterable, Identifiable, Sendable {
         case .metrics:
             SettingsDestination(
                 section: .activity,
-                activityRoute: .root,
                 activityPendingSheet: .performance,
             )
         case .transcriptions:
-            SettingsDestination(section: .activity, activityRoute: .history)
+            SettingsDestination(section: .history)
         case .models:
             SettingsDestination(section: .system, systemRoute: .models)
         case .vocabulary, .dictionary:
@@ -114,7 +113,7 @@ public enum SettingsSection: String, CaseIterable, Identifiable, Sendable {
             SettingsDestination(section: .modes, modesSubroute: .assistant)
         case .integrations:
             SettingsDestination(section: .modes, modesSubroute: .integrations)
-        case .activity, .modes, .meetings, .system:
+        case .activity, .modes, .meetings, .history, .system:
             SettingsDestination(section: self)
         }
     }
@@ -137,7 +136,7 @@ public enum SettingsSection: String, CaseIterable, Identifiable, Sendable {
         case .audio: "settings.section.audio".localized
         case .assistant: "settings.section.assistant".localized
         case .integrations: "settings.section.integrations".localized
-        case .transcriptions: "settings.section.history".localized
+        case .history, .transcriptions: "settings.section.history".localized
         case .models: "settings.section.models".localized
         case .vocabulary: "settings.section.vocabulary".localized
         case .dictionary: "settings.section.dictionary".localized
@@ -159,7 +158,7 @@ public enum SettingsSection: String, CaseIterable, Identifiable, Sendable {
         case .audio: "speaker.wave.2"
         case .assistant: "sparkle"
         case .integrations: "puzzlepiece.extension"
-        case .transcriptions: "clock"
+        case .history, .transcriptions: "clock"
         case .models: "cpu"
         case .vocabulary: "character.book.closed"
         case .dictionary: "character.book.closed"

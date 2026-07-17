@@ -5,7 +5,7 @@ final class SettingsSectionTests: XCTestCase {
     func testPrimarySections_OrderStartsWithCaptureWorkflows() {
         XCTAssertEqual(
             SettingsSection.primarySections,
-            [.activity, .modes, .meetings, .dictionary],
+            [.activity, .modes, .meetings, .history, .dictionary],
         )
     }
 
@@ -19,13 +19,13 @@ final class SettingsSectionTests: XCTestCase {
     func testVisibleSections_OrderMatchesProductConcepts() {
         XCTAssertEqual(
             SettingsSection.visibleSections,
-            [.activity, .modes, .meetings, .dictionary, .system],
+            [.activity, .modes, .meetings, .history, .dictionary, .system],
         )
     }
 
-    func testLegacyRedirect_MetricsAndTranscriptionsMapToActivity() {
+    func testLegacyRedirect_MetricsAndTranscriptionsMapToVisibleDestinations() {
         XCTAssertEqual(SettingsSection.metrics.visibleSection, .activity)
-        XCTAssertEqual(SettingsSection.transcriptions.visibleSection, .activity)
+        XCTAssertEqual(SettingsSection.transcriptions.visibleSection, .history)
         XCTAssertTrue(SettingsSection.metrics.isLegacyRedirect)
         XCTAssertTrue(SettingsSection.transcriptions.isLegacyRedirect)
     }
@@ -56,7 +56,7 @@ final class SettingsSectionTests: XCTestCase {
 
     func testResolvedVisibleSection_ParsesOldRawValues() {
         XCTAssertEqual(SettingsSection.resolvedVisibleSection(for: "metrics"), .activity)
-        XCTAssertEqual(SettingsSection.resolvedVisibleSection(for: "transcriptions"), .activity)
+        XCTAssertEqual(SettingsSection.resolvedVisibleSection(for: "transcriptions"), .history)
         XCTAssertEqual(SettingsSection.resolvedVisibleSection(for: "models"), .system)
         XCTAssertEqual(SettingsSection.resolvedVisibleSection(for: "enhancements"), .modes)
         XCTAssertEqual(SettingsSection.resolvedVisibleSection(for: "vocabulary"), .dictionary)
@@ -65,18 +65,17 @@ final class SettingsSectionTests: XCTestCase {
         XCTAssertEqual(SettingsSection.resolvedVisibleSection(for: "general"), .system)
     }
 
-    func testResolvedDestination_PreservesLegacyActivitySubroutes() {
+    func testResolvedDestination_PreservesLegacyDestinations() {
         XCTAssertEqual(
             SettingsSection.resolvedDestination(for: "metrics"),
             SettingsDestination(
                 section: .activity,
-                activityRoute: .root,
                 activityPendingSheet: .performance,
             ),
         )
         XCTAssertEqual(
             SettingsSection.resolvedDestination(for: "transcriptions"),
-            SettingsDestination(section: .activity, activityRoute: .history),
+            SettingsDestination(section: .history),
         )
     }
 
@@ -113,6 +112,7 @@ final class SettingsSectionTests: XCTestCase {
 
     func testResolvedVisibleSection_ParsesNewRawValues() {
         XCTAssertEqual(SettingsSection.resolvedVisibleSection(for: "activity"), .activity)
+        XCTAssertEqual(SettingsSection.resolvedVisibleSection(for: "history"), .history)
         XCTAssertEqual(SettingsSection.resolvedVisibleSection(for: "dictation"), .modes)
         XCTAssertEqual(SettingsSection.resolvedVisibleSection(for: "modes"), .modes)
         XCTAssertEqual(SettingsSection.resolvedVisibleSection(for: "assistant"), .modes)
@@ -155,6 +155,7 @@ final class SettingsSectionTests: XCTestCase {
 
     func testNewRawValuesParse() {
         XCTAssertEqual(SettingsSection(rawValue: "activity"), .activity)
+        XCTAssertEqual(SettingsSection(rawValue: "history"), .history)
         XCTAssertEqual(SettingsSection(rawValue: "intelligence"), .intelligence)
         XCTAssertEqual(SettingsSection(rawValue: "system"), .system)
     }

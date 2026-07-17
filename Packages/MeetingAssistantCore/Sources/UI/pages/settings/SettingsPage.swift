@@ -25,6 +25,7 @@ public struct SettingsView: View {
     @State private var selectedSection: SettingsSection = .activity
     @State private var settingsSearchText = ""
     @State private var activityNavigationState = ActivitySettingsNavigationState()
+    @State private var transcriptionsNavigationHistory = TranscriptionsNavigationHistory()
     @State private var systemRoute: SystemSettingsRoute = .root
     @State private var expandProtectedApps = false
     @State private var isSidebarVisible: Bool
@@ -59,7 +60,6 @@ public struct SettingsView: View {
                 selectDestination(destination)
                 navigationService.requestedSettingsSection = nil
             }
-            consumePendingActivityRoute()
         }
         .onChange(of: navigationService.requestedSettingsSection) { _, sectionId in
             guard let sectionId else { return }
@@ -67,7 +67,6 @@ public struct SettingsView: View {
                 selectDestination(destination)
             }
             navigationService.requestedSettingsSection = nil
-            consumePendingActivityRoute()
         }
         .onChange(of: navigationService.settingsSidebarToggleRequestID) { _, _ in
             toggleSidebar()
@@ -160,7 +159,6 @@ private extension SettingsView {
 
     private func selectDestination(_ destination: SettingsDestination) {
         selectedSection = destination.section
-        activityNavigationState.apply(destination.activityRoute)
         activityNavigationState.pendingSheet = destination.activityPendingSheet
         expandProtectedApps = destination.expandProtectedApps
         if destination.section == .system {
@@ -171,18 +169,6 @@ private extension SettingsView {
         }
         if destination.section == .modes || destination.section == .assistant || destination.section == .integrations {
             requestedModesSubroute = destination.modesSubroute
-        }
-        consumePendingActivityRoute()
-    }
-
-    private func consumePendingActivityRoute() {
-        guard selectedSection == .activity,
-              let subroute = navigationService.requestedActivitySubroute
-        else { return }
-        navigationService.requestedActivitySubroute = nil
-        switch subroute {
-        case .history:
-            activityNavigationState.apply(.history)
         }
     }
 
@@ -214,8 +200,10 @@ private extension SettingsView {
     @ViewBuilder
     private var detailView: some View {
         switch selectedSection {
-        case .metrics, .activity, .transcriptions:
+        case .metrics, .activity:
             ActivitySettingsTab(navigationState: $activityNavigationState)
+        case .history, .transcriptions:
+            TranscriptionsSettingsTab(navigationHistory: $transcriptionsNavigationHistory)
         case .general:
             GeneralSettingsTab()
         case .models:

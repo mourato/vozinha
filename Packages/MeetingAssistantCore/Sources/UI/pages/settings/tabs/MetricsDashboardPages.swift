@@ -63,7 +63,6 @@ struct MetricsDashboardIndexPage: View {
 
 struct ActivityDashboardRootPage: View {
     @ObservedObject var viewModel: MetricsDashboardViewModel
-    let openHistory: () -> Void
     let openMoreInsights: () -> Void
     let openPerformance: () -> Void
     let openEventDetail: (MeetingCalendarEventSnapshot) -> Void
@@ -99,14 +98,6 @@ struct ActivityDashboardRootPage: View {
             }
 
             Section {
-                SettingsListDrillDownButtonRow(
-                    title: "settings.activity.recording_history.title".localized,
-                    subtitle: "settings.activity.recording_history.subtitle".localized,
-                    accessibilityHint: "settings.activity.recording_history.accessibility_hint".localized,
-                ) {
-                    openHistory()
-                }
-
                 SettingsListDrillDownButtonRow(
                     title: "metrics.performance.link.title".localized,
                     subtitle: "settings.activity.model_performance.subtitle".localized,

@@ -34,25 +34,13 @@ public struct ActivitySettingsTab: View {
             }
     }
 
-    @ViewBuilder
     private var content: some View {
-        switch navigationState.activeRoute {
-        case .root:
-            rootPage
-        case .history:
-            TranscriptionsSettingsTab(
-                navigationHistory: $navigationState.transcriptionsNavigationHistory,
-                onBackToActivity: {
-                    navigationState.goBack()
-                },
-            )
-        }
+        rootPage
     }
 
     private var rootPage: some View {
         ActivityDashboardRootPage(
             viewModel: viewModel,
-            openHistory: { navigationState.open(.history) },
             openMoreInsights: { presentedSheet = .moreInsights },
             openPerformance: { presentedSheet = .performance },
             openEventDetail: { presentedSheet = .eventDetail($0) },
@@ -70,9 +58,6 @@ public struct ActivitySettingsTab: View {
 
     private func presentPendingSheetIfNeeded() {
         guard let pending = navigationState.pendingSheet else { return }
-        if navigationState.activeRoute != .root {
-            navigationState.open(.root)
-        }
         switch pending {
         case .performance:
             presentedSheet = .performance
