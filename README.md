@@ -31,8 +31,8 @@ A native macOS app that detects video-call meetings, captures system audio, and 
 This project is **CLI-first** (for parity with CI), with Xcode supported for debugging and UI iteration.
 
 ```bash
-git clone https://github.com/mourato/prisma.git
-cd prisma
+git clone https://github.com/mourato/vozinha.git
+cd vozinha
 ./scripts/setup-dev-environment.sh
 make build
 make run
