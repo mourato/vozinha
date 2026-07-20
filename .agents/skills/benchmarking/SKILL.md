@@ -32,6 +32,17 @@ Every reference must be classified into one or more categories when added:
 
 A reference can be **UI/UX**, **Same-domain**, or **Both**.
 
+## Reference Directory Layout
+
+All open-source reference clones live under a single shared folder, separate from personal projects:
+
+| Scope | Path |
+|-------|------|
+| **Absolute** | `~/Documents/Projects/References/` |
+| **From Prisma (vozinha)** | `../References/` |
+
+Personal projects stay as siblings of `References/` in `~/Documents/Projects/`. Never clone reference repos directly into the Projects root.
+
 ## Registered References
 
 ### voiceink / VoiceInk
@@ -40,7 +51,7 @@ A reference can be **UI/UX**, **Same-domain**, or **Both**.
 |-----------|-------|
 | **Canonical name** | VoiceInk |
 | **Classification** | Both (UI/UX + Same-domain) |
-| **Local path** | `../VoiceInk/` |
+| **Local path** | `../References/VoiceInk/` |
 | **Cloned?** | ✅ Yes |
 | **Description** | macOS app for voice transcription; relevant architecture, audio pipeline, and UI patterns |
 
@@ -50,7 +61,7 @@ A reference can be **UI/UX**, **Same-domain**, or **Both**.
 |-----------|-------|
 | **Canonical name** | FluidVoice |
 | **Classification** | Same-domain |
-| **Local path** | `../FluidVoice/` |
+| **Local path** | `../References/FluidVoice/` |
 | **Cloned?** | ✅ Yes |
 | **Remote** | https://github.com/altic-dev/FluidVoice/ |
 | **Description** | Open-source reference for fluid voice UI and audio interactions |
@@ -61,7 +72,7 @@ A reference can be **UI/UX**, **Same-domain**, or **Both**.
 |-----------|-------|
 | **Canonical name** | TypeWhisper |
 | **Classification** | Same-domain |
-| **Local path** | `../TypeWhisper/` |
+| **Local path** | `../References/TypeWhisper/` |
 | **Cloned?** | ✅ Yes |
 | **Remote** | https://github.com/TypeWhisper/typewhisper-mac |
 | **Description** | macOS app for voice-to-text; useful reference for transcription workflows |
@@ -71,8 +82,9 @@ A reference can be **UI/UX**, **Same-domain**, or **Both**.
 When a reference project is **not cloned locally** (tagged ❌):
 
 1. **Ask the user** if they want to clone it before proceeding with any analysis that depends on the reference.
-2. **Clone location**: always the parent directory of Prisma, keeping all projects as siblings. Use the canonical PascalCase name for the target directory.
+2. **Clone location**: always `~/Documents/Projects/References/<CanonicalName>/`. Use the canonical PascalCase name for the target directory.
 3. Use `git clone <remote_url> <target_path>` with the canonical PascalCase name for the target directory.
+4. After cloning, update the **Registered References** table above with the local path and mark **Cloned?** as ✅ Yes.
 
 ## Consultation Methods (Priority Order)
 
