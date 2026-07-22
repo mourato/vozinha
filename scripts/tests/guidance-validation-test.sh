@@ -24,12 +24,6 @@ new_fixture() {
     chmod +x "${fixture}/scripts/validate-agent-guidance.py"
     printf '%s\n' '# Fixture guidance' > "${fixture}/AGENTS.md"
     printf '%s\n' 'fixture-target:' $'\t@true' > "${fixture}/Makefile"
-    printf '%s\n' \
-        '# Skills Index' \
-        '' \
-        '| Skill | Location | Triggers |' \
-        '|---|---|---|' \
-        > "${fixture}/.agents/SKILLS_INDEX.md"
     printf '%s\n' '# Skill Routing' > "${fixture}/.agents/docs/skill-routing.md"
     printf '%s\n' "${fixture}"
 }
@@ -40,9 +34,6 @@ add_skill() {
     local skill_dir="${fixture}/.agents/skills/${name}"
 
     mkdir -p "${skill_dir}/references"
-    printf '%s\n' \
-        "| \`${name}\` | \`.agents/skills/${name}/\` | Fixture |" \
-        >> "${fixture}/.agents/SKILLS_INDEX.md"
     printf '%s\n' '' "Use \`${name}\`." \
         >> "${fixture}/.agents/docs/skill-routing.md"
     printf '%s\n' \

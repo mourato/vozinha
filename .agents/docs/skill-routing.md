@@ -261,4 +261,5 @@ Use `thermo-nuclear-code-quality-review` for review output, semaforo severity, a
 
 ---
 
-The canonical skill catalog is [`.agents/SKILLS_INDEX.md`](../SKILLS_INDEX.md).
+Skill ownership and triggers live in each skill's `SKILL.md`; use this guide
+for problem-specific routing and `AGENTS.md` for project-wide policy.

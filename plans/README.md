@@ -54,7 +54,8 @@ and `MeetingAssistant*` internal names.
 ## Current decisions
 
 - Keep this root ledger active-only; archive completed batches with Git history.
-- Keep `.agents/SKILLS_INDEX.md` as the single skill catalog.
+- Keep `AGENTS.md`, the skill descriptions, and the routing guide as the
+  sources of truth for agent guidance.
 - Keep exact-range technical validation fail closed; reuse only compatible PASS evidence.
 - Store concrete provider/model/language and text-handling values per Dictation
   Mode, then snapshot the effective mode at recording start.

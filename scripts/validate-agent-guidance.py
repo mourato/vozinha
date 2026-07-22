@@ -9,7 +9,6 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 SKILLS_ROOT = ROOT / ".agents" / "skills"
-SKILLS_INDEX = ROOT / ".agents" / "SKILLS_INDEX.md"
 SKILL_ROUTING = ROOT / ".agents" / "docs" / "skill-routing.md"
 
 MAKE_TARGET_RE = re.compile(r"^([A-Za-z0-9_.-]+):", re.MULTILINE)
@@ -154,14 +153,6 @@ def validate_path_references(markdown_file: Path, text: str) -> list[str]:
     return errors
 
 
-def parse_indexed_skills(index_path: Path) -> tuple[set[str], set[str]]:
-    text = index_path.read_text(encoding="utf-8")
-    rows = re.findall(r"^\|\s*`([^`]+)`\s+\|\s+`?([^|`]+)`?", text, re.MULTILINE)
-    indexed = {skill for skill, _location in rows}
-    global_skills = {skill for skill, location in rows if location.strip().startswith("global:")}
-    return indexed, global_skills
-
-
 def parse_routed_skills(routing_path: Path) -> set[str]:
     text = routing_path.read_text(encoding="utf-8")
     return set(
@@ -171,26 +162,20 @@ def parse_routed_skills(routing_path: Path) -> set[str]:
     )
 
 
-def validate_skill_catalog() -> list[str]:
+def validate_skill_routing() -> list[str]:
     errors: list[str] = []
     skill_dirs = sorted(
         path.name
         for path in SKILLS_ROOT.iterdir()
         if path.is_dir() and (path / "SKILL.md").exists()
     )
-    indexed, global_skills = parse_indexed_skills(SKILLS_INDEX)
     routed = parse_routed_skills(SKILL_ROUTING)
 
     for skill in skill_dirs:
-        if skill not in indexed:
-            errors.append(f"Skill '{skill}' exists in .agents/skills but is missing from .agents/SKILLS_INDEX.md")
         if skill not in routed:
             errors.append(
                 f"Skill '{skill}' exists in .agents/skills but is missing from .agents/docs/skill-routing.md"
             )
-
-    for skill in sorted(indexed - set(skill_dirs) - global_skills):
-        errors.append(f"Skill '{skill}' is indexed in .agents/SKILLS_INDEX.md but has no matching directory")
 
     return errors
 
@@ -250,7 +235,7 @@ def validate_placeholders(markdown_file: Path, text: str) -> list[str]:
 def main() -> int:
     known_targets = parse_make_targets(ROOT / "Makefile")
     errors: list[str] = []
-    errors.extend(validate_skill_catalog())
+    errors.extend(validate_skill_routing())
 
     for markdown_file in markdown_files():
         text = markdown_file.read_text(encoding="utf-8")
