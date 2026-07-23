@@ -59,35 +59,9 @@ Prioritize these components when debugging:
 - Run focused audio tests first.
 - Use `make build-agent` for narrow compile confidence.
 - Escalate to `make build-test` when the change touches audio lifecycle, concurrency, or shared infrastructure.
+- For microphone reliability, verify callback teardown, non-blocking buffer handoff, repeated start/stop/restart, and focused tests.
 
 ## References
 
 - `../debugging-diagnostics/SKILL.md`
 - `../swift-concurrency-expert/SKILL.md`
-
-## 2026-03 Operational Update
-
-### Repository Hotspots (Current)
-
-- Audio callback and buffer-transfer code remain hot paths where small regressions become audible quickly.
-- Microphone reliability fixes tend to touch lifecycle, buffer ownership, and teardown symmetry at once.
-
-### Mic Reliability Playbook
-
-1. Verify callback registration and teardown symmetry.
-2. Verify buffer handoff does not allocate or block unexpectedly.
-3. Verify start/stop/restart behavior across repeated recording attempts.
-4. Prove the changed path with focused tests before summarizing broader gate status.
-
-## 2026-03-04 Progression Drill
-
-### New Evidence
-
-- Recent microphone fixes repeatedly touched callback safety, lifecycle symmetry, and restart behavior.
-- Audio defects in this repo tend to be cross-cutting between lifecycle code and hot-path code rather than isolated algorithm bugs.
-
-### Skill Deepening Focus
-
-1. Treat callback ownership and teardown symmetry as first-class review items.
-2. Prefer the smallest verification loop that still proves repeated recording stability.
-3. Escalate quickly when audio changes cross into concurrency or app lifecycle code.

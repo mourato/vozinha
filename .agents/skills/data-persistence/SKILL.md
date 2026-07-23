@@ -45,58 +45,21 @@ Guidelines for choosing the right storage mechanism and ensuring data integrity 
 - **Error Handling**: Gracefully handle missing data or corruption; provide default states where necessary.
 - **Cleanup**: Implement data pruning or expiration policies for cached or temporary data.
 
-## 2026-03 Operational Update
+## Migration and History Invariants
 
-### Repository Persistence Hotspots
-
-Prioritize these files when storage behavior changes:
+When persistence behavior changes, prioritize:
 
 - `Packages/MeetingAssistantCore/Sources/Data/Data/CoreData/CoreDataStack.swift`
 - `Packages/MeetingAssistantCore/Sources/Data/Services/StorageService/StorageService.swift`
 - `Packages/MeetingAssistantCore/Sources/Infrastructure/Services/KeychainManager.swift`
 
-### Migration Invariants (Must Hold)
+For migrations and backfills:
 
-For rename/migration work, verify all invariants:
-
-1. Existing user defaults remain readable after migration.
-2. Keychain identifiers continue resolving previous credentials.
-3. Persistent store path migration is deterministic and idempotent.
-4. Retention cleanup never deletes dashboard history unexpectedly.
-5. Failure path preserves recoverability (no partial destructive migration).
-
-### Persistence Change Workflow
-
-1. Define target invariant set before implementation.
-2. Reuse existing repository/storage abstractions (`reuse -> extend -> create`).
-3. Add tests for forward migration and no-op re-run migration.
-4. Validate cleanup logic with realistic historical data fixtures.
-
-## 2026-03-04 Progression Drill
-
-### New Evidence
-
-- `0d986f8` added new persisted meeting-conversation data paths.
-- `TranscriptionMO` and CoreData mapping were updated with domain/UI coupling points.
-
-### Skill Deepening Focus
-
-1. Add migration checks for newly persisted conversation/model fields (including no-op re-run).
-2. Validate round-trip mapping integrity: CoreData -> Domain -> UI -> persistence.
-3. Document recovery behavior for partially populated legacy records.
-4. Enforce idempotent write semantics for conversation state updates.
-
-## 2026-06-19 Progression Drill
-
-### New Evidence
-
-- `ebdc397d` added `ModelPerformanceAttemptMO` plus a Core Data migration/backfill path.
-- Recent model-performance history work required preserving every retry/reprocess attempt instead of overwriting the latest transcription record.
-- A migration test initially reused an already-backfilled checkpoint, which hid the intended backfill scenario until the test used an isolated checkpoint key.
-
-### Skill Deepening Focus
-
-1. Model analytics history as append-only attempt records; avoid updating old attempts except for explicit repair migrations.
-2. Migration tests must cover fresh backfill, no-op re-run, and isolated checkpoint keys.
-3. Repository APIs should expose newest-first attempt history separately from aggregate ranking queries.
-4. Backfill logic must preserve legacy transcription snapshots without deleting or collapsing retry/reprocess evidence.
+1. Keep existing UserDefaults readable and Keychain identifiers resolving previous credentials.
+2. Make persistent-store path changes deterministic and idempotent.
+3. Preserve recoverability; never leave a partial destructive migration.
+4. Keep retention cleanup from deleting dashboard history unexpectedly.
+5. Validate round-trip mapping across persistence, domain, and UI boundaries.
+6. Model retry or reprocess analytics as append-only attempts, preserving legacy transcription snapshots.
+7. Test fresh backfill, no-op re-run, and isolated checkpoint keys.
+8. Expose newest-first attempt history separately from aggregate ranking queries.

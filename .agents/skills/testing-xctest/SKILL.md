@@ -62,6 +62,13 @@ Use this skill when the user asks to write XCTest code, refactor test doubles, a
 - Avoid doubles that implement unrelated protocol surface just to satisfy compilation; split protocols or add focused adapters if this becomes common.
 - Put reusable fixtures near the owning subject area, not in a generic dumping-ground file.
 
+## Prisma Test Seams
+
+- Inject readiness predicates for models, Keychain state, and filesystem-dependent checks instead of reaching into installation state.
+- Keep test seams actor-aware; use `@MainActor` for UI-bound closures and tests.
+- Use explicit enum types and unwrap optionals when inference makes XCTest failures noisy.
+- Give migration and backfill tests unique checkpoint keys so one scenario cannot mask another.
+
 ## Existing Repository Examples
 
 - `Packages/MeetingAssistantCore/Tests/MeetingAssistantCoreTests/TranscriptionDeliveryServiceTests.swift`
@@ -79,18 +86,3 @@ Use these files as examples for local naming, protocol-backed doubles, and behav
 
 - `../delivery-workflow/SKILL.md`
 - `../code-quality/SKILL.md`
-
-## 2026-06-19 Progression Drill
-
-### New Evidence
-
-- Retry-transcription tests needed an injected local-model readiness predicate instead of reaching into filesystem-only install checks.
-- A `Sendable`/`@MainActor` mismatch appeared around default readiness closures, so test seams for UI view models must preserve actor isolation.
-- Model-performance tests caught compile issues from wrong module imports, loose assertion typing, optional handling, and non-isolated backfill checkpoints.
-
-### Skill Deepening Focus
-
-1. Prefer injected predicates/fakes for readiness checks that depend on installed models, Keychain state, or filesystem paths.
-2. Keep view-model test seams actor-aware; annotate closures or tests with `@MainActor` when the production dependency is main-actor-bound.
-3. Use explicit enum types and unwrap optionals in assertions when Swift inference makes XCTest failures noisy.
-4. Give migration/backfill tests unique checkpoint keys so one test run cannot mask another scenario.

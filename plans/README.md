@@ -1,6 +1,6 @@
 # Implementation Plans
 
-This is the active plan ledger. The next available plan number is 113.
+This is the active plan ledger. The next available plan number is 119.
 
 ## Execution rules
 
@@ -30,6 +30,13 @@ Status values: `TODO` | `IN PROGRESS` | `DONE` | `BLOCKED` | `REJECTED`.
 | [110](archive/completed/110-wire-vocabulary-through-transcription.md) | Wire vocabulary snapshots through transcription and enhancement | P1 | L | 109 | DONE |
 | [111](archive/completed/111-add-dictionary-quick-add-panel.md) | Add the VoiceInk-style Dictionary quick-add panel | P1 | L | 109 | DONE |
 | [112](112-rebrand-visible-app-name-to-vozinha.md) | Rebrand the visible app name to Vozinha | P1 | L | - | IN PROGRESS |
+| [113](113-interactive-release-build-and-install-runner.md) | Add an interactive Release-aware build and install runner | P1 | L | 112 | TODO |
+| [114](114-prune-dated-agent-guidance.md) | Prune dated agent guidance without losing durable rules | P0 | M | 105 | DONE |
+| [115](115-promote-localization-integrity-gate.md) | Promote localization integrity to a deterministic gate | P0 | M | 102 | DONE |
+| [116](116-reuse-scope-check-decision.md) | Reuse the scope-check decision in agent validation | P1 | S | 103 | DONE |
+| [117](117-cache-agent-swiftpm-resolution.md) | Cache agent SwiftPM resolution safely | P1 | M | 102 | DONE |
+| [118](118-report-first-agent-artifact-cleanup.md) | Add report-first cleanup for agent build artifacts | P2 | M | 102 | DONE |
+| [119](119-adopt-global-macos-skill-overlays.md) | Adopt global macOS skills with the vozinha project overlay | P1 | M | global plan 004; 112–118 reconciled | TODO |
 
 ## Dependency order
 
@@ -44,6 +51,19 @@ single coordinated workstream because it changes shared build, runtime, and
 release identity values. It intentionally preserves `com.mourato.prisma`, the
 XPC identifier, storage directories, Keychain service, UserDefaults domains,
 and `MeetingAssistant*` internal names.
+
+Plan 113 depends on the Release-visible identity from Plan 112. It adds the
+interactive Debug/Release runner, installs only Release into the exact
+`/Applications/Vozinha.app` target, and must preserve the technical identity
+contract from Plan 112. Its AppKit shutdown route and filesystem replacement
+transaction are one serial workstream; do not parallelize them.
+
+Plans 114 through 118 are the agent-cost and delivery-automation batch. Plan
+114 is guidance-only and should run before routing changes. Plans 115, 116, and
+117 are validation infrastructure and should be implemented as separate serial
+workstreams. Plan 118 is report-first and must not delete artifacts until its
+allowlist and dry-run evidence are accepted. Skill selection otherwise remains
+ semantic and follows the standard skill descriptions and project guidance.
 
 ## Archives
 
@@ -63,3 +83,12 @@ and `MeetingAssistant*` internal names.
   substitution semantics while adding a separate vocabulary model.
 - Use VoiceInk beta as a behavioral benchmark only; do not copy source or adopt
   its CloudKit persistence.
+- Prefer deterministic scripts and Make gates for repeatable checks; keep model
+  reasoning for ambiguity, design judgment, and user-facing decisions.
+- Treat token or time savings as hypotheses until a later measurement pass
+  confirms them; these plans intentionally do not require manual usage tables.
+
+Plan 119 is a guidance-only migration. It must wait until the global macOS
+skill bundle is merged and the currently dirty 112–118 work is reconciled. It
+preserves vozinha/Prisma specialist skills and moves only the seven shared
+macOS skill copies to project overlays.

@@ -87,52 +87,17 @@ Artifacts:
 4. Add/adjust tests in kernel contracts, persistence validation, and benchmark regression suites.
 5. Run `make build-test`; for rubric changes, run benchmark commands.
 
+## Provider and Prompt Invariants
+
+- Use provider-selection domain values across UI, recording, and transcription clients; avoid raw model strings in retry or mode-aware flows.
+- Segment history retry actions by capture purpose and readiness. Hide providers or models that are not fully configured or compatible.
+- Keep meeting retries local-only until the meeting configuration model explicitly supports remote providers.
+- Route prompt assembly through the shared request resolver whenever mode, model, context metadata, or prompt type can affect output.
+- Keep simple-model optimizations scoped to the matching mode and prompt identity; preserve meeting and custom-prompt contracts.
+- Treat context metadata as disambiguation and test that tagged context is not duplicated in request bodies.
+
 ## Routing
 
 - Cross-module API boundary decisions -> `../architecture/SKILL.md`
 - Persistence and migration impact -> `../data-persistence/SKILL.md`
 - Validation gates and test strategy -> `../delivery-workflow/SKILL.md`
-
-## 2026-03-04 Progression Drill
-
-### New Evidence
-
-- `0d986f8` introduced per-transcription model selection and conversation-state persistence.
-- Changes spanned AI/Data/Domain/UI and tests (`MeetingQAServiceTests`, `IntelligenceKernelContractsTests`).
-
-### Skill Deepening Focus
-
-1. Add explicit invariants for model-selection persistence lifecycle (create, reload, edit, delete).
-2. Define schema-safe fallback behavior when conversation state is missing/partial.
-3. Require contract-test updates whenever kernel-facing persistence fields change.
-4. Keep post-processing prompts mode-aware while preserving canonical contract output.
-
-## 2026-06-19 Progression Drill
-
-### New Evidence
-
-- `13193664` refactored transcription provider selection and retry logic around `TranscriptionProviderSelection`.
-- Recent retry work established that history retry options must be segmented by `capturePurpose` and must hide providers/models that are not fully configured.
-- Product decision: meeting retries remain local-only until the meeting configuration model explicitly supports remote providers.
-
-### Skill Deepening Focus
-
-1. Use provider-selection domain values across UI, recording, and transcription clients; avoid raw model strings for retry or mode-aware flows.
-2. Keep meeting and dictation retry surfaces aligned with their real configuration models, not with a global provider list.
-3. Filter history actions by readiness before display: installed local models, valid remote API keys, and capture-purpose compatibility.
-4. Add contract tests when provider-selection overrides cross AI/Data/UI boundaries or can affect post-processing metrics.
-
-## 2026-07-01 Progression Drill
-
-### New Evidence
-
-- `a62d4a8e` added `AIPromptTemplates.requestPrompts(...)` so request-time and snapshot prompt assembly share the same resolver.
-- `a62d4a8e` introduced a simple-model dictation strategy for `gpt-oss-120b` that only applies to dictation with the default prompt; Flex and custom prompts keep advanced instructions.
-- `PromptServiceTests` now assert mode-specific prompt behavior: dictation avoids meeting language, simple dictation uses `<TRANSCRIPT>`, meeting keeps `<TRANSCRIPTION>`, and existing context metadata is not duplicated.
-
-### Skill Deepening Focus
-
-1. Route prompt assembly through the shared request resolver whenever mode, selected model, context metadata, or prompt type can affect output.
-2. Keep simple-model optimizations tightly scoped by mode and prompt identity; do not weaken meeting or custom-prompt contracts to help one local model.
-3. Preserve context metadata as disambiguation only, and test that tagged context is not duplicated in request bodies.
-4. Pair prompt-template edits with focused prompt tests before broader AI or post-processing checks.
