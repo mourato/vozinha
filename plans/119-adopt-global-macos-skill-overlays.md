@@ -1,5 +1,7 @@
 # Plan 119: Adopt global macOS skills with the vozinha project overlay
 
+> Status: DONE
+
 > **Executor instructions**: This plan is guidance-only. Do not modify Swift,
 > Makefile, scripts, packages, reports, or runtime artifacts. The global Plan
 > 004 must be merged before this plan begins. The planned checkout currently
