@@ -10,7 +10,7 @@ description: This skill should be used when the user asks to "write XCTest tests
 Use this skill for XCTest implementation details in Prisma.
 
 - Own test structure, naming, doubles, fixtures, and async test patterns.
-- Delegate verification gates, merge commands, lifecycle policy, and risk lanes to `../delivery-workflow/SKILL.md`.
+- Delegate verification gates, merge commands, lifecycle policy, and risk lanes to global `delivery-workflow`.
 
 ## Scope Boundary
 
@@ -80,9 +80,9 @@ Use these files as examples for local naming, protocol-backed doubles, and behav
 ## Verification
 
 - Run targeted tests first via `./scripts/run-tests.sh --file <TestFile>` or `--test <testName>`.
-- Use `../delivery-workflow/SKILL.md` for merge-gate selection and broader validation.
+- Use global `delivery-workflow` for merge-gate selection and broader validation.
 
 ## Related Skills
 
-- `../delivery-workflow/SKILL.md`
-- `../code-quality/SKILL.md`
+- Global `delivery-workflow`
+- Global `code-quality`
