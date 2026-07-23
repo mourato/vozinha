@@ -13,7 +13,7 @@ Operational guidance for the reusable intelligence kernel, canonical summary con
 
 - Use this skill for intelligence-kernel contracts, mode routing, trust flags, and benchmark gates.
 - Use `../data-persistence/SKILL.md` when the main concern is storage or migration rather than kernel behavior.
-- Use `../delivery-workflow/SKILL.md` when the main concern is command selection and verification policy.
+- Use global `delivery-workflow` when the main concern is command selection and verification policy.
 
 ## When to Use
 
@@ -59,6 +59,12 @@ Gate behavior through feature flags and settings adapters:
 
 Rule: call sites should stay on shared kernel contracts and avoid mode-specific branching in UI surfaces.
 
+## Persistence and Fallback Invariants
+
+- Preserve model-selection persistence across create, reload, edit, and delete flows; changes must be covered by contract tests.
+- When conversation state is missing or partial, use a schema-safe deterministic fallback rather than inventing context or silently dropping the request.
+- Update kernel-facing contract tests whenever persistence fields cross AI, Data, Domain, or UI boundaries.
+
 ## Benchmark and Regression Gates
 
 Commands:
@@ -100,4 +106,4 @@ Artifacts:
 
 - Cross-module API boundary decisions -> `../architecture/SKILL.md`
 - Persistence and migration impact -> `../data-persistence/SKILL.md`
-- Validation gates and test strategy -> `../delivery-workflow/SKILL.md`
+- Validation gates and test strategy -> global `delivery-workflow`

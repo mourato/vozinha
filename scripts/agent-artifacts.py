@@ -21,6 +21,7 @@ ALLOWED_ROOTS = (
 )
 ACTIVE_WINDOW_SECONDS = 15 * 60
 ACTIVE_MARKERS = (".lock", "build.db.lock", "index.lock")
+AGE_BUCKETS = ("<1d", "1-7d", "7-30d", "30d+")
 
 
 def human_size(size: int) -> str:
@@ -30,6 +31,16 @@ def human_size(size: int) -> str:
             return f"{value:.1f}{unit}"
         value /= 1024
     return f"{size}B"
+
+
+def age_bucket(age_days: float | None) -> str:
+    if age_days is None or age_days < 1:
+        return "<1d"
+    if age_days < 7:
+        return "1-7d"
+    if age_days < 30:
+        return "7-30d"
+    return "30d+"
 
 
 def artifact_root(project_root: Path, name: str) -> Path:
@@ -114,9 +125,39 @@ def print_report(items: list[dict[str, object]], now: float) -> None:
             f"files={item['files']} age={age} active={str(item['active']).lower()} "
             f"path={item['path']}"
         )
+    present = sorted(
+        (item for item in items if item["status"] == "present"),
+        key=lambda item: (-int(item["size"]), str(item["name"])),
+    )
+    for rank, item in enumerate(present, start=1):
+        print(
+            "ARTIFACT_LARGEST "
+            f"rank={rank} name={item['name']} size_bytes={item['size']}"
+        )
+    for bucket in AGE_BUCKETS:
+        bucket_items = [item for item in present if age_bucket(item.get("age_days")) == bucket]
+        bucket_size = sum(int(item["size"]) for item in bucket_items)
+        print(
+            "ARTIFACT_AGE_BUCKET "
+            f"bucket={bucket} roots={len(bucket_items)} size_bytes={bucket_size}"
+        )
+
+
+def has_project_ownership_marker(project_root: Path) -> bool:
+    resolved = project_root.resolve()
+    if resolved in {Path("/"), Path.home().resolve()}:
+        return False
+    git_marker = resolved / ".git"
+    return git_marker.is_dir() or git_marker.is_file()
 
 
 def cleanup(project_root: Path, items: list[dict[str, object]], older_than_days: float, dry_run: bool, confirm: bool) -> int:
+    if not has_project_ownership_marker(project_root):
+        print(
+            f"ERROR: refusing cleanup without a repository ownership marker: {project_root}",
+            file=sys.stderr,
+        )
+        return 1
     candidates = [
         item
         for item in items

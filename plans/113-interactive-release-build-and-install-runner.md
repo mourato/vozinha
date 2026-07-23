@@ -207,7 +207,7 @@ Add focused AppKit coverage for exact URL acceptance/rejection where the test
 target can host it. At minimum, the exact URL behavior must be covered without
 starting a real recording or touching user data.
 
-**Verify**: the focused test passes; `make build-agent` compiles the route; and a manual smoke test with an idle installed app confirms that `open vocezinha://internal/quit` exits the app through the existing cleanup path.
+**Verify**: the focused test passes; `make build-agent` compiles the route; and a manual smoke test with an idle installed app confirms that `open vozinha://internal/quit` exits the app through the existing cleanup path.
 
 ### Step 3: Reuse release signing and build paths
 
