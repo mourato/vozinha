@@ -50,6 +50,13 @@ extension AppDelegate {
         scheduleLaunchVisibilityRecovery()
     }
 
+    func application(_ application: NSApplication, open urls: [URL]) {
+        guard urls.contains(where: { $0.scheme == "vozinha" && $0.host == "internal" && $0.path == "/quit" && $0.query == nil }) else {
+            return
+        }
+        quitApp()
+    }
+
     func applicationWillTerminate(_ notification: Notification) {
         localModelResidencyCoordinator.stopMonitoring()
         recordingCancelShortcutController.stop()

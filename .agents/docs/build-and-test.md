@@ -63,6 +63,8 @@ make preflight-fast     # Lint + Build + Test (skips benchmark, faster feedback)
 make ci-release-parity  # Sparkle release build/archive parity gate (local)
 make deliverable-gate   # build-test + lint + ci-release-parity
 make run                # Run app in debug mode
+make build-and-run      # Interactive Debug/Release workflow
+make install-release    # Non-interactive Release install and launch
 make format             # Auto-format with SwiftFormat
 make lint               # Run SwiftLint checks
 ```
@@ -74,6 +76,13 @@ make dmg                # Create DMG installer (auto-detect self-signed identity
 make setup-self-signed-cert # Bootstrap local self-signed code-signing cert
 make ci-release-parity-self-signed DOWNLOAD_URL_PREFIX=... RELEASE_TAG=... # Signed Sparkle parity (archive + appcast)
 ```
+
+`make build-and-run` never installs Debug into `/Applications`. Release
+consumes the signed `dist/Vozinha.app`, validates it, and transactionally
+replaces only `/Applications/Vozinha.app`, restoring the previous bundle on
+failure. `--force-terminate` is an explicit fallback after the graceful
+`vozinha://internal/quit` request times out. `make dmg` remains the packaging
+flow.
 
 DMG signing mode selection:
 
