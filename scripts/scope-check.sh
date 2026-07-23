@@ -27,6 +27,7 @@ FORCE_FULL=0
 START_TIME="$(date +%s)"
 LOG_PATH="/tmp/ma-scope-check-$$.log"
 RESULT_PATH=""
+DECISION_FILE=""
 DIFF_RANGE_LABEL="HEAD -> working tree"
 
 TMP_FILES=()
@@ -43,6 +44,8 @@ usage() {
     cat <<'USAGE'
 Usage: ./scripts/scope-check.sh [options]
 
+Description: Classify changed files, select targeted checks, and escalate to the full gate when required.
+
 Options:
   --base REF            Compare against git ref in addition to local working tree
   --head REF            Head ref used with --committed
@@ -52,6 +55,7 @@ Options:
   --max-targeted N      Maximum mapped targeted tests before escalating (default: 8)
   --no-build            Skip narrow build step before targeted tests
   --dry-run             Print decisions and commands without executing checks
+  --decision-file PATH  Reuse a validated machine-readable decision for execution
   --force-full          Always run full gate (`make build-test`)
   --agent               Emit compact AGENT_* result lines
   --help, -h            Show this help
@@ -187,6 +191,14 @@ parse_args() {
             --dry-run)
                 DRY_RUN=1
                 shift
+                ;;
+            --decision-file)
+                if [[ $# -lt 2 ]]; then
+                    echo "Error: --decision-file requires a path."
+                    exit 1
+                fi
+                DECISION_FILE="$2"
+                shift 2
                 ;;
             --force-full)
                 FORCE_FULL=1
@@ -466,7 +478,95 @@ build_targeted_test_candidates() {
     fi
 }
 
+load_decision_file() {
+    local decision_file="$1"
+    local decision_header_file
+    local reasons_file
+    local targeted_tests_file
+    local header_count
+    if [ ! -f "${decision_file}" ]; then
+        echo "Error: decision file does not exist: ${decision_file}"
+        return 1
+    fi
+
+    decision_header_file="$(new_tmp_file)"
+    reasons_file="$(new_tmp_file)"
+    targeted_tests_file="$(new_tmp_file)"
+    if ! python3 - "${decision_file}" > "${decision_header_file}" <<'PY'
+import json
+import sys
+
+with open(sys.argv[1], encoding="utf-8") as handle:
+    result = json.load(handle)
+decision = result.get("decision", {})
+selected_lane = decision.get("selectedLane")
+strategy = decision.get("strategy")
+diff_range = decision.get("diffRange", "reused decision")
+reasons = decision.get("reasons", [])
+tests = decision.get("targetedTests", [])
+if selected_lane not in {"fast", "full"}:
+    raise SystemExit("invalid selected lane")
+if not isinstance(strategy, str) or not isinstance(diff_range, str):
+    raise SystemExit("invalid decision metadata")
+if not isinstance(reasons, list) or not all(isinstance(item, str) for item in reasons):
+    raise SystemExit("invalid decision reasons")
+if not isinstance(tests, list) or not all(isinstance(item, str) for item in tests):
+    raise SystemExit("invalid targeted tests")
+print(selected_lane)
+print(strategy)
+print(diff_range)
+PY
+    then
+        return 1
+    fi
+
+    header_count="$(wc -l < "${decision_header_file}" | tr -d ' ')"
+    if [ "${header_count}" -ne 3 ]; then
+        echo "Error: decision file has invalid metadata: ${decision_file}"
+        return 1
+    fi
+    {
+        IFS= read -r SELECTED_LANE
+        IFS= read -r DECISION_STRATEGY
+        IFS= read -r DIFF_RANGE_LABEL
+    } < "${decision_header_file}"
+
+    FULL_RISK_REASONS=()
+    if ! python3 - "${decision_file}" > "${reasons_file}" <<'PY'
+import json
+import sys
+
+with open(sys.argv[1], encoding="utf-8") as handle:
+    for item in json.load(handle).get("decision", {}).get("reasons", []):
+        print(item)
+PY
+    then
+        return 1
+    fi
+    while IFS= read -r reason; do
+        [ -n "${reason}" ] && FULL_RISK_REASONS+=("${reason}")
+    done < "${reasons_file}"
+
+    TARGETED_TESTS_RESULT=()
+    if ! python3 - "${decision_file}" > "${targeted_tests_file}" <<'PY'
+import json
+import sys
+
+with open(sys.argv[1], encoding="utf-8") as handle:
+    for item in json.load(handle).get("decision", {}).get("targetedTests", []):
+        print(item)
+PY
+    then
+        return 1
+    fi
+    while IFS= read -r test_identifier; do
+        [ -n "${test_identifier}" ] && TARGETED_TESTS_RESULT+=("${test_identifier}")
+    done < "${targeted_tests_file}"
+    return 0
+}
+
 main() {
+
     local changed_file_list
     local full_reasons_file
     local targeted_tests_file
@@ -495,6 +595,29 @@ main() {
     targeted_tests_file="$(new_tmp_file)"
     modules_file="$(new_tmp_file)"
 
+    if [ -n "${DECISION_FILE}" ]; then
+        load_decision_file "${DECISION_FILE}" || return 1
+        code_relevant=1
+        targeted_count=0
+        : > "${full_reasons_file}"
+        : > "${targeted_tests_file}"
+        if [ "${#FULL_RISK_REASONS[@]}" -gt 0 ]; then
+            for reason in "${FULL_RISK_REASONS[@]}"; do
+                [ -n "${reason}" ] && printf '%s\n' "${reason}" >> "${full_reasons_file}"
+            done
+        fi
+        if [ "${#TARGETED_TESTS_RESULT[@]}" -gt 0 ]; then
+            for test_identifier in "${TARGETED_TESTS_RESULT[@]}"; do
+                [ -n "${test_identifier}" ] && printf '%s\n' "${test_identifier}" >> "${targeted_tests_file}"
+            done
+        fi
+        targeted_count="$(sed '/^$/d' "${targeted_tests_file}" | wc -l | tr -d ' ')"
+        if [ "${SELECTED_LANE}" = "full" ]; then
+            should_run_full=1
+        elif [ "${DECISION_STRATEGY}" = "intermediate-gate" ]; then
+            should_run_intermediate=1
+        fi
+    else
     if ! collect_changed_files "${changed_file_list}"; then
         return 1
     fi
@@ -579,7 +702,7 @@ main() {
         return 0
     fi
 
-    if [ "${should_run_full}" -eq 0 ]; then
+    if [ -z "${DECISION_FILE}" ] && [ "${should_run_full}" -eq 0 ]; then
         build_targeted_test_candidates "${changed_file_list}" "${targeted_tests_file}" "${full_reasons_file}"
         targeted_count="$(sed '/^$/d' "${targeted_tests_file}" | wc -l | tr -d ' ')"
 
@@ -609,6 +732,7 @@ main() {
         SELECTED_LANE="fast"
         DECISION_STRATEGY="scoped-validation"
     fi
+    fi
 
     echo "Scoped validation plan:"
     echo "- Changed files: $(wc -l < "${changed_file_list}" | tr -d ' ')"
@@ -617,6 +741,7 @@ main() {
     echo "- Added lines (${DIFF_RANGE_LABEL}): ${added_lines}"
     echo "- Candidate targeted tests: ${targeted_count}"
 
+    TARGETED_TESTS_RESULT=()
     while IFS= read -r test_identifier; do
         [ -n "${test_identifier}" ] || continue
         TARGETED_TESTS_RESULT+=("${test_identifier}")

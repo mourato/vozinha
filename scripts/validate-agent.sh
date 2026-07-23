@@ -31,6 +31,7 @@ COMMANDS_FILE=""
 REASONS_FILE=""
 SELECTED_LANE=""
 DECISION_STRATEGY="requested"
+AUTO_DECISION_FILE=""
 RUN_DIR=""
 FINGERPRINT=""
 CACHE_RESULT=""
@@ -39,6 +40,8 @@ CHILD_RESULTS=()
 usage() {
     cat <<'USAGE'
 Usage: ./scripts/validate-agent.sh --lane fast|full|auto [options]
+
+Description: Run the canonical Fast, Full, or automatic validation lane with fingerprinted evidence.
 
 Options:
   --lane LANE           Required: fast, full, or auto
@@ -321,6 +324,7 @@ load_auto_decision() {
         echo "Error: scope-check did not produce a machine-readable lane decision."
         exit 1
     fi
+    AUTO_DECISION_FILE="${preview_result}"
 
     decision="$(python3 - "${preview_result}" <<'PY'
 import json
@@ -657,6 +661,11 @@ main() {
         run_step "lint-strict" "make lint-strict-agent"
         run_step "build-test" "make build-test"
     else
+        if [ -n "${AUTO_DECISION_FILE}" ]; then
+            local decision_args
+            decision_args="--decision-file $(printf '%q' "${AUTO_DECISION_FILE}")"
+            run_step "scope-check" "make scope-check-agent ARGS=\"${decision_args}\""
+        else
         local base_args=""
         local mode_args=""
         if [ -n "${BASE_REF}" ] && [ "${VALIDATION_MODE}" != "committed" ]; then
@@ -671,6 +680,7 @@ main() {
             fi
         fi
         run_step "scope-check" "make scope-check-agent ${base_args}"
+        fi
     fi
 
     result_path="$(write_aggregate)"
