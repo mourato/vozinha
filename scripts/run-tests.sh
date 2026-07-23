@@ -38,6 +38,7 @@ HEARTBEAT_INTERVAL_SEC="${MA_SWIFT_TEST_HEARTBEAT_INTERVAL_SEC:-15}"
 PARALLEL_ENABLED=0
 PARALLEL_WORKERS="${TEST_SUITE_PARALLEL_WORKERS}"
 PARALLEL_OVERRIDE_SET=0
+FORCE_RESOLVE=0
 
 if ma_agent_mode_enabled; then
     AGENT_MODE=1
@@ -85,8 +86,13 @@ while [[ $# -gt 0 ]]; do
             PARALLEL_OVERRIDE_SET=1
             shift
             ;;
+        --force-resolve)
+            FORCE_RESOLVE=1
+            shift
+            ;;
         --help|-h)
             echo "Usage: $0 [options]"
+            echo "Description: Run the configured Swift test suite with optional targeting, strictness, and agent output."
             echo ""
             echo "Options:"
             echo "  --verbose, -v    Run tests with verbose output"
@@ -98,6 +104,7 @@ while [[ $# -gt 0 ]]; do
             echo "  --suite NAME     Suite to run: dev, full, smoke, perf, benchmark, sensitive, appkit"
             echo "  --parallel       Force parallel execution when the suite supports it"
             echo "  --no-parallel    Force serial execution"
+            echo "  --force-resolve  Force SwiftPM dependency resolution in agent mode"
             echo "  --help, -h       Show this help"
             echo ""
             echo "Examples:"
@@ -246,6 +253,10 @@ SAFE_TARGET_LABEL="$(echo "${TARGET_LABEL}" | tr -cs '[:alnum:]' '_' | sed 's/^_
 if [ -z "${SAFE_TARGET_LABEL}" ]; then
     SAFE_TARGET_LABEL="all"
 fi
+if [ "${MA_SWIFTPM_RESOLVE_FORCE:-0}" = "1" ]; then
+    FORCE_RESOLVE=1
+fi
+AGENT_SWIFTPM_SCRATCH_PATH="${MA_SWIFTPM_SCRATCH_PATH:-${PROJECT_DIR}/.tmp/swiftpm-agent}"
 
 clear_stale_swiftpm_lock() {
     local lock_path="${PROJECT_DIR}/Packages/MeetingAssistantCore/.build/.lock"
@@ -263,6 +274,67 @@ clear_stale_swiftpm_lock() {
     if ! kill -0 "${lock_pid}" 2>/dev/null; then
         rm -f "${lock_path}"
     fi
+}
+
+compute_swiftpm_dependency_fingerprint() {
+    local fingerprint_files=(
+        "${PROJECT_DIR}/Packages/MeetingAssistantCore/Package.swift"
+        "${PROJECT_DIR}/Packages/MeetingAssistantCore/Package.resolved"
+        "${PROJECT_DIR}/Package.swift"
+        "${PROJECT_DIR}/MeetingAssistant.xcworkspace/xcshareddata/swiftpm/Package.resolved"
+    )
+    local file_path
+
+    {
+        for file_path in "${fingerprint_files[@]}"; do
+            if [ -f "${file_path}" ]; then
+                printf 'FILE:%s\n' "${file_path#${PROJECT_DIR}/}"
+                cat "${file_path}"
+            fi
+        done
+        printf 'SWIFT_VERSION\n'
+        swift --version 2>&1
+    } | shasum -a 256 | awk '{print $1}'
+}
+
+should_resolve_swiftpm_dependencies() {
+    local marker_path="$1"
+    local scratch_path="$2"
+    local current_fingerprint
+    local previous_fingerprint
+
+    current_fingerprint="$(compute_swiftpm_dependency_fingerprint)"
+    [ -n "${current_fingerprint}" ] || return 0
+    DEPENDENCY_FINGERPRINT="${current_fingerprint}"
+
+    [ "${FORCE_RESOLVE}" -eq 1 ] && return 0
+    if [ -f "${marker_path}" ] && [ -d "${scratch_path}/checkouts" ]; then
+        previous_fingerprint="$(cat "${marker_path}" 2>/dev/null || true)"
+        if [ "${previous_fingerprint}" = "${current_fingerprint}" ]; then
+            return 1
+        fi
+    fi
+    return 0
+}
+
+resolve_swiftpm_dependencies() {
+    local scratch_path="$1"
+    local marker_path="${scratch_path}/.ma-swiftpm-resolve.fingerprint"
+    local marker_tmp="${marker_path}.tmp.${PPID}"
+
+    mkdir -p "${scratch_path}"
+    if ! should_resolve_swiftpm_dependencies "${marker_path}" "${scratch_path}"; then
+        echo "SwiftPM resolve skipped: dependency fingerprint unchanged."
+        return 0
+    fi
+
+    echo "Resolving SwiftPM dependencies."
+    if ! swift package resolve --disable-sandbox --scratch-path "${scratch_path}" >/dev/null; then
+        rm -f "${marker_tmp}"
+        return 1
+    fi
+    printf '%s\n' "${DEPENDENCY_FINGERPRINT}" > "${marker_tmp}"
+    mv -f "${marker_tmp}" "${marker_path}"
 }
 
 if [ "${AGENT_MODE}" -eq 1 ]; then
@@ -286,14 +358,16 @@ run_swift_tests() {
     cd "${PROJECT_DIR}/Packages/MeetingAssistantCore"
     local scratch_path=""
     if [ "${AGENT_MODE}" -eq 1 ]; then
-        scratch_path="${PROJECT_DIR}/.tmp/swiftpm-agent"
+        scratch_path="${AGENT_SWIFTPM_SCRATCH_PATH}"
         mkdir -p "${scratch_path}"
     else
         clear_stale_swiftpm_lock
     fi
 
     if [ "${AGENT_MODE}" -eq 1 ]; then
-        swift package resolve --disable-sandbox --scratch-path "${scratch_path}" >/dev/null
+        if ! resolve_swiftpm_dependencies "${scratch_path}"; then
+            return 1
+        fi
     else
         swift package resolve >/dev/null
     fi
