@@ -33,6 +33,9 @@ DIFF_RANGE_LABEL="HEAD -> working tree"
 TMP_FILES=()
 TARGETED_TESTS_RESULT=()
 FULL_RISK_REASONS=()
+CHANGED_FILES_RESULT=()
+DECISION_CODE_RELEVANT=0
+DECISION_GUIDANCE_RELEVANT=0
 SELECTED_LANE="fast"
 DECISION_STRATEGY="scoped-validation"
 
@@ -562,6 +565,49 @@ PY
     while IFS= read -r test_identifier; do
         [ -n "${test_identifier}" ] && TARGETED_TESTS_RESULT+=("${test_identifier}")
     done < "${targeted_tests_file}"
+
+    if ! python3 - "${decision_file}" > "${changed_file_list}" <<'PY'
+import json
+import sys
+
+with open(sys.argv[1], encoding="utf-8") as handle:
+    changed_files = json.load(handle).get("decision", {}).get("changedFiles", [])
+if not isinstance(changed_files, list) or not changed_files or not all(isinstance(item, str) and item for item in changed_files):
+    raise SystemExit("invalid changed files")
+for item in sorted(set(changed_files)):
+    print(item)
+PY
+    then
+        echo "Error: decision file has invalid changed files: ${decision_file}"
+        return 1
+    fi
+    CHANGED_FILES_RESULT=()
+    while IFS= read -r file_path; do
+        [ -n "${file_path}" ] && CHANGED_FILES_RESULT+=("${file_path}")
+    done < "${changed_file_list}"
+
+    DECISION_CODE_RELEVANT="$(python3 - "${decision_file}" <<'PY'
+import json
+import sys
+
+with open(sys.argv[1], encoding="utf-8") as handle:
+    value = json.load(handle).get("decision", {}).get("codeRelevant")
+if not isinstance(value, bool):
+    raise SystemExit("invalid code relevance")
+print(int(value))
+PY
+    )"
+    DECISION_GUIDANCE_RELEVANT="$(python3 - "${decision_file}" <<'PY'
+import json
+import sys
+
+with open(sys.argv[1], encoding="utf-8") as handle:
+    value = json.load(handle).get("decision", {}).get("guidanceRelevant")
+if not isinstance(value, bool):
+    raise SystemExit("invalid guidance relevance")
+print(int(value))
+PY
+    )"
     return 0
 }
 
@@ -597,7 +643,8 @@ main() {
 
     if [ -n "${DECISION_FILE}" ]; then
         load_decision_file "${DECISION_FILE}" || return 1
-        code_relevant=1
+        code_relevant="${DECISION_CODE_RELEVANT}"
+        guidance_relevant="${DECISION_GUIDANCE_RELEVANT}"
         targeted_count=0
         : > "${full_reasons_file}"
         : > "${targeted_tests_file}"
@@ -626,6 +673,11 @@ main() {
         echo "No changed files detected. Nothing to validate."
         return 0
     fi
+
+    CHANGED_FILES_RESULT=()
+    while IFS= read -r file_path; do
+        [ -n "${file_path}" ] && CHANGED_FILES_RESULT+=("${file_path}")
+    done < "${changed_file_list}"
 
     while IFS= read -r file_path; do
         [ -n "${file_path}" ] || continue
@@ -683,18 +735,20 @@ main() {
         append_line_once "High product source-file churn detected (${product_source_files_changed} files > 8)" "${full_reasons_file}"
     fi
 
-    if [ "${guidance_relevant}" -eq 1 ]; then
-        echo "- Running guidance gate..."
-        run_cmd "make guidance-check" || return $?
-        echo "  Guidance passed."
-    fi
-
     if [ "${FORCE_FULL}" -eq 1 ]; then
         append_line_once "Forced full gate by flag (--force-full)" "${full_reasons_file}"
     fi
 
     if [ -s "${full_reasons_file}" ]; then
         should_run_full=1
+    fi
+
+    if [ -z "${DECISION_FILE}" ] && [ "${guidance_relevant}" -eq 1 ]; then
+        echo "- Running guidance gate..."
+        run_cmd "make guidance-check" || return $?
+        echo "  Guidance passed."
+        DECISION_CODE_RELEVANT="${code_relevant}"
+        DECISION_GUIDANCE_RELEVANT="${guidance_relevant}"
     fi
 
     if [ "${code_relevant}" -eq 0 ] && [ "${should_run_full}" -eq 0 ]; then
@@ -732,6 +786,14 @@ main() {
         SELECTED_LANE="fast"
         DECISION_STRATEGY="scoped-validation"
     fi
+    fi
+
+    if [ -n "${DECISION_FILE}" ] && [ "${guidance_relevant}" -eq 1 ]; then
+        echo "- Running guidance gate..."
+        run_cmd "make guidance-check" || return $?
+        echo "  Guidance passed."
+        DECISION_CODE_RELEVANT="${code_relevant}"
+        DECISION_GUIDANCE_RELEVANT="${guidance_relevant}"
     fi
 
     echo "Scoped validation plan:"
@@ -855,8 +917,12 @@ emit_agent_result() {
     if [ "${#FULL_RISK_REASONS[@]}" -gt 0 ]; then
         reasons_json="$(ma_agent_json_array "${FULL_RISK_REASONS[@]}")"
     fi
+    changed_files_json="[]"
+    if [ "${#CHANGED_FILES_RESULT[@]}" -gt 0 ]; then
+        changed_files_json="$(ma_agent_json_array "${CHANGED_FILES_RESULT[@]}")"
+    fi
     commands_json="[{\"name\":\"scope-check\",\"status\":\"${status}\",\"durationSec\":${duration},\"log\":\"$(ma_agent_json_escape "${LOG_PATH}")\"}]"
-    decision_json="{\"strategy\":\"${DECISION_STRATEGY}\",\"selectedLane\":\"${SELECTED_LANE}\",\"fullRisk\":$([ "${SELECTED_LANE}" = "full" ] && echo true || echo false),\"reasons\":${reasons_json},\"targetedTests\":${targeted_tests_json},\"diffRange\":\"$(ma_agent_json_escape "${DIFF_RANGE_LABEL}")\"}"
+    decision_json="{\"strategy\":\"${DECISION_STRATEGY}\",\"selectedLane\":\"${SELECTED_LANE}\",\"fullRisk\":$([ "${SELECTED_LANE}" = "full" ] && echo true || echo false),\"codeRelevant\":$([ "${code_relevant:-0}" -eq 1 ] && echo true || echo false),\"guidanceRelevant\":$([ "${guidance_relevant:-0}" -eq 1 ] && echo true || echo false),\"changedFiles\":${changed_files_json},\"reasons\":${reasons_json},\"targetedTests\":${targeted_tests_json},\"diffRange\":\"$(ma_agent_json_escape "${DIFF_RANGE_LABEL}")\"}"
     ma_agent_write_result_json "${RESULT_PATH}" "scope-check" "${status}" "${duration}" "${LOG_PATH}" "${error_count}" "${summary}" "${commands_json}" "${decision_json}"
     ma_agent_emit_result "scope-check" "${status}" "${duration}" "${LOG_PATH}" "${error_count}" "${summary}" "${RESULT_PATH}"
 }

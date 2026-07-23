@@ -71,12 +71,21 @@ def check(root: Path) -> int:
     missing_from_pt = sorted(en_keys - pt_keys)
     missing_from_locales = sorted(used_keys - en_keys)
 
+    resource_root = root / "Packages/MeetingAssistantCore/Sources/Common/Resources"
     if missing_from_en:
-        errors.append(f"Missing from en: {', '.join(missing_from_en)}")
+        errors.append(
+            f"Missing from en ({resource_root / 'en.lproj/Localizable.strings'}): {', '.join(missing_from_en)}"
+        )
     if missing_from_pt:
-        errors.append(f"Missing from pt: {', '.join(missing_from_pt)}")
+        errors.append(
+            f"Missing from pt ({resource_root / 'pt.lproj/Localizable.strings'}): {', '.join(missing_from_pt)}"
+        )
     if missing_from_locales:
-        errors.append(f"Literal keys missing from locales: {', '.join(missing_from_locales)}")
+        errors.append(
+            "Literal keys missing from locales "
+            f"(Swift sources under {root / 'App'} and {root / 'Packages/MeetingAssistantCore/Sources'}): "
+            f"{', '.join(missing_from_locales)}"
+        )
 
     if errors:
         print("LOCALIZATION_CHECK_STATUS=FAIL")

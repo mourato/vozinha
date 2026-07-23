@@ -34,11 +34,12 @@ test_scope_check_reuses_decision_file() {
 
     fixture="$(new_fixture)"
     decision_file="${TMP_ROOT}/reused-decision.json"
-    printf '%s\n' '{"decision":{"selectedLane":"fast","strategy":"scoped-validation","reasons":[],"targetedTests":[],"diffRange":"fixture decision"}}' > "${decision_file}"
+    printf '%s\n' '{"decision":{"selectedLane":"fast","strategy":"scoped-validation","codeRelevant":false,"guidanceRelevant":true,"changedFiles":["AGENTS.md"],"reasons":[],"targetedTests":[],"diffRange":"fixture decision"}}' > "${decision_file}"
     output="$(cd "${fixture}" && MA_AGENT_LOG_DIR="${TMP_ROOT}/reused-decision" ./scripts/scope-check.sh --agent --decision-file "${decision_file}" --no-build)"
     assert_contains "${output}" "AGENT_STATUS=PASS"
     assert_contains "${output}" "Added lines (fixture decision): 0"
     assert_not_contains "${output}" "No changed files detected"
+    assert_contains "${output}" "Guidance passed."
 }
 
 test_app_product_swift_is_full() {
