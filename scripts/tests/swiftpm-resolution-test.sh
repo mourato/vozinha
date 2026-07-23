@@ -18,25 +18,25 @@ trap 'rm -rf "${TMP_ROOT}"' EXIT
 FAKE_SWIFT_LOG="${TMP_ROOT}/swift.log"
 FAKE_SWIFT="${TMP_ROOT}/bin/swift"
 mkdir -p "${TMP_ROOT}/bin"
-printf '%s\n' \
-    '#!/bin/sh' \
-    'if [ "$1" = "--version" ]; then echo "Swift version fixture-1"; exit 0; fi' \
-    'if [ "$1" = "package" ] && [ "$2" = "resolve" ]; then' \
-    '    index=1' \
-    '    while [ "${index}" -le "$#" ]; do' \
-    '        eval "arg=\${$index}"' \
-    '        if [ "${arg}" = "--scratch-path" ]; then' \
-    '            next=$((index + 1))' \
-    '            eval "scratch=\${$next}"' \
-    '            mkdir -p "${scratch}/checkouts"' \
-    '        fi' \
-    '        index=$((index + 1))' \
-    '    done' \
-    '    echo resolve >> "${FAKE_SWIFT_LOG}"' \
-    '    exit 0' \
-    'fi' \
-    'if [ "$1" = "test" ]; then echo test >> "${FAKE_SWIFT_LOG}"; exit 0; fi' \
-    'exit 0' \
+printf "%s\n" \
+    "#!/bin/sh" \
+    "if [ \"\$1\" = \"--version\" ]; then echo \"Swift version fixture-1\"; exit 0; fi" \
+    "if [ \"\$1\" = \"package\" ] && [ \"\$2\" = \"resolve\" ]; then" \
+    "    index=1" \
+    "    while [ \"\${index}\" -le \"\$#\" ]; do" \
+    "        eval \"arg=\\\${\$index}\"" \
+    "        if [ \"\${arg}\" = \"--scratch-path\" ]; then" \
+    "            next=\$((index + 1))" \
+    "            eval \"scratch=\\\${\$next}\"" \
+    "            mkdir -p \"\${scratch}/checkouts\"" \
+    "        fi" \
+    "        index=\$((index + 1))" \
+    "    done" \
+    "    echo resolve >> \"\${FAKE_SWIFT_LOG}\"" \
+    "    exit 0" \
+    "fi" \
+    "if [ \"\$1\" = \"test\" ]; then echo test >> \"\${FAKE_SWIFT_LOG}\"; exit 0; fi" \
+    "exit 0" \
     > "${FAKE_SWIFT}"
 chmod +x "${FAKE_SWIFT}"
 

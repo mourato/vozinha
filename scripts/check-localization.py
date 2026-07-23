@@ -26,17 +26,22 @@ def localization_keys(root: Path, locale: str) -> set[str]:
 
 
 def swift_files(root: Path):
-    for scan_root in (root / "App", root / "Packages/MeetingAssistantCore/Sources"):
+    scan_roots = (root / "App", root / "Packages/MeetingAssistantCore/Sources")
+    for scan_root in scan_roots:
         if not scan_root.is_dir():
             raise ValueError(f"missing localization source root: {scan_root}")
-        for directory, directory_names, file_names in os.walk(scan_root):
-            directory_names[:] = sorted(name for name in directory_names if not name.startswith("."))
-            for name in sorted(file_names):
-                if name.startswith(".") or not name.endswith(".swift"):
-                    continue
-                path = Path(directory) / name
-                if path.is_file():
-                    yield path
+        yield from swift_files_under(scan_root)
+
+
+def swift_files_under(scan_root: Path):
+    for directory, directory_names, file_names in os.walk(scan_root):
+        directory_names[:] = sorted(name for name in directory_names if not name.startswith("."))
+        for name in sorted(file_names):
+            if name.startswith(".") or not name.endswith(".swift"):
+                continue
+            path = Path(directory) / name
+            if path.is_file():
+                yield path
 
 
 def literal_localized_keys(root: Path) -> set[str]:

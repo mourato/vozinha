@@ -39,35 +39,22 @@ def artifact_root(project_root: Path, name: str) -> Path:
     return path
 
 
-def inspect_root(project_root: Path, name: str, now: float) -> dict[str, object]:
-    path = artifact_root(project_root, name)
-    if not path.exists():
-        return {
-            "name": name,
-            "path": str(path),
-            "status": "missing",
-            "size": 0,
-            "files": 0,
-            "newest": None,
-            "active": False,
-        }
-    if path.is_symlink():
-        return {
-            "name": name,
-            "path": str(path),
-            "status": "symlink-skipped",
-            "size": 0,
-            "files": 0,
-            "newest": None,
-            "active": False,
-        }
-    if not path.is_dir():
-        raise ValueError(f"managed artifact root is not a directory: {path}")
+def artifact_result(name: str, path: Path, status: str, size: int = 0, files: int = 0, newest: float | None = None) -> dict[str, object]:
+    return {
+        "name": name,
+        "path": str(path),
+        "status": status,
+        "size": size,
+        "files": files,
+        "newest": newest,
+        "active": False,
+    }
 
+
+def walk_artifact(path: Path) -> tuple[int, int, float]:
     total_size = 0
     files = 0
     newest = path.stat().st_mtime
-    active = any((path / marker).exists() for marker in ACTIVE_MARKERS)
     for directory, directory_names, file_names in os.walk(path, topdown=True, followlinks=False):
         directory_names[:] = sorted(
             name for name in directory_names if not (Path(directory) / name).is_symlink()
@@ -83,7 +70,20 @@ def inspect_root(project_root: Path, name: str, now: float) -> dict[str, object]
             total_size += stat.st_size
             files += 1
             newest = max(newest, stat.st_mtime)
+    return total_size, files, newest
 
+
+def inspect_root(project_root: Path, name: str, now: float) -> dict[str, object]:
+    path = artifact_root(project_root, name)
+    if not path.exists():
+        return artifact_result(name, path, "missing")
+    if path.is_symlink():
+        return artifact_result(name, path, "symlink-skipped")
+    if not path.is_dir():
+        raise ValueError(f"managed artifact root is not a directory: {path}")
+
+    total_size, files, newest = walk_artifact(path)
+    active = any((path / marker).exists() for marker in ACTIVE_MARKERS)
     active = active or now - newest <= ACTIVE_WINDOW_SECONDS
     age_days = max(0.0, (now - newest) / 86400)
     return {
@@ -124,11 +124,27 @@ def cleanup(project_root: Path, items: list[dict[str, object]], older_than_days:
         and not bool(item["active"])
         and float(item.get("age_days", 0)) >= older_than_days
     ]
-    protected = [
-        item
-        for item in items
-        if item["status"] == "present" and item not in candidates
-    ]
+    protected = [item for item in items if item["status"] == "present" and item not in candidates]
+    report_cleanup(candidates, protected, older_than_days)
+
+    if dry_run:
+        print(f"AGENT_ARTIFACTS_CLEANUP_STATUS=DRY_RUN targets={len(candidates)}")
+        return 0
+    if not confirm:
+        print(
+            "ERROR: cleanup requires --confirm; use --clean --dry-run to preview targets.",
+            file=sys.stderr,
+        )
+        return 2
+
+    for item in candidates:
+        if not remove_artifact(project_root, item):
+            return 1
+    print(f"AGENT_ARTIFACTS_CLEANUP_STATUS=PASS removed={len(candidates)}")
+    return 0
+
+
+def report_cleanup(candidates: list[dict[str, object]], protected: list[dict[str, object]], older_than_days: float) -> None:
     for item in candidates:
         print(
             "CLEANUP_TARGET "
@@ -142,28 +158,18 @@ def cleanup(project_root: Path, items: list[dict[str, object]], older_than_days:
             f"age_days={float(item.get('age_days', 0)):.1f}"
         )
 
-    if dry_run:
-        print(f"AGENT_ARTIFACTS_CLEANUP_STATUS=DRY_RUN targets={len(candidates)}")
-        return 0
-    if not confirm:
-        print(
-            "ERROR: cleanup requires --confirm; use --clean --dry-run to preview targets.",
-            file=sys.stderr,
-        )
-        return 2
 
-    for item in candidates:
-        path = Path(str(item["path"]))
-        if path.parent != project_root or path.name not in ALLOWED_ROOTS:
-            print(f"ERROR: refusing unexpected cleanup path: {path}", file=sys.stderr)
-            return 1
-        if path.is_symlink() or not path.is_dir():
-            print(f"ERROR: refusing changed cleanup path: {path}", file=sys.stderr)
-            return 1
-        shutil.rmtree(path)
-        print(f"CLEANUP_REMOVED path={path}")
-    print(f"AGENT_ARTIFACTS_CLEANUP_STATUS=PASS removed={len(candidates)}")
-    return 0
+def remove_artifact(project_root: Path, item: dict[str, object]) -> bool:
+    path = Path(str(item["path"]))
+    if path.parent != project_root or path.name not in ALLOWED_ROOTS:
+        print(f"ERROR: refusing unexpected cleanup path: {path}", file=sys.stderr)
+        return False
+    if path.is_symlink() or not path.is_dir():
+        print(f"ERROR: refusing changed cleanup path: {path}", file=sys.stderr)
+        return False
+    shutil.rmtree(path)
+    print(f"CLEANUP_REMOVED path={path}")
+    return True
 
 
 def main() -> int:
