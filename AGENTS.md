@@ -44,6 +44,24 @@ When guidance conflicts, apply this order:
 2. The relevant project skill in `.agents/skills/` or global skill plus the project overlay named here.
 3. Reference documents, examples, and inline comments.
 
+Global macOS skills use repository-local companion overlays. Load the global
+skill first, then the matching overlay; the overlay supplies Prisma/Vozinha
+facts only and never replaces global safety, privacy, or repository-integrity
+rules.
+
+| Global skill | Project overlay |
+|---|---|
+| `accessibility-audit` | `.agents/overlays/accessibility-audit.md` |
+| `apple-design` | `.agents/overlays/apple-design.md` |
+| `code-quality` | `.agents/overlays/code-quality.md` |
+| `delivery-workflow` | `.agents/overlays/delivery-workflow.md` |
+| `macos-app-engineering` | `.agents/overlays/macos-app-engineering.md` |
+| `menubar` | `.agents/overlays/menubar.md` |
+| `swift-conventions` | `.agents/overlays/swift-conventions.md` |
+
+Clients without deterministic overlay composition must still read the overlay
+as ordinary Markdown after loading its named global skill.
+
 Hard constraints in this file always override convenience or performance preferences. If a conflict remains material, stop and ask before implementing behavior.
 
 ## Deviations and Exceptions

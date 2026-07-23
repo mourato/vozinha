@@ -74,7 +74,9 @@ When inspecting code outside this repository, use this source order:
 
 For a SwiftUI modern-API / maintainability **review** pass, stay on
 `macos-app-engineering` and open
-[`swiftui-review.md`](../skills/macos-app-engineering/references/swiftui-review.md).
+The global `macos-app-engineering` skill owns the SwiftUI review appendix;
+load its repository-local companion at `.agents/overlays/macos-app-engineering.md`
+when the review is project-specific.
 
 **Example:** "Design the meeting recording UI" → `macos-app-engineering`
 

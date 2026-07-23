@@ -21,6 +21,12 @@
 - **Category**: dx / tech-debt
 - **Planned at**: commit `5875628a`, 2026-07-23
 
+> **Implementation note**: Automated shell, Debug build, Full validation, and
+> fixture gates pass. `make ci-release-parity` remains blocked by the existing
+> Sparkle XCFramework path under `/Users/usuario/Documents/Repos/my-meeting-assistant`;
+> a real `/Applications` replacement was intentionally not performed in this
+> automated run and remains an operator-controlled smoke gate.
+
 ## Execution profile
 
 - **Recommended profile**: `implementer`
