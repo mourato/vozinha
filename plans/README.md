@@ -30,7 +30,7 @@ Status values: `TODO` | `IN PROGRESS` | `DONE` | `BLOCKED` | `REJECTED`.
 | [110](archive/completed/110-wire-vocabulary-through-transcription.md) | Wire vocabulary snapshots through transcription and enhancement | P1 | L | 109 | DONE |
 | [111](archive/completed/111-add-dictionary-quick-add-panel.md) | Add the VoiceInk-style Dictionary quick-add panel | P1 | L | 109 | DONE |
 | [112](112-rebrand-visible-app-name-to-vozinha.md) | Rebrand the visible app name to Vozinha | P1 | L | - | IN PROGRESS |
-| [113](113-interactive-release-build-and-install-runner.md) | Add an interactive Release-aware build and install runner | P1 | L | 112 | TODO |
+| [113](113-interactive-release-build-and-install-runner.md) | Add an interactive Release-aware build and install runner | P1 | L | 112 | IN PROGRESS |
 | [114](114-prune-dated-agent-guidance.md) | Prune dated agent guidance without losing durable rules | P0 | M | 105 | DONE |
 | [115](115-promote-localization-integrity-gate.md) | Promote localization integrity to a deterministic gate | P0 | M | 102 | DONE |
 | [116](116-reuse-scope-check-decision.md) | Reuse the scope-check decision in agent validation | P1 | S | 103 | DONE |
