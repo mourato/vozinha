@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Sourced by workflow-test.sh after its fixture helpers are defined.
+# Internal sourced fixture suite used by workflow-test.sh; not a standalone command.
 
 CONSERVATIVE_SWIFT_REASON="Production Swift changed; auto lane is conservative because semantic Low risk cannot be proven"
 
@@ -25,6 +25,20 @@ assert decision["strategy"] == expected_strategy
 if expected_reason:
     assert decision["reasons"].count(expected_reason) == 1
 PY
+}
+
+test_scope_check_reuses_decision_file() {
+    local fixture
+    local decision_file
+    local output
+
+    fixture="$(new_fixture)"
+    decision_file="${TMP_ROOT}/reused-decision.json"
+    printf '%s\n' '{"decision":{"selectedLane":"fast","strategy":"scoped-validation","reasons":[],"targetedTests":[],"diffRange":"fixture decision"}}' > "${decision_file}"
+    output="$(cd "${fixture}" && MA_AGENT_LOG_DIR="${TMP_ROOT}/reused-decision" ./scripts/scope-check.sh --agent --decision-file "${decision_file}" --no-build)"
+    assert_contains "${output}" "AGENT_STATUS=PASS"
+    assert_contains "${output}" "Added lines (fixture decision): 0"
+    assert_not_contains "${output}" "No changed files detected"
 }
 
 test_app_product_swift_is_full() {
@@ -297,6 +311,7 @@ test_app_product_swift_is_full
 test_core_ui_product_swift_is_full
 test_xpc_product_swift_direct_and_nested_are_full
 test_domain_product_swift_is_full_without_semantic_parsing
+test_scope_check_reuses_decision_file
 test_test_only_swift_stays_fast_when_mapped
 test_nine_test_files_do_not_trigger_product_churn
 test_guidance_and_resource_boundaries_stay_fast

@@ -2,6 +2,15 @@
 
 set -euo pipefail
 
+if [ "${1:-}" = "--help" ] || [ "${1:-}" = "-h" ]; then
+    cat <<'USAGE'
+Usage: ./scripts/tests/workflow-test.sh
+
+Description: Run deterministic fixture tests for the agent validation and delivery workflow. No Xcode build is performed.
+USAGE
+    exit 0
+fi
+
 SCRIPT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 TMP_ROOT="$(mktemp -d "${TMPDIR:-/tmp}/prisma-workflow-test.XXXXXX")"
 trap 'rm -rf "${TMP_ROOT}"' EXIT
@@ -56,6 +65,10 @@ new_fixture() {
         $'\t@if [ "$${WORKFLOW_USE_REAL_SCOPE_CHECK:-0}" = "1" ]; then MA_AGENT_MODE=1 ./scripts/scope-check.sh --agent $(ARGS); else ./scripts/tests/workflow-fixture-step.sh scope-check; fi' \
         'validate-agent:' \
         $'\t@./scripts/validate-agent.sh $(ARGS)' \
+        'lint-agent:' \
+        $'\t@./scripts/tests/workflow-fixture-step.sh lint' \
+        'build-agent:' \
+        $'\t@./scripts/tests/workflow-fixture-step.sh build' \
         'lint-strict-agent:' \
         $'\t@./scripts/tests/workflow-fixture-step.sh lint' \
         'build-test:' \
@@ -751,6 +764,7 @@ test_validate_runner_preview_and_reuse() {
 
     output="$(validate_output "${fixture}" "${TMP_ROOT}/validate-cache" --lane fast --no-reuse)"
     assert_contains "${output}" "AGENT_STATUS=PASS"
+    assert_contains "${output}" "--decision-file"
     first_result="$(printf '%s\n' "${output}" | sed -n 's/^AGENT_RESULT_JSON=//p' | tail -n 1)"
     test -f "${first_result}"
     cache_result="$(find "${TMP_ROOT}/validate-cache/validate-agent-index" -name '*.result.json' -print | head -n 1)"
@@ -848,4 +862,7 @@ source "${SCRIPT_ROOT}/scripts/tests/scope-classification-test.sh"
 "${SCRIPT_ROOT}/scripts/tests/hooks-setup-test.sh"
 "${SCRIPT_ROOT}/scripts/tests/rust-audio-staging-test.sh"
 "${SCRIPT_ROOT}/scripts/tests/preview-check-test.sh"
+"${SCRIPT_ROOT}/scripts/tests/localization-check-test.sh"
+"${SCRIPT_ROOT}/scripts/tests/swiftpm-resolution-test.sh"
+"${SCRIPT_ROOT}/scripts/tests/agent-artifacts-test.sh"
 echo "WORKFLOW_TEST_STATUS=PASS"
