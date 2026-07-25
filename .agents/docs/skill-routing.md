@@ -253,13 +253,13 @@ Use `thermo-nuclear-code-quality-review` for review output, semaforo severity, a
 
 ### Reference Projects and Benchmarking
 
-**Primary:** `benchmarking`
-- Reference project registry and clone policy
-- Inspiration-driven comparisons (VoiceInk, FluidVoice, TypeWhisper)
+**Primary:** global `benchmarking` + `.agents/overlays/benchmarking.md`
+- Shared reference process and clone policy
+- Prisma catalog (VoiceInk, FluidVoice, TypeWhisper)
 
 **Complementary:** `macos-app-engineering`, `architecture`, `audio-realtime`
 
-**Example:** "Compare dictation mode UX with VoiceInk" → `benchmarking`
+**Example:** "Compare dictation mode UX with VoiceInk" → `benchmarking` + overlay
 
 ---
 

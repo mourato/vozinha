@@ -53,6 +53,7 @@ rules.
 |---|---|
 | `accessibility-audit` | `.agents/overlays/accessibility-audit.md` |
 | `apple-design` | `.agents/overlays/apple-design.md` |
+| `benchmarking` | `.agents/overlays/benchmarking.md` |
 | `code-quality` | `.agents/overlays/code-quality.md` |
 | `delivery-workflow` | `.agents/overlays/delivery-workflow.md` |
 | `macos-app-engineering` | `.agents/overlays/macos-app-engineering.md` |
