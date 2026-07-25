@@ -46,6 +46,20 @@ Relative clones from this repo: `../References/<CanonicalName>/`.
 | **Remote** | https://github.com/TypeWhisper/typewhisper-mac |
 | **Description** | macOS voice-to-text; transcription workflow reference |
 
+### StenoAI
+
+| Attribute | Value |
+|-----------|-------|
+| **Canonical name** | StenoAI |
+| **Classification** | UI/UX + Same-domain (**strong reference**) |
+| **Local path** | `../References/StenoAI/` |
+| **Cloned?** | Yes |
+| **Remote** | https://github.com/ruzin/stenoai |
+| **Stack** | TypeScript / Electron web UI + Python local AI — **not** Swift/AppKit |
+| **Description** | Privacy-first meeting notepad: recording, live transcription, note-taking, summary/report generation, and meeting Q&A. Primary bar for interface polish and the end-to-end meeting-note flow. |
+| **Transfer policy** | **Aesthetic and product-flow inspiration only.** Study hierarchy, density, recording/summary journeys, and calm editorial UX; re-express every adopted pattern in SwiftUI/AppKit under Apple HIG, platform materials, and Prisma architecture. Do **not** copy web/Electron chrome, CSS tokens, or TypeScript structure into production code. Prefer `apple-design` + `macos-app-engineering` when translating visuals or interaction. |
+| **Touchpoints** | Recording / transcription pill coexistence; stop → note landing; resume-into-note; live transcript attribution; summary + user notes fold-in; report templates; meeting library detail |
+
 ## Product routing
 
 After locating reference material:
@@ -53,6 +67,7 @@ After locating reference material:
 - Architecture patterns → local `architecture`
 - Audio pipeline → local `audio-realtime`
 - macOS UI implementation → global `macos-app-engineering` (+ overlay)
+- Visual/interaction translation from non-native references (especially StenoAI) → global `apple-design` (+ overlay), then `macos-app-engineering`
 - Review of changes inspired by references → global `thermo-nuclear-code-quality-review`
 
 Summary, fixture, provider-drift, and `make benchmark-summary` gates stay with

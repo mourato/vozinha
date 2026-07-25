@@ -11,9 +11,9 @@
 	<key>CFBundlePackageType</key>
 	<string>XPC!</string>
 	<key>CFBundleShortVersionString</key>
-	<string>0.7.24</string>
+	<string>0.7.25</string>
 	<key>CFBundleVersion</key>
-	<string>92</string>
+	<string>93</string>
 	<key>LSMinimumSystemVersion</key>
 	<string>$(MACOSX_DEPLOYMENT_TARGET)</string>
 	<key>MachServices</key>
