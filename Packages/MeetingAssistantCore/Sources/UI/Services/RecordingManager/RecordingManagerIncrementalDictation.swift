@@ -14,8 +14,6 @@ extension RecordingManager {
         let config = IncrementalCaptureSupportConfig(
             expectedPurpose: .dictation,
             expectedSource: .microphone,
-            incrementalFeatureEnabled: FeatureFlags.enableIncrementalDictationTranscription,
-            realtimeFeatureEnabled: FeatureFlags.enableRealtimeVADForDictation,
             executionMode: .dictation,
         )
         return supportsIncrementalCapture(config, actualPurpose: purpose, actualSource: source)
@@ -37,14 +35,14 @@ extension RecordingManager {
             configuration: activeDictationStyleSnapshot?.transcriptionConfiguration,
         )
 
-        let coordinator = IncrementalDictationTranscriptionCoordinator(
+        let coordinator = IncrementalTranscriptionCoordinator(
             transcriptionID: meeting.id,
             meeting: meeting,
             inputSource: resolveInputSourceLabel(for: meeting, recordingSource: source),
             storage: storage,
             transcriptionClientBox: transcriptionClientBox,
             voiceActivityKernel: audioKernelProvider.makeVoiceActivityKernel(),
-            callbacks: IncrementalDictationTranscriptionCoordinator.Callbacks(
+            callbacks: .init(
                 onPreviewTextChanged: { [weak self] previewText in
                     Task { @MainActor [weak self] in
                         self?.transcriptionStatus.updateLivePreviewText(previewText)
@@ -60,6 +58,7 @@ extension RecordingManager {
                     }
                 },
             ),
+            fallbackLogMessage: "Dictation incremental transcription degraded; full-file fallback required",
         )
 
         installIncrementalBufferForwarder(
@@ -97,7 +96,11 @@ extension RecordingManager {
             sessionID: session.id,
         )
 
-        let result = try await incrementalDictationCoordinator.finish()
+        let result = try await incrementalDictationCoordinator.finish(
+            audioURL: audioURL,
+            diarizationEnabled: false,
+            finalDiarizationServiceBox: nil,
+        )
         AppLogger.info(
             "Selected transcription pipeline",
             category: .recordingManager,

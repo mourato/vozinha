@@ -129,8 +129,8 @@ public class RecordingManager: ObservableObject, RecordingServiceProtocol {
     var activeDictationStyleSnapshot: DictationStyle?
     var activeTranscriptionSessionIDs = Set<UUID>()
     var foregroundTranscriptionSessionID: UUID?
-    var incrementalDictationCoordinator: IncrementalDictationTranscriptionCoordinator?
-    var incrementalMeetingCoordinator: IncrementalMeetingTranscriptionCoordinator?
+    var incrementalDictationCoordinator: IncrementalTranscriptionCoordinator?
+    var incrementalMeetingCoordinator: IncrementalTranscriptionCoordinator?
     var incrementalBufferForwarder: IncrementalBufferForwarder?
 
     struct RecordingStartTelemetry {

@@ -11,8 +11,6 @@ extension RecordingManager {
     struct IncrementalCaptureSupportConfig {
         let expectedPurpose: CapturePurpose
         let expectedSource: RecordingSource
-        let incrementalFeatureEnabled: Bool
-        let realtimeFeatureEnabled: Bool
         let executionMode: TranscriptionExecutionMode
     }
 
@@ -177,8 +175,6 @@ extension RecordingManager {
         actualSource: RecordingSource,
     ) -> Bool {
         guard actualPurpose == config.expectedPurpose, actualSource == config.expectedSource else { return false }
-        guard config.incrementalFeatureEnabled else { return false }
-        guard config.realtimeFeatureEnabled else { return false }
         guard let recorder = micRecorder as? AudioRecorder else { return false }
         guard recorder === AudioRecorder.shared else { return false }
         guard let transcriptionClient = transcriptionClient as? TranscriptionClient else { return false }

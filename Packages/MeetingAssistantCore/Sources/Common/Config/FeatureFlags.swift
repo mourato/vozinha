@@ -22,18 +22,6 @@ public enum FeatureFlags {
     /// Requires additional model downloads.
     public static let enableDiarization: Bool = true
 
-    /// Enable dictation transcription during recording using windowed incremental ASR.
-    public static let enableIncrementalDictationTranscription: Bool = true
-
-    /// Enable real-time VAD for dictation incremental transcription windows.
-    public static let enableRealtimeVADForDictation: Bool = true
-
-    /// Enable meeting transcription during recording using windowed incremental ASR.
-    public static let enableIncrementalMeetingTranscription: Bool = true
-
-    /// Enable real-time VAD for meeting incremental transcription windows.
-    public static let enableRealtimeVADForMeetings: Bool = true
-
     /// Selects Rust-backed audio math kernels for the pilot path.
     /// Current behavior keeps Swift math as the effective implementation while
     /// preserving backend routing for Phase 2 integration.

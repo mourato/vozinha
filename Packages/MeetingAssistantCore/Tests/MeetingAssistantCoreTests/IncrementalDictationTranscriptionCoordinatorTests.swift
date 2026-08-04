@@ -11,7 +11,7 @@ final class IncrementalDictationCoordinatorTests: XCTestCase {
         let transcriptionClientBox = RecordingManager.UncheckedTranscriptionServiceBox(transcriptionClient)
         transcriptionClient.mockText = "partial"
         let previewRecorder = PreviewRecorder()
-        let coordinator = IncrementalDictationTranscriptionCoordinator(
+        let coordinator = IncrementalTranscriptionCoordinator(
             transcriptionID: UUID(),
             meeting: makeMeeting(),
             inputSource: "microphone",
@@ -21,6 +21,7 @@ final class IncrementalDictationCoordinatorTests: XCTestCase {
                 onPreviewTextChanged: { text in previewRecorder.values.append(text) },
                 onProcessedDurationChanged: { _ in },
             ),
+            fallbackLogMessage: "Dictation incremental transcription degraded; full-file fallback required",
         )
 
         try await coordinator.start()
@@ -36,7 +37,11 @@ final class IncrementalDictationCoordinatorTests: XCTestCase {
         XCTAssertEqual(transcriptionClient.transcribeCallCount, 1)
         XCTAssertFalse(previewRecorder.values.isEmpty)
 
-        let result = try await coordinator.finish()
+        let result = try await coordinator.finish(
+            audioURL: URL(fileURLWithPath: "/tmp/dictation-test.wav"),
+            diarizationEnabled: false,
+            finalDiarizationServiceBox: nil,
+        )
         XCTAssertEqual(result.response.text, "partial partial")
         XCTAssertEqual(storage.savedTranscriptions.last?.lifecycleState, .finalizing)
         XCTAssertEqual(transcriptionClient.transcribeCallCount, 2)
@@ -48,7 +53,7 @@ final class IncrementalDictationCoordinatorTests: XCTestCase {
         let transcriptionClient = MockTranscriptionClient()
         let transcriptionClientBox = RecordingManager.UncheckedTranscriptionServiceBox(transcriptionClient)
         transcriptionClient.shouldFailTranscription = true
-        let coordinator = IncrementalDictationTranscriptionCoordinator(
+        let coordinator = IncrementalTranscriptionCoordinator(
             transcriptionID: UUID(),
             meeting: makeMeeting(),
             inputSource: "microphone",
@@ -58,6 +63,7 @@ final class IncrementalDictationCoordinatorTests: XCTestCase {
                 onPreviewTextChanged: { _ in },
                 onProcessedDurationChanged: { _ in },
             ),
+            fallbackLogMessage: "Dictation incremental transcription degraded; full-file fallback required",
         )
 
         try await coordinator.start()
@@ -68,7 +74,11 @@ final class IncrementalDictationCoordinatorTests: XCTestCase {
         )
 
         do {
-            _ = try await coordinator.finish()
+            _ = try await coordinator.finish(
+                audioURL: URL(fileURLWithPath: "/tmp/dictation-test.wav"),
+                diarizationEnabled: false,
+                finalDiarizationServiceBox: nil,
+            )
             XCTFail("Expected finish to throw")
         } catch {}
 
@@ -86,7 +96,7 @@ final class IncrementalDictationCoordinatorTests: XCTestCase {
         let storage = MockStorageService()
         let transcriptionClient = MockTranscriptionClient()
         let transcriptionClientBox = RecordingManager.UncheckedTranscriptionServiceBox(transcriptionClient)
-        let coordinator = IncrementalDictationTranscriptionCoordinator(
+        let coordinator = IncrementalTranscriptionCoordinator(
             transcriptionID: UUID(),
             meeting: makeMeeting(),
             inputSource: "microphone",
@@ -96,12 +106,17 @@ final class IncrementalDictationCoordinatorTests: XCTestCase {
                 onPreviewTextChanged: { _ in },
                 onProcessedDurationChanged: { _ in },
             ),
+            fallbackLogMessage: "Dictation incremental transcription degraded; full-file fallback required",
         )
 
         try await coordinator.start()
 
         do {
-            _ = try await coordinator.finish()
+            _ = try await coordinator.finish(
+                audioURL: URL(fileURLWithPath: "/tmp/dictation-test.wav"),
+                diarizationEnabled: false,
+                finalDiarizationServiceBox: nil,
+            )
             XCTFail("Expected finish to throw")
         } catch let error as TranscriptionError {
             guard case let .transcriptionFailed(message) = error else {

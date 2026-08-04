@@ -16,8 +16,6 @@ extension RecordingManager {
         let config = IncrementalCaptureSupportConfig(
             expectedPurpose: .meeting,
             expectedSource: .all,
-            incrementalFeatureEnabled: FeatureFlags.enableIncrementalMeetingTranscription,
-            realtimeFeatureEnabled: FeatureFlags.enableRealtimeVADForMeetings,
             executionMode: .meeting,
         )
         return supportsIncrementalCapture(config, actualPurpose: purpose, actualSource: source)
@@ -36,7 +34,7 @@ extension RecordingManager {
         guard let recorder = micRecorder as? AudioRecorder else { return }
         let transcriptionClientBox = UncheckedTranscriptionServiceBox(transcriptionClient)
 
-        let coordinator = IncrementalMeetingTranscriptionCoordinator(
+        let coordinator = IncrementalTranscriptionCoordinator(
             transcriptionID: meeting.id,
             meeting: meeting,
             inputSource: resolveInputSourceLabel(for: meeting, recordingSource: source),
@@ -53,6 +51,7 @@ extension RecordingManager {
                     }
                 },
             ),
+            fallbackLogMessage: "Meeting incremental transcription degraded; full-file fallback required",
         )
 
         installIncrementalBufferForwarder(

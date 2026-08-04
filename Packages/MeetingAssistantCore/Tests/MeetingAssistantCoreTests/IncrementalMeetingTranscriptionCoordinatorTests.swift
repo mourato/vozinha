@@ -28,7 +28,7 @@ final class IncrementalMeetingCoordinatorTests: XCTestCase {
         ]
 
         let processedDurationRecorder = ProcessedDurationRecorder()
-        let coordinator = IncrementalMeetingTranscriptionCoordinator(
+        let coordinator = IncrementalTranscriptionCoordinator(
             transcriptionID: UUID(),
             meeting: makeMeeting(),
             inputSource: "system+microphone",
@@ -37,6 +37,7 @@ final class IncrementalMeetingCoordinatorTests: XCTestCase {
             callbacks: .init(
                 onProcessedDurationChanged: { processedDurationRecorder.values.append($0) },
             ),
+            fallbackLogMessage: "Meeting incremental transcription degraded; full-file fallback required",
         )
 
         try await coordinator.start()
@@ -73,7 +74,7 @@ final class IncrementalMeetingCoordinatorTests: XCTestCase {
         let transcriptionClientBox = RecordingManager.UncheckedTranscriptionServiceBox(transcriptionClient)
         let finalDiarizationServiceBox = RecordingManager.UncheckedFinalDiarizationServiceBox(transcriptionClient)
         transcriptionClient.shouldFailTranscription = true
-        let coordinator = IncrementalMeetingTranscriptionCoordinator(
+        let coordinator = IncrementalTranscriptionCoordinator(
             transcriptionID: UUID(),
             meeting: makeMeeting(),
             inputSource: "system+microphone",
@@ -82,6 +83,7 @@ final class IncrementalMeetingCoordinatorTests: XCTestCase {
             callbacks: .init(
                 onProcessedDurationChanged: { _ in },
             ),
+            fallbackLogMessage: "Meeting incremental transcription degraded; full-file fallback required",
         )
 
         try await coordinator.start()
@@ -115,7 +117,7 @@ final class IncrementalMeetingCoordinatorTests: XCTestCase {
         let transcriptionClient = MockTranscriptionClient()
         let transcriptionClientBox = RecordingManager.UncheckedTranscriptionServiceBox(transcriptionClient)
         let finalDiarizationServiceBox = RecordingManager.UncheckedFinalDiarizationServiceBox(transcriptionClient)
-        let coordinator = IncrementalMeetingTranscriptionCoordinator(
+        let coordinator = IncrementalTranscriptionCoordinator(
             transcriptionID: UUID(),
             meeting: makeMeeting(),
             inputSource: "system+microphone",
@@ -124,6 +126,7 @@ final class IncrementalMeetingCoordinatorTests: XCTestCase {
             callbacks: .init(
                 onProcessedDurationChanged: { _ in },
             ),
+            fallbackLogMessage: "Meeting incremental transcription degraded; full-file fallback required",
         )
 
         try await coordinator.start()
@@ -170,7 +173,7 @@ final class IncrementalMeetingCoordinatorTests: XCTestCase {
         ]
         transcriptionClient.shouldFailDiarization = true
 
-        let coordinator = IncrementalMeetingTranscriptionCoordinator(
+        let coordinator = IncrementalTranscriptionCoordinator(
             transcriptionID: UUID(),
             meeting: makeMeeting(),
             inputSource: "system+microphone",
@@ -179,6 +182,7 @@ final class IncrementalMeetingCoordinatorTests: XCTestCase {
             callbacks: .init(
                 onProcessedDurationChanged: { _ in },
             ),
+            fallbackLogMessage: "Meeting incremental transcription degraded; full-file fallback required",
         )
 
         try await coordinator.start()

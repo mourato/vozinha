@@ -7,7 +7,7 @@ import MeetingAssistantCoreDomain
 @preconcurrency import MeetingAssistantCoreInfrastructure
 
 // swiftlint:disable type_name
-actor IncrementalMeetingTranscriptionCoordinator {
+actor IncrementalTranscriptionCoordinator {
     struct FinalizedResult {
         let response: DomainTranscriptionResponse
         let checkpointID: UUID
@@ -15,6 +15,7 @@ actor IncrementalMeetingTranscriptionCoordinator {
     }
 
     struct Callbacks {
+        var onPreviewTextChanged: (@Sendable (String) -> Void)?
         let onProcessedDurationChanged: @Sendable (Double) -> Void
     }
 
@@ -28,6 +29,7 @@ actor IncrementalMeetingTranscriptionCoordinator {
         transcriptionClientBox: RecordingManager.UncheckedTranscriptionServiceBox,
         voiceActivityKernel: any VoiceActivityKernel = RealtimeVoiceActivityWindowAssembler(),
         callbacks: Callbacks,
+        fallbackLogMessage: String,
     ) {
         core = IncrementalTranscriptionCoordinatorCore(
             configuration: .init(
@@ -37,9 +39,9 @@ actor IncrementalMeetingTranscriptionCoordinator {
                 storage: storage,
                 transcriptionClientBox: transcriptionClientBox,
                 voiceActivityKernel: voiceActivityKernel,
-                onPreviewTextChanged: nil,
+                onPreviewTextChanged: callbacks.onPreviewTextChanged,
                 onProcessedDurationChanged: callbacks.onProcessedDurationChanged,
-                fallbackLogMessage: "Meeting incremental transcription degraded; full-file fallback required",
+                fallbackLogMessage: fallbackLogMessage,
             ),
         )
     }

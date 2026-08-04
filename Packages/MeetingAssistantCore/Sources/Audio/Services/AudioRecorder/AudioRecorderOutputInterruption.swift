@@ -227,9 +227,7 @@ extension AudioRecorder {
     }
 
     var shouldUseRealtimeMicrophonePipeline: Bool {
-        FeatureFlags.enableIncrementalDictationTranscription
-            && FeatureFlags.enableRealtimeVADForDictation
-            && onMixedAudioBuffer != nil
+        onMixedAudioBuffer != nil
     }
 
     var hasPendingStartupResources: Bool {
