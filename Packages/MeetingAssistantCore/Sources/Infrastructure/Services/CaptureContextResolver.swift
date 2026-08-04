@@ -15,14 +15,14 @@ public struct ResolvedCaptureContext: Sendable, Equatable {
 
     public init(
         purpose: CapturePurpose,
-        meetingApp: MeetingApp,
-        appBundleIdentifier: String?,
-        appDisplayName: String?,
-        activeBrowserURL: URL?,
-        matchedWebMeetingTargetID: UUID?,
-        matchedWebContextTargetID: UUID?,
-        matchedDictationRuleBundleID: String?,
-        isKnownMeetingCandidate: Bool,
+        meetingApp: MeetingApp = .unknown,
+        appBundleIdentifier: String? = nil,
+        appDisplayName: String? = nil,
+        activeBrowserURL: URL? = nil,
+        matchedWebMeetingTargetID: UUID? = nil,
+        matchedWebContextTargetID: UUID? = nil,
+        matchedDictationRuleBundleID: String? = nil,
+        isKnownMeetingCandidate: Bool = false,
     ) {
         self.purpose = purpose
         self.meetingApp = meetingApp
@@ -71,14 +71,11 @@ public final class CaptureContextResolver: CaptureContextResolving {
 
             return ResolvedCaptureContext(
                 purpose: purpose,
-                meetingApp: .unknown,
                 appBundleIdentifier: bundleIdentifier,
                 appDisplayName: displayName,
                 activeBrowserURL: activeURL,
-                matchedWebMeetingTargetID: nil,
                 matchedWebContextTargetID: matchedWebContextTarget?.id,
                 matchedDictationRuleBundleID: matchedDictationRule?.bundleIdentifier,
-                isKnownMeetingCandidate: false,
             )
         case .meeting:
             if let normalizedBundleIdentifier,
@@ -94,8 +91,6 @@ public final class CaptureContextResolver: CaptureContextResolving {
                     appDisplayName: displayName,
                     activeBrowserURL: activeURL,
                     matchedWebMeetingTargetID: matchedWebMeetingTarget.id,
-                    matchedWebContextTargetID: nil,
-                    matchedDictationRuleBundleID: nil,
                     isKnownMeetingCandidate: true,
                 )
             }
@@ -109,9 +104,6 @@ public final class CaptureContextResolver: CaptureContextResolving {
                     appBundleIdentifier: bundleIdentifier,
                     appDisplayName: displayName,
                     activeBrowserURL: activeURL,
-                    matchedWebMeetingTargetID: nil,
-                    matchedWebContextTargetID: nil,
-                    matchedDictationRuleBundleID: nil,
                     isKnownMeetingCandidate: true,
                 )
             }
@@ -121,27 +113,18 @@ public final class CaptureContextResolver: CaptureContextResolving {
             {
                 return ResolvedCaptureContext(
                     purpose: purpose,
-                    meetingApp: .unknown,
                     appBundleIdentifier: bundleIdentifier,
                     appDisplayName: displayName,
                     activeBrowserURL: activeURL,
-                    matchedWebMeetingTargetID: nil,
-                    matchedWebContextTargetID: nil,
-                    matchedDictationRuleBundleID: nil,
                     isKnownMeetingCandidate: true,
                 )
             }
 
             return ResolvedCaptureContext(
                 purpose: purpose,
-                meetingApp: .unknown,
                 appBundleIdentifier: bundleIdentifier,
                 appDisplayName: displayName,
                 activeBrowserURL: activeURL,
-                matchedWebMeetingTargetID: nil,
-                matchedWebContextTargetID: nil,
-                matchedDictationRuleBundleID: nil,
-                isKnownMeetingCandidate: false,
             )
         }
     }
@@ -160,10 +143,6 @@ public final class CaptureContextResolver: CaptureContextResolving {
                     meetingApp: meetingApp,
                     appBundleIdentifier: runningApp.bundleIdentifier,
                     appDisplayName: runningApp.localizedName,
-                    activeBrowserURL: nil,
-                    matchedWebMeetingTargetID: nil,
-                    matchedWebContextTargetID: nil,
-                    matchedDictationRuleBundleID: nil,
                     isKnownMeetingCandidate: true,
                 )
             }
@@ -172,13 +151,8 @@ public final class CaptureContextResolver: CaptureContextResolving {
         if let runningApp = firstCustomMonitoredApp(in: runningApps, monitoredBundleIdentifiers: monitoredBundleIdentifiers) {
             return ResolvedCaptureContext(
                 purpose: .meeting,
-                meetingApp: .unknown,
                 appBundleIdentifier: runningApp.bundleIdentifier,
                 appDisplayName: runningApp.localizedName,
-                activeBrowserURL: nil,
-                matchedWebMeetingTargetID: nil,
-                matchedWebContextTargetID: nil,
-                matchedDictationRuleBundleID: nil,
                 isKnownMeetingCandidate: true,
             )
         }
@@ -275,8 +249,6 @@ public final class CaptureContextResolver: CaptureContextResolving {
                     appDisplayName: runningApp.localizedName,
                     activeBrowserURL: activeURL,
                     matchedWebMeetingTargetID: match.id,
-                    matchedWebContextTargetID: nil,
-                    matchedDictationRuleBundleID: nil,
                     isKnownMeetingCandidate: true,
                 )
             }
@@ -291,13 +263,9 @@ public final class CaptureContextResolver: CaptureContextResolving {
             {
                 return ResolvedCaptureContext(
                     purpose: .meeting,
-                    meetingApp: .unknown,
                     appBundleIdentifier: bundleId,
                     appDisplayName: runningApp.localizedName,
                     activeBrowserURL: activeURL,
-                    matchedWebMeetingTargetID: nil,
-                    matchedWebContextTargetID: nil,
-                    matchedDictationRuleBundleID: nil,
                     isKnownMeetingCandidate: true,
                 )
             }
@@ -317,8 +285,6 @@ public final class CaptureContextResolver: CaptureContextResolving {
                     appDisplayName: runningApp.localizedName,
                     activeBrowserURL: activeURL,
                     matchedWebMeetingTargetID: match.id,
-                    matchedWebContextTargetID: nil,
-                    matchedDictationRuleBundleID: nil,
                     isKnownMeetingCandidate: true,
                 )
             }
@@ -330,13 +296,9 @@ public final class CaptureContextResolver: CaptureContextResolving {
             ) != nil {
                 return ResolvedCaptureContext(
                     purpose: .meeting,
-                    meetingApp: .unknown,
                     appBundleIdentifier: bundleId,
                     appDisplayName: runningApp.localizedName,
                     activeBrowserURL: activeURL,
-                    matchedWebMeetingTargetID: nil,
-                    matchedWebContextTargetID: nil,
-                    matchedDictationRuleBundleID: nil,
                     isKnownMeetingCandidate: true,
                 )
             }
