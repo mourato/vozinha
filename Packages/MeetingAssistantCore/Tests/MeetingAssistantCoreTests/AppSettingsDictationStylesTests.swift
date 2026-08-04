@@ -204,7 +204,6 @@ final class AppSettingsDictationStylesTests: XCTestCase {
         settings.dictationStyles = []
 
         let defaultStyle = settings.dictationStyles[0]
-        XCTAssertEqual(defaultStyle.contextSourcePolicy?.isEnabled, true)
         XCTAssertEqual(defaultStyle.contextSourcePolicy?.hasEnabledContextSources, true)
         XCTAssertEqual(defaultStyle.contextSourcePolicy?.includeClipboard, true)
         XCTAssertEqual(defaultStyle.contextSourcePolicy?.includeWindowOCR, false)
@@ -274,7 +273,6 @@ final class AppSettingsDictationStylesTests: XCTestCase {
 
         let policy = try JSONDecoder().decode(DictationContextSourcePolicy.self, from: json)
 
-        XCTAssertEqual(policy.isEnabled, false)
         XCTAssertEqual(policy.hasEnabledContextSources, false)
         XCTAssertEqual(policy.includeClipboard, false)
         XCTAssertEqual(policy.includeWindowOCR, false)
@@ -290,7 +288,6 @@ final class AppSettingsDictationStylesTests: XCTestCase {
             redactSensitiveData: true,
         )
 
-        XCTAssertEqual(policy.isEnabled, false)
         XCTAssertEqual(policy.hasEnabledContextSources, false)
     }
 

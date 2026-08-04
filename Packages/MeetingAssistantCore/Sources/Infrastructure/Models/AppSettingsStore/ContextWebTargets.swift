@@ -124,10 +124,9 @@ extension AppSettingsStore {
             outputLanguage: .original,
             targets: [],
             contextSourcePolicy: DictationContextSourcePolicy(
-                isEnabled: contextAwarenessEnabled,
-                includeClipboard: includeClipboard,
-                includeWindowOCR: includeWindowOCR,
-                includeAccessibilityText: includeAccessibilityText,
+                includeClipboard: contextAwarenessEnabled && includeClipboard,
+                includeWindowOCR: contextAwarenessEnabled && includeWindowOCR,
+                includeAccessibilityText: contextAwarenessEnabled && includeAccessibilityText,
                 redactSensitiveData: redactSensitiveData,
             ),
             enhancementsSelection: dictationSelection,

@@ -16,27 +16,8 @@ public struct DictationContextSourcePolicy: Codable, Hashable, Sendable {
         case redactSensitiveData
     }
 
-    public var isEnabled: Bool {
-        hasEnabledContextSources
-    }
-
     public var hasEnabledContextSources: Bool {
         includeClipboard || includeWindowOCR || includeAccessibilityText || includeSelectedTextAtStart
-    }
-
-    public init(
-        isEnabled: Bool,
-        includeClipboard: Bool,
-        includeWindowOCR: Bool,
-        includeAccessibilityText: Bool,
-        includeSelectedTextAtStart: Bool = false,
-        redactSensitiveData: Bool,
-    ) {
-        self.includeClipboard = isEnabled && includeClipboard
-        self.includeWindowOCR = isEnabled && includeWindowOCR
-        self.includeAccessibilityText = isEnabled && includeAccessibilityText
-        self.includeSelectedTextAtStart = isEnabled && includeSelectedTextAtStart
-        self.redactSensitiveData = redactSensitiveData
     }
 
     public init(
