@@ -9,7 +9,7 @@ When uncertain which skill to use, apply this priority order:
 1. **Global `agent-ops`** — orchestration and custom-agent profile selection
 2. **`delivery-workflow`** — Prisma risk lane, validation, Git, and delivery evidence
 3. **`macos-app-engineering`** — canonical macOS UI/app implementation guidance (includes SwiftUI review appendix)
-4. **`apple-design` / `accessibility-audit` / `localization` / `menubar`** — specialist UI escalation when their scope is primary
+4. **`apple-design` / `accessibility-audit` / `localization`** — specialist UI escalation when their scope is primary
 5. **`swift-concurrency-expert`** — Swift 6.2 concurrency remediation
 6. **`debugging-diagnostics`** — cross-cutting investigation and diagnostic signal design when the failing subsystem is not yet proven
 
@@ -70,7 +70,7 @@ When inspecting code outside this repository, use this source order:
 - Apply Settings/design-system patterns
 - Add or update previews
 
-**Then (if needed):** `apple-design`, `accessibility-audit`, `localization`, `menubar`, `debugging-diagnostics`, `swift-conventions`, or `swift-concurrency-expert`
+**Then (if needed):** `apple-design`, `accessibility-audit`, `localization`, `debugging-diagnostics`, `swift-conventions`, or `swift-concurrency-expert`
 
 For a SwiftUI modern-API / maintainability **review** pass, stay on
 `macos-app-engineering` and open
@@ -205,14 +205,12 @@ Use `thermo-nuclear-code-quality-review` for review output, semaforo severity, a
 
 ### Menu Bar and macOS Native UI
 
-**Primary:** `menubar`
+**Primary:** `macos-app-engineering`
 - NSStatusItem configuration
 - NSMenu and NSPopover behavior
 - Non-activating overlays
 
-**Complementary:** `macos-app-engineering`
-
-**Example:** "Implement menu-bar popover for recording controls" → `menubar`
+**Example:** "Implement menu-bar popover for recording controls" → `macos-app-engineering`
 
 ---
 

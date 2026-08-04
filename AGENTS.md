@@ -57,7 +57,6 @@ rules.
 | `code-quality` | `.agents/overlays/code-quality.md` |
 | `delivery-workflow` | `.agents/overlays/delivery-workflow.md` |
 | `macos-app-engineering` | `.agents/overlays/macos-app-engineering.md` |
-| `menubar` | `.agents/overlays/menubar.md` |
 | `swift-conventions` | `.agents/overlays/swift-conventions.md` |
 
 Clients without deterministic overlay composition must still read the overlay
