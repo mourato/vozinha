@@ -32,13 +32,13 @@ SOURCES=(
 
 # Step 1: Run SwiftFormat (handles most formatting issues)
 echo "1️⃣  Running SwiftFormat..."
-swiftformat "${SOURCES[@]}" --config .swiftformat
+swiftformat "${SOURCES[@]}" --base-config .swiftformat
 echo "   ✅ SwiftFormat complete"
 echo ""
 
 # Step 2: Run SwiftLint autocorrect
 echo "2️⃣  Running SwiftLint autocorrect..."
-swiftlint lint --config .swiftlint.yml --fix "${SOURCES[@]}" 2>/dev/null || true
+swiftlint lint --config .swiftlint.yml --fix "${SOURCES[@]}"
 echo "   ✅ SwiftLint autocorrect complete"
 echo ""
 

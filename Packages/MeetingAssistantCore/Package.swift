@@ -14,11 +14,11 @@ let package = Package(
         .library(
             name: "MeetingAssistantCoreUI",
             type: .dynamic,
-            targets: ["MeetingAssistantCoreUI"]
+            targets: ["MeetingAssistantCoreUI"],
         ),
         .library(
             name: "MeetingAssistantCore",
-            targets: ["MeetingAssistantCore"]
+            targets: ["MeetingAssistantCore"],
         ),
     ],
     dependencies: [
@@ -35,7 +35,7 @@ let package = Package(
             path: "Sources/Common",
             resources: [
                 .process("Resources"),
-            ]
+            ],
         ),
         .target(
             name: "MeetingAssistantCoreDomain",
@@ -43,7 +43,7 @@ let package = Package(
                 "MeetingAssistantCoreCommon",
                 "MeetingAssistantCoreMocking",
             ],
-            path: "Sources/Domain"
+            path: "Sources/Domain",
         ),
         .target(
             name: "MeetingAssistantCoreData",
@@ -52,7 +52,7 @@ let package = Package(
                 "MeetingAssistantCoreDomain",
                 "MeetingAssistantCoreInfrastructure",
             ],
-            path: "Sources/Data"
+            path: "Sources/Data",
         ),
         .target(
             name: "MeetingAssistantCoreInfrastructure",
@@ -62,7 +62,7 @@ let package = Package(
                 .product(name: "KeyboardShortcuts", package: "KeyboardShortcuts"),
                 .product(name: "Sparkle", package: "Sparkle"),
             ],
-            path: "Sources/Infrastructure"
+            path: "Sources/Infrastructure",
         ),
         .target(
             name: "MeetingAssistantCoreAudio",
@@ -73,7 +73,7 @@ let package = Package(
                 "MeetingAssistantCoreInfrastructure",
                 .product(name: "Atomics", package: "swift-atomics"),
             ],
-            path: "Sources/Audio"
+            path: "Sources/Audio",
         ),
         .target(
             name: "MeetingAssistantCoreAI",
@@ -84,7 +84,7 @@ let package = Package(
                 "MeetingAssistantCoreInfrastructure",
                 .product(name: "FluidAudio", package: "FluidAudio"),
             ],
-            path: "Sources/AI"
+            path: "Sources/AI",
         ),
         .target(
             name: "MeetingAssistantCoreUI",
@@ -101,7 +101,7 @@ let package = Package(
             path: "Sources/UI",
             resources: [
                 .process("Resources"),
-            ]
+            ],
         ),
         .target(
             name: "MeetingAssistantCore",
@@ -114,14 +114,14 @@ let package = Package(
                 "MeetingAssistantCoreInfrastructure",
                 "MeetingAssistantCoreUI",
             ],
-            path: "Sources/Core"
+            path: "Sources/Core",
         ),
         .target(
             name: "MeetingAssistantCoreMocking",
             dependencies: [
                 "MeetingAssistantCoreMockingMacros",
             ],
-            path: "Sources/Mocking"
+            path: "Sources/Mocking",
         ),
         .macro(
             name: "MeetingAssistantCoreMockingMacros",
@@ -131,7 +131,7 @@ let package = Package(
                 .product(name: "SwiftSyntaxBuilder", package: "swift-syntax"),
                 .product(name: "SwiftSyntaxMacros", package: "swift-syntax"),
             ],
-            path: "Sources/MockingMacros"
+            path: "Sources/MockingMacros",
         ),
         .testTarget(
             name: "MeetingAssistantCoreTests",
@@ -145,8 +145,8 @@ let package = Package(
             path: "Tests/MeetingAssistantCoreTests",
             resources: [
                 .process("Resources"),
-            ]
+            ],
         ),
     ],
-    swiftLanguageModes: [.v6]
+    swiftLanguageModes: [.v6],
 )

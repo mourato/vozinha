@@ -5,7 +5,7 @@
 # with CI/CD pipelines and headless environments.
 # =============================================================================
 
-.PHONY: help build build-debug build-release build-agent build-test build-test-strict xcodebuild-safe test test-agent test-full test-full-agent test-smoke test-perf test-sensitive test-appkit test-parity test-parity-agent test-swift test-verbose test-strict test-ci-strict scope-check scope-check-agent validate-agent workflow-test benchmark-summary benchmark-summary-agent lint lint-agent lint-strict lint-strict-agent lint-fix arch-check preview-check localization-check guidance-check preflight preflight-fast preflight-agent preflight-agent-fast agent-artifacts-report agent-artifacts-dry-run agent-artifacts-clean clean run run-release build-and-run install-release dmg setup-self-signed-cert setup format health ci-build ci-test ci-release-parity ci-release-parity-self-signed deliverable-gate docs docs-preview docs-clean profile profile-report profile-cpu profile-memory profile-animation profile-animation-report
+.PHONY: help build build-debug build-release build-agent build-test build-test-strict xcodebuild-safe test test-agent test-full test-full-agent test-smoke test-perf test-sensitive test-appkit test-parity test-parity-agent test-swift test-verbose test-strict test-ci-strict scope-check scope-check-agent validate-agent workflow-test benchmark-summary benchmark-summary-agent lint lint-agent lint-report lint-strict lint-strict-agent lint-fix arch-check preview-check localization-check guidance-check preflight preflight-fast preflight-agent preflight-agent-fast agent-artifacts-report agent-artifacts-dry-run agent-artifacts-clean clean run run-release build-and-run install-release dmg setup-self-signed-cert setup format health ci-build ci-test ci-release-parity ci-release-parity-self-signed deliverable-gate docs docs-preview docs-clean profile profile-report profile-cpu profile-memory profile-animation profile-animation-report
 
 # Default target
 help:
@@ -44,8 +44,9 @@ help:
 	@echo "  make benchmark-summary-agent - Run summary benchmark in compact mode"
 	@echo ""
 	@echo "Code Quality:"
-	@echo "  make lint           - Run linting checks (use FIX=1 to auto-fix first)"
-	@echo "  make lint-agent     - Run lint with compact machine-readable output"
+	@echo "  make lint           - Run fail-closed linting checks (use FIX=1 to auto-fix first)"
+	@echo "  make lint-agent     - Run fail-closed lint with compact machine-readable output"
+	@echo "  make lint-report    - Run report-only lint for existing warnings"
 	@echo "  make lint-strict    - Run lint with strict error handling"
 	@echo "  make lint-strict-agent - Run strict lint with compact output"
 	@echo "  make lint-fix       - Auto-fix linting issues"
@@ -206,19 +207,22 @@ lint:
 	@echo -e "$(BLUE)Running SwiftLint...$(NC)"
 	@if [ "$(FIX)" = "1" ] || [ "$(FIX)" = "true" ] || [ "$(FIX)" = "yes" ]; then \
 		echo -e "$(YELLOW)Autofix enabled (SwiftFormat + SwiftLint --fix)$(NC)"; \
-		./scripts/lint-fix.sh && ./scripts/lint.sh; \
+		./scripts/lint-fix.sh && ./scripts/lint.sh $(if $(FILES),--files "$(FILES)"); \
 	else \
-		./scripts/lint.sh; \
+		./scripts/lint.sh $(if $(FILES),--files "$(FILES)"); \
 	fi
 
 lint-agent:
-	@MA_AGENT_MODE=1 MA_AGENT_LOG_DIR="$(AGENT_LOG_DIR)" ./scripts/lint.sh --agent
+	@MA_AGENT_MODE=1 MA_AGENT_LOG_DIR="$(AGENT_LOG_DIR)" ./scripts/lint.sh --agent $(if $(FILES),--files "$(FILES)")
+
+lint-report:
+	@STRICT_LINT=0 ./scripts/lint.sh $(if $(FILES),--files "$(FILES)")
 
 lint-strict:
-	@STRICT_LINT=1 ./scripts/lint.sh
+	@$(MAKE) lint
 
 lint-strict-agent:
-	@STRICT_LINT=1 MA_AGENT_MODE=1 MA_AGENT_LOG_DIR="$(AGENT_LOG_DIR)" ./scripts/lint.sh --agent
+	@$(MAKE) lint-agent
 
 lint-fix:
 	@echo -e "$(BLUE)Auto-fixing lint issues...$(NC)"
@@ -262,7 +266,7 @@ format:
 		echo "❌ SwiftFormat not installed. Install with: brew install swiftformat"; \
 		exit 1; \
 	fi
-	@swiftformat --config .swiftformat App Packages/MeetingAssistantCore/Sources
+	@swiftformat --base-config .swiftformat App Packages
 	@echo -e "$(GREEN)✓ Code formatted$(NC)"
 
 health:
