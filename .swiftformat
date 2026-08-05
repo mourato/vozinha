@@ -8,7 +8,7 @@
 
 # RECOMMENDED: Do NOT exclude Tests folder manually; allow formatter to keep tests clean
 
---exclude .build,DerivedData,.swiftpm,dist,**/GeneratedMocks.swift,**/Generated/**
+--exclude .build,DerivedData,.swiftpm,dist,build,**/build/**,**/GeneratedMocks.swift,**/Generated/**
 
 # MARK: - Disabled Rules (Aligned with SwiftLint)
 

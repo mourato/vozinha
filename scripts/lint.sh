@@ -69,7 +69,11 @@ if ! command -v swiftlint >/dev/null 2>&1; then
     MISSING_TOOLS=1
     LINT_EXIT=127
 else
-    swiftlint lint --config .swiftlint.yml "${SOURCES[@]}" >"${LINT_LOG}" 2>&1 || LINT_EXIT=$?
+    SWIFTLINT_ARGS=(lint --config .swiftlint.yml)
+    if [ "${STRICT_LINT}" -eq 1 ]; then
+        SWIFTLINT_ARGS+=(--strict --baseline .swiftlint-baseline.json)
+    fi
+    swiftlint "${SWIFTLINT_ARGS[@]}" "${SOURCES[@]}" >"${LINT_LOG}" 2>&1 || LINT_EXIT=$?
 fi
 
 if ! command -v swiftformat >/dev/null 2>&1; then

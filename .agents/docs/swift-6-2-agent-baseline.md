@@ -27,12 +27,13 @@ generated/build exclusions. SwiftFormat 0.62.1 must receive this file through
 and package roots.
 
 `make lint` and `make lint-agent` are fail-closed: formatter, linter, and tool
-failures return non-zero. `make lint-report` is the explicitly named report-only
-loop for the pre-existing warning baseline. The baseline at Plan 120 contains
-284 SwiftLint warnings, primarily structural budgets, number separators, and
-complexity; these are reported but do not change product behavior. New source
-rewrites must be justified by a compiler, concurrency, lint, or formatter
-diagnostic rather than by speculative cleanup.
+failures return non-zero. Strict SwiftLint uses the tracked
+`.swiftlint-baseline.json` to allow only the existing violations; new warnings
+return non-zero. `make lint-report` is the explicitly named report-only loop
+that shows the pre-existing 284 diagnostic warnings, primarily structural
+budgets, number separators, and complexity. New source rewrites must be
+justified by a compiler, concurrency, lint, or formatter diagnostic rather than
+by speculative cleanup.
 
 Changed-file iteration is available without a second workflow:
 

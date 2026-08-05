@@ -160,7 +160,7 @@ echo "5️⃣  Verifying SwiftLint..."
 LINT_FAILED=0
 for file in "${STAGED_FILES[@]}"; do
     if [ -f "$file" ]; then
-        if ! "${SWIFTLINT}" lint --config .swiftlint.yml --quiet "$file" 2>/dev/null; then
+        if ! "${SWIFTLINT}" lint --config .swiftlint.yml --strict --baseline .swiftlint-baseline.json --quiet "$file" 2>/dev/null; then
             LINT_FAILED=1
         fi
     fi

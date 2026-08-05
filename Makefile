@@ -219,10 +219,10 @@ lint-report:
 	@STRICT_LINT=0 ./scripts/lint.sh $(if $(FILES),--files "$(FILES)")
 
 lint-strict:
-	@$(MAKE) lint
+	@$(MAKE) STRICT_LINT=1 lint
 
 lint-strict-agent:
-	@$(MAKE) lint-agent
+	@$(MAKE) STRICT_LINT=1 lint-agent
 
 lint-fix:
 	@echo -e "$(BLUE)Auto-fixing lint issues...$(NC)"

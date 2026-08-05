@@ -98,8 +98,9 @@ Full when the lane requires it). Commit (pre-commit applies staged
 format/lint-fix). Pre-push does not run build or test validation — that
 evidence is owned by the development stage. Guidance-only ranges use
 `make guidance-check`. Do not stack manual working-tree, staged, and committed
-gates; `make lint-report` is report-only for the existing warning baseline;
-required review remains separate. The Swift 6.2/toolchain policy is in
+gates. Strict lint uses the tracked SwiftLint baseline to fail only on new
+violations; `make lint-report` remains the report-only view of existing
+warnings. Required review remains separate. The Swift 6.2/toolchain policy is in
 `.agents/docs/swift-6-2-agent-baseline.md`. Details live in `delivery-workflow`.
 
 ## Commands and Routing

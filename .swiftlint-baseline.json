@@ -1,0 +1,2132 @@
+[
+  {
+    "violation": {
+      "severity": "warning",
+      "ruleIdentifier": "function_body_length",
+      "ruleDescription": "Function bodies should not span too many lines",
+      "ruleName": "Function Body Length",
+      "location": {
+        "line": 338,
+        "file": "App/AppDelegate/AppDelegateLifecycle.swift",
+        "character": 13
+      },
+      "reason": "Function body should span 60 lines or less excluding comments and whitespace: currently spans 71 lines"
+    },
+    "text": "    private func refreshRecordingUIState() {"
+  },
+  {
+    "violation": {
+      "ruleName": "Function Body Length",
+      "severity": "warning",
+      "location": {
+        "character": 5,
+        "file": "App/AppDelegate/RecordingUI.swift",
+        "line": 43
+      },
+      "reason": "Function body should span 60 lines or less excluding comments and whitespace: currently spans 71 lines",
+      "ruleIdentifier": "function_body_length",
+      "ruleDescription": "Function bodies should not span too many lines"
+    },
+    "text": "    func updateFloatingIndicator("
+  },
+  {
+    "violation": {
+      "ruleIdentifier": "function_parameter_count",
+      "ruleDescription": "Number of function parameters should be low.",
+      "severity": "warning",
+      "location": {
+        "character": 5,
+        "line": 43,
+        "file": "App/AppDelegate/RecordingUI.swift"
+      },
+      "reason": "Function should have 5 parameters or less: it currently has 7",
+      "ruleName": "Function Parameter Count"
+    },
+    "text": "    func updateFloatingIndicator("
+  },
+  {
+    "violation": {
+      "location": {
+        "line": 7,
+        "file": "App/GlobalShortcutController.swift",
+        "character": 7
+      },
+      "severity": "warning",
+      "ruleDescription": "Type bodies should not span too many lines",
+      "ruleName": "Type Body Length",
+      "ruleIdentifier": "type_body_length",
+      "reason": "Class body should span 400 lines or less excluding comments and whitespace: currently spans 547 lines"
+    },
+    "text": "final class GlobalShortcutController {"
+  },
+  {
+    "violation": {
+      "ruleName": "Cyclomatic Complexity",
+      "reason": "Function should have complexity 15 or less; currently complexity is 17",
+      "ruleIdentifier": "cyclomatic_complexity",
+      "severity": "warning",
+      "ruleDescription": "Complexity of function bodies should be limited.",
+      "location": {
+        "line": 105,
+        "file": "App/ShortcutActivationState.swift",
+        "character": 13
+      }
+    },
+    "text": "    private func updateTrackedModifierState("
+  },
+  {
+    "violation": {
+      "ruleName": "Function Parameter Count",
+      "reason": "Function should have 5 parameters or less: it currently has 7",
+      "ruleDescription": "Number of function parameters should be low.",
+      "ruleIdentifier": "function_parameter_count",
+      "severity": "warning",
+      "location": {
+        "character": 13,
+        "file": "App/ShortcutActivationState.swift",
+        "line": 231
+      }
+    },
+    "text": "    private func matchesModifierFamily("
+  },
+  {
+    "violation": {
+      "reason": "Function should have 5 parameters or less: it currently has 6",
+      "ruleIdentifier": "function_parameter_count",
+      "location": {
+        "file": "App/ShortcutActivationState.swift",
+        "line": 421,
+        "character": 20
+      },
+      "ruleDescription": "Number of function parameters should be low.",
+      "severity": "warning",
+      "ruleName": "Function Parameter Count"
+    },
+    "text": "    private static func computeDegradationReasons("
+  },
+  {
+    "violation": {
+      "location": {
+        "line": 9,
+        "character": 1,
+        "file": "Packages/MeetingAssistantCore/Sources/AI/Services/CohereTranscribeModelRuntime.swift"
+      },
+      "ruleDescription": "Type bodies should not span too many lines",
+      "reason": "Enum body should span 400 lines or less excluding comments and whitespace: currently spans 534 lines",
+      "ruleIdentifier": "type_body_length",
+      "ruleName": "Type Body Length",
+      "severity": "warning"
+    },
+    "text": "enum CohereTranscribeModelRuntime {"
+  },
+  {
+    "violation": {
+      "severity": "warning",
+      "location": {
+        "line": 186,
+        "character": 12,
+        "file": "Packages/MeetingAssistantCore/Sources/AI/Services/CohereTranscribeModelRuntime.swift"
+      },
+      "ruleName": "Function Body Length",
+      "reason": "Function body should span 60 lines or less excluding comments and whitespace: currently spans 62 lines",
+      "ruleDescription": "Function bodies should not span too many lines",
+      "ruleIdentifier": "function_body_length"
+    },
+    "text": "    static func load(from directory: URL, configuration: MLModelConfiguration? = nil) throws -> AsrModels {"
+  },
+  {
+    "violation": {
+      "severity": "warning",
+      "location": {
+        "file": "Packages/MeetingAssistantCore/Sources/AI/Services/MeetingQAService.swift",
+        "character": 13,
+        "line": 206
+      },
+      "reason": "Function body should span 60 lines or less excluding comments and whitespace: currently spans 63 lines",
+      "ruleIdentifier": "function_body_length",
+      "ruleDescription": "Function bodies should not span too many lines",
+      "ruleName": "Function Body Length"
+    },
+    "text": "    private func buildPrompts(question: String, transcription: Transcription) -> (String, String) {"
+  },
+  {
+    "violation": {
+      "ruleIdentifier": "function_parameter_count",
+      "reason": "Function should have 5 parameters or less: it currently has 8",
+      "ruleName": "Function Parameter Count",
+      "ruleDescription": "Number of function parameters should be low.",
+      "severity": "warning",
+      "location": {
+        "line": 35,
+        "character": 5,
+        "file": "Packages/MeetingAssistantCore/Sources/AI/Services/PostProcessingService/Pipelines.swift"
+      }
+    },
+    "text": "    func sendToAI("
+  },
+  {
+    "violation": {
+      "ruleName": "Function Parameter Count",
+      "severity": "warning",
+      "ruleIdentifier": "function_parameter_count",
+      "location": {
+        "character": 5,
+        "file": "Packages/MeetingAssistantCore/Sources/AI/Services/PostProcessingService/Pipelines.swift",
+        "line": 81
+      },
+      "ruleDescription": "Number of function parameters should be low.",
+      "reason": "Function should have 5 parameters or less: it currently has 8"
+    },
+    "text": "    func sendToAIStructured("
+  },
+  {
+    "violation": {
+      "ruleDescription": "Type bodies should not span too many lines",
+      "ruleName": "Type Body Length",
+      "severity": "warning",
+      "reason": "Class body should span 400 lines or less excluding comments and whitespace: currently spans 549 lines",
+      "location": {
+        "file": "Packages/MeetingAssistantCore/Sources/AI/Services/TranscriptionClient.swift",
+        "character": 8,
+        "line": 13
+      },
+      "ruleIdentifier": "type_body_length"
+    },
+    "text": "public class TranscriptionClient: ObservableObject, TranscriptionService, TranscriptionServiceConfigurationAware, TranscriptionServiceDiarizationOverride, TranscriptionServicePurposeAware, TranscriptionServicePurposeDiarized, TranscriptionServiceFinalDiarization {"
+  },
+  {
+    "violation": {
+      "location": {
+        "character": 12,
+        "file": "Packages/MeetingAssistantCore/Sources/AI/Services/TranscriptionClient.swift",
+        "line": 223
+      },
+      "severity": "warning",
+      "ruleName": "Function Parameter Count",
+      "ruleIdentifier": "function_parameter_count",
+      "reason": "Function should have 5 parameters or less: it currently has 7",
+      "ruleDescription": "Number of function parameters should be low."
+    },
+    "text": "    public func transcribe("
+  },
+  {
+    "violation": {
+      "severity": "warning",
+      "location": {
+        "file": "Packages/MeetingAssistantCore/Sources/AI/Services/TranscriptionClient.swift",
+        "line": 294,
+        "character": 13
+      },
+      "ruleName": "Function Parameter Count",
+      "ruleDescription": "Number of function parameters should be low.",
+      "reason": "Function should have 5 parameters or less: it currently has 7",
+      "ruleIdentifier": "function_parameter_count"
+    },
+    "text": "    private func transcribeConfigured("
+  },
+  {
+    "violation": {
+      "ruleName": "Type Body Length",
+      "location": {
+        "character": 8,
+        "file": "Packages/MeetingAssistantCore/Sources/Audio/Services/AudioRecorder/AudioRecorder.swift",
+        "line": 17
+      },
+      "reason": "Class body should span 400 lines or less excluding comments and whitespace: currently spans 402 lines",
+      "ruleDescription": "Type bodies should not span too many lines",
+      "ruleIdentifier": "type_body_length",
+      "severity": "warning"
+    },
+    "text": "public class AudioRecorder: ObservableObject, AudioRecordingService {"
+  },
+  {
+    "violation": {
+      "ruleIdentifier": "function_body_length",
+      "reason": "Function body should span 60 lines or less excluding comments and whitespace: currently spans 62 lines",
+      "severity": "warning",
+      "location": {
+        "line": 39,
+        "character": 5,
+        "file": "Packages/MeetingAssistantCore/Sources/Audio/Services/AudioRecorder/AudioRecorderDeviceRecovery.swift"
+      },
+      "ruleDescription": "Function bodies should not span too many lines",
+      "ruleName": "Function Body Length"
+    },
+    "text": "    func recoverInputDevice(after devices: [AudioInputDevice]) async {"
+  },
+  {
+    "violation": {
+      "severity": "warning",
+      "location": {
+        "file": "Packages/MeetingAssistantCore/Sources/Audio/Services/AudioRecorder/EngineSetup.swift",
+        "character": 5,
+        "line": 89
+      },
+      "ruleIdentifier": "function_body_length",
+      "reason": "Function body should span 60 lines or less excluding comments and whitespace: currently spans 63 lines",
+      "ruleDescription": "Function bodies should not span too many lines",
+      "ruleName": "Function Body Length"
+    },
+    "text": "    func setupGraphAndStart("
+  },
+  {
+    "violation": {
+      "ruleDescription": "Function bodies should not span too many lines",
+      "ruleIdentifier": "function_body_length",
+      "ruleName": "Function Body Length",
+      "severity": "warning",
+      "location": {
+        "line": 320,
+        "character": 13,
+        "file": "Packages/MeetingAssistantCore/Sources/Audio/Services/AudioRecorder/EngineSetup.swift"
+      },
+      "reason": "Function body should span 60 lines or less excluding comments and whitespace: currently spans 67 lines"
+    },
+    "text": "    private func dumpAudioDiagnostics(engine: AVAudioEngine, source: RecordingSource) {"
+  },
+  {
+    "violation": {
+      "location": {
+        "line": 168,
+        "character": 20,
+        "file": "Packages/MeetingAssistantCore/Sources/Audio/Services/AudioSilenceCompactor.swift"
+      },
+      "reason": "Function body should span 60 lines or less excluding comments and whitespace: currently spans 86 lines",
+      "ruleIdentifier": "function_body_length",
+      "ruleDescription": "Function bodies should not span too many lines",
+      "ruleName": "Function Body Length",
+      "severity": "warning"
+    },
+    "text": "    private static func analyzeWindows("
+  },
+  {
+    "violation": {
+      "ruleIdentifier": "type_body_length",
+      "location": {
+        "line": 6,
+        "character": 14,
+        "file": "Packages/MeetingAssistantCore/Sources/Audio/Services/SystemAudioMuteController.swift"
+      },
+      "ruleDescription": "Type bodies should not span too many lines",
+      "reason": "Class body should span 400 lines or less excluding comments and whitespace: currently spans 433 lines",
+      "ruleName": "Type Body Length",
+      "severity": "warning"
+    },
+    "text": "public final class SystemAudioMuteController: Sendable {"
+  },
+  {
+    "violation": {
+      "ruleDescription": "Tuples shouldn't have too many members. Create a custom type instead.",
+      "severity": "warning",
+      "reason": "Tuples should have at most 2 members",
+      "ruleIdentifier": "large_tuple",
+      "location": {
+        "line": 50,
+        "file": "Packages/MeetingAssistantCore/Sources/Common/AppVersion.swift",
+        "character": 35
+      },
+      "ruleName": "Large Tuple"
+    },
+    "text": "    public static var components: (major: Int, minor: Int, patch: Int)? {"
+  },
+  {
+    "violation": {
+      "location": {
+        "line": 52,
+        "file": "Packages/MeetingAssistantCore/Sources/Common/Utilities/ShortcutCaptureHealthStore.swift",
+        "character": 19
+      },
+      "ruleDescription": "Number of function parameters should be low.",
+      "reason": "Function should have 5 parameters or less: it currently has 7",
+      "severity": "warning",
+      "ruleName": "Function Parameter Count",
+      "ruleIdentifier": "function_parameter_count"
+    },
+    "text": "    public static func updateHealth("
+  },
+  {
+    "text": "public enum CoreDataModel {",
+    "violation": {
+      "ruleName": "Type Body Length",
+      "location": {
+        "file": "Packages/MeetingAssistantCore/Sources/Data/Data/CoreData/CoreDataModel.swift",
+        "character": 8,
+        "line": 10
+      },
+      "ruleDescription": "Type bodies should not span too many lines",
+      "ruleIdentifier": "type_body_length",
+      "severity": "warning",
+      "reason": "Enum body should span 400 lines or less excluding comments and whitespace: currently spans 423 lines"
+    }
+  },
+  {
+    "text": "public protocol TranscriptionRepositoryDiarizationOverride: Sendable {",
+    "violation": {
+      "location": {
+        "file": "Packages/MeetingAssistantCore/Sources/Domain/Domain/Interfaces/DomainProtocols.swift",
+        "line": 81,
+        "character": 17
+      },
+      "ruleName": "Type Name",
+      "severity": "warning",
+      "reason": "Type name 'TranscriptionRepositoryDiarizationOverride' should be between 3 and 40 characters long",
+      "ruleDescription": "Type name should only contain alphanumeric characters, start with an uppercase character and span between 3 and 40 characters in length.\nPrivate types may start with an underscore.",
+      "ruleIdentifier": "type_name"
+    }
+  },
+  {
+    "text": "public protocol TranscriptionRepositoryConfigurationAware: Sendable {",
+    "violation": {
+      "ruleIdentifier": "type_name",
+      "ruleDescription": "Type name should only contain alphanumeric characters, start with an uppercase character and span between 3 and 40 characters in length.\nPrivate types may start with an underscore.",
+      "severity": "warning",
+      "ruleName": "Type Name",
+      "location": {
+        "file": "Packages/MeetingAssistantCore/Sources/Domain/Domain/Interfaces/DomainProtocols.swift",
+        "line": 126,
+        "character": 17
+      },
+      "reason": "Type name 'TranscriptionRepositoryConfigurationAware' should be between 3 and 40 characters long"
+    }
+  },
+  {
+    "text": "    func performPostProcessing(",
+    "violation": {
+      "reason": "Function body should span 60 lines or less excluding comments and whitespace: currently spans 67 lines",
+      "location": {
+        "file": "Packages/MeetingAssistantCore/Sources/Domain/Domain/UseCases/TranscribeAudioUseCase/PostProcessing.swift",
+        "character": 5,
+        "line": 81
+      },
+      "severity": "warning",
+      "ruleDescription": "Function bodies should not span too many lines",
+      "ruleName": "Function Body Length",
+      "ruleIdentifier": "function_body_length"
+    }
+  },
+  {
+    "text": "    private func buildRequestPrompts(",
+    "violation": {
+      "reason": "Function should have 5 parameters or less: it currently has 6",
+      "ruleName": "Function Parameter Count",
+      "location": {
+        "character": 13,
+        "file": "Packages/MeetingAssistantCore/Sources/Domain/Domain/UseCases/TranscribeAudioUseCase/PostProcessing.swift",
+        "line": 451
+      },
+      "ruleIdentifier": "function_parameter_count",
+      "ruleDescription": "Number of function parameters should be low.",
+      "severity": "warning"
+    }
+  },
+  {
+    "text": "public final class TranscribeAudioUseCase: Sendable {",
+    "violation": {
+      "ruleDescription": "Type bodies should not span too many lines",
+      "reason": "Class body should span 400 lines or less excluding comments and whitespace: currently spans 474 lines",
+      "ruleName": "Type Body Length",
+      "severity": "warning",
+      "ruleIdentifier": "type_body_length",
+      "location": {
+        "file": "Packages/MeetingAssistantCore/Sources/Domain/Domain/UseCases/TranscribeAudioUseCase/TranscribeAudioUseCase.swift",
+        "character": 14,
+        "line": 7
+      }
+    }
+  },
+  {
+    "text": "    public func execute(",
+    "violation": {
+      "ruleDescription": "Function bodies should not span too many lines",
+      "location": {
+        "file": "Packages/MeetingAssistantCore/Sources/Domain/Domain/UseCases/TranscribeAudioUseCase/TranscribeAudioUseCase.swift",
+        "line": 55,
+        "character": 12
+      },
+      "ruleIdentifier": "function_body_length",
+      "ruleName": "Function Body Length",
+      "severity": "warning",
+      "reason": "Function body should span 60 lines or less excluding comments and whitespace: currently spans 77 lines"
+    }
+  },
+  {
+    "text": "    public func finalizePreparedResponse(",
+    "violation": {
+      "severity": "warning",
+      "location": {
+        "line": 166,
+        "character": 12,
+        "file": "Packages/MeetingAssistantCore/Sources/Domain/Domain/UseCases/TranscribeAudioUseCase/TranscribeAudioUseCase.swift"
+      },
+      "reason": "Function body should span 60 lines or less excluding comments and whitespace: currently spans 98 lines",
+      "ruleIdentifier": "function_body_length",
+      "ruleName": "Function Body Length",
+      "ruleDescription": "Function bodies should not span too many lines"
+    }
+  },
+  {
+    "text": "    ) -> (String, [DomainTranscriptionSegment], TranscriptionQualityProfile) {",
+    "violation": {
+      "location": {
+        "character": 10,
+        "line": 308,
+        "file": "Packages/MeetingAssistantCore/Sources/Domain/Domain/UseCases/TranscribeAudioUseCase/TranscribeAudioUseCase.swift"
+      },
+      "reason": "Tuples should have at most 2 members",
+      "severity": "warning",
+      "ruleIdentifier": "large_tuple",
+      "ruleDescription": "Tuples shouldn't have too many members. Create a custom type instead.",
+      "ruleName": "Large Tuple"
+    }
+  },
+  {
+    "text": "    static func withBackfilledEnhancementsModel(",
+    "violation": {
+      "reason": "Function body should span 60 lines or less excluding comments and whitespace: currently spans 76 lines",
+      "ruleDescription": "Function bodies should not span too many lines",
+      "severity": "warning",
+      "location": {
+        "line": 690,
+        "character": 12,
+        "file": "Packages/MeetingAssistantCore/Sources/Infrastructure/Models/AppSettingsStore/AIModeSelection.swift"
+      },
+      "ruleName": "Function Body Length",
+      "ruleIdentifier": "function_body_length"
+    }
+  },
+  {
+    "text": "}",
+    "violation": {
+      "ruleName": "File Length",
+      "reason": "File should contain 600 lines or less excluding comments and whitespaces: currently contains 686",
+      "ruleDescription": "Files should not span too many lines.",
+      "ruleIdentifier": "file_length",
+      "location": {
+        "file": "Packages/MeetingAssistantCore/Sources/Infrastructure/Models/AppSettingsStore/AIModeSelection.swift",
+        "line": 804,
+        "character": 1
+      },
+      "severity": "warning"
+    }
+  },
+  {
+    "text": "}",
+    "violation": {
+      "ruleDescription": "Files should not span too many lines.",
+      "location": {
+        "file": "Packages/MeetingAssistantCore/Sources/Infrastructure/Models/AppSettingsStore/AppSettings.swift",
+        "line": 898,
+        "character": 1
+      },
+      "reason": "File should contain 600 lines or less excluding comments and whitespaces: currently contains 637",
+      "severity": "warning",
+      "ruleIdentifier": "file_length",
+      "ruleName": "File Length"
+    }
+  },
+  {
+    "text": "    func appendResolvedShortcutBinding(",
+    "violation": {
+      "ruleName": "Function Parameter Count",
+      "reason": "Function should have 5 parameters or less: it currently has 7",
+      "location": {
+        "file": "Packages/MeetingAssistantCore/Sources/Infrastructure/Models/AppSettingsStore/AssistantIntegrations.swift",
+        "character": 5,
+        "line": 245
+      },
+      "ruleIdentifier": "function_parameter_count",
+      "severity": "warning",
+      "ruleDescription": "Number of function parameters should be low."
+    }
+  },
+  {
+    "text": "    func synchronizeAssistantIntegrationsState() {",
+    "violation": {
+      "ruleName": "Function Body Length",
+      "location": {
+        "line": 275,
+        "character": 5,
+        "file": "Packages/MeetingAssistantCore/Sources/Infrastructure/Models/AppSettingsStore/AssistantIntegrations.swift"
+      },
+      "ruleIdentifier": "function_body_length",
+      "severity": "warning",
+      "ruleDescription": "Function bodies should not span too many lines",
+      "reason": "Function body should span 60 lines or less excluding comments and whitespace: currently spans 65 lines"
+    }
+  },
+  {
+    "text": "    static func defaultDictationStyle(",
+    "violation": {
+      "ruleDescription": "Number of function parameters should be low.",
+      "location": {
+        "file": "Packages/MeetingAssistantCore/Sources/Infrastructure/Models/AppSettingsStore/ContextWebTargets.swift",
+        "character": 12,
+        "line": 106
+      },
+      "ruleName": "Function Parameter Count",
+      "severity": "warning",
+      "reason": "Function should have 5 parameters or less: it currently has 6",
+      "ruleIdentifier": "function_parameter_count"
+    }
+  },
+  {
+    "text": "    func resetToDefaults() {",
+    "violation": {
+      "location": {
+        "file": "Packages/MeetingAssistantCore/Sources/Infrastructure/Models/AppSettingsStore/DefaultsReset.swift",
+        "character": 5,
+        "line": 7
+      },
+      "reason": "Function body should span 60 lines or less excluding comments and whitespace: currently spans 94 lines",
+      "ruleIdentifier": "function_body_length",
+      "ruleDescription": "Function bodies should not span too many lines",
+      "ruleName": "Function Body Length",
+      "severity": "warning"
+    }
+  },
+  {
+    "text": "    enum AutomaticMeetingRecordingConfirmationDelay: Int, CaseIterable, Codable, Sendable {",
+    "violation": {
+      "ruleIdentifier": "type_name",
+      "ruleName": "Type Name",
+      "severity": "warning",
+      "location": {
+        "line": 14,
+        "file": "Packages/MeetingAssistantCore/Sources/Infrastructure/Models/AppSettingsStore/GeneralSettings.swift",
+        "character": 10
+      },
+      "reason": "Type name 'AutomaticMeetingRecordingConfirmationDelay' should be between 3 and 40 characters long",
+      "ruleDescription": "Type name should only contain alphanumeric characters, start with an uppercase character and span between 3 and 40 characters in length.\nPrivate types may start with an underscore."
+    }
+  },
+  {
+    "text": "        let gestures: (",
+    "violation": {
+      "ruleDescription": "Tuples shouldn't have too many members. Create a custom type instead.",
+      "ruleIdentifier": "large_tuple",
+      "ruleName": "Large Tuple",
+      "reason": "Tuples should have at most 2 members",
+      "severity": "warning",
+      "location": {
+        "line": 29,
+        "file": "Packages/MeetingAssistantCore/Sources/Infrastructure/Models/AppSettingsStore/Initialization.swift",
+        "character": 23
+      }
+    }
+  },
+  {
+    "text": "    static func loadModifierShortcutGestures() -> (",
+    "violation": {
+      "location": {
+        "line": 424,
+        "file": "Packages/MeetingAssistantCore/Sources/Infrastructure/Models/AppSettingsStore/Initialization.swift",
+        "character": 51
+      },
+      "ruleDescription": "Tuples shouldn't have too many members. Create a custom type instead.",
+      "ruleIdentifier": "large_tuple",
+      "reason": "Tuples should have at most 2 members",
+      "ruleName": "Large Tuple",
+      "severity": "warning"
+    }
+  },
+  {
+    "text": "    ) -> (",
+    "violation": {
+      "ruleDescription": "Tuples shouldn't have too many members. Create a custom type instead.",
+      "ruleIdentifier": "large_tuple",
+      "ruleName": "Large Tuple",
+      "reason": "Tuples should have at most 2 members",
+      "location": {
+        "character": 10,
+        "file": "Packages/MeetingAssistantCore/Sources/Infrastructure/Models/AppSettingsStore/Initialization.swift",
+        "line": 682
+      },
+      "severity": "warning"
+    }
+  },
+  {
+    "text": "    func finalizeInitialization(context: InitializationContext) {",
+    "violation": {
+      "severity": "warning",
+      "reason": "Function body should span 60 lines or less excluding comments and whitespace: currently spans 74 lines",
+      "location": {
+        "file": "Packages/MeetingAssistantCore/Sources/Infrastructure/Models/AppSettingsStore/Initialization.swift",
+        "line": 730,
+        "character": 5
+      },
+      "ruleIdentifier": "function_body_length",
+      "ruleDescription": "Function bodies should not span too many lines",
+      "ruleName": "Function Body Length"
+    }
+  },
+  {
+    "text": "}",
+    "violation": {
+      "ruleDescription": "Files should not span too many lines.",
+      "ruleIdentifier": "file_length",
+      "severity": "warning",
+      "location": {
+        "character": 1,
+        "line": 840,
+        "file": "Packages/MeetingAssistantCore/Sources/Infrastructure/Models/AppSettingsStore/Initialization.swift"
+      },
+      "ruleName": "File Length",
+      "reason": "File should contain 600 lines or less excluding comments and whitespaces: currently contains 732"
+    }
+  },
+  {
+    "text": "    public func resolveContext(for purpose: CapturePurpose, activeContext: ActiveAppContext?) -> ResolvedCaptureContext {",
+    "violation": {
+      "ruleDescription": "Function bodies should not span too many lines",
+      "location": {
+        "line": 57,
+        "character": 12,
+        "file": "Packages/MeetingAssistantCore/Sources/Infrastructure/Services/CaptureContextResolver.swift"
+      },
+      "reason": "Function body should span 60 lines or less excluding comments and whitespace: currently spans 67 lines",
+      "ruleName": "Function Body Length",
+      "ruleIdentifier": "function_body_length",
+      "severity": "warning"
+    }
+  },
+  {
+    "text": "    private func detectWebMeeting(",
+    "violation": {
+      "ruleIdentifier": "function_body_length",
+      "ruleDescription": "Function bodies should not span too many lines",
+      "location": {
+        "character": 13,
+        "file": "Packages/MeetingAssistantCore/Sources/Infrastructure/Services/CaptureContextResolver.swift",
+        "line": 218
+      },
+      "severity": "warning",
+      "ruleName": "Function Body Length",
+      "reason": "Function body should span 60 lines or less excluding comments and whitespace: currently spans 78 lines"
+    }
+  },
+  {
+    "text": "public enum KeychainManager {",
+    "violation": {
+      "reason": "Enum body should span 400 lines or less excluding comments and whitespace: currently spans 582 lines",
+      "ruleName": "Type Body Length",
+      "severity": "warning",
+      "location": {
+        "line": 146,
+        "character": 8,
+        "file": "Packages/MeetingAssistantCore/Sources/Infrastructure/Services/KeychainManager.swift"
+      },
+      "ruleIdentifier": "type_body_length",
+      "ruleDescription": "Type bodies should not span too many lines"
+    }
+  },
+  {
+    "text": "}",
+    "violation": {
+      "ruleDescription": "Files should not span too many lines.",
+      "ruleName": "File Length",
+      "location": {
+        "file": "Packages/MeetingAssistantCore/Sources/Infrastructure/Services/KeychainManager.swift",
+        "character": 1,
+        "line": 913
+      },
+      "reason": "File should contain 600 lines or less excluding comments and whitespaces: currently contains 734",
+      "severity": "warning",
+      "ruleIdentifier": "file_length"
+    }
+  },
+  {
+    "text": "    private static func matchesModifierFamily(",
+    "violation": {
+      "ruleIdentifier": "function_parameter_count",
+      "ruleName": "Function Parameter Count",
+      "severity": "warning",
+      "location": {
+        "line": 469,
+        "file": "Packages/MeetingAssistantCore/Sources/Infrastructure/Services/ModifierShortcutConflictService.swift",
+        "character": 20
+      },
+      "ruleDescription": "Number of function parameters should be low.",
+      "reason": "Function should have 5 parameters or less: it currently has 7"
+    }
+  },
+  {
+    "text": "    func transcribe(",
+    "violation": {
+      "ruleDescription": "Number of function parameters should be low.",
+      "ruleIdentifier": "function_parameter_count",
+      "severity": "warning",
+      "ruleName": "Function Parameter Count",
+      "location": {
+        "file": "Packages/MeetingAssistantCore/Sources/Infrastructure/Services/Protocols.swift",
+        "line": 94,
+        "character": 5
+      },
+      "reason": "Function should have 5 parameters or less: it currently has 7"
+    }
+  },
+  {
+    "text": "    public static func evaluate(",
+    "violation": {
+      "location": {
+        "character": 19,
+        "file": "Packages/MeetingAssistantCore/Sources/Infrastructure/Services/SettingsWindowLayoutStateEvaluator.swift",
+        "line": 49
+      },
+      "reason": "Function should have 5 parameters or less: it currently has 6",
+      "ruleName": "Function Parameter Count",
+      "ruleIdentifier": "function_parameter_count",
+      "ruleDescription": "Number of function parameters should be low.",
+      "severity": "warning"
+    }
+  },
+  {
+    "text": "    public func routeMonitorEvent(",
+    "violation": {
+      "reason": "Function should have 5 parameters or less: it currently has 6",
+      "ruleIdentifier": "function_parameter_count",
+      "ruleDescription": "Number of function parameters should be low.",
+      "ruleName": "Function Parameter Count",
+      "severity": "warning",
+      "location": {
+        "line": 79,
+        "character": 12,
+        "file": "Packages/MeetingAssistantCore/Sources/Infrastructure/Services/ShortcutEventRoutingOrchestrator.swift"
+      }
+    }
+  },
+  {
+    "text": "    public static func expansion(",
+    "violation": {
+      "ruleIdentifier": "function_body_length",
+      "reason": "Function body should span 60 lines or less excluding comments and whitespace: currently spans 95 lines",
+      "ruleDescription": "Function bodies should not span too many lines",
+      "severity": "warning",
+      "location": {
+        "line": 7,
+        "character": 19,
+        "file": "Packages/MeetingAssistantCore/Sources/MockingMacros/GenerateMockMacro.swift"
+      },
+      "ruleName": "Function Body Length"
+    }
+  },
+  {
+    "text": "public final class FloatingRecordingIndicatorController: ObservableObject {",
+    "violation": {
+      "ruleIdentifier": "type_body_length",
+      "location": {
+        "file": "Packages/MeetingAssistantCore/Sources/UI/Presentation/FloatingRecordingIndicatorController.swift",
+        "character": 14,
+        "line": 23
+      },
+      "reason": "Class body should span 400 lines or less excluding comments and whitespace: currently spans 512 lines",
+      "ruleDescription": "Type bodies should not span too many lines",
+      "ruleName": "Type Body Length",
+      "severity": "warning"
+    }
+  },
+  {
+    "text": "    func executeDispatch(",
+    "violation": {
+      "ruleDescription": "Number of function parameters should be low.",
+      "location": {
+        "character": 5,
+        "file": "Packages/MeetingAssistantCore/Sources/UI/Services/AssistantVoiceCommand/AssistantDispatchPhase.swift",
+        "line": 44
+      },
+      "reason": "Function should have 5 parameters or less: it currently has 6",
+      "ruleName": "Function Parameter Count",
+      "ruleIdentifier": "function_parameter_count",
+      "severity": "warning"
+    }
+  },
+  {
+    "text": "    func transcribe(",
+    "violation": {
+      "ruleIdentifier": "function_parameter_count",
+      "location": {
+        "file": "Packages/MeetingAssistantCore/Sources/UI/Services/AssistantVoiceCommand/AssistantTranscriptionPhase.swift",
+        "character": 5,
+        "line": 9
+      },
+      "ruleName": "Function Parameter Count",
+      "reason": "Function should have 5 parameters or less: it currently has 7",
+      "severity": "warning",
+      "ruleDescription": "Number of function parameters should be low."
+    }
+  },
+  {
+    "text": "    public func performTranscription(",
+    "violation": {
+      "ruleDescription": "Number of function parameters should be low.",
+      "location": {
+        "line": 34,
+        "file": "Packages/MeetingAssistantCore/Sources/UI/Services/AssistantVoiceCommand/AssistantTranscriptionPhase.swift",
+        "character": 12
+      },
+      "reason": "Function should have 5 parameters or less: it currently has 7",
+      "ruleName": "Function Parameter Count",
+      "severity": "warning",
+      "ruleIdentifier": "function_parameter_count"
+    }
+  },
+  {
+    "text": "    ) async throws -> (",
+    "violation": {
+      "severity": "warning",
+      "reason": "Tuples should have at most 2 members",
+      "ruleIdentifier": "large_tuple",
+      "location": {
+        "line": 43,
+        "file": "Packages/MeetingAssistantCore/Sources/UI/Services/AssistantVoiceCommand/AssistantTranscriptionPhase.swift",
+        "character": 23
+      },
+      "ruleName": "Large Tuple",
+      "ruleDescription": "Tuples shouldn't have too many members. Create a custom type instead."
+    }
+  },
+  {
+    "violation": {
+      "ruleDescription": "Tuples shouldn't have too many members. Create a custom type instead.",
+      "reason": "Tuples should have at most 2 members",
+      "ruleIdentifier": "large_tuple",
+      "ruleName": "Large Tuple",
+      "severity": "warning",
+      "location": {
+        "file": "Packages/MeetingAssistantCore/Sources/UI/Services/AssistantVoiceCommandService.swift",
+        "line": 154,
+        "character": 75
+      }
+    },
+    "text": "    private func performTranscription(recordingURL: URL?) async throws -> ("
+  },
+  {
+    "violation": {
+      "severity": "warning",
+      "location": {
+        "file": "Packages/MeetingAssistantCore/Sources/UI/Services/AssistantVoiceCommandService.swift",
+        "character": 13,
+        "line": 211
+      },
+      "ruleName": "Function Parameter Count",
+      "reason": "Function should have 5 parameters or less: it currently has 6",
+      "ruleIdentifier": "function_parameter_count",
+      "ruleDescription": "Number of function parameters should be low."
+    },
+    "text": "    private func executeDispatch("
+  },
+  {
+    "violation": {
+      "reason": "Type name 'MeetingNotesMarkdownDocumentStoreProtocol' should be between 3 and 40 characters long",
+      "ruleDescription": "Type name should only contain alphanumeric characters, start with an uppercase character and span between 3 and 40 characters in length.\nPrivate types may start with an underscore.",
+      "ruleIdentifier": "type_name",
+      "ruleName": "Type Name",
+      "severity": "warning",
+      "location": {
+        "character": 17,
+        "file": "Packages/MeetingAssistantCore/Sources/UI/Services/MeetingNotesMarkdownDocumentStore.swift",
+        "line": 58
+      }
+    },
+    "text": "public protocol MeetingNotesMarkdownDocumentStoreProtocol: AnyObject {"
+  },
+  {
+    "violation": {
+      "ruleDescription": "Type bodies should not span too many lines",
+      "ruleName": "Type Body Length",
+      "location": {
+        "file": "Packages/MeetingAssistantCore/Sources/UI/Services/MeetingNotesMarkdownDocumentStore.swift",
+        "character": 14,
+        "line": 78
+      },
+      "reason": "Class body should span 400 lines or less excluding comments and whitespace: currently spans 571 lines",
+      "severity": "warning",
+      "ruleIdentifier": "type_body_length"
+    },
+    "text": "public final class MeetingNotesMarkdownDocumentStore: MeetingNotesMarkdownDocumentStoreProtocol {"
+  },
+  {
+    "violation": {
+      "ruleIdentifier": "function_body_length",
+      "reason": "Function body should span 60 lines or less excluding comments and whitespace: currently spans 62 lines",
+      "severity": "warning",
+      "ruleDescription": "Function bodies should not span too many lines",
+      "ruleName": "Function Body Length",
+      "location": {
+        "file": "Packages/MeetingAssistantCore/Sources/UI/Services/MeetingNotesMarkdownDocumentStore.swift",
+        "character": 12,
+        "line": 207
+      }
+    },
+    "text": "    public func runBackfillIfNeeded("
+  },
+  {
+    "violation": {
+      "ruleIdentifier": "file_length",
+      "ruleDescription": "Files should not span too many lines.",
+      "severity": "warning",
+      "ruleName": "File Length",
+      "location": {
+        "character": 1,
+        "line": 781,
+        "file": "Packages/MeetingAssistantCore/Sources/UI/Services/MeetingNotesMarkdownDocumentStore.swift"
+      },
+      "reason": "File should contain 600 lines or less excluding comments and whitespaces: currently contains 691"
+    },
+    "text": "}"
+  },
+  {
+    "violation": {
+      "ruleDescription": "Number of function parameters should be low.",
+      "ruleName": "Function Parameter Count",
+      "severity": "warning",
+      "location": {
+        "file": "Packages/MeetingAssistantCore/Sources/UI/Services/MeetingNotesMarkdownWriteCoordinator.swift",
+        "line": 51,
+        "character": 17
+      },
+      "reason": "Function should have 5 parameters or less: it currently has 6",
+      "ruleIdentifier": "function_parameter_count"
+    },
+    "text": "    nonisolated func enqueueSaveFromAnyThread("
+  },
+  {
+    "violation": {
+      "ruleName": "Function Parameter Count",
+      "location": {
+        "file": "Packages/MeetingAssistantCore/Sources/UI/Services/MeetingNotesMarkdownWriteCoordinator.swift",
+        "line": 78,
+        "character": 13
+      },
+      "ruleIdentifier": "function_parameter_count",
+      "ruleDescription": "Number of function parameters should be low.",
+      "severity": "warning",
+      "reason": "Function should have 5 parameters or less: it currently has 6"
+    },
+    "text": "    private func enqueueSave("
+  },
+  {
+    "violation": {
+      "ruleIdentifier": "function_body_length",
+      "ruleDescription": "Function bodies should not span too many lines",
+      "severity": "warning",
+      "location": {
+        "file": "Packages/MeetingAssistantCore/Sources/UI/Services/RecordingManager/PostProcessing.swift",
+        "line": 27,
+        "character": 5
+      },
+      "ruleName": "Function Body Length",
+      "reason": "Function body should span 60 lines or less excluding comments and whitespace: currently spans 83 lines"
+    },
+    "text": "    func makeUseCaseConfig("
+  },
+  {
+    "violation": {
+      "severity": "warning",
+      "location": {
+        "file": "Packages/MeetingAssistantCore/Sources/UI/Services/RecordingManager/PostProcessing.swift",
+        "line": 124,
+        "character": 13
+      },
+      "ruleDescription": "Number of function parameters should be low.",
+      "ruleName": "Function Parameter Count",
+      "ruleIdentifier": "function_parameter_count",
+      "reason": "Function should have 5 parameters or less: it currently has 6"
+    },
+    "text": "    private func skippedUseCaseConfig("
+  },
+  {
+    "violation": {
+      "ruleName": "Function Body Length",
+      "ruleDescription": "Function bodies should not span too many lines",
+      "location": {
+        "character": 5,
+        "file": "Packages/MeetingAssistantCore/Sources/UI/Services/RecordingManager/PostProcessingPipeline.swift",
+        "line": 62
+      },
+      "ruleIdentifier": "function_body_length",
+      "severity": "warning",
+      "reason": "Function body should span 60 lines or less excluding comments and whitespace: currently spans 66 lines"
+    },
+    "text": "    func applyPostProcessing("
+  },
+  {
+    "violation": {
+      "severity": "warning",
+      "reason": "Function body should span 60 lines or less excluding comments and whitespace: currently spans 99 lines",
+      "location": {
+        "character": 5,
+        "file": "Packages/MeetingAssistantCore/Sources/UI/Services/RecordingManager/PostProcessingPipeline.swift",
+        "line": 139
+      },
+      "ruleIdentifier": "function_body_length",
+      "ruleDescription": "Function bodies should not span too many lines",
+      "ruleName": "Function Body Length"
+    },
+    "text": "    func runPostProcessing("
+  },
+  {
+    "violation": {
+      "reason": "Function should have 5 parameters or less: it currently has 6",
+      "location": {
+        "line": 139,
+        "file": "Packages/MeetingAssistantCore/Sources/UI/Services/RecordingManager/PostProcessingPipeline.swift",
+        "character": 5
+      },
+      "ruleDescription": "Number of function parameters should be low.",
+      "ruleName": "Function Parameter Count",
+      "ruleIdentifier": "function_parameter_count",
+      "severity": "warning"
+    },
+    "text": "    func runPostProcessing("
+  },
+  {
+    "violation": {
+      "location": {
+        "line": 294,
+        "character": 12,
+        "file": "Packages/MeetingAssistantCore/Sources/UI/Services/RecordingManager/RecordingManager.swift"
+      },
+      "severity": "warning",
+      "ruleName": "Function Body Length",
+      "ruleDescription": "Function bodies should not span too many lines",
+      "ruleIdentifier": "function_body_length",
+      "reason": "Initializer body should span 60 lines or less excluding comments and whitespace: currently spans 62 lines"
+    },
+    "text": "    public init("
+  },
+  {
+    "violation": {
+      "location": {
+        "line": 146,
+        "character": 13,
+        "file": "Packages/MeetingAssistantCore/Sources/UI/Services/RecordingManager/RecordingManagerStart.swift"
+      },
+      "ruleDescription": "Function bodies should not span too many lines",
+      "ruleIdentifier": "function_body_length",
+      "ruleName": "Function Body Length",
+      "severity": "warning",
+      "reason": "Function body should span 60 lines or less excluding comments and whitespace: currently spans 71 lines"
+    },
+    "text": "    private func prepareAndStartRecording(purpose: CapturePurpose, source: RecordingSource) async throws {"
+  },
+  {
+    "violation": {
+      "reason": "Function body should span 60 lines or less excluding comments and whitespace: currently spans 75 lines",
+      "severity": "warning",
+      "ruleIdentifier": "function_body_length",
+      "ruleDescription": "Function bodies should not span too many lines",
+      "location": {
+        "character": 5,
+        "file": "Packages/MeetingAssistantCore/Sources/UI/Services/RecordingManager/RecordingManagerTranscriptionEntities.swift",
+        "line": 82
+      },
+      "ruleName": "Function Body Length"
+    },
+    "text": "    func persistFailedTranscriptionAttempt("
+  },
+  {
+    "violation": {
+      "severity": "warning",
+      "ruleIdentifier": "function_parameter_count",
+      "reason": "Function should have 5 parameters or less: it currently has 6",
+      "location": {
+        "file": "Packages/MeetingAssistantCore/Sources/UI/Services/RecordingManager/RecordingManagerTranscriptionEntities.swift",
+        "character": 5,
+        "line": 82
+      },
+      "ruleDescription": "Number of function parameters should be low.",
+      "ruleName": "Function Parameter Count"
+    },
+    "text": "    func persistFailedTranscriptionAttempt("
+  },
+  {
+    "violation": {
+      "ruleIdentifier": "function_body_length",
+      "location": {
+        "line": 35,
+        "character": 5,
+        "file": "Packages/MeetingAssistantCore/Sources/UI/Services/RecordingManager/RecordingManagerTranscriptionExecution.swift"
+      },
+      "ruleName": "Function Body Length",
+      "reason": "Function body should span 60 lines or less excluding comments and whitespace: currently spans 70 lines",
+      "severity": "warning",
+      "ruleDescription": "Function bodies should not span too many lines"
+    },
+    "text": "    func performTranscription("
+  },
+  {
+    "violation": {
+      "ruleDescription": "Function bodies should not span too many lines",
+      "location": {
+        "file": "Packages/MeetingAssistantCore/Sources/UI/Services/RecordingManager/RecordingManagerTranscriptionPipeline.swift",
+        "character": 5,
+        "line": 11
+      },
+      "ruleName": "Function Body Length",
+      "severity": "warning",
+      "ruleIdentifier": "function_body_length",
+      "reason": "Function body should span 60 lines or less excluding comments and whitespace: currently spans 95 lines"
+    },
+    "text": "    func transcribeRecording("
+  },
+  {
+    "violation": {
+      "ruleIdentifier": "cyclomatic_complexity",
+      "ruleDescription": "Complexity of function bodies should be limited.",
+      "ruleName": "Cyclomatic Complexity",
+      "location": {
+        "file": "Packages/MeetingAssistantCore/Sources/UI/Services/RecordingManager/RecordingManagerTranscriptionProgress.swift",
+        "line": 177,
+        "character": 5
+      },
+      "reason": "Function should have complexity 15 or less; currently complexity is 17",
+      "severity": "warning"
+    },
+    "text": "    func transcriptionStatusError(from error: Error) -> TranscriptionStatusError {"
+  },
+  {
+    "violation": {
+      "ruleName": "Function Body Length",
+      "severity": "warning",
+      "ruleIdentifier": "function_body_length",
+      "ruleDescription": "Function bodies should not span too many lines",
+      "reason": "Function body should span 60 lines or less excluding comments and whitespace: currently spans 76 lines",
+      "location": {
+        "line": 47,
+        "file": "Packages/MeetingAssistantCore/Sources/UI/Services/RecordingManager/Retry.swift",
+        "character": 5
+      }
+    },
+    "text": "    func runRetryTranscription("
+  },
+  {
+    "violation": {
+      "ruleDescription": "Function bodies should not span too many lines",
+      "severity": "warning",
+      "location": {
+        "line": 133,
+        "file": "Packages/MeetingAssistantCore/Sources/UI/Services/RecordingManager/Retry.swift",
+        "character": 5
+      },
+      "reason": "Function body should span 60 lines or less excluding comments and whitespace: currently spans 99 lines",
+      "ruleIdentifier": "function_body_length",
+      "ruleName": "Function Body Length"
+    },
+    "text": "    func performRetryTranscription("
+  },
+  {
+    "violation": {
+      "ruleIdentifier": "function_parameter_count",
+      "severity": "warning",
+      "ruleDescription": "Number of function parameters should be low.",
+      "location": {
+        "file": "Packages/MeetingAssistantCore/Sources/UI/Services/RecordingManager/Retry.swift",
+        "character": 13,
+        "line": 303
+      },
+      "ruleName": "Function Parameter Count",
+      "reason": "Function should have 5 parameters or less: it currently has 6"
+    },
+    "text": "    private func persistFailedRetryPerformanceAttempt("
+  },
+  {
+    "violation": {
+      "ruleIdentifier": "function_parameter_count",
+      "ruleDescription": "Number of function parameters should be low.",
+      "severity": "warning",
+      "ruleName": "Function Parameter Count",
+      "location": {
+        "file": "Packages/MeetingAssistantCore/Sources/UI/Services/SummaryExportHelper.swift",
+        "line": 175,
+        "character": 13
+      },
+      "reason": "Function should have 5 parameters or less: it currently has 7"
+    },
+    "text": "    private func performExport("
+  },
+  {
+    "violation": {
+      "location": {
+        "character": 13,
+        "file": "Packages/MeetingAssistantCore/Sources/UI/Services/SummaryExportHelper.swift",
+        "line": 203
+      },
+      "ruleIdentifier": "function_parameter_count",
+      "ruleDescription": "Number of function parameters should be low.",
+      "ruleName": "Function Parameter Count",
+      "severity": "warning",
+      "reason": "Function should have 5 parameters or less: it currently has 6"
+    },
+    "text": "    private func tryWriteAndAudit("
+  },
+  {
+    "violation": {
+      "ruleDescription": "Number of function parameters should be low.",
+      "severity": "warning",
+      "ruleName": "Function Parameter Count",
+      "location": {
+        "file": "Packages/MeetingAssistantCore/Sources/UI/Services/SummaryExportHelper.swift",
+        "line": 269,
+        "character": 13
+      },
+      "reason": "Function should have 5 parameters or less: it currently has 7",
+      "ruleIdentifier": "function_parameter_count"
+    },
+    "text": "    private func makeAuditEvent("
+  },
+  {
+    "violation": {
+      "ruleIdentifier": "type_body_length",
+      "severity": "warning",
+      "ruleDescription": "Type bodies should not span too many lines",
+      "reason": "Class body should span 400 lines or less excluding comments and whitespace: currently spans 431 lines",
+      "location": {
+        "file": "Packages/MeetingAssistantCore/Sources/UI/ViewModels/ServiceSettingsViewModel.swift",
+        "line": 12,
+        "character": 14
+      },
+      "ruleName": "Type Body Length"
+    },
+    "text": "public final class ServiceSettingsViewModel: ObservableObject {"
+  },
+  {
+    "violation": {
+      "ruleIdentifier": "function_body_length",
+      "reason": "Initializer body should span 60 lines or less excluding comments and whitespace: currently spans 63 lines",
+      "ruleDescription": "Function bodies should not span too many lines",
+      "severity": "warning",
+      "ruleName": "Function Body Length",
+      "location": {
+        "character": 12,
+        "line": 53,
+        "file": "Packages/MeetingAssistantCore/Sources/UI/ViewModels/ServiceSettingsViewModel.swift"
+      }
+    },
+    "text": "    public init("
+  },
+  {
+    "violation": {
+      "reason": "Function should have 5 parameters or less: it currently has 8",
+      "ruleName": "Function Parameter Count",
+      "ruleIdentifier": "function_parameter_count",
+      "ruleDescription": "Number of function parameters should be low.",
+      "location": {
+        "line": 346,
+        "file": "Packages/MeetingAssistantCore/Sources/UI/ViewModels/TranscriptionSettingsViewModel/ConversationAndPostProcessing.swift",
+        "character": 13
+      },
+      "severity": "warning"
+    },
+    "text": "    private func makeReprocessAttempt("
+  },
+  {
+    "violation": {
+      "ruleName": "Function Parameter Count",
+      "severity": "warning",
+      "ruleIdentifier": "function_parameter_count",
+      "location": {
+        "line": 374,
+        "file": "Packages/MeetingAssistantCore/Sources/UI/ViewModels/TranscriptionSettingsViewModel/ConversationAndPostProcessing.swift",
+        "character": 13
+      },
+      "ruleDescription": "Number of function parameters should be low.",
+      "reason": "Function should have 5 parameters or less: it currently has 6"
+    },
+    "text": "    private func handlePostProcessingFailure("
+  },
+  {
+    "violation": {
+      "ruleDescription": "Number of function parameters should be low.",
+      "location": {
+        "line": 407,
+        "file": "Packages/MeetingAssistantCore/Sources/UI/ViewModels/TranscriptionSettingsViewModel/ConversationAndPostProcessing.swift",
+        "character": 13
+      },
+      "severity": "warning",
+      "reason": "Function should have 5 parameters or less: it currently has 7",
+      "ruleName": "Function Parameter Count",
+      "ruleIdentifier": "function_parameter_count"
+    },
+    "text": "    private func makePostProcessedTranscription("
+  },
+  {
+    "violation": {
+      "severity": "warning",
+      "ruleDescription": "Files should not span too many lines.",
+      "ruleName": "File Length",
+      "location": {
+        "character": 1,
+        "file": "Packages/MeetingAssistantCore/Sources/UI/ViewModels/TranscriptionSettingsViewModel/ConversationAndPostProcessing.swift",
+        "line": 897
+      },
+      "ruleIdentifier": "file_length",
+      "reason": "File should contain 600 lines or less excluding comments and whitespaces: currently contains 799"
+    },
+    "text": "}"
+  },
+  {
+    "violation": {
+      "ruleDescription": "Closure parameters should be on the same line as opening brace",
+      "location": {
+        "character": 13,
+        "line": 46,
+        "file": "Packages/MeetingAssistantCore/Sources/UI/ViewModels/TranscriptionSettingsViewModel/TranscriptionHistoryFilterEngine.swift"
+      },
+      "ruleIdentifier": "closure_parameter_position",
+      "severity": "warning",
+      "reason": "Closure parameters should be on the same line as opening brace",
+      "ruleName": "Closure Parameter Position"
+    },
+    "text": "            result,"
+  },
+  {
+    "violation": {
+      "ruleDescription": "Closure parameters should be on the same line as opening brace",
+      "ruleName": "Closure Parameter Position",
+      "severity": "warning",
+      "reason": "Closure parameters should be on the same line as opening brace",
+      "location": {
+        "line": 47,
+        "file": "Packages/MeetingAssistantCore/Sources/UI/ViewModels/TranscriptionSettingsViewModel/TranscriptionHistoryFilterEngine.swift",
+        "character": 13
+      },
+      "ruleIdentifier": "closure_parameter_position"
+    },
+    "text": "            transcription in"
+  },
+  {
+    "violation": {
+      "location": {
+        "line": 57,
+        "character": 51,
+        "file": "Packages/MeetingAssistantCore/Sources/UI/components/onboarding/OnboardingDownloadModelsView.swift"
+      },
+      "ruleDescription": "Trailing closure syntax should not be used when passing more than one closure argument",
+      "ruleName": "Multiple Closures with Trailing Closure",
+      "ruleIdentifier": "multiple_closures_with_trailing_closure",
+      "reason": "Trailing closure syntax should not be used when passing more than one closure argument",
+      "severity": "warning"
+    },
+    "text": "                    Button(action: { onSkip?() }) {"
+  },
+  {
+    "violation": {
+      "ruleIdentifier": "multiple_closures_with_trailing_closure",
+      "severity": "warning",
+      "ruleName": "Multiple Closures with Trailing Closure",
+      "location": {
+        "line": 115,
+        "character": 47,
+        "file": "Packages/MeetingAssistantCore/Sources/UI/components/onboarding/OnboardingMeetingRecordingView.swift"
+      },
+      "reason": "Trailing closure syntax should not be used when passing more than one closure argument",
+      "ruleDescription": "Trailing closure syntax should not be used when passing more than one closure argument"
+    },
+    "text": "                Button(action: { onSkip?() }) {"
+  },
+  {
+    "violation": {
+      "ruleName": "Multiple Closures with Trailing Closure",
+      "severity": "warning",
+      "ruleDescription": "Trailing closure syntax should not be used when passing more than one closure argument",
+      "reason": "Trailing closure syntax should not be used when passing more than one closure argument",
+      "location": {
+        "line": 65,
+        "file": "Packages/MeetingAssistantCore/Sources/UI/components/onboarding/OnboardingPermissionsView.swift",
+        "character": 51
+      },
+      "ruleIdentifier": "multiple_closures_with_trailing_closure"
+    },
+    "text": "                    Button(action: { onSkip?() }) {"
+  },
+  {
+    "violation": {
+      "reason": "Trailing closure syntax should not be used when passing more than one closure argument",
+      "ruleDescription": "Trailing closure syntax should not be used when passing more than one closure argument",
+      "ruleIdentifier": "multiple_closures_with_trailing_closure",
+      "severity": "warning",
+      "location": {
+        "character": 51,
+        "file": "Packages/MeetingAssistantCore/Sources/UI/components/onboarding/OnboardingShortcutsView.swift",
+        "line": 63
+      },
+      "ruleName": "Multiple Closures with Trailing Closure"
+    },
+    "text": "                    Button(action: { onSkip?() }) {"
+  },
+  {
+    "violation": {
+      "ruleName": "Number Separator",
+      "severity": "warning",
+      "location": {
+        "character": 93,
+        "line": 120,
+        "file": "Packages/MeetingAssistantCore/Sources/UI/components/recording/FloatingRecordingAudioVisualizer.swift"
+      },
+      "ruleIdentifier": "number_separator",
+      "ruleDescription": "Underscores should be used as thousand separator in large numbers with a configurable number of digits. In other words, there should be an underscore after every 3 digits in the integral as well as the fractional part of a number.",
+      "reason": "Underscore(s) used as thousand separator(s) should be added after every 3 digits only"
+    },
+    "text": "        let bounceLevel = max(0.0, min(1.0, (14.0 - minHeight) / max(maxHeight - minHeight, 0.000_001)))"
+  },
+  {
+    "violation": {
+      "severity": "warning",
+      "location": {
+        "line": 156,
+        "character": 1,
+        "file": "Packages/MeetingAssistantCore/Sources/UI/components/recording/FloatingRecordingIndicatorSupport.swift"
+      },
+      "reason": "Enum body should span 400 lines or less excluding comments and whitespace: currently spans 415 lines",
+      "ruleName": "Type Body Length",
+      "ruleIdentifier": "type_body_length",
+      "ruleDescription": "Type bodies should not span too many lines"
+    },
+    "text": "enum FloatingRecordingIndicatorViewUtilities {"
+  },
+  {
+    "violation": {
+      "severity": "warning",
+      "reason": "Trailing closure syntax should not be used when passing more than one closure argument",
+      "location": {
+        "line": 97,
+        "file": "Packages/MeetingAssistantCore/Sources/UI/components/settings/AssistantIntegrationEditorSheet.swift",
+        "character": 59
+      },
+      "ruleIdentifier": "multiple_closures_with_trailing_closure",
+      "ruleDescription": "Trailing closure syntax should not be used when passing more than one closure argument",
+      "ruleName": "Multiple Closures with Trailing Closure"
+    },
+    "text": "                Button(action: { onOpenAdvanced(draft) }) {"
+  },
+  {
+    "violation": {
+      "severity": "warning",
+      "ruleDescription": "Function bodies should not span too many lines",
+      "location": {
+        "file": "Packages/MeetingAssistantCore/Sources/UI/components/settings/AssistantIntegrationEditorSheet.swift",
+        "character": 13,
+        "line": 200
+      },
+      "ruleName": "Function Body Length",
+      "ruleIdentifier": "function_body_length",
+      "reason": "Function body should span 60 lines or less excluding comments and whitespace: currently spans 71 lines"
+    },
+    "text": "    private func placeholderButton(token: String) -> some View {"
+  },
+  {
+    "violation": {
+      "reason": "Trailing closure syntax should not be used when passing more than one closure argument",
+      "ruleDescription": "Trailing closure syntax should not be used when passing more than one closure argument",
+      "ruleName": "Multiple Closures with Trailing Closure",
+      "location": {
+        "file": "Packages/MeetingAssistantCore/Sources/UI/components/settings/DictationStyleEditorDetailView.swift",
+        "character": 11,
+        "line": 109
+      },
+      "ruleIdentifier": "multiple_closures_with_trailing_closure",
+      "severity": "warning"
+    },
+    "text": "        ) { editorForm }"
+  },
+  {
+    "violation": {
+      "reason": "Function parameters should be aligned vertically if they're in multiple lines in a method call",
+      "location": {
+        "character": 13,
+        "line": 294,
+        "file": "Packages/MeetingAssistantCore/Sources/UI/components/settings/DictationStyleEditorDetailView.swift"
+      },
+      "ruleName": "Vertical Parameter Alignment on Call",
+      "ruleIdentifier": "vertical_parameter_alignment_on_call",
+      "ruleDescription": "Function parameters should be aligned vertically if they're in multiple lines in a method call",
+      "severity": "warning"
+    },
+    "text": "            transcriptionConfiguration: transcriptionConfiguration, isDefault: isDefault,"
+  },
+  {
+    "violation": {
+      "ruleName": "Type Body Length",
+      "location": {
+        "line": 9,
+        "file": "Packages/MeetingAssistantCore/Sources/UI/components/settings/MeetingConversationView/MeetingConversationView.swift",
+        "character": 8
+      },
+      "severity": "warning",
+      "ruleIdentifier": "type_body_length",
+      "reason": "Struct body should span 400 lines or less excluding comments and whitespace: currently spans 533 lines",
+      "ruleDescription": "Type bodies should not span too many lines"
+    },
+    "text": "public struct MeetingConversationView: View {"
+  },
+  {
+    "violation": {
+      "ruleName": "File Length",
+      "ruleIdentifier": "file_length",
+      "severity": "warning",
+      "location": {
+        "line": 674,
+        "character": 1,
+        "file": "Packages/MeetingAssistantCore/Sources/UI/components/settings/MeetingConversationView/MeetingConversationView.swift"
+      },
+      "ruleDescription": "Files should not span too many lines.",
+      "reason": "File should contain 600 lines or less excluding comments and whitespaces: currently contains 616"
+    },
+    "text": "}"
+  },
+  {
+    "violation": {
+      "ruleDescription": "Tuples shouldn't have too many members. Create a custom type instead.",
+      "severity": "warning",
+      "location": {
+        "file": "Packages/MeetingAssistantCore/Sources/UI/components/settings/MeetingNotesMarkdownEditor.swift",
+        "character": 88,
+        "line": 299
+      },
+      "reason": "Tuples should have at most 2 members",
+      "ruleIdentifier": "large_tuple",
+      "ruleName": "Large Tuple"
+    },
+    "text": "    private static func linkMatch(containing selection: NSRange, in text: NSString) -> (fullRange: NSRange, label: String, url: String)? {"
+  },
+  {
+    "violation": {
+      "ruleIdentifier": "multiple_closures_with_trailing_closure",
+      "ruleName": "Multiple Closures with Trailing Closure",
+      "location": {
+        "line": 155,
+        "character": 7,
+        "file": "Packages/MeetingAssistantCore/Sources/UI/components/settings/PromptSelectionRow.swift"
+      },
+      "reason": "Trailing closure syntax should not be used when passing more than one closure argument",
+      "severity": "warning",
+      "ruleDescription": "Trailing closure syntax should not be used when passing more than one closure argument"
+    },
+    "text": "    ) {"
+  },
+  {
+    "text": "    private func cloudProviderCard(_ provider: ServiceSettingsViewModel.CloudProviderDescriptor) -> some View {",
+    "violation": {
+      "ruleName": "Function Body Length",
+      "ruleIdentifier": "function_body_length",
+      "ruleDescription": "Function bodies should not span too many lines",
+      "severity": "warning",
+      "location": {
+        "file": "Packages/MeetingAssistantCore/Sources/UI/components/settings/ServiceSettingsContent.swift",
+        "character": 13,
+        "line": 149
+      },
+      "reason": "Function body should span 60 lines or less excluding comments and whitespace: currently spans 88 lines"
+    }
+  },
+  {
+    "text": "private struct OptionalExpandableAccessibilityHintModifier: ViewModifier {",
+    "violation": {
+      "ruleName": "Type Name",
+      "ruleIdentifier": "type_name",
+      "ruleDescription": "Type name should only contain alphanumeric characters, start with an uppercase character and span between 3 and 40 characters in length.\nPrivate types may start with an underscore.",
+      "reason": "Type name 'OptionalExpandableAccessibilityHintModifier' should be between 3 and 40 characters long",
+      "severity": "warning",
+      "location": {
+        "character": 16,
+        "file": "Packages/MeetingAssistantCore/Sources/UI/components/settings/SettingsExpandableSection.swift",
+        "line": 70
+      }
+    }
+  },
+  {
+    "text": "public struct TranscriptionCardView: View {",
+    "violation": {
+      "reason": "Struct body should span 400 lines or less excluding comments and whitespace: currently spans 571 lines",
+      "location": {
+        "file": "Packages/MeetingAssistantCore/Sources/UI/components/transcription/TranscriptionCardView.swift",
+        "line": 10,
+        "character": 8
+      },
+      "ruleDescription": "Type bodies should not span too many lines",
+      "ruleIdentifier": "type_body_length",
+      "severity": "warning",
+      "ruleName": "Type Body Length"
+    }
+  },
+  {
+    "text": "}",
+    "violation": {
+      "ruleIdentifier": "file_length",
+      "ruleName": "File Length",
+      "reason": "File should contain 600 lines or less excluding comments and whitespaces: currently contains 678",
+      "ruleDescription": "Files should not span too many lines.",
+      "severity": "warning",
+      "location": {
+        "line": 759,
+        "character": 1,
+        "file": "Packages/MeetingAssistantCore/Sources/UI/components/transcription/TranscriptionCardView.swift"
+      }
+    }
+  },
+  {
+    "text": "    public func showOnboarding(",
+    "violation": {
+      "ruleIdentifier": "function_parameter_count",
+      "ruleName": "Function Parameter Count",
+      "ruleDescription": "Number of function parameters should be low.",
+      "location": {
+        "line": 20,
+        "file": "Packages/MeetingAssistantCore/Sources/UI/pages/onboarding/OnboardingWindowController.swift",
+        "character": 12
+      },
+      "reason": "Function should have 5 parameters or less: it currently has 7",
+      "severity": "warning"
+    }
+  },
+  {
+    "text": "public struct MeetingSettingsTab: View {",
+    "violation": {
+      "ruleDescription": "Type bodies should not span too many lines",
+      "ruleName": "Type Body Length",
+      "reason": "Struct body should span 400 lines or less excluding comments and whitespace: currently spans 452 lines",
+      "severity": "warning",
+      "ruleIdentifier": "type_body_length",
+      "location": {
+        "character": 8,
+        "file": "Packages/MeetingAssistantCore/Sources/UI/pages/settings/tabs/MeetingSettingsTab.swift",
+        "line": 13
+      }
+    }
+  },
+  {
+    "text": "    func webTargetRow(_ target: WebMeetingTarget) -> some View {",
+    "violation": {
+      "ruleDescription": "Function bodies should not span too many lines",
+      "ruleName": "Function Body Length",
+      "ruleIdentifier": "function_body_length",
+      "location": {
+        "line": 42,
+        "character": 5,
+        "file": "Packages/MeetingAssistantCore/Sources/UI/pages/settings/tabs/MeetingSettingsTab/MeetingSettingsWebTargets.swift"
+      },
+      "reason": "Function body should span 60 lines or less excluding comments and whitespace: currently spans 72 lines",
+      "severity": "warning"
+    }
+  },
+  {
+    "text": "            ) {",
+    "violation": {
+      "ruleDescription": "Trailing closure syntax should not be used when passing more than one closure argument",
+      "severity": "warning",
+      "ruleName": "Multiple Closures with Trailing Closure",
+      "location": {
+        "file": "Packages/MeetingAssistantCore/Sources/UI/pages/settings/tabs/MeetingSettingsTab/MeetingSettingsWebTargets.swift",
+        "line": 54,
+        "character": 15
+      },
+      "reason": "Trailing closure syntax should not be used when passing more than one closure argument",
+      "ruleIdentifier": "multiple_closures_with_trailing_closure"
+    }
+  },
+  {
+    "text": "}",
+    "violation": {
+      "severity": "warning",
+      "reason": "File should contain 600 lines or less excluding comments and whitespaces: currently contains 630",
+      "ruleName": "File Length",
+      "location": {
+        "file": "Packages/MeetingAssistantCore/Sources/UI/pages/settings/tabs/MetricsDashboardPerformanceComponents.swift",
+        "line": 718,
+        "character": 1
+      },
+      "ruleIdentifier": "file_length",
+      "ruleDescription": "Files should not span too many lines."
+    }
+  },
+  {
+    "text": "public struct TranscriptionsSettingsTab: View {",
+    "violation": {
+      "location": {
+        "line": 13,
+        "character": 8,
+        "file": "Packages/MeetingAssistantCore/Sources/UI/pages/settings/tabs/TranscriptionsSettingsTab.swift"
+      },
+      "ruleDescription": "Type bodies should not span too many lines",
+      "severity": "warning",
+      "ruleIdentifier": "type_body_length",
+      "ruleName": "Type Body Length",
+      "reason": "Struct body should span 400 lines or less excluding comments and whitespace: currently spans 414 lines"
+    }
+  },
+  {
+    "text": "final class AppSettingsStoreAISelectionTests: XCTestCase {",
+    "violation": {
+      "ruleIdentifier": "type_body_length",
+      "ruleDescription": "Type bodies should not span too many lines",
+      "ruleName": "Type Body Length",
+      "severity": "warning",
+      "location": {
+        "file": "Packages/MeetingAssistantCore/Tests/MeetingAssistantCoreTests/AppSettingsStoreAISelectionTests.swift",
+        "character": 7,
+        "line": 5
+      },
+      "reason": "Class body should span 400 lines or less excluding comments and whitespace: currently spans 484 lines"
+    }
+  },
+  {
+    "text": "        XCTAssertEqual(settings.meetingNotesFontSize, 16, accuracy: 0.000_001)",
+    "violation": {
+      "severity": "warning",
+      "ruleIdentifier": "number_separator",
+      "location": {
+        "character": 69,
+        "file": "Packages/MeetingAssistantCore/Tests/MeetingAssistantCoreTests/AppSettingsStoreAISelectionTests.swift",
+        "line": 94
+      },
+      "reason": "Underscore(s) used as thousand separator(s) should be added after every 3 digits only",
+      "ruleDescription": "Underscores should be used as thousand separator in large numbers with a configurable number of digits. In other words, there should be an underscore after every 3 digits in the integral as well as the fractional part of a number.",
+      "ruleName": "Number Separator"
+    }
+  },
+  {
+    "text": "        XCTAssertEqual(settings.meetingNotesFontSize, 14, accuracy: 0.000_001)",
+    "violation": {
+      "ruleIdentifier": "number_separator",
+      "ruleDescription": "Underscores should be used as thousand separator in large numbers with a configurable number of digits. In other words, there should be an underscore after every 3 digits in the integral as well as the fractional part of a number.",
+      "severity": "warning",
+      "location": {
+        "line": 112,
+        "file": "Packages/MeetingAssistantCore/Tests/MeetingAssistantCoreTests/AppSettingsStoreAISelectionTests.swift",
+        "character": 69
+      },
+      "reason": "Underscore(s) used as thousand separator(s) should be added after every 3 digits only",
+      "ruleName": "Number Separator"
+    }
+  },
+  {
+    "text": "        XCTAssertEqual(persistedSize ?? 0, 14, accuracy: 0.000_001)",
+    "violation": {
+      "ruleIdentifier": "number_separator",
+      "location": {
+        "character": 58,
+        "file": "Packages/MeetingAssistantCore/Tests/MeetingAssistantCoreTests/AppSettingsStoreAISelectionTests.swift",
+        "line": 119
+      },
+      "ruleDescription": "Underscores should be used as thousand separator in large numbers with a configurable number of digits. In other words, there should be an underscore after every 3 digits in the integral as well as the fractional part of a number.",
+      "reason": "Underscore(s) used as thousand separator(s) should be added after every 3 digits only",
+      "ruleName": "Number Separator",
+      "severity": "warning"
+    }
+  },
+  {
+    "text": "    func transcribe(",
+    "violation": {
+      "ruleIdentifier": "function_parameter_count",
+      "ruleDescription": "Number of function parameters should be low.",
+      "severity": "warning",
+      "location": {
+        "character": 5,
+        "line": 243,
+        "file": "Packages/MeetingAssistantCore/Tests/MeetingAssistantCoreTests/AssistantTranscriptionPhaseTests.swift"
+      },
+      "reason": "Function should have 5 parameters or less: it currently has 7",
+      "ruleName": "Function Parameter Count"
+    }
+  },
+  {
+    "text": "        XCTAssertEqual(monitor.effectiveSamplingInterval, 0.017, accuracy: 0.0_001)",
+    "violation": {
+      "ruleDescription": "Underscores should be used as thousand separator in large numbers with a configurable number of digits. In other words, there should be an underscore after every 3 digits in the integral as well as the fractional part of a number.",
+      "location": {
+        "character": 76,
+        "line": 9,
+        "file": "Packages/MeetingAssistantCore/Tests/MeetingAssistantCoreTests/AudioLevelMonitorTests.swift"
+      },
+      "severity": "warning",
+      "ruleIdentifier": "number_separator",
+      "reason": "Underscore(s) used as thousand separator(s) should be added after every 3 digits only",
+      "ruleName": "Number Separator"
+    }
+  },
+  {
+    "text": "        XCTAssertEqual(unwrapped.deltaTime, 8.0 / 48_000.0, accuracy: 0.000_001)",
+    "violation": {
+      "ruleDescription": "Underscores should be used as thousand separator in large numbers with a configurable number of digits. In other words, there should be an underscore after every 3 digits in the integral as well as the fractional part of a number.",
+      "ruleName": "Number Separator",
+      "reason": "Underscore(s) used as thousand separator(s) should be added after every 3 digits only",
+      "severity": "warning",
+      "ruleIdentifier": "number_separator",
+      "location": {
+        "file": "Packages/MeetingAssistantCore/Tests/MeetingAssistantCoreTests/AudioRecordingWorkerMeteringTests.swift",
+        "character": 71,
+        "line": 33
+      }
+    }
+  },
+  {
+    "text": "        XCTAssertEqual(snapshot.deltaTime, 4.0 / 48_000.0, accuracy: 0.000_001)",
+    "violation": {
+      "severity": "warning",
+      "location": {
+        "line": 72,
+        "file": "Packages/MeetingAssistantCore/Tests/MeetingAssistantCoreTests/AudioRecordingWorkerMeteringTests.swift",
+        "character": 70
+      },
+      "ruleIdentifier": "number_separator",
+      "ruleDescription": "Underscores should be used as thousand separator in large numbers with a configurable number of digits. In other words, there should be an underscore after every 3 digits in the integral as well as the fractional part of a number.",
+      "reason": "Underscore(s) used as thousand separator(s) should be added after every 3 digits only",
+      "ruleName": "Number Separator"
+    }
+  },
+  {
+    "text": "    func run(",
+    "violation": {
+      "reason": "Function body should span 60 lines or less excluding comments and whitespace: currently spans 62 lines",
+      "ruleName": "Function Body Length",
+      "ruleIdentifier": "function_body_length",
+      "ruleDescription": "Function bodies should not span too many lines",
+      "severity": "warning",
+      "location": {
+        "character": 5,
+        "line": 73,
+        "file": "Packages/MeetingAssistantCore/Tests/MeetingAssistantCoreTests/Benchmarks/SummaryBenchmarkRunner.swift"
+      }
+    }
+  },
+  {
+    "text": "        XCTAssertEqual(expected, 12.0 / 22.0, accuracy: 0.0_001)",
+    "violation": {
+      "ruleDescription": "Underscores should be used as thousand separator in large numbers with a configurable number of digits. In other words, there should be an underscore after every 3 digits in the integral as well as the fractional part of a number.",
+      "ruleIdentifier": "number_separator",
+      "location": {
+        "file": "Packages/MeetingAssistantCore/Tests/MeetingAssistantCoreTests/FloatingRecordingAudioVisualizerMathTests.swift",
+        "line": 74,
+        "character": 57
+      },
+      "severity": "warning",
+      "reason": "Underscore(s) used as thousand separator(s) should be added after every 3 digits only",
+      "ruleName": "Number Separator"
+    }
+  },
+  {
+    "text": "        XCTAssertEqual(levels[activeIndex], bounceLevel, accuracy: 0.0_001)",
+    "violation": {
+      "ruleDescription": "Underscores should be used as thousand separator in large numbers with a configurable number of digits. In other words, there should be an underscore after every 3 digits in the integral as well as the fractional part of a number.",
+      "ruleName": "Number Separator",
+      "reason": "Underscore(s) used as thousand separator(s) should be added after every 3 digits only",
+      "ruleIdentifier": "number_separator",
+      "severity": "warning",
+      "location": {
+        "character": 68,
+        "file": "Packages/MeetingAssistantCore/Tests/MeetingAssistantCoreTests/FloatingRecordingAudioVisualizerMathTests.swift",
+        "line": 90
+      }
+    }
+  },
+  {
+    "text": "final class MeetingQAServiceTests: XCTestCase {",
+    "violation": {
+      "severity": "warning",
+      "location": {
+        "line": 6,
+        "file": "Packages/MeetingAssistantCore/Tests/MeetingAssistantCoreTests/MeetingQAServiceTests.swift",
+        "character": 7
+      },
+      "reason": "Class body should span 400 lines or less excluding comments and whitespace: currently spans 436 lines",
+      "ruleDescription": "Type bodies should not span too many lines",
+      "ruleName": "Type Body Length",
+      "ruleIdentifier": "type_body_length"
+    }
+  },
+  {
+    "text": "    func testAskIncludesMeetingNotesInPrompt() async throws {",
+    "violation": {
+      "ruleIdentifier": "function_body_length",
+      "severity": "warning",
+      "reason": "Function body should span 60 lines or less excluding comments and whitespace: currently spans 62 lines",
+      "ruleDescription": "Function bodies should not span too many lines",
+      "location": {
+        "line": 377,
+        "file": "Packages/MeetingAssistantCore/Tests/MeetingAssistantCoreTests/MeetingQAServiceTests.swift",
+        "character": 5
+      },
+      "ruleName": "Function Body Length"
+    }
+  },
+  {
+    "text": "}",
+    "violation": {
+      "ruleIdentifier": "file_length",
+      "ruleDescription": "Files should not span too many lines.",
+      "severity": "warning",
+      "ruleName": "File Length",
+      "location": {
+        "character": 1,
+        "file": "Packages/MeetingAssistantCore/Tests/MeetingAssistantCoreTests/RecordingManagerTests.swift",
+        "line": 748
+      },
+      "reason": "File should contain 600 lines or less excluding comments and whitespaces: currently contains 622"
+    }
+  },
+  {
+    "text": "    func testStopRecording_DictationUsesDictationPromptSelection() async throws {",
+    "violation": {
+      "ruleName": "Function Body Length",
+      "reason": "Function body should span 60 lines or less excluding comments and whitespace: currently spans 67 lines",
+      "ruleIdentifier": "function_body_length",
+      "location": {
+        "file": "Packages/MeetingAssistantCore/Tests/MeetingAssistantCoreTests/RecordingManagerTranscriptionTests.swift",
+        "line": 11,
+        "character": 5
+      },
+      "ruleDescription": "Function bodies should not span too many lines",
+      "severity": "warning"
+    }
+  },
+  {
+    "text": "    func testModeConfigurationIsStableDuringSession() async throws {",
+    "violation": {
+      "reason": "Function body should span 60 lines or less excluding comments and whitespace: currently spans 72 lines",
+      "ruleName": "Function Body Length",
+      "severity": "warning",
+      "ruleIdentifier": "function_body_length",
+      "ruleDescription": "Function bodies should not span too many lines",
+      "location": {
+        "file": "Packages/MeetingAssistantCore/Tests/MeetingAssistantCoreTests/RecordingManagerTranscriptionTests.swift",
+        "line": 603,
+        "character": 5
+      }
+    }
+  },
+  {
+    "text": "}",
+    "violation": {
+      "ruleDescription": "Files should not span too many lines.",
+      "ruleIdentifier": "file_length",
+      "ruleName": "File Length",
+      "severity": "warning",
+      "location": {
+        "character": 1,
+        "file": "Packages/MeetingAssistantCore/Tests/MeetingAssistantCoreTests/RecordingManagerTranscriptionTests.swift",
+        "line": 738
+      },
+      "reason": "File should contain 600 lines or less excluding comments and whitespaces: currently contains 609"
+    }
+  },
+  {
+    "text": "final class ShortcutDefinitionAndEngineTests: XCTestCase {",
+    "violation": {
+      "ruleIdentifier": "type_body_length",
+      "severity": "warning",
+      "ruleName": "Type Body Length",
+      "location": {
+        "character": 7,
+        "file": "Packages/MeetingAssistantCore/Tests/MeetingAssistantCoreTests/ShortcutDefinitionAndEngineTests.swift",
+        "line": 5
+      },
+      "ruleDescription": "Type bodies should not span too many lines",
+      "reason": "Class body should span 400 lines or less excluding comments and whitespace: currently spans 499 lines"
+    }
+  },
+  {
+    "text": "        XCTAssertEqual(ducked.properties[0].value, 0.24, accuracy: 0.0_001)",
+    "violation": {
+      "location": {
+        "character": 68,
+        "file": "Packages/MeetingAssistantCore/Tests/MeetingAssistantCoreTests/SystemAudioMuteControllerTests.swift",
+        "line": 111
+      },
+      "reason": "Underscore(s) used as thousand separator(s) should be added after every 3 digits only",
+      "ruleDescription": "Underscores should be used as thousand separator in large numbers with a configurable number of digits. In other words, there should be an underscore after every 3 digits in the integral as well as the fractional part of a number.",
+      "ruleName": "Number Separator",
+      "ruleIdentifier": "number_separator",
+      "severity": "warning"
+    }
+  },
+  {
+    "text": "        XCTAssertEqual(muted.properties[0].value, 0.0, accuracy: 0.0_001)",
+    "violation": {
+      "location": {
+        "character": 66,
+        "file": "Packages/MeetingAssistantCore/Tests/MeetingAssistantCoreTests/SystemAudioMuteControllerTests.swift",
+        "line": 130
+      },
+      "ruleIdentifier": "number_separator",
+      "ruleName": "Number Separator",
+      "severity": "warning",
+      "reason": "Underscore(s) used as thousand separator(s) should be added after every 3 digits only",
+      "ruleDescription": "Underscores should be used as thousand separator in large numbers with a configurable number of digits. In other words, there should be an underscore after every 3 digits in the integral as well as the fractional part of a number."
+    }
+  },
+  {
+    "text": "        XCTAssertEqual(unchanged.properties[0].value, 0.65, accuracy: 0.0_001)",
+    "violation": {
+      "reason": "Underscore(s) used as thousand separator(s) should be added after every 3 digits only",
+      "ruleDescription": "Underscores should be used as thousand separator in large numbers with a configurable number of digits. In other words, there should be an underscore after every 3 digits in the integral as well as the fractional part of a number.",
+      "ruleIdentifier": "number_separator",
+      "severity": "warning",
+      "location": {
+        "character": 71,
+        "file": "Packages/MeetingAssistantCore/Tests/MeetingAssistantCoreTests/SystemAudioMuteControllerTests.swift",
+        "line": 131
+      },
+      "ruleName": "Number Separator"
+    }
+  },
+  {
+    "text": "final class TranscribeAudioPostProcessingTests: XCTestCase {",
+    "violation": {
+      "ruleIdentifier": "type_body_length",
+      "ruleName": "Type Body Length",
+      "severity": "warning",
+      "location": {
+        "line": 6,
+        "file": "Packages/MeetingAssistantCore/Tests/MeetingAssistantCoreTests/TranscribeAudioUseCasePostProcessingMacroMockingTests.swift",
+        "character": 7
+      },
+      "ruleDescription": "Type bodies should not span too many lines",
+      "reason": "Class body should span 400 lines or less excluding comments and whitespace: currently spans 565 lines"
+    }
+  },
+  {
+    "text": "    func testUpdateMeetingTitle_PersistsTrimmedTitleAndRefreshesSelection() async throws {",
+    "violation": {
+      "location": {
+        "file": "Packages/MeetingAssistantCore/Tests/MeetingAssistantCoreTests/TranscriptionSettingsViewModelTests.swift",
+        "character": 5,
+        "line": 468
+      },
+      "reason": "Function body should span 60 lines or less excluding comments and whitespace: currently spans 82 lines",
+      "ruleDescription": "Function bodies should not span too many lines",
+      "ruleIdentifier": "function_body_length",
+      "severity": "warning",
+      "ruleName": "Function Body Length"
+    }
+  },
+  {
+    "text": "    func testUpdateMeetingTitle_EmptyValueClearsCustomTitle() async throws {",
+    "violation": {
+      "reason": "Function body should span 60 lines or less excluding comments and whitespace: currently spans 61 lines",
+      "ruleIdentifier": "function_body_length",
+      "ruleDescription": "Function bodies should not span too many lines",
+      "location": {
+        "line": 558,
+        "character": 5,
+        "file": "Packages/MeetingAssistantCore/Tests/MeetingAssistantCoreTests/TranscriptionSettingsViewModelTests.swift"
+      },
+      "severity": "warning",
+      "ruleName": "Function Body Length"
+    }
+  },
+  {
+    "text": "}",
+    "violation": {
+      "severity": "warning",
+      "reason": "File should contain 600 lines or less excluding comments and whitespaces: currently contains 747",
+      "ruleIdentifier": "file_length",
+      "ruleName": "File Length",
+      "ruleDescription": "Files should not span too many lines.",
+      "location": {
+        "character": 1,
+        "file": "Packages/MeetingAssistantCore/Tests/MeetingAssistantCoreTests/TranscriptionSettingsViewModelTests.swift",
+        "line": 872
+      }
+    }
+  }
+]
