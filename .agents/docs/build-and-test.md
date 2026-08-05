@@ -317,13 +317,13 @@ file contents, and secrets are never embedded in the JSON.
 
 `validate-agent` adds a content-addressed fingerprint covering the requested and
 selected lane, base/head trees, validation content representation, gate inputs,
-external gate inputs (tracked `Packages/MeetingAssistantCore/Package.resolved`
-and workspace lockfiles only), toolchain identities, and runner schema.
+external gate inputs (tracked SwiftPM lockfiles only), toolchain identities, and
+runner schema.
 Committed mode materializes `HEAD_REF` in a temporary detached worktree before
 selecting or running the gate, unless the checkout is clean and `HEAD` already
 matches `HEAD_REF` (in-place committed validation). If tracked external inputs
 differ between the original checkout and materialized tree, reuse and PASS-cache
-writes are disabled for that run. Gitignored local `Package.resolved` copies do
+writes are disabled for that run. Gitignored local SwiftPM lockfile copies do
 not participate in external-input comparison. Staged and committed modes
 exclude unrelated unstaged/untracked state. Only exact `PASS` evidence with
 existing child results and matching fingerprints can be reused. Use

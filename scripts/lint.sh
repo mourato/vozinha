@@ -11,8 +11,9 @@ PROJECT_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 # shellcheck source=scripts/lib/agent-output.sh
 source "${SCRIPT_DIR}/lib/agent-output.sh"
 
-STRICT_LINT="${STRICT_LINT:-0}"
+STRICT_LINT="${STRICT_LINT:-1}"
 AGENT_MODE=0
+SOURCES=(App Packages/MeetingAssistantCore/Sources)
 
 if ma_agent_mode_enabled; then
     AGENT_MODE=1
@@ -25,8 +26,16 @@ while [[ $# -gt 0 ]]; do
             MA_AGENT_MODE=1
             shift
             ;;
+        --files)
+            if [ "$#" -lt 2 ] || [ -z "$2" ]; then
+                echo "--files requires a space-separated path list" >&2
+                exit 2
+            fi
+            read -r -a SOURCES <<< "$2"
+            shift 2
+            ;;
         --help|-h)
-            echo "Usage: $0 [--agent]"
+            echo "Usage: $0 [--agent] [--files \"path [path ...]\"]"
             exit 0
             ;;
         *)
@@ -37,8 +46,6 @@ while [[ $# -gt 0 ]]; do
 done
 
 cd "${PROJECT_ROOT}"
-
-SOURCES="App Packages/MeetingAssistantCore/Sources"
 
 if [ "${AGENT_MODE}" -eq 1 ]; then
     ma_agent_prepare_sandbox_env "${PROJECT_ROOT}"
@@ -62,7 +69,7 @@ if ! command -v swiftlint >/dev/null 2>&1; then
     MISSING_TOOLS=1
     LINT_EXIT=127
 else
-    swiftlint lint --config .swiftlint.yml ${SOURCES} >"${LINT_LOG}" 2>&1 || LINT_EXIT=$?
+    swiftlint lint --config .swiftlint.yml "${SOURCES[@]}" >"${LINT_LOG}" 2>&1 || LINT_EXIT=$?
 fi
 
 if ! command -v swiftformat >/dev/null 2>&1; then
@@ -70,7 +77,7 @@ if ! command -v swiftformat >/dev/null 2>&1; then
     MISSING_TOOLS=1
     FORMAT_EXIT=127
 else
-    swiftformat --lint --config .swiftformat ${SOURCES} >"${FORMAT_LOG}" 2>&1 || FORMAT_EXIT=$?
+    swiftformat --lint --base-config .swiftformat "${SOURCES[@]}" >"${FORMAT_LOG}" 2>&1 || FORMAT_EXIT=$?
 fi
 
 LINT_WARNINGS=0

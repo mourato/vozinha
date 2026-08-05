@@ -92,13 +92,15 @@ Every implementation plan must include an `Execution profile`; reclassify agains
 ## Agent Validation Loop
 
 `make validate-agent` is the remembered technical validation gate; it proves
-checks, not merge approval. End-of-task: strict lint on any Swift delta, then
+checks, not merge approval. End-of-task: `make lint` (fail-closed) on any Swift delta, then
 affected-module `validate-agent --lane auto` when behavior changes (escalate to
 Full when the lane requires it). Commit (pre-commit applies staged
 format/lint-fix). Pre-push does not run build or test validation — that
 evidence is owned by the development stage. Guidance-only ranges use
 `make guidance-check`. Do not stack manual working-tree, staged, and committed
-gates; required review remains separate. Details live in `delivery-workflow`.
+gates; `make lint-report` is report-only for the existing warning baseline;
+required review remains separate. The Swift 6.2/toolchain policy is in
+`.agents/docs/swift-6-2-agent-baseline.md`. Details live in `delivery-workflow`.
 
 ## Commands and Routing
 

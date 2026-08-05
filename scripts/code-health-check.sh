@@ -67,7 +67,7 @@ fi
 echo ""
 echo "2️⃣  Running SwiftFormat..."
 if command -v swiftformat &> /dev/null; then
-    if swiftformat --lint --config .swiftformat App Packages/MeetingAssistantCore/Sources 2>/dev/null; then
+    if swiftformat --lint --base-config .swiftformat App Packages/MeetingAssistantCore/Sources 2>/dev/null; then
         check_result "SwiftFormat" "PASS" "Code formatting is correct"
     else
         check_result "SwiftFormat" "WARN" "Code formatting issues found (run 'make lint-fix' to fix)"
