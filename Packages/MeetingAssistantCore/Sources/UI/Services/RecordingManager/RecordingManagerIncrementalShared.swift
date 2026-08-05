@@ -175,7 +175,7 @@ extension RecordingManager {
         actualSource: RecordingSource,
     ) -> Bool {
         guard actualPurpose == config.expectedPurpose, actualSource == config.expectedSource else { return false }
-        guard let recorder = micRecorder as? AudioRecorder else { return false }
+        guard let recorder = concreteMicRecorder else { return false }
         guard recorder === AudioRecorder.shared else { return false }
         guard let transcriptionClient = transcriptionClient as? TranscriptionClient else { return false }
         return transcriptionClient.supportsIncrementalTranscription(for: config.executionMode)

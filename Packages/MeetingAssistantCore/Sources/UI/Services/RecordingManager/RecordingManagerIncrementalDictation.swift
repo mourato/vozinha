@@ -29,7 +29,7 @@ extension RecordingManager {
             return
         }
 
-        guard let recorder = micRecorder as? AudioRecorder else { return }
+        guard let recorder = concreteMicRecorder else { return }
         let transcriptionClientBox = UncheckedTranscriptionServiceBox(
             transcriptionClient,
             configuration: activeDictationStyleSnapshot?.transcriptionConfiguration,
@@ -122,7 +122,7 @@ extension RecordingManager {
     }
 
     func teardownIncrementalDictationSession() {
-        if let recorder = micRecorder as? AudioRecorder {
+        if let recorder = concreteMicRecorder {
             clearIncrementalBufferForwarder(on: recorder)
         }
         incrementalDictationCoordinator = nil

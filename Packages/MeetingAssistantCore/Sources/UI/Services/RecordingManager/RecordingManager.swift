@@ -133,6 +133,10 @@ public class RecordingManager: ObservableObject, RecordingServiceProtocol {
     var incrementalMeetingCoordinator: IncrementalTranscriptionCoordinator?
     var incrementalBufferForwarder: IncrementalBufferForwarder?
 
+    var concreteMicRecorder: AudioRecorder? {
+        micRecorder as? AudioRecorder
+    }
+
     struct RecordingStartTelemetry {
         let traceID = UUID().uuidString
         let triggerLabel: String

@@ -12,7 +12,7 @@ import UserNotifications
 
 extension RecordingManager {
     func setupRecorderErrorForwarding() {
-        guard let recorder = micRecorder as? AudioRecorder else { return }
+        guard let recorder = concreteMicRecorder else { return }
 
         recorder.onRecordingError = { [weak self] error in
             Task { @MainActor [weak self] in

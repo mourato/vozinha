@@ -31,7 +31,7 @@ extension RecordingManager {
             return
         }
 
-        guard let recorder = micRecorder as? AudioRecorder else { return }
+        guard let recorder = concreteMicRecorder else { return }
         let transcriptionClientBox = UncheckedTranscriptionServiceBox(transcriptionClient)
 
         let coordinator = IncrementalTranscriptionCoordinator(
@@ -122,7 +122,7 @@ extension RecordingManager {
     }
 
     func teardownIncrementalMeetingSession() {
-        if let recorder = micRecorder as? AudioRecorder {
+        if let recorder = concreteMicRecorder {
             clearIncrementalBufferForwarder(on: recorder)
         }
         incrementalMeetingCoordinator = nil
