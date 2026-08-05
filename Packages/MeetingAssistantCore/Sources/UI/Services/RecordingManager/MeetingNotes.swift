@@ -146,15 +146,6 @@ extension RecordingManager {
         saveCalendarEventNotesContent(mergedContent, for: normalizedIdentifier)
     }
 
-    func currentMeetingNotesContextItem() -> TranscriptionContextItem? {
-        guard currentCapturePurpose == .meeting else { return nil }
-
-        let trimmed = currentMeetingNotesText.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmed.isEmpty else { return nil }
-
-        return TranscriptionContextItem(source: .meetingNotes, text: trimmed)
-    }
-
     func meetingNotesContextItem(
         from content: MeetingNotesContent,
         capturePurpose: CapturePurpose,
