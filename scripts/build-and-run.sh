@@ -21,6 +21,11 @@ Options:
 USAGE
 }
 fail() { echo "Error: $*" >&2; exit 1; }
+confirm_default_yes() {
+    local reply
+    read -r -p "$1 [Y/n]: " reply < /dev/tty || reply=""
+    case "$reply" in ""|y|Y|yes|YES) return 0 ;; *) return 1 ;; esac
+}
 require_positive_integer() { [[ "$1" =~ ^[1-9][0-9]*$ ]] || fail "timeout must be a positive integer: $1"; }
 validate_applications_dir() {
     local root="$1" resolved
@@ -66,6 +71,10 @@ install_release() {
     target="$(bundle_path "$APPLICATIONS_DIR")"; stage="${target}.stage.$$"; backup="${target}.backup.$$"
     validate_bundle "$candidate" || fail "Release candidate is not installable"
     case "$target" in "${APPLICATIONS_DIR}/${APP_PRODUCT_NAME}.app") ;; *) fail "Refusing unexpected installation target: $target" ;; esac
+    if [ "$NO_INTERACTIVE" -eq 0 ] && ! confirm_default_yes "Replace ${target} with the signed Release build?"; then
+        echo "Installation cancelled"
+        return 0
+    fi
     stop_running_app; rm -rf "$stage"
     ditto "$candidate" "$stage" || { rm -rf "$stage"; fail "Could not stage Release candidate"; }
     if [ -e "$target" ]; then mv "$target" "$backup" || { rm -rf "$stage"; fail "Could not create installation backup"; }; had_backup=1; fi

@@ -5,7 +5,7 @@
 # with CI/CD pipelines and headless environments.
 # =============================================================================
 
-.PHONY: help build build-debug build-release build-agent build-test build-test-strict xcodebuild-safe test test-agent test-full test-full-agent test-smoke test-perf test-sensitive test-appkit test-parity test-parity-agent test-swift test-verbose test-strict test-ci-strict scope-check scope-check-agent validate-agent workflow-test benchmark-summary benchmark-summary-agent lint lint-agent lint-report lint-strict lint-strict-agent lint-fix arch-check preview-check localization-check guidance-check preflight preflight-fast preflight-agent preflight-agent-fast agent-artifacts-report agent-artifacts-dry-run agent-artifacts-clean clean run run-release build-and-run install-release dmg setup-self-signed-cert setup format health ci-build ci-test ci-release-parity ci-release-parity-self-signed deliverable-gate docs docs-preview docs-clean profile profile-report profile-cpu profile-memory profile-animation profile-animation-report
+.PHONY: help build build-debug build-release build-agent build-test build-test-strict xcodebuild-safe test test-agent test-full test-full-agent test-smoke test-perf test-sensitive test-appkit test-parity test-parity-agent test-swift test-verbose test-strict test-ci-strict scope-check scope-check-agent validate-agent workflow-test benchmark-summary benchmark-summary-agent lint lint-agent lint-report lint-strict lint-strict-agent lint-fix arch-check preview-check localization-check guidance-check preflight preflight-fast preflight-agent preflight-agent-fast agent-artifacts-report agent-artifacts-dry-run agent-artifacts-clean clean run run-release build-and-run install-app install-release dmg setup-self-signed-cert setup format health ci-build ci-test ci-release-parity ci-release-parity-self-signed deliverable-gate docs docs-preview docs-clean profile profile-report profile-cpu profile-memory profile-animation profile-animation-report
 
 # Default target
 help:
@@ -64,7 +64,7 @@ help:
 	@echo "  make run            - Build and run debug version"
 	@echo "  make run-release    - Build and run release version"
 	@echo "  make build-and-run ARGS=... - Interactive Debug/Release build workflow"
-	@echo "  make install-release ARGS=... - Build, install, validate, and launch Release Vozinha.app"
+	@echo "  make install-app ARGS=... - Interactively build, sign, replace, validate, and launch Vozinha.app"
 	@echo ""
 	@echo "Distribution:"
 	@echo "  make dmg            - Create DMG installer (prompts for auto/self-signed/adhoc at start)"
@@ -285,8 +285,11 @@ run-release: build-release
 build-and-run:
 	@./scripts/build-and-run.sh $(ARGS)
 
-install-release:
-	@./scripts/build-and-run.sh --no-interactive --configuration Release $(ARGS)
+install-app:
+	@./scripts/build-and-run.sh $(ARGS)
+
+install-release: install-app
+	@:
 
 # Distribution
 new-release:

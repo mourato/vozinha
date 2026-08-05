@@ -278,12 +278,12 @@ Add these Make targets while preserving the existing `run` behavior:
 build-and-run:
 	@./scripts/build-and-run.sh $(ARGS)
 
-install-release:
-	@./scripts/build-and-run.sh --no-interactive --configuration Release $(ARGS)
+install-app:
+	@./scripts/build-and-run.sh $(ARGS)
 ```
 
-The interactive script remains the primary local workflow; `install-release`
-is the explicit automation entry point. Do not make `make run-release` replace
+The interactive script remains the primary local workflow; `install-app`
+is the explicit installation entry point. Do not make `make run-release` replace
 `/Applications`, because that would silently change an existing target's
 meaning.
 
