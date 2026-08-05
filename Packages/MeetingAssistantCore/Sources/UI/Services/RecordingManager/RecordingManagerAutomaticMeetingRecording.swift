@@ -28,15 +28,13 @@ public struct AutomaticMeetingRecordingConfirmation: Sendable, Equatable {
     }
 }
 
-enum AutoMeetingConfirmationPolicy {
-    static func isIdleForAutomaticMeetingStart(
-        currentCapturePurpose: CapturePurpose?,
-        isRecording: Bool,
-        isStartingRecording: Bool,
-    ) -> Bool {
-        guard !isRecording, !isStartingRecording else { return false }
-        return currentCapturePurpose == nil
-    }
+func isIdleForAutomaticMeetingStart(
+    currentCapturePurpose: CapturePurpose?,
+    isRecording: Bool,
+    isStartingRecording: Bool,
+) -> Bool {
+    guard !isRecording, !isStartingRecording else { return false }
+    return currentCapturePurpose == nil
 }
 
 public extension RecordingManager {
@@ -82,7 +80,7 @@ extension RecordingManager {
                         return
                     }
 
-                    if AutoMeetingConfirmationPolicy.isIdleForAutomaticMeetingStart(
+                    if isIdleForAutomaticMeetingStart(
                         currentCapturePurpose: self.currentCapturePurpose,
                         isRecording: self.isRecording,
                         isStartingRecording: self.isStartingRecording,
@@ -138,7 +136,7 @@ extension RecordingManager {
             cancelAutomaticMeetingRecordingConfirmation()
             return
         }
-        guard AutoMeetingConfirmationPolicy.isIdleForAutomaticMeetingStart(
+        guard isIdleForAutomaticMeetingStart(
             currentCapturePurpose: currentCapturePurpose,
             isRecording: isRecording,
             isStartingRecording: isStartingRecording,

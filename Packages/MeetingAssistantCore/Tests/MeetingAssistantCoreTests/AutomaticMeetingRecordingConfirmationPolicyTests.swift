@@ -6,7 +6,7 @@ import XCTest
 final class AutoMeetingConfirmationPolicyTests: XCTestCase {
     func testIdleMeetingStartEligibilityRequiresNoActiveRecording() {
         XCTAssertTrue(
-            AutoMeetingConfirmationPolicy.isIdleForAutomaticMeetingStart(
+            isIdleForAutomaticMeetingStart(
                 currentCapturePurpose: nil,
                 isRecording: false,
                 isStartingRecording: false,
@@ -14,7 +14,7 @@ final class AutoMeetingConfirmationPolicyTests: XCTestCase {
         )
 
         XCTAssertFalse(
-            AutoMeetingConfirmationPolicy.isIdleForAutomaticMeetingStart(
+            isIdleForAutomaticMeetingStart(
                 currentCapturePurpose: .meeting,
                 isRecording: true,
                 isStartingRecording: false,
@@ -22,7 +22,7 @@ final class AutoMeetingConfirmationPolicyTests: XCTestCase {
         )
 
         XCTAssertFalse(
-            AutoMeetingConfirmationPolicy.isIdleForAutomaticMeetingStart(
+            isIdleForAutomaticMeetingStart(
                 currentCapturePurpose: .meeting,
                 isRecording: false,
                 isStartingRecording: true,
@@ -30,7 +30,7 @@ final class AutoMeetingConfirmationPolicyTests: XCTestCase {
         )
 
         XCTAssertFalse(
-            AutoMeetingConfirmationPolicy.isIdleForAutomaticMeetingStart(
+            isIdleForAutomaticMeetingStart(
                 currentCapturePurpose: .dictation,
                 isRecording: false,
                 isStartingRecording: false,
