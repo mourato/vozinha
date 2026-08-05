@@ -1,5 +1,6 @@
 import Foundation
 import MeetingAssistantCoreCommon
+import MeetingAssistantCoreDomain
 
 // MARK: - Sound Feedback Configuration
 
@@ -470,6 +471,12 @@ public enum TranscriptionExecutionMode: String, Codable, Sendable {
     case meeting
     case dictation
     case assistant
+}
+
+public extension CapturePurpose {
+    var transcriptionExecutionMode: TranscriptionExecutionMode {
+        self == .dictation ? .dictation : .meeting
+    }
 }
 
 public struct TranscriptionProviderSelection: Codable, Equatable, Sendable {

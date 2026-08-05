@@ -47,10 +47,10 @@ public extension RecordingManager {
         )
         currentMeeting = meeting
         currentCapturePurpose = capturePurpose
-        activePostProcessingKernelMode = capturePurpose == .dictation ? .dictation : .meeting
+        activePostProcessingKernelMode = capturePurpose.intelligenceKernelMode
         isMeetingMicrophoneEnabled = false
         refreshPostProcessingReadinessWarning(
-            for: capturePurpose == .dictation ? .dictation : .meeting,
+            for: capturePurpose.intelligenceKernelMode,
         )
 
         AppLogger.info(

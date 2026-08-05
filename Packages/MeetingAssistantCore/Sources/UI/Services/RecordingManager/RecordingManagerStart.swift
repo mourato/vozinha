@@ -39,19 +39,6 @@ public extension RecordingManager {
         )
     }
 
-    func startRecording(
-        source: RecordingSource,
-        requestedAt: Date,
-        triggerLabel: String,
-    ) async {
-        await startCapture(
-            purpose: normalizedCapturePurpose(for: source),
-            source: normalizedRecordingSource(for: source),
-            requestedAt: requestedAt,
-            triggerLabel: triggerLabel,
-        )
-    }
-
     func startCapture(
         purpose: CapturePurpose,
         source: RecordingSource,
@@ -72,10 +59,10 @@ public extension RecordingManager {
 
         currentCapturePurpose = purpose
         recordingSource = source
-        activePostProcessingKernelMode = purpose == .dictation ? .dictation : .meeting
+        activePostProcessingKernelMode = purpose.intelligenceKernelMode
         isMeetingMicrophoneEnabled = purpose == .meeting
         dictationSessionOutputLanguageOverride = nil
-        refreshPostProcessingReadinessWarning(for: purpose == .dictation ? .dictation : .meeting)
+        refreshPostProcessingReadinessWarning(for: purpose.intelligenceKernelMode)
 
         guard !isStartOperationInFlight else { return }
         isStartOperationInFlight = true
@@ -149,7 +136,7 @@ public extension RecordingManager {
         guard currentCapturePurpose == .meeting, isRecording || isStartingRecording || isTranscribing else { return }
         isMeetingMicrophoneEnabled = isEnabled
 
-        if let recorder = micRecorder as? AudioRecorder {
+        if let recorder = concreteMicRecorder {
             recorder.setMeetingMicrophoneEnabled(isEnabled)
         }
     }
@@ -326,7 +313,7 @@ extension RecordingManager {
             "source": source.rawValue,
         ])
 
-        if let recorder = micRecorder as? AudioRecorder {
+        if let recorder = concreteMicRecorder {
             try await recorder.startRecording(to: url, source: source, retryCount: 0)
         } else {
             try await micRecorder.startRecording(to: url, retryCount: 0)

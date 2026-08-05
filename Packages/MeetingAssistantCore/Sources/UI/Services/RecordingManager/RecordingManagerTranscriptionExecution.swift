@@ -15,7 +15,7 @@ extension RecordingManager {
     ) async throws {
         updateVisibleTranscriptionProgress(phase: .preparing, sessionID: sessionID)
 
-        let executionMode: TranscriptionExecutionMode = capturePurpose == .dictation ? .dictation : .meeting
+        let executionMode: TranscriptionExecutionMode = capturePurpose.transcriptionExecutionMode
         let resolvedSelection = effectiveSelection
             ?? selectionOverride
             ?? AppSettingsStore.shared.resolvedTranscriptionSelection(for: executionMode)
@@ -56,7 +56,7 @@ extension RecordingManager {
             }
         }
 
-        let executionMode: TranscriptionExecutionMode = capturePurpose == .dictation ? .dictation : .meeting
+        let executionMode: TranscriptionExecutionMode = capturePurpose.transcriptionExecutionMode
         let resolvedInputLanguage = inputLanguageCode
             ?? AppSettingsStore.shared.resolvedTranscriptionInputLanguageCode(for: executionMode)
 
@@ -125,7 +125,7 @@ extension RecordingManager {
         capturePurpose: CapturePurpose,
         selectionOverride: TranscriptionProviderSelection? = nil,
     ) -> ModelPerformanceModelIdentity {
-        let executionMode: TranscriptionExecutionMode = capturePurpose == .dictation ? .dictation : .meeting
+        let executionMode: TranscriptionExecutionMode = capturePurpose.transcriptionExecutionMode
         let selection = selectionOverride ?? AppSettingsStore.shared.resolvedTranscriptionSelection(for: executionMode)
         return selection.provider.modelPerformanceIdentity(modelID: selection.selectedModel)
     }
@@ -151,7 +151,7 @@ extension RecordingManager {
         vocabularyHints: VocabularyProviderHints,
         capturePurpose: CapturePurpose,
     ) -> DomainTranscriptionRequestConfiguration? {
-        let executionMode: TranscriptionExecutionMode = capturePurpose == .dictation ? .dictation : .meeting
+        let executionMode: TranscriptionExecutionMode = capturePurpose.transcriptionExecutionMode
         let hints: VocabularyProviderHints? = vocabularyHints.isEmpty ? nil : vocabularyHints
 
         if let dictationConfiguration {

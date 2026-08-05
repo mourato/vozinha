@@ -14,6 +14,10 @@ public enum CapturePurpose: String, CaseIterable, Codable, Sendable {
         }
     }
 
+    public var intelligenceKernelMode: IntelligenceKernelMode {
+        self == .dictation ? .dictation : .meeting
+    }
+
     public static func defaultValue(for app: MeetingApp) -> CapturePurpose {
         switch app {
         case .unknown:

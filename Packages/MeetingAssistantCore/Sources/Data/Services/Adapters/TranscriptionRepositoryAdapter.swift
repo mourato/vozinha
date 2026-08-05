@@ -123,7 +123,7 @@ public final class TranscriptionRepositoryAdapter: TranscriptionRepository, Tran
         let response = try await service.transcribe(
             audioURL: audioURL,
             onProgress: onProgress,
-            executionMode: capturePurpose == .dictation ? .dictation : .meeting,
+            executionMode: capturePurpose.transcriptionExecutionMode,
             diarizationEnabledOverride: diarizationEnabledOverride,
             selection: TranscriptionProviderSelection(provider: provider, selectedModel: configuration.modelID),
             inputLanguageCode: configuration.inputLanguageCode,

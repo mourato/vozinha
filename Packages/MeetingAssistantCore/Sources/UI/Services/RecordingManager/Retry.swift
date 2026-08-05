@@ -69,7 +69,7 @@ extension RecordingManager {
         )
         let retryInputLanguageCode = retryConfiguration?.inputLanguageCode
             ?? AppSettingsStore.shared.resolvedTranscriptionInputLanguageCode(
-                for: capturePurpose == .dictation ? .dictation : .meeting,
+                for: capturePurpose.transcriptionExecutionMode,
             )
         let shouldRemoveSilence = shouldRemoveSilenceBeforeRetryTranscription(
             effectiveSelection: effectiveSelection,
@@ -279,7 +279,7 @@ extension RecordingManager {
             return
         }
 
-        let mode: IntelligenceKernelMode = updatedTranscription.capturePurpose == .dictation ? .dictation : .meeting
+        let mode: IntelligenceKernelMode = updatedTranscription.capturePurpose.intelligenceKernelMode
         let postProcessingIdentity = AppSettingsStore.shared.resolvedEnhancementsPerformanceIdentity(for: mode)
         let postProcessingAttempt = ModelPerformanceAttempt(
             transcriptionID: updatedTranscription.id,

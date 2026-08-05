@@ -115,7 +115,7 @@ extension RecordingManager {
             language: Locale.current.language.languageCode?.identifier ?? "und",
             createdAt: Date(),
             modelName: AppSettingsStore.shared.resolvedTranscriptionSelection(
-                for: session.meeting.capturePurpose == .dictation ? .dictation : .meeting,
+                for: session.meeting.capturePurpose.transcriptionExecutionMode,
             ).selectedModel,
             inputSource: resolveInputSourceLabel(
                 for: session.meeting,

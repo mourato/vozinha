@@ -54,22 +54,6 @@ public extension TranscriptionSettingsViewModel {
         await askQuestion(trimmedQuestion, for: transcription)
     }
 
-    func retryLastQuestion(for transcription: Transcription) async {
-        guard let lastAskedQuestion,
-              lastQuestionTranscriptionId == transcription.id
-        else {
-            qaErrorMessage = "transcription.qa.error.no_retry_context".localized
-            return
-        }
-
-        qaQuestion = lastAskedQuestion
-        await askQuestion(lastAskedQuestion, for: transcription)
-    }
-
-    func retryQuestion(_ question: String, for transcription: Transcription) async {
-        await retryQuestion(question, turnID: nil, for: transcription)
-    }
-
     func retryQuestion(_ question: String, turnID: UUID, for transcription: Transcription) async {
         await retryQuestion(question, turnID: Optional(turnID), for: transcription)
     }
@@ -99,8 +83,6 @@ public extension TranscriptionSettingsViewModel {
 
         isAnsweringQuestion = true
         qaErrorMessage = nil
-        lastAskedQuestion = question
-        lastQuestionTranscriptionId = transcription.id
         defer { isAnsweringQuestion = false }
 
         do {
@@ -124,28 +106,17 @@ public extension TranscriptionSettingsViewModel {
                 replacingTurnID: retryTurnID,
             )
             await persistMeetingConversationState(for: transcription.id)
-        } catch let error as MeetingQAError {
-            qaErrorMessage = localizedQuestionError(for: error, transcriptionID: transcription.id)
-            upsertQATurn(
-                QATurn(
-                    id: retryTurnID ?? UUID(),
-                    question: question,
-                    response: nil,
-                    errorMessage: qaErrorMessage,
-                    createdAt: turnCreationDate(for: retryTurnID, transcriptionID: transcription.id),
-                ),
-                transcriptionID: transcription.id,
-                replacingTurnID: retryTurnID,
-            )
-            await persistMeetingConversationState(for: transcription.id)
         } catch {
-            qaErrorMessage = "transcription.qa.error.generic".localized
+            let message = (error as? MeetingQAError).map {
+                localizedQuestionError(for: $0, transcriptionID: transcription.id)
+            } ?? "transcription.qa.error.generic".localized
+            qaErrorMessage = message
             upsertQATurn(
                 QATurn(
                     id: retryTurnID ?? UUID(),
                     question: question,
                     response: nil,
-                    errorMessage: qaErrorMessage,
+                    errorMessage: message,
                     createdAt: turnCreationDate(for: retryTurnID, transcriptionID: transcription.id),
                 ),
                 transcriptionID: transcription.id,
@@ -180,8 +151,6 @@ public extension TranscriptionSettingsViewModel {
         qaQuestion = ""
         qaResponse = nil
         qaErrorMessage = nil
-        lastAskedQuestion = nil
-        lastQuestionTranscriptionId = nil
     }
 
     func clearQuestionComposer() {
@@ -284,7 +253,7 @@ public extension TranscriptionSettingsViewModel {
         let transcriptionID = transcription.id
         markPostProcessingStarted(for: transcriptionID)
         let startTime = Date()
-        let mode: IntelligenceKernelMode = transcription.capturePurpose == .dictation ? .dictation : .meeting
+        let mode: IntelligenceKernelMode = transcription.capturePurpose.intelligenceKernelMode
         let postProcessingIdentity = AppSettingsStore.shared.resolvedEnhancementsPerformanceIdentity(for: mode)
         let postProcessingInput = postProcessingInput(for: transcription)
         defer { markPostProcessingFinished(for: transcriptionID) }
