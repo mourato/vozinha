@@ -60,9 +60,9 @@ final class MeetingQAServiceTests: XCTestCase {
 
         let service = MeetingQAService(
             settings: .shared,
-            session: session,
             apiKeyProvider: { _ in "test-key" },
             sleepFunction: { _ in },
+            providerHTTPClient: ProviderHTTPClient(session: session),
         )
 
         let response = try await service.ask(
@@ -98,9 +98,9 @@ final class MeetingQAServiceTests: XCTestCase {
 
         let service = MeetingQAService(
             settings: .shared,
-            session: session,
             apiKeyProvider: { _ in "test-key" },
             sleepFunction: { _ in },
+            providerHTTPClient: ProviderHTTPClient(session: session),
         )
 
         let response = try await service.ask(
@@ -144,9 +144,9 @@ final class MeetingQAServiceTests: XCTestCase {
 
         let service = MeetingQAService(
             settings: .shared,
-            session: session,
             apiKeyProvider: { _ in "test-key" },
             sleepFunction: { _ in },
+            providerHTTPClient: ProviderHTTPClient(session: session),
         )
 
         let response = try await service.ask(
@@ -168,9 +168,9 @@ final class MeetingQAServiceTests: XCTestCase {
 
         let service = MeetingQAService(
             settings: .shared,
-            session: makeMockedSession(),
             apiKeyProvider: { _ in "test-key" },
             sleepFunction: { _ in },
+            providerHTTPClient: ProviderHTTPClient(session: makeMockedSession()),
         )
 
         do {
@@ -191,9 +191,9 @@ final class MeetingQAServiceTests: XCTestCase {
     func testAskFailsForDictationTranscription() async {
         let service = MeetingQAService(
             settings: .shared,
-            session: makeMockedSession(),
             apiKeyProvider: { _ in "test-key" },
             sleepFunction: { _ in },
+            providerHTTPClient: ProviderHTTPClient(session: makeMockedSession()),
         )
 
         do {
@@ -264,9 +264,9 @@ final class MeetingQAServiceTests: XCTestCase {
 
         let service = MeetingQAService(
             settings: .shared,
-            session: session,
             apiKeyProvider: { _ in "test-key" },
             sleepFunction: { _ in },
+            providerHTTPClient: ProviderHTTPClient(session: session),
         )
 
         let response = try await service.ask(
@@ -305,9 +305,9 @@ final class MeetingQAServiceTests: XCTestCase {
 
         let service = MeetingQAService(
             settings: .shared,
-            session: session,
             apiKeyProvider: { _ in "test-key" },
             sleepFunction: { _ in },
+            providerHTTPClient: ProviderHTTPClient(session: session),
         )
 
         let response = try await service.ask(
@@ -353,9 +353,9 @@ final class MeetingQAServiceTests: XCTestCase {
 
         let service = MeetingQAService(
             settings: .shared,
-            session: session,
             apiKeyProvider: { _ in "test-key" },
             sleepFunction: { _ in },
+            providerHTTPClient: ProviderHTTPClient(session: session),
         )
 
         let response = try await service.ask(
@@ -427,9 +427,9 @@ final class MeetingQAServiceTests: XCTestCase {
 
         let service = MeetingQAService(
             settings: .shared,
-            session: session,
             apiKeyProvider: { _ in "test-key" },
             sleepFunction: { _ in },
+            providerHTTPClient: ProviderHTTPClient(session: session),
         )
 
         _ = try await service.ask(

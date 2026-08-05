@@ -69,9 +69,9 @@ final class IntelligenceKernelContractsTests: XCTestCase {
 
         let service = MeetingQAService(
             settings: .shared,
-            session: session,
             apiKeyProvider: { _ in "test-key" },
             sleepFunction: { _ in },
+            providerHTTPClient: ProviderHTTPClient(session: session),
         )
 
         let response = try await service.ask(

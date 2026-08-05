@@ -50,6 +50,8 @@ public final class PostProcessingService: ObservableObject, PostProcessingServic
 
     let settings = AppSettingsStore.shared
 
+    let providerHTTPClient = ProviderHTTPClient()
+
     let summaryResponseParser = CanonicalSummaryResponseParser()
     let summaryPromptComposer = CanonicalSummaryPromptComposer()
     let summaryRepairComposer = CanonicalSummaryRepairComposer()

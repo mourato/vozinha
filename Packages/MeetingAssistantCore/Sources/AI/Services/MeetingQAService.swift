@@ -23,13 +23,12 @@ public final class MeetingQAService: ObservableObject, MeetingQAServiceProtocol 
     @Published public private(set) var lastError: MeetingQAError?
 
     private let settings: AppSettingsStore
-    private let session: URLSession
     private let apiKeyProvider: APIKeyProvider
     private let sleepFunction: SleepFunction
+    private let providerHTTPClient: ProviderHTTPClient
 
     public init(
         settings: AppSettingsStore = .shared,
-        session: URLSession = .shared,
         apiKeyProvider: @escaping APIKeyProvider = { provider in
             guard let key = try KeychainManager.retrieveAPIKey(for: provider),
                   !key.isEmpty
@@ -41,19 +40,12 @@ public final class MeetingQAService: ObservableObject, MeetingQAServiceProtocol 
         sleepFunction: @escaping SleepFunction = { nanoseconds in
             try await Task.sleep(nanoseconds: nanoseconds)
         },
+        providerHTTPClient: ProviderHTTPClient = .init(),
     ) {
         self.settings = settings
-        self.session = session
         self.apiKeyProvider = apiKeyProvider
         self.sleepFunction = sleepFunction
-    }
-
-    public func ask(question: String, transcription: Transcription) async throws -> MeetingQAResponse {
-        try await ask(
-            question: question,
-            transcription: transcription,
-            modelSelectionOverride: nil,
-        )
+        self.providerHTTPClient = providerHTTPClient
     }
 
     private func ask(
@@ -178,50 +170,37 @@ public final class MeetingQAService: ObservableObject, MeetingQAServiceProtocol 
         configuration config: AIConfiguration,
     ) async throws -> String {
         let apiKey = try getAPIKey(for: config.provider)
-        let url = try buildURL(for: config, apiKey: apiKey)
         let (systemPrompt, userPrompt) = buildPrompts(question: question, transcription: transcription)
+        let request = ProviderHTTPClient.Request(
+            provider: config.provider,
+            baseURL: config.baseURL,
+            model: config.selectedModel,
+            apiKey: apiKey,
+            systemMessage: systemPrompt,
+            userMessage: userPrompt,
+            maxTokens: Constants.maxTokens,
+            anthropicAPIVersion: Constants.anthropicAPIVersion,
+            timeoutSeconds: Constants.requestTimeoutSeconds,
+        )
 
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.timeoutInterval = Constants.requestTimeoutSeconds
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-
-        switch config.provider {
-        case .anthropic:
-            request.setValue(apiKey, forHTTPHeaderField: "x-api-key")
-            request.setValue(Constants.anthropicAPIVersion, forHTTPHeaderField: "anthropic-version")
-            let payload = AnthropicMessageRequest(
-                model: config.selectedModel,
-                maxTokens: Constants.maxTokens,
-                system: systemPrompt,
-                messages: [AIChatMessage(role: "user", content: userPrompt)],
-            )
-            request.httpBody = try JSONEncoder().encode(payload)
-
-        case .google:
-            let payload = GeminiGenerateContentRequest(
-                systemInstruction: GeminiSystemInstruction(parts: [GeminiPart(text: systemPrompt)]),
-                contents: [GeminiContent(role: "user", parts: [GeminiPart(text: userPrompt)])],
-                generationConfig: GeminiGenerationConfig(maxOutputTokens: Constants.maxTokens),
-            )
-            request.httpBody = try JSONEncoder().encode(payload)
-
-        case .openai, .groq, .custom:
-            request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
-            let payload = OpenAIChatRequest(
-                model: config.selectedModel,
-                messages: [
-                    AIChatMessage(role: "system", content: systemPrompt),
-                    AIChatMessage(role: "user", content: userPrompt),
-                ],
-                maxTokens: Constants.maxTokens,
-            )
-            request.httpBody = try JSONEncoder().encode(payload)
+        do {
+            return try await providerHTTPClient.send(request)
+        } catch let transportError as ProviderHTTPClientError {
+            throw meetingQAError(for: transportError)
         }
+    }
 
-        let (data, response) = try await session.data(for: request)
-        try validateHTTP(response: response, data: data)
-        return try parseProviderResponse(data: data, provider: config.provider)
+    private func meetingQAError(for transportError: ProviderHTTPClientError) -> MeetingQAError {
+        switch transportError {
+        case .invalidURL:
+            .invalidURL
+        case .noAPIConfigured:
+            .noAPIConfigured
+        case .invalidResponse:
+            .invalidResponse
+        case let .apiError(message):
+            .requestFailed(message)
+        }
     }
 
     private func buildPrompts(question: String, transcription: Transcription) -> (String, String) {
@@ -347,64 +326,20 @@ public final class MeetingQAService: ObservableObject, MeetingQAServiceProtocol 
         return String(trimmed[firstBrace...lastBrace])
     }
 
-    private func parseProviderResponse(data: Data, provider: AIProvider) throws -> String {
-        let decoder = JSONDecoder()
-
-        switch provider {
-        case .anthropic:
-            let response = try decoder.decode(AnthropicMessageResponse.self, from: data)
-            guard let text = response.content.first?.text else {
-                throw MeetingQAError.invalidResponse
-            }
-            return text
-
-        case .google:
-            let response = try decoder.decode(GeminiGenerateContentResponse.self, from: data)
-            guard let text = response.candidates?.first?.content?.parts.first?.text else {
-                throw MeetingQAError.invalidResponse
-            }
-            return text
-
-        case .openai, .groq, .custom:
-            let response = try decoder.decode(OpenAIChatResponse.self, from: data)
-            guard let content = response.choices.first?.message.content else {
-                throw MeetingQAError.invalidResponse
-            }
-            return content
+    private func meetingScopedAPIKey(for provider: AIProvider) -> String? {
+        let meetingSelectionProvider = settings.enhancementsSelection(for: .meeting).provider
+        guard provider == meetingSelectionProvider,
+              let modeKey = settings.enhancementsAPIKey(for: .meeting),
+              !modeKey.isEmpty
+        else {
+            return nil
         }
-    }
-
-    private func validateHTTP(response: URLResponse, data: Data) throws {
-        guard let httpResponse = response as? HTTPURLResponse else {
-            throw MeetingQAError.invalidResponse
-        }
-
-        guard (200...299).contains(httpResponse.statusCode) else {
-            let decoder = JSONDecoder()
-            if let openAIError = try? decoder.decode(OpenAIErrorResponse.self, from: data) {
-                throw MeetingQAError.requestFailed(openAIError.error.message)
-            }
-
-            if let anthropicError = try? decoder.decode(AnthropicErrorResponse.self, from: data) {
-                throw MeetingQAError.requestFailed(anthropicError.error.message)
-            }
-
-            if let geminiError = try? decoder.decode(GeminiErrorResponse.self, from: data) {
-                throw MeetingQAError.requestFailed(geminiError.error.message)
-            }
-
-            let raw = String(data: data, encoding: .utf8) ?? ""
-            throw MeetingQAError.requestFailed("HTTP \(httpResponse.statusCode): \(raw)")
-        }
+        return modeKey
     }
 
     private func getAPIKey(for provider: AIProvider) throws -> String {
-        let meetingSelectionProvider = settings.enhancementsSelection(for: .meeting).provider
-        if provider == meetingSelectionProvider,
-           let modeKey = settings.enhancementsAPIKey(for: .meeting),
-           !modeKey.isEmpty
-        {
-            return modeKey
+        if let scopedKey = meetingScopedAPIKey(for: provider) {
+            return scopedKey
         }
 
         let key = try apiKeyProvider(provider)
@@ -415,11 +350,8 @@ public final class MeetingQAService: ObservableObject, MeetingQAServiceProtocol 
     }
 
     private func apiKeyExists(for provider: AIProvider) -> Bool {
-        let meetingSelectionProvider = settings.enhancementsSelection(for: .meeting).provider
-        if provider == meetingSelectionProvider,
-           let modeKey = settings.enhancementsAPIKey(for: .meeting)
-        {
-            return !modeKey.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        if meetingScopedAPIKey(for: provider) != nil {
+            return true
         }
 
         guard let key = try? apiKeyProvider(provider) else {
@@ -479,39 +411,6 @@ public final class MeetingQAService: ObservableObject, MeetingQAServiceProtocol 
         guard let scheme = url.scheme?.lowercased(), scheme == "http" || scheme == "https" else { return false }
         guard let host = url.host, !host.isEmpty else { return false }
         return true
-    }
-
-    private func buildURL(for config: AIConfiguration, apiKey: String) throws -> URL {
-        let base = config.baseURL.hasSuffix("/") ? String(config.baseURL.dropLast()) : config.baseURL
-        let endpoint: String
-
-        switch config.provider {
-        case .anthropic:
-            endpoint = "\(base)/messages"
-        case .google:
-            let rawModel = config.selectedModel.trimmingCharacters(in: .whitespacesAndNewlines)
-            guard !rawModel.isEmpty else {
-                throw MeetingQAError.noAPIConfigured
-            }
-            let model = rawModel.hasPrefix("models/") ? rawModel : "models/\(rawModel)"
-            endpoint = "\(base)/\(model):generateContent"
-        case .openai, .groq, .custom:
-            endpoint = "\(base)/chat/completions"
-        }
-
-        guard var components = URLComponents(string: endpoint) else {
-            throw MeetingQAError.invalidURL
-        }
-
-        if config.provider == .google {
-            components.queryItems = [URLQueryItem(name: "key", value: apiKey)]
-        }
-
-        guard let url = components.url else {
-            throw MeetingQAError.invalidURL
-        }
-
-        return url
     }
 
     private func isRetryable(_ error: Error) -> Bool {
