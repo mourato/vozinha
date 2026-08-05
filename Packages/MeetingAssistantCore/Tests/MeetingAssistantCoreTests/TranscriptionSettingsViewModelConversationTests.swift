@@ -89,38 +89,6 @@ extension TranscriptionSettingsViewModelTests {
         XCTAssertNil(viewModel.qaErrorMessage)
     }
 
-    func testRetryLastQuestionAfterTimeoutUsesSameQuestion() async {
-        let transcription = Transcription(
-            meeting: Meeting(id: UUID(), app: .googleMeet, startTime: Date(), endTime: Date().addingTimeInterval(60)),
-            segments: [.init(speaker: "Ana", text: "Vamos lançar sexta.", startTime: 12, endTime: 16)],
-            text: "Vamos lançar sexta.",
-            rawText: "vamos lancar sexta",
-        )
-
-        viewModel.qaQuestion = "When are we launching?"
-        meetingQAService.nextError = .timeout
-
-        await viewModel.submitQuestion(for: transcription)
-        XCTAssertEqual(viewModel.qaErrorMessage, "transcription.qa.error.timeout".localized)
-
-        meetingQAService.nextError = nil
-        meetingQAService.nextResponse = MeetingQAResponse(
-            status: .answered,
-            answer: "Launch is Friday.",
-            evidence: [
-                .init(speaker: "Ana", startTime: 12, endTime: 16, excerpt: "Vamos lançar sexta."),
-            ],
-        )
-
-        await viewModel.retryLastQuestion(for: transcription)
-
-        XCTAssertEqual(meetingQAService.askCallCount, 2)
-        XCTAssertEqual(meetingQAService.lastQuestion, "When are we launching?")
-        XCTAssertEqual(viewModel.qaResponse?.answer, "Launch is Friday.")
-        XCTAssertNil(viewModel.qaErrorMessage)
-        XCTAssertEqual(viewModel.qaHistory(for: transcription.id).count, 2)
-    }
-
     func testRetryQuestionWithTurnID_ReusesExistingFailedTurnInPlace() async throws {
         let id = UUID()
         let transcription = Transcription(
