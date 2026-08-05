@@ -101,8 +101,6 @@ public class TranscriptionSettingsViewModel: ObservableObject {
     let savePanelProvider: @MainActor () -> NSSavePanel
     let summaryExportHelper: SummaryExportHelperProtocol
     let logger = Logger(subsystem: AppIdentity.logSubsystem, category: "TranscriptionSettingsViewModel")
-    var lastAskedQuestion: String?
-    var lastQuestionTranscriptionId: UUID?
 
     static let segmentSortComparator: (Transcription.Segment, Transcription.Segment) -> Bool = { lhs, rhs in
         if lhs.startTime != rhs.startTime {
