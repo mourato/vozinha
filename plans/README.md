@@ -1,6 +1,6 @@
 # Implementation Plans
 
-This is the active plan ledger. The next available plan number is 119.
+This is the active plan ledger. The next available plan number is 121.
 
 ## Execution rules
 
@@ -37,6 +37,7 @@ Status values: `TODO` | `IN PROGRESS` | `DONE` | `BLOCKED` | `REJECTED`.
 | [117](117-cache-agent-swiftpm-resolution.md) | Cache agent SwiftPM resolution safely | P1 | M | 102 | DONE |
 | [118](118-report-first-agent-artifact-cleanup.md) | Add report-first cleanup for agent build artifacts | P2 | M | 102 | DONE |
 | [119](119-adopt-global-macos-skill-overlays.md) | Adopt global macOS skills with the vozinha project overlay | P1 | M | global plan 004; 112–118 reconciled | DONE |
+| [120](120-establish-swift-6-2-agent-baseline.md) | Establish the Swift 6.2 agent baseline | P0 | L | 119; clean/reconciled worktree | DONE (merged in `9f1d3603`; review fix `0ec9eacb`) |
 
 ## Dependency order
 
@@ -92,3 +93,10 @@ Plan 119 is a guidance-only migration. It must wait until the global macOS
 skill bundle is merged and the currently dirty 112–118 work is reconciled. It
 preserves vozinha/Prisma specialist skills and moves only the seven shared
 macOS skill copies to project overlays.
+
+## Swift 6.2 baseline batch
+
+Plan 120 is the serial compiler, formatter, lint, concurrency, and agent-gate
+migration. It must run only after the current worktree is reconciled. It is the
+canonical vozinha baseline for sibling-project equalization; source rewrites
+are expected but must remain behavior-preserving and diagnostic-driven.
