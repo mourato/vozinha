@@ -64,7 +64,7 @@ make ci-release-parity  # Sparkle release build/archive parity gate (local)
 make deliverable-gate   # build-test + lint + ci-release-parity
 make run                # Run app in debug mode
 make build-and-run      # Interactive Debug/Release workflow
-make install-app        # Interactive signed Release install and launch
+make install-app        # Interactive signed Release install and launch (Release/clean default to yes)
 make format             # Auto-format with SwiftFormat
 make lint               # Run SwiftLint checks
 ```

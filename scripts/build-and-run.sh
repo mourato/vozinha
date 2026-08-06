@@ -26,6 +26,11 @@ confirm_default_yes() {
     read -r -p "$1 [Y/n]: " reply < /dev/tty || reply=""
     case "$reply" in ""|y|Y|yes|YES) return 0 ;; *) return 1 ;; esac
 }
+prompt_clean() {
+    if confirm_default_yes "Clean build artifacts first?"; then
+        CLEAN=1
+    fi
+}
 require_positive_integer() { [[ "$1" =~ ^[1-9][0-9]*$ ]] || fail "timeout must be a positive integer: $1"; }
 validate_applications_dir() {
     local root="$1" resolved
@@ -113,8 +118,9 @@ if [ "$NO_INTERACTIVE" -eq 1 ]; then
     [ -n "$CONFIGURATION" ] || fail "--no-interactive requires --configuration Debug|Release"
 elif [ -z "$CONFIGURATION" ]; then
     [ -t 0 ] && [ -t 1 ] || fail "interactive selection requires a TTY; pass --no-interactive --configuration ..."
-    printf '%s\n' '1) Debug' '2) Release' '3) Exit'; read -r -p "Choose [1/2/3]: " choice
-    case "$choice" in 1) CONFIGURATION=Debug ;; 2) CONFIGURATION=Release ;; *) exit 0 ;; esac
+    printf '%s\n' '1) Debug' '2) Release (default)' '3) Exit'; read -r -p "Choose [1/2/3] [2]: " choice
+    case "$choice" in 1) CONFIGURATION=Debug ;; 2|'') CONFIGURATION=Release ;; 3) exit 0 ;; *) fail "invalid choice: $choice" ;; esac
+    prompt_clean
 fi
 case "$CONFIGURATION" in Debug) ;; Release) APPLICATIONS_DIR="$(validate_applications_dir "$APPLICATIONS_DIR")" ;; *) fail "configuration must be Debug or Release" ;; esac
 run_selected
