@@ -39,7 +39,7 @@ rules.
 
 | Global skill | Project overlay |
 |---|---|
-| `accessibility-audit` | `.agents/overlays/accessibility-audit.md` |
+| `swiftui-accessibility-audit` | `.agents/overlays/swiftui-accessibility-audit.md` |
 | `apple-design` | `.agents/overlays/apple-design.md` |
 | `benchmarking` | `.agents/overlays/benchmarking.md` |
 | `code-quality` | `.agents/overlays/code-quality.md` |
