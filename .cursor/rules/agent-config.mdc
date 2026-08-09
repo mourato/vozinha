@@ -33,6 +33,32 @@ explicit confirmation before starting it.
   overlays may specialize facts, never weaken safety or integrity rules.
 - Skills own repeatable tool workflows. Keep this file to hard constraints and
   routing only.
+- Classify platform and task before loading specialist skills:
+  - Native macOS/AppKit/SwiftUI work: use `apple-design` and the SwiftUI
+    skills; use `swiftui-accessibility-audit` for native accessibility. Do not
+    apply web-only rules to native controls.
+  - Product web UI creation or refinement: use `interface-design`; add only
+    the relevant `better-*` domain skills for focused guidance.
+  - Holistic interface review: use `interface-review`, which hands the
+    findings to `better-interface` and its domain skills.
+  - Interface copy: use `ux-writing` for standalone copy work. In a holistic
+    interface review, use `better-writing` as the copy domain and do not run a
+    second independent copy review.
+  - General code review: use `code-review` for standards/spec and
+    `thermo-nuclear-code-quality-review` for risk and maintainability.
+- When a review task handled by `code-review` or
+  `thermo-nuclear-code-quality-review` includes interface changes, invoke
+  `interface-review` as the mandatory interface lane in addition to both
+  review lanes. Consolidate overlapping findings instead of producing three
+  copies of the same report. For an implementation task that changes UI,
+  apply the same review gate before handoff when review is requested or
+  required by the project workflow.
+- `better-accessibility` is web-only: invoke it only for browser-facing
+  HTML/CSS/JavaScript/TypeScript interfaces or an explicitly web accessibility
+  task. For SwiftUI/AppKit, use the native accessibility skills instead.
+- Keep third-party skills unchanged. Put routing, precedence, and update
+  policy here; put project-specific facts in overlays. Never customize a
+  third-party `SKILL.md` or its metadata in place.
 
 ### Secrets and disclosure
 
@@ -62,7 +88,12 @@ explicit confirmation before starting it.
 - Prefer the smallest check that proves the change. When editing the shared
   agent-config checkout, run that checkout's `make validate` (or
   `./tests/validate.sh`) before claiming done. Prefer `make doctor` when you
-  also need a projection drift check (`./sync.sh --check`).
+  also need route-reference and projection checks (`./sync.sh --check`).
+- After every upstream skill update or removal, run `make doctor` from this
+  checkout. It validates that every skill named by the global routing policy
+  still has a canonical `core/skills/<name>/SKILL.md`, then checks provider
+  projections. Treat a missing route reference or projection drift as a
+  failed update; repair the source or routing policy before handoff.
 - Checkout Make aliases (`make help`): `sync`, `validate`, `bootstrap`,
   `ponytail`, `doctor`. Use interactive menus when `ARGS` is omitted; pass
   `ARGS=` for non-interactive runs. Prefer these over one-off script paths.
