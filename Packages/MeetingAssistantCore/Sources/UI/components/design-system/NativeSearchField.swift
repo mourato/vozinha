@@ -2,8 +2,14 @@ import AppKit
 import SwiftUI
 
 struct NativeSearchField: NSViewRepresentable {
+    enum Style {
+        case standard
+        case sidebar
+    }
+
     @Binding var text: String
     let placeholder: String
+    var style: Style = .standard
 
     func makeCoordinator() -> Coordinator {
         Coordinator(text: $text)
@@ -37,11 +43,20 @@ struct NativeSearchField: NSViewRepresentable {
     }
 
     private func applyStyle(to searchField: NSSearchField) {
-        searchField.isBezeled = true
-        searchField.isBordered = true
-        searchField.drawsBackground = true
-        searchField.backgroundColor = .textBackgroundColor
-        searchField.bezelStyle = .roundedBezel
+        switch style {
+        case .standard:
+            searchField.isBezeled = true
+            searchField.isBordered = true
+            searchField.drawsBackground = true
+            searchField.backgroundColor = .textBackgroundColor
+            searchField.bezelStyle = .roundedBezel
+        case .sidebar:
+            searchField.isBezeled = true
+            searchField.isBordered = false
+            searchField.drawsBackground = false
+            searchField.backgroundColor = .clear
+            searchField.bezelStyle = .roundedBezel
+        }
     }
 }
 

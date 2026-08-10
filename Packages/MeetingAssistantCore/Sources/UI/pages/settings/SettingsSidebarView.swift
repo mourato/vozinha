@@ -34,6 +34,7 @@ struct SettingsSidebarView: View {
         SettingsSearchField(
             text: $searchText,
             placeholder: "settings.search.placeholder".localized,
+            style: .sidebar,
         )
         .accessibilityLabel("settings.search.placeholder".localized)
     }
