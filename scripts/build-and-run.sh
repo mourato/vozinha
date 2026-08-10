@@ -97,7 +97,13 @@ run_selected() {
         "$PROJECT_ROOT/scripts/run-build.sh" --configuration Debug
         open "$PROJECT_ROOT/.xcode-build/Build/Products/Debug/${APP_PRODUCT_NAME}.app"
     else
-        MA_RELEASE_SIGNING_MODE="${MA_RELEASE_SIGNING_MODE:-adhoc}" "$PROJECT_ROOT/scripts/build-release.sh" --no-interactive
+        local release_signing_mode="${MA_RELEASE_SIGNING_MODE:-}"
+        if [ -z "$release_signing_mode" ]; then
+            # shellcheck source=scripts/config/release_signing.sh
+            source "${PROJECT_ROOT}/scripts/config/release_signing.sh"
+            release_signing_mode="$(ma_autodetect_release_signing_mode)"
+        fi
+        MA_RELEASE_SIGNING_MODE="$release_signing_mode" "$PROJECT_ROOT/scripts/build-release.sh" --no-interactive
         install_release
     fi
 }
