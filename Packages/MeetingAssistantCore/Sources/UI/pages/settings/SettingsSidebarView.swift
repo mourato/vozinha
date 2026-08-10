@@ -9,6 +9,8 @@ struct SettingsSidebarView: View {
     let onSelectDestination: (SettingsDestination) -> Void
     @ScaledMetric(relativeTo: .body) private var sidebarIconSize: CGFloat = 24
     @ScaledMetric(relativeTo: .caption) private var searchResultIconSize: CGFloat = 18
+    @State private var hoveredSectionID: String?
+    @FocusState private var focusedSectionID: String?
 
     var body: some View {
         VStack(spacing: 0) {
@@ -66,13 +68,28 @@ struct SettingsSidebarView: View {
         .background(sidebarButtonBackground(for: section))
         .clipShape(RoundedRectangle(cornerRadius: AppDesignSystem.Layout.smallCornerRadius))
         .padding(.horizontal, 10)
+        .onHover { hovering in
+            hoveredSectionID = hovering ? section.id : nil
+        }
+        .focused($focusedSectionID, equals: section.id)
+        .overlay {
+            RoundedRectangle(cornerRadius: AppDesignSystem.Layout.smallCornerRadius)
+                .stroke(
+                    focusedSectionID == section.id ? AppDesignSystem.Colors.accent : .clear,
+                    lineWidth: 2,
+                )
+        }
         .accessibilityAddTraits(selectedSection == section ? .isSelected : [])
     }
 
     private func sidebarButtonBackground(for section: SettingsSection) -> some ShapeStyle {
-        selectedSection == section
-            ? AnyShapeStyle(AppDesignSystem.Colors.subtleFill)
-            : AnyShapeStyle(Color.clear)
+        if selectedSection == section {
+            return AnyShapeStyle(AppDesignSystem.Colors.subtleFill)
+        }
+        if hoveredSectionID == section.id {
+            return AnyShapeStyle(AppDesignSystem.Colors.subtleFill.opacity(0.65))
+        }
+        return AnyShapeStyle(Color.clear)
     }
 
     private var hasActiveSearch: Bool {

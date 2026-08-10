@@ -32,9 +32,12 @@ extension FloatingRecordingIndicatorView {
                 .renderingMode(.original)
                 .frame(width: 20, height: 20)
                 .contentShape(Rectangle())
+                .accessibilityHidden(true)
         }
         .menuStyle(.borderlessButton)
         .menuIndicator(.hidden)
+        .accessibilityLabel("recording_indicator.prompt.help".localized)
+        .accessibilityValue(currentPromptTitle)
         .help("recording_indicator.prompt.help".localized)
         .highPriorityGesture(TapGesture())
     }
@@ -60,10 +63,12 @@ extension FloatingRecordingIndicatorView {
                 .scaledToFit()
                 .frame(width: 24, height: 24, alignment: .center)
                 .contentShape(Rectangle())
-                .accessibilityLabel(currentDictationOutputLanguage.localizedName)
+                .accessibilityHidden(true)
         }
         .menuStyle(.borderlessButton)
         .menuIndicator(.hidden)
+        .accessibilityLabel("settings.rules_per_app.language.title".localized)
+        .accessibilityValue(currentDictationOutputLanguage.localizedName)
         .help("settings.rules_per_app.language.title".localized)
         .highPriorityGesture(TapGesture())
     }

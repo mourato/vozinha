@@ -170,6 +170,7 @@ extension FloatingRecordingIndicatorView {
                     Image(nsImage: promptIcon)
                         .renderingMode(.original)
                         .frame(width: 14, height: 14)
+                        .accessibilityHidden(true)
 
                     Text(currentPromptTitle)
                         .font(AppTypography.indicatorPromptFooterFont())
@@ -182,6 +183,8 @@ extension FloatingRecordingIndicatorView {
         }
         .menuStyle(.borderlessButton)
         .menuIndicator(.hidden)
+        .accessibilityLabel("recording_indicator.prompt.help".localized)
+        .accessibilityValue(currentPromptTitle)
         .help("recording_indicator.prompt.help".localized)
         .highPriorityGesture(TapGesture())
     }
@@ -207,10 +210,13 @@ extension FloatingRecordingIndicatorView {
                     .scaledToFit()
                     .frame(width: 18, height: 18)
                     .frame(width: FloatingRecordingIndicatorViewUtilities.superFooterIconWidth())
+                    .accessibilityHidden(true)
             }
         }
         .menuStyle(.borderlessButton)
         .menuIndicator(.hidden)
+        .accessibilityLabel("settings.rules_per_app.language.title".localized)
+        .accessibilityValue(currentDictationOutputLanguage.localizedName)
         .help("settings.rules_per_app.language.title".localized)
         .highPriorityGesture(TapGesture())
     }
@@ -230,6 +236,7 @@ extension FloatingRecordingIndicatorView {
             }
         }
         .buttonStyle(.plain)
+        .accessibilityLabel(helpKey.localized)
         .help(helpKey.localized)
     }
 

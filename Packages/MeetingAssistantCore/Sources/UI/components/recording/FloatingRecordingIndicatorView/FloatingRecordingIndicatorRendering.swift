@@ -144,12 +144,12 @@ extension FloatingRecordingIndicatorView {
 
         return HStack(spacing: 8) {
             Image(systemName: "exclamationmark.triangle.fill")
-                .foregroundStyle(.white)
+                .foregroundStyle(AppDesignSystem.Colors.overlayStatusForeground)
                 .font(.caption.weight(.bold))
 
             Text(message)
                 .font(.caption.bold())
-                .foregroundStyle(.white)
+                .foregroundStyle(AppDesignSystem.Colors.overlayStatusForeground)
                 .lineLimit(2)
                 .multilineTextAlignment(.leading)
         }

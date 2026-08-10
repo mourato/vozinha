@@ -102,6 +102,7 @@ public enum AppDesignSystem {
         public static let overlayBackground = Color.black.opacity(0.9)
         public static let overlayDivider = Color.white.opacity(0.2)
         public static let overlayForeground = Color.white
+        public static let overlayStatusForeground = Color.black
         public static let overlayForegroundMuted = Color.white.opacity(0.85)
         public static let recordingIndicatorMaterialTint = Color.black.opacity(0.22)
         public static let recordingIndicatorStroke = Color.white.opacity(0.22)

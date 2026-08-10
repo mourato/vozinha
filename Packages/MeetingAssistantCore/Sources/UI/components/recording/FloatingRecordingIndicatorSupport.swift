@@ -68,12 +68,13 @@ struct ActionIconButton: View {
         Button(action: action) {
             Image(systemName: symbol)
                 .font(AppTypography.indicatorControlIconFont())
-                .foregroundStyle(AppDesignSystem.Colors.overlayForeground)
+                .foregroundStyle(controlForeground)
                 .frame(width: 28, height: 28)
                 .background(controlBackground)
                 .clipShape(Circle())
         }
         .buttonStyle(.pressable)
+        .accessibilityLabel(helpKey.localized)
         .help(helpKey.localized)
         .onHover { hovering in
             isHovered = hovering
@@ -98,6 +99,15 @@ struct ActionIconButton: View {
                 return AnyShapeStyle(AppDesignSystem.Colors.error.opacity(0.82))
             }
             return AnyShapeStyle(AppDesignSystem.Colors.error.opacity(0.68))
+        }
+    }
+
+    private var controlForeground: Color {
+        switch style {
+        case .warning:
+            AppDesignSystem.Colors.overlayStatusForeground
+        case .neutral, .success:
+            AppDesignSystem.Colors.overlayForeground
         }
     }
 }
@@ -177,7 +187,7 @@ enum FloatingRecordingIndicatorViewUtilities {
     }
 
     static func confirmationMessageWidth(for size: FloatingRecordingIndicatorView.IndicatorSize) -> CGFloat {
-        let sample = "recording_indicator.auto_meeting_confirmation.countdown".localized(
+        let sample = "recording_indicator.auto_meeting_confirmation.countdown.other".localized(
             with: confirmationSampleSeconds,
         ) as NSString
         return ceil(sample.size(withAttributes: [.font: confirmationFont(for: size)]).width)

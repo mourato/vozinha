@@ -1121,9 +1121,11 @@
 "settings.general.recording_indicator.animation_speed.normal" = "Normal";
 "settings.general.recording_indicator.animation_speed.fast" = "Fast";
 "recording_indicator.silence_warning" = "No microphone audio detected";
+"recording_indicator.silence_warning.accessibility_hint" = "Choose whether to continue, stop, or discard the recording";
 "recording_indicator.stop.help" = "Stop and transcribe";
 "recording_indicator.cancel.help" = "Cancel and discard";
-"recording_indicator.auto_meeting_confirmation.countdown" = "Meeting recording starting in %d seconds";
+"recording_indicator.auto_meeting_confirmation.countdown.one" = "Meeting recording starting in 1 second";
+"recording_indicator.auto_meeting_confirmation.countdown.other" = "Meeting recording starting in %d seconds";
 "recording_indicator.auto_meeting_confirmation.cancel.help" = "Cancel automatic meeting recording";
 "recording_indicator.super.stop" = "Stop";
 "recording_indicator.super.cancel" = "Cancel";

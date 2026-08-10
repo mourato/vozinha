@@ -101,7 +101,10 @@ struct AutoMeetingConfirmationPill: View {
 
     private func message(at date: Date) -> String {
         let seconds = max(0, Int(ceil((timing?.deadline ?? date).timeIntervalSince(date))))
-        return "recording_indicator.auto_meeting_confirmation.countdown".localized(with: seconds)
+        if seconds == 1 {
+            return "recording_indicator.auto_meeting_confirmation.countdown.one".localized
+        }
+        return "recording_indicator.auto_meeting_confirmation.countdown.other".localized(with: seconds)
     }
 
     private func progress(at date: Date) -> CGFloat {
