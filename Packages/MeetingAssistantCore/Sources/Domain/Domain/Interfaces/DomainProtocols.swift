@@ -213,6 +213,18 @@ public protocol PostProcessingRepository: Sendable {
     ) async throws -> DomainPostProcessingResult
 }
 
+public protocol ExplicitPostProcessingRepository: PostProcessingRepository {
+    func processTranscription(
+        _ transcription: String,
+        request: DomainPostProcessingRequest,
+    ) async throws -> String
+
+    func processTranscriptionStructured(
+        _ transcription: String,
+        request: DomainPostProcessingRequest,
+    ) async throws -> DomainPostProcessingResult
+}
+
 public struct DomainPostProcessingSelection: Codable, Hashable, Sendable {
     public let providerID: String
     public let modelID: String
@@ -222,6 +234,51 @@ public struct DomainPostProcessingSelection: Codable, Hashable, Sendable {
         self.providerID = providerID
         self.modelID = modelID
         self.registrationID = registrationID
+    }
+}
+
+/// Immutable operation-edge snapshot for post-processing.
+public struct DomainPostProcessingRequest: Sendable {
+    public let prompt: DomainPostProcessingPrompt?
+    public let mode: IntelligenceKernelMode
+    public let selection: DomainPostProcessingSelection?
+    public let useStructuredPipeline: Bool
+    public let systemPromptOverride: String?
+
+    public init(
+        prompt: DomainPostProcessingPrompt? = nil,
+        mode: IntelligenceKernelMode,
+        selection: DomainPostProcessingSelection? = nil,
+        useStructuredPipeline: Bool,
+        systemPromptOverride: String? = nil,
+    ) {
+        self.prompt = prompt
+        self.mode = mode
+        self.selection = selection
+        self.useStructuredPipeline = useStructuredPipeline
+        self.systemPromptOverride = systemPromptOverride
+    }
+}
+
+public extension PostProcessingRepository {
+    func processTranscription(
+        _ transcription: String,
+        request: DomainPostProcessingRequest,
+    ) async throws -> String {
+        if let prompt = request.prompt {
+            return try await processTranscription(transcription, with: prompt, mode: request.mode)
+        }
+        return try await processTranscription(transcription, mode: request.mode)
+    }
+
+    func processTranscriptionStructured(
+        _ transcription: String,
+        request: DomainPostProcessingRequest,
+    ) async throws -> DomainPostProcessingResult {
+        if let prompt = request.prompt {
+            return try await processTranscriptionStructured(transcription, with: prompt, mode: request.mode)
+        }
+        return try await processTranscriptionStructured(transcription, mode: request.mode)
     }
 }
 

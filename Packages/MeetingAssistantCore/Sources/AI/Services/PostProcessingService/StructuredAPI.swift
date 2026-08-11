@@ -18,6 +18,72 @@ extension PostProcessingService {
 
     // MARK: - Public API (Structured)
 
+    public func processTranscriptionStructured(
+        _ transcription: String,
+        request: PostProcessingRequest,
+    ) async throws -> DomainPostProcessingResult {
+        guard let prompt = request.prompt else {
+            return try await processTranscriptionStructured(
+                transcription,
+                with: .defaultPrompt,
+                request: request,
+            )
+        }
+        return try await processTranscriptionStructured(transcription, with: prompt, request: request)
+    }
+
+    private func processTranscriptionStructured(
+        _ transcription: String,
+        with prompt: PostProcessingPrompt,
+        request: PostProcessingRequest,
+    ) async throws -> DomainPostProcessingResult {
+        if !request.useStructuredPipeline {
+            let text = try await processTranscription(transcription, request: request)
+            return summaryFallbackBuilder.build(providerOutput: text, transcription: transcription)
+        }
+        _ = try validateInput(transcription)
+        if let selection = request.selection {
+            let readinessIssue = settings.enhancementsInferenceReadinessIssue(for: selection, apiKeyExists: nil)
+            guard readinessIssue == nil else {
+                throw unavailableConfigurationError(mode: request.mode, message: "Structured post-processing blocked: enhancements configuration not ready")
+            }
+        }
+        let context = makeStructuredRequestContext(
+            transcription: transcription,
+            prompt: prompt,
+            mode: request.mode,
+            selectionOverride: request.selection,
+            systemPromptOverride: request.systemPromptOverride,
+            requestConfig: request.configuration,
+        )
+        return try await executeStructuredRequest(context: context)
+    }
+
+    private func executeStructuredRequest(context: StructuredRequestContext) async throws -> DomainPostProcessingResult {
+        isProcessing = true
+        lastError = nil
+        defer {
+            isProcessing = false
+            reportDictationPostProcessingDurationIfNeeded(mode: context.mode, startedAt: context.startedAt)
+        }
+        do {
+            let result = try await sendToAIStructured(
+                transcription: context.transcription,
+                prompt: context.prompt,
+                mode: context.mode,
+                selectionOverride: context.selectionOverride,
+                systemPromptOverride: context.systemPromptOverride,
+                requestProfile: context.requestProfile,
+                requestConfig: context.requestConfig,
+                traceContext: context.traceContext,
+            )
+            let metadata = TranscriptionOutputSanitizer.extractContextMetadata(fromPromptInput: context.transcription)
+            return sanitizeStructuredResult(result, transcription: context.transcription, contextMetadata: metadata)
+        } catch {
+            return try await handleStructuredFailure(context: context, error: error)
+        }
+    }
+
     public func processTranscriptionStructured(_ transcription: String) async throws -> DomainPostProcessingResult {
         guard settings.postProcessingEnabled else {
             let fallback = summaryFallbackBuilder.build(providerOutput: "", transcription: transcription)
@@ -96,6 +162,7 @@ extension PostProcessingService {
         mode: IntelligenceKernelMode,
         selectionOverride: EnhancementsAISelection?,
         systemPromptOverride: String?,
+        requestConfig: AIConfiguration? = nil,
     ) async throws -> DomainPostProcessingResult {
         _ = try validateInput(transcription)
         let readinessIssue = selectionOverride.map {
@@ -114,6 +181,7 @@ extension PostProcessingService {
             mode: mode,
             selectionOverride: selectionOverride,
             systemPromptOverride: systemPromptOverride,
+            requestConfig: requestConfig,
         )
 
         if !context.requestProfile.useStructuredPipeline {
@@ -168,9 +236,10 @@ extension PostProcessingService {
         mode: IntelligenceKernelMode,
         selectionOverride: EnhancementsAISelection?,
         systemPromptOverride: String?,
+        requestConfig explicitRequestConfig: AIConfiguration? = nil,
     ) -> StructuredRequestContext {
         let requestProfile = profile(for: mode, prefersStructuredPipeline: true)
-        let requestConfig = selectionOverride.map {
+        let requestConfig = explicitRequestConfig ?? selectionOverride.map {
             settings.resolvedEnhancementsAIConfiguration(for: $0)
         } ?? settings.resolvedEnhancementsAIConfiguration(for: mode)
         let traceContext = makeTraceContext(

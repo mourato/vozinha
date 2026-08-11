@@ -87,7 +87,7 @@ public class RecordingManager: ObservableObject, RecordingServiceProtocol {
     let audioSilenceCompactor: any AudioSilenceCompacting
     let meetingDetector: MeetingDetector
     let transcriptionClient: any TranscriptionService
-    let postProcessingService: any PostProcessingServiceProtocol
+    let postProcessingRepository: any ExplicitPostProcessingRepository
     let calendarEventService: any CalendarEventServiceProtocol
     let storage: any StorageService
     let notificationService: NotificationService
@@ -334,7 +334,8 @@ public class RecordingManager: ObservableObject, RecordingServiceProtocol {
         self.micRecorder = micRecorder
         self.systemRecorder = systemRecorder
         self.transcriptionClient = transcriptionClient
-        self.postProcessingService = postProcessingService
+        let postProcessingRepository = PostProcessingRepositoryAdapter(postProcessingService: postProcessingService)
+        self.postProcessingRepository = postProcessingRepository
         self.calendarEventService = calendarEventService
         self.audioMerger = audioMerger
         self.audioSilenceCompactor = audioSilenceCompactor
@@ -378,7 +379,7 @@ public class RecordingManager: ObservableObject, RecordingServiceProtocol {
         transcribeAudioUseCase = TranscribeAudioUseCase(
             transcriptionRepository: TranscriptionRepositoryAdapter(transcriptionService: transcriptionClient),
             transcriptionStorageRepository: CoreDataTranscriptionStorageRepository(stack: .shared),
-            postProcessingRepository: PostProcessingRepositoryAdapter(postProcessingService: postProcessingService),
+            postProcessingRepository: postProcessingRepository,
         )
 
         setupBindings()

@@ -1,18 +1,21 @@
 import Foundation
 import MeetingAssistantCoreAI
 import MeetingAssistantCoreCommon
+import MeetingAssistantCoreData
 import MeetingAssistantCoreDomain
 import MeetingAssistantCoreInfrastructure
 
+@MainActor
 public struct AssistantAIPhase: @unchecked Sendable {
-    private let postProcessingService: any PostProcessingServiceProtocol
+    private let postProcessingRepository: any ExplicitPostProcessingRepository
     private let runScript: @Sendable (_ script: String, _ input: String, _ timeoutSeconds: UInt64) async throws -> String?
 
     public init(
         postProcessingService: any PostProcessingServiceProtocol,
         scriptRunner: AssistantBashScriptRunner,
+        postProcessingRepository: (any ExplicitPostProcessingRepository)? = nil,
     ) {
-        self.postProcessingService = postProcessingService
+        self.postProcessingRepository = postProcessingRepository ?? PostProcessingRepositoryAdapter(postProcessingService: postProcessingService)
         runScript = { script, input, timeoutSeconds in
             try await scriptRunner.run(
                 script: script,
@@ -25,8 +28,9 @@ public struct AssistantAIPhase: @unchecked Sendable {
     init(
         postProcessingService: any PostProcessingServiceProtocol,
         runScript: @escaping @Sendable (_ script: String, _ input: String, _ timeoutSeconds: UInt64) async throws -> String?,
+        postProcessingRepository: (any ExplicitPostProcessingRepository)? = nil,
     ) {
-        self.postProcessingService = postProcessingService
+        self.postProcessingRepository = postProcessingRepository ?? PostProcessingRepositoryAdapter(postProcessingService: postProcessingService)
         self.runScript = runScript
     }
 
@@ -53,13 +57,20 @@ public struct AssistantAIPhase: @unchecked Sendable {
             ),
         )
 
-        let processedCommand = try await postProcessingService.processTranscription(
+        let processedCommand = try await postProcessingRepository.processTranscription(
             sourceText,
-            with: integrationPrompt,
-            mode: .assistant,
-            systemPromptOverride: executionFlow == .integrationDispatch
-                ? AIPromptTemplates.assistantSystemPrompt
-                : nil,
+            request: DomainPostProcessingRequest(
+                prompt: DomainPostProcessingPrompt(
+                    id: integrationPrompt.id,
+                    title: integrationPrompt.title,
+                    content: integrationPrompt.promptText,
+                ),
+                mode: .assistant,
+                useStructuredPipeline: false,
+                systemPromptOverride: executionFlow == .integrationDispatch
+                    ? AIPromptTemplates.assistantSystemPrompt
+                    : nil,
+            ),
         )
 
         logPayloadIfNeeded("Assistant post-processing payload", [

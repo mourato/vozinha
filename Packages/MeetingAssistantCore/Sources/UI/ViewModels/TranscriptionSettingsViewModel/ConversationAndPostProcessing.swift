@@ -318,12 +318,16 @@ public extension TranscriptionSettingsViewModel {
     ) async throws -> ReprocessPipelineResult {
         let useStructuredPipeline = mode == .meeting
             || AppSettingsStore.shared.dictationStructuredPostProcessingEnabled
+        let request = DomainPostProcessingRequest(
+            prompt: DomainPostProcessingPrompt(id: prompt.id, title: prompt.title, content: prompt.promptText),
+            mode: mode,
+            useStructuredPipeline: useStructuredPipeline,
+        )
 
         if useStructuredPipeline {
-            let structuredResult = try await PostProcessingService.shared.processTranscriptionStructured(
+            let structuredResult = try await recordingManager.postProcessingRepository.processTranscriptionStructured(
                 postProcessingInput,
-                with: prompt,
-                mode: mode,
+                request: request,
             )
             return ReprocessPipelineResult(
                 processedText: structuredResult.processedText,
@@ -332,9 +336,9 @@ public extension TranscriptionSettingsViewModel {
             )
         }
 
-        let processedText = try await PostProcessingService.shared.processTranscription(
+        let processedText = try await recordingManager.postProcessingRepository.processTranscription(
             postProcessingInput,
-            with: prompt,
+            request: request,
         )
         return ReprocessPipelineResult(
             processedText: processedText,

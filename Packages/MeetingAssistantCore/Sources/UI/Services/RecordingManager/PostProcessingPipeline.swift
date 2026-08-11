@@ -159,26 +159,22 @@ extension RecordingManager {
         do {
             let startTime = Date()
             let useStructuredPipeline = kernelMode == .meeting || dictationStructuredPostProcessingEnabled
+            let request = makePostProcessingRequest(
+                prompt: prompt,
+                mode: kernelMode,
+                selectionOverride: selectionOverride,
+                useStructuredPipeline: useStructuredPipeline,
+            )
             let pipeline = useStructuredPipeline ? "structured" : "fast"
             let processedContent: String
             let canonicalSummary: CanonicalSummary?
             let outputState: DomainPostProcessingOutputState?
 
             if useStructuredPipeline {
-                let structuredResult = if let selectionOverride {
-                    try await postProcessingService.processTranscriptionStructured(
-                        postProcessingInput,
-                        with: prompt,
-                        mode: kernelMode,
-                        selectionOverride: selectionOverride,
-                    )
-                } else {
-                    try await postProcessingService.processTranscriptionStructured(
-                        postProcessingInput,
-                        with: prompt,
-                        mode: kernelMode,
-                    )
-                }
+                let structuredResult = try await postProcessingRepository.processTranscriptionStructured(
+                    postProcessingInput,
+                    request: request,
+                )
                 processedContent = structuredResult.processedText
                 canonicalSummary = qualityProfile.map { profile in
                     recalibrateCanonicalSummary(structuredResult.canonicalSummary, with: profile)
@@ -195,22 +191,10 @@ extension RecordingManager {
                     ],
                 )
             } else {
-                processedContent = if let selectionOverride {
-                    try await postProcessingService.processTranscription(
-                        postProcessingInput,
-                        with: prompt,
-                        mode: kernelMode,
-                        selectionOverride: selectionOverride,
-                        systemPromptOverride: nil,
-                    )
-                } else {
-                    try await postProcessingService.processTranscription(
-                        postProcessingInput,
-                        with: prompt,
-                        mode: kernelMode,
-                        systemPromptOverride: nil,
-                    )
-                }
+                processedContent = try await postProcessingRepository.processTranscription(
+                    postProcessingInput,
+                    request: request,
+                )
                 canonicalSummary = nil
                 outputState = nil
                 AppLogger.info(
@@ -249,6 +233,26 @@ extension RecordingManager {
         }
     }
 
+    private func makePostProcessingRequest(
+        prompt: PostProcessingPrompt,
+        mode: IntelligenceKernelMode,
+        selectionOverride: EnhancementsAISelection?,
+        useStructuredPipeline: Bool,
+    ) -> DomainPostProcessingRequest {
+        DomainPostProcessingRequest(
+            prompt: DomainPostProcessingPrompt(id: prompt.id, title: prompt.title, content: prompt.promptText),
+            mode: mode,
+            selection: selectionOverride.map {
+                DomainPostProcessingSelection(
+                    providerID: $0.provider.rawValue,
+                    modelID: $0.selectedModel,
+                    registrationID: $0.registrationID,
+                )
+            },
+            useStructuredPipeline: useStructuredPipeline,
+        )
+    }
+
     func resolvePostProcessingPrompt(
         rawText: String,
         isDictation: Bool,
@@ -278,7 +282,18 @@ extension RecordingManager {
         let classifierPrompt = makeMeetingTypeClassifierPrompt()
 
         do {
-            let jsonString = try await postProcessingService.processTranscription(rawText, with: classifierPrompt)
+            let jsonString = try await postProcessingRepository.processTranscription(
+                rawText,
+                request: DomainPostProcessingRequest(
+                    prompt: DomainPostProcessingPrompt(
+                        id: classifierPrompt.id,
+                        title: classifierPrompt.title,
+                        content: classifierPrompt.promptText,
+                    ),
+                    mode: .meeting,
+                    useStructuredPipeline: false,
+                ),
+            )
             guard let detectedType = parseMeetingType(from: jsonString), detectedType != .general else { return fallback }
             return resolveBuiltInMeetingPrompt(for: detectedType, fallbackGeneral: fallback)
         } catch {

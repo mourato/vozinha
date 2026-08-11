@@ -220,17 +220,16 @@ extension TranscribeAudioUseCase {
         )
 
         if context.useStructuredPipeline {
-            let structuredResult: DomainPostProcessingResult = if let selection = context.selection,
-                                                                  let repository = context.repository as? any PostProcessingRepositorySelectionAware
-            {
-                try await repository.processTranscriptionStructured(input, with: prompt, mode: context.kernelMode, selection: selection)
-            } else {
-                try await context.repository.processTranscriptionStructured(
-                    input,
-                    with: prompt,
+            let structuredResult = try await executeStructuredPostProcessing(
+                input,
+                request: DomainPostProcessingRequest(
+                    prompt: prompt,
                     mode: context.kernelMode,
-                )
-            }
+                    selection: context.selection,
+                    useStructuredPipeline: true,
+                ),
+                repository: context.repository,
+            )
             return PostProcessingResult(
                 processedContent: structuredResult.processedText,
                 canonicalSummary: recalibrateCanonicalSummary(
@@ -247,17 +246,16 @@ extension TranscribeAudioUseCase {
             )
         }
 
-        let processedContent: String = if let selection = context.selection,
-                                          let repository = context.repository as? any PostProcessingRepositorySelectionAware
-        {
-            try await repository.processTranscription(input, with: prompt, mode: context.kernelMode, selection: selection)
-        } else {
-            try await context.repository.processTranscription(
-                input,
-                with: prompt,
+        let processedContent = try await executePostProcessing(
+            input,
+            request: DomainPostProcessingRequest(
+                prompt: prompt,
                 mode: context.kernelMode,
-            )
-        }
+                selection: context.selection,
+                useStructuredPipeline: false,
+            ),
+            repository: context.repository,
+        )
         return PostProcessingResult(
             processedContent: processedContent,
             canonicalSummary: nil,
@@ -312,9 +310,14 @@ extension TranscribeAudioUseCase {
         meetingType: String?,
     ) async throws -> PostProcessingResult {
         if context.useStructuredPipeline {
-            let structuredResult = try await context.repository.processTranscriptionStructured(
+            let structuredResult = try await executeStructuredPostProcessing(
                 input,
-                mode: context.kernelMode,
+                request: DomainPostProcessingRequest(
+                    mode: context.kernelMode,
+                    selection: context.selection,
+                    useStructuredPipeline: true,
+                ),
+                repository: context.repository,
             )
             return PostProcessingResult(
                 processedContent: structuredResult.processedText,
@@ -332,9 +335,14 @@ extension TranscribeAudioUseCase {
             )
         }
 
-        let processedContent = try await context.repository.processTranscription(
+        let processedContent = try await executePostProcessing(
             input,
-            mode: context.kernelMode,
+            request: DomainPostProcessingRequest(
+                mode: context.kernelMode,
+                selection: context.selection,
+                useStructuredPipeline: false,
+            ),
+            repository: context.repository,
         )
         return PostProcessingResult(
             processedContent: processedContent,
@@ -368,12 +376,45 @@ extension TranscribeAudioUseCase {
             isDefault: false,
         )
 
-        let jsonString = try await context.repository.processTranscription(
+        let jsonString = try await executePostProcessing(
             text,
-            with: classifierPrompt,
-            mode: context.kernelMode,
+            request: DomainPostProcessingRequest(
+                prompt: classifierPrompt,
+                mode: context.kernelMode,
+                selection: context.selection,
+                useStructuredPipeline: false,
+            ),
+            repository: context.repository,
         )
         return parseMeetingType(from: jsonString)
+    }
+
+    private func executePostProcessing(
+        _ input: String,
+        request: DomainPostProcessingRequest,
+        repository: PostProcessingRepository,
+    ) async throws -> String {
+        if let repository = repository as? any ExplicitPostProcessingRepository {
+            return try await repository.processTranscription(input, request: request)
+        }
+        if let prompt = request.prompt {
+            return try await repository.processTranscription(input, with: prompt, mode: request.mode)
+        }
+        return try await repository.processTranscription(input, mode: request.mode)
+    }
+
+    private func executeStructuredPostProcessing(
+        _ input: String,
+        request: DomainPostProcessingRequest,
+        repository: PostProcessingRepository,
+    ) async throws -> DomainPostProcessingResult {
+        if let repository = repository as? any ExplicitPostProcessingRepository {
+            return try await repository.processTranscriptionStructured(input, request: request)
+        }
+        if let prompt = request.prompt {
+            return try await repository.processTranscriptionStructured(input, with: prompt, mode: request.mode)
+        }
+        return try await repository.processTranscriptionStructured(input, mode: request.mode)
     }
 
     private func findPrompt(for type: String, in prompts: [DomainPostProcessingPrompt]) -> DomainPostProcessingPrompt? {

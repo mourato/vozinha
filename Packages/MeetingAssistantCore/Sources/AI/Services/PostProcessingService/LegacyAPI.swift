@@ -5,6 +5,39 @@ import MeetingAssistantCoreInfrastructure
 
 public extension PostProcessingService {
 
+    func processTranscription(
+        _ transcription: String,
+        request: PostProcessingRequest,
+    ) async throws -> String {
+        let prompt = request.prompt ?? .defaultPrompt
+        _ = try validateInput(transcription)
+        if let selection = request.selection {
+            let readinessIssue = settings.enhancementsInferenceReadinessIssue(for: selection, apiKeyExists: nil)
+            guard readinessIssue == nil else {
+                throw unavailableConfigurationError(mode: request.mode, message: "Post-processing blocked: enhancements configuration not ready")
+            }
+        }
+        let context = makeLegacyRequestContext(
+            transcription: transcription,
+            prompt: prompt,
+            mode: request.mode,
+            selectionOverride: request.selection,
+            systemPromptOverride: request.systemPromptOverride,
+            requestConfig: request.configuration,
+        )
+        isProcessing = true
+        lastError = nil
+        defer {
+            isProcessing = false
+            reportDictationPostProcessingDurationIfNeeded(mode: context.mode, startedAt: context.startedAt)
+        }
+        do {
+            return try await performLegacyAIRequest(context: context)
+        } catch {
+            return try await handleLegacyFailure(context: context, error: error)
+        }
+    }
+
     // MARK: - Public API (Legacy String)
 
     /// Processes a transcription using the currently selected prompt.
@@ -104,6 +137,7 @@ extension PostProcessingService {
         mode: IntelligenceKernelMode,
         selectionOverride: EnhancementsAISelection?,
         systemPromptOverride: String?,
+        requestConfig: AIConfiguration? = nil,
     ) async throws -> String {
         _ = try validateInput(transcription)
         let readinessIssue = selectionOverride.map {
@@ -122,6 +156,7 @@ extension PostProcessingService {
             mode: mode,
             selectionOverride: selectionOverride,
             systemPromptOverride: systemPromptOverride,
+            requestConfig: requestConfig,
         )
 
         isProcessing = true
@@ -181,9 +216,10 @@ extension PostProcessingService {
         mode: IntelligenceKernelMode,
         selectionOverride: EnhancementsAISelection?,
         systemPromptOverride: String?,
+        requestConfig explicitRequestConfig: AIConfiguration? = nil,
     ) -> LegacyRequestContext {
         let requestProfile = profile(for: mode, prefersStructuredPipeline: false)
-        let requestConfig = selectionOverride.map {
+        let requestConfig = explicitRequestConfig ?? selectionOverride.map {
             settings.resolvedEnhancementsAIConfiguration(for: $0)
         } ?? settings.resolvedEnhancementsAIConfiguration(for: mode)
         let traceContext = makeTraceContext(

@@ -7,13 +7,59 @@ import MeetingAssistantCoreInfrastructure
 
 /// Adapter que implementa PostProcessingRepository usando PostProcessingService existente
 @MainActor
-public final class PostProcessingRepositoryAdapter: PostProcessingRepository, PostProcessingRepositorySelectionAware {
+public final class PostProcessingRepositoryAdapter: ExplicitPostProcessingRepository, PostProcessingRepositorySelectionAware {
     private let postProcessingService: any PostProcessingServiceProtocol
     private let settings: AppSettingsStore
 
     public init(postProcessingService: any PostProcessingServiceProtocol) {
         self.postProcessingService = postProcessingService
         settings = .shared
+    }
+
+    public func processTranscription(
+        _ transcription: String,
+        request: DomainPostProcessingRequest,
+    ) async throws -> String {
+        try await postProcessingService.processTranscription(
+            transcription,
+            request: makeServiceRequest(from: request),
+        )
+    }
+
+    public func processTranscriptionStructured(
+        _ transcription: String,
+        request: DomainPostProcessingRequest,
+    ) async throws -> DomainPostProcessingResult {
+        try await postProcessingService.processTranscriptionStructured(
+            transcription,
+            request: makeServiceRequest(from: request),
+        )
+    }
+
+    private func makeServiceRequest(from request: DomainPostProcessingRequest) -> PostProcessingRequest {
+        let selection = request.selection.map(toAISelection)
+        let configuration = selection.map {
+            settings.resolvedEnhancementsAIConfiguration(for: $0)
+        } ?? settings.resolvedEnhancementsAIConfiguration(for: request.mode)
+        let prompt = request.prompt.map {
+            PostProcessingPrompt(id: $0.id, title: $0.title, promptText: $0.content, isActive: true)
+        }
+        return PostProcessingRequest(
+            prompt: prompt,
+            mode: request.mode,
+            selection: selection,
+            configuration: configuration,
+            useStructuredPipeline: request.useStructuredPipeline,
+            systemPromptOverride: request.systemPromptOverride,
+        )
+    }
+
+    private func toAISelection(_ selection: DomainPostProcessingSelection) -> EnhancementsAISelection {
+        EnhancementsAISelection(
+            provider: AIProvider(rawValue: selection.providerID) ?? .openai,
+            selectedModel: selection.modelID,
+            registrationID: selection.registrationID,
+        )
     }
 
     public func processTranscription(_ transcription: String) async throws -> String {
