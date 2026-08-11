@@ -283,12 +283,12 @@ public class RecordingManager: ObservableObject, RecordingServiceProtocol {
         await recordingActor.mergedAudioURLState
     }
 
-    func setMicAudioURL(_ url: URL?) {
-        Task { await self.recordingActor.setMicAudioURL(url) }
+    func setMicAudioURL(_ url: URL?) async {
+        await recordingActor.setMicAudioURL(url)
     }
 
-    func setSystemAudioURL(_ url: URL?) {
-        Task { await self.recordingActor.setSystemAudioURL(url) }
+    func setSystemAudioURL(_ url: URL?) async {
+        await recordingActor.setSystemAudioURL(url)
     }
 
     func setMergedAudioURL(_ url: URL?) async {

@@ -1,3 +1,4 @@
+import Combine
 import Foundation
 @testable import MeetingAssistantCore
 @testable import MeetingAssistantCoreUI
@@ -96,6 +97,8 @@ extension RecordingManagerTests {
         manager.isStartingRecording = true
         manager.currentCapturePurpose = .dictation
         manager.currentMeeting = Meeting(app: .unknown, capturePurpose: .dictation)
+        await manager.recordingActor.setMicAudioURL(micURL)
+        await manager.recordingActor.setSystemAudioURL(systemURL)
         await manager.recordingActor.setMergedAudioURL(mergedURL)
 
         let acquired = await RecordingExclusivityCoordinator.shared.beginRecording(mode: .dictation)
@@ -122,6 +125,34 @@ extension RecordingManagerTests {
         XCTAssertNil(mergedURLAfter)
         let activeMode = await RecordingExclusivityCoordinator.shared.activeRecordingMode()
         XCTAssertNil(activeMode)
+    }
+
+    func testRecorderActivityDuringStartupDoesNotPublishRecordingState() async throws {
+        let manager = try XCTUnwrap(manager)
+        let mockMic = try XCTUnwrap(mockMic)
+
+        manager.currentCapturePurpose = .dictation
+        manager.isStartingRecording = true
+        var recorderActivitySubscription: AnyCancellable?
+        defer {
+            recorderActivitySubscription?.cancel()
+            manager.isStartingRecording = false
+            manager.currentCapturePurpose = nil
+            mockMic.isRecording = false
+        }
+
+        let recorderActivity = expectation(description: "Recorder reports activity during startup")
+        recorderActivitySubscription = mockMic.$isRecording.sink { isRecording in
+            if isRecording {
+                recorderActivity.fulfill()
+            }
+        }
+        mockMic.isRecording = true
+
+        await fulfillment(of: [recorderActivity], timeout: 1)
+
+        XCTAssertFalse(manager.isRecording)
+        XCTAssertTrue(manager.isStartingRecording)
     }
 
     func testCancelRecordingWhileStartOperationIsInFlightPreventsCommitBeforeStartupState() async throws {
