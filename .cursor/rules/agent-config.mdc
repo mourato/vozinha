@@ -24,6 +24,25 @@ inventing, and do not add machinery for architectural appearance. When a
 refactor is necessary but outside the initial scope, explain it and wait for
 explicit confirmation before starting it.
 
+### Personal desktop and mobile projects
+
+- Treat desktop and mobile applications as personal and local by default, with no
+  distribution intent. Do not introduce CI/CD initiatives unless the task
+  explicitly requests and documents an exception. When cleanup is in scope, a
+  project-wide cleanup may remove existing CI/CD automation.
+- Use the latest stable stack and support current operating-system versions by
+  default. Use current APIs and dependencies in new or modified code; broad
+  dependency or toolchain upgrades still require a request or a task
+  requirement.
+- When modifying code in these projects, remove legacy OS compatibility
+  adaptations encountered in the touched area, including availability checks,
+  conditional branches, polyfills, wrappers, and configuration. If removal
+  causes errors, make the minimum changes needed for the current stack; report
+  external blockers.
+- Preserve distribution requirements or older OS support only when the project
+  explicitly documents them. Project-local documentation may override these
+  defaults for that project's declared scope.
+
 ## Hard rules
 
 ### Skills and routing
@@ -73,6 +92,14 @@ explicit confirmation before starting it.
 
 ### Git and GitHub
 
+- Use direct local branch integration by default. Do not create or propose pull
+  requests unless the user explicitly requests one.
+- Keep `done` and `merged` as separate states. An implementation can be done
+  before integration, but user-testing readiness requires its changes to be
+  merged into the local `main` branch and validated there. Report implementation
+  completion, merge status, and `main` validation separately.
+- Merge into `main` only after explicit user authorization. Preserve unrelated
+  changes when integrating the implementation branch.
 - Push, force-push, amend, and destructive git ops (`reset --hard`, `clean`,
   broad `restore`) need an explicit user request or an explicitly authorized
   user-invoked workflow. Repo-local rules may define mechanics, not authority.
