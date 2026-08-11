@@ -98,6 +98,7 @@ final class RecordingLifecycleCoordinator {
         do {
             try await actions.finalize(recordings)
             if !transcribe {
+                await operations.cancelIncremental()
                 await operations.resetState(nil, nil)
             }
         } catch {
