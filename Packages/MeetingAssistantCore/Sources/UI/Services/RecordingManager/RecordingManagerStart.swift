@@ -304,7 +304,7 @@ extension RecordingManager {
             appBundleIdentifier: resolvedContext.appBundleIdentifier,
             appDisplayName: resolvedContext.appDisplayName,
             type: type,
-            state: .recording,
+            state: .idle,
         )
     }
 

@@ -15,6 +15,7 @@ final class RecordingLifecycleCoordinator {
 
     private var inFlightTransition: TransitionPhase?
     private var pendingStartCancellation = false
+    private var pendingStartFailure: Error?
 
     struct StartActions {
         let beginExclusivity: () async -> Bool
@@ -51,6 +52,7 @@ final class RecordingLifecycleCoordinator {
         defer {
             inFlightTransition = nil
             pendingStartCancellation = false
+            pendingStartFailure = nil
         }
 
         guard !isRecording else { return }
@@ -60,17 +62,21 @@ final class RecordingLifecycleCoordinator {
         do {
             let audioURL = try await actions.prepare()
             let shouldCancel = pendingStartCancellation
-            pendingStartCancellation = false
+            let recorderError = pendingStartFailure
             if shouldCancel {
                 await performCancellation(operations: operations)
+            } else if let recorderError {
+                await performRecorderFailure(recorderError, operations: operations)
             } else {
                 actions.commit(audioURL)
             }
         } catch {
             let shouldCancel = pendingStartCancellation
-            pendingStartCancellation = false
+            let recorderError = pendingStartFailure
             if shouldCancel {
                 await performCancellation(operations: operations)
+            } else if let recorderError {
+                await performRecorderFailure(recorderError, operations: operations)
             } else {
                 let recordings = await operations.stopRecorders()
                 operations.cancelPostStartTasks()
@@ -108,18 +114,17 @@ final class RecordingLifecycleCoordinator {
         isStarting: Bool,
         operations: Operations,
     ) async {
+        if inFlightTransition == .starting {
+            pendingStartFailure = error
+            return
+        }
+
         guard beginTransition(.recorderFailure) else { return }
         defer { inFlightTransition = nil }
 
         guard isRecording || isStarting else { return }
 
-        let recordings = await operations.stopRecorders()
-        operations.cancelPostStartTasks()
-        await operations.cancelIncremental()
-        await operations.cleanupTemporaryFiles(recordings)
-        await operations.removeMergedAudio()
-        await operations.resetState(error, nil)
-        await operations.endExclusivity()
+        await performRecorderFailure(error, operations: operations)
     }
 
     func stop(
@@ -165,5 +170,15 @@ final class RecordingLifecycleCoordinator {
         await operations.resetState(nil, nil)
         await operations.endExclusivity()
         operations.playCancelledSound()
+    }
+
+    private func performRecorderFailure(_ error: Error, operations: Operations) async {
+        let recordings = await operations.stopRecorders()
+        operations.cancelPostStartTasks()
+        await operations.cancelIncremental()
+        await operations.cleanupTemporaryFiles(recordings)
+        await operations.removeMergedAudio()
+        await operations.resetState(error, nil)
+        await operations.endExclusivity()
     }
 }
