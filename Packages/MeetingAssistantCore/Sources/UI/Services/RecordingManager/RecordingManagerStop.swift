@@ -63,8 +63,12 @@ public extension RecordingManager {
                         }
                     }
                 },
-                handleFailure: { error in
-                    await self.handleStopRecordingError(error, transcriptionSession: transcriptionSession)
+                handleFailure: { error, recordings in
+                    await self.handleStopRecordingError(
+                        error,
+                        recordings: recordings,
+                        transcriptionSession: transcriptionSession,
+                    )
                 },
             ),
         )
@@ -221,8 +225,17 @@ private extension RecordingManager {
         clearPostProcessingReadinessWarning()
     }
 
-    func handleStopRecordingError(_ error: Error, transcriptionSession: TranscriptionSessionSnapshot?) async {
+    func handleStopRecordingError(
+        _ error: Error,
+        recordings: (mic: URL?, system: URL?),
+        transcriptionSession: TranscriptionSessionSnapshot?,
+    ) async {
         AppLogger.error("Failed to stop recording cleanly", category: .recordingManager, error: error)
+        await cleanupTemporaryFiles(additionalURLs: [recordings.mic, recordings.system].compactMap(\.self))
+        if let mergedURL = await getMergedAudioURL() {
+            try? FileManager.default.removeItem(at: mergedURL)
+            setMergedAudioURL(nil)
+        }
         await cancelIncrementalTranscriptionSessionsIfNeeded()
         await resetRecordingLifecycleState(
             error: error,
