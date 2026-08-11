@@ -42,13 +42,22 @@ extension RecordingManager {
             .sink { [weak self] recorderIsRecording in
                 guard let self else { return }
 
-                // AudioRecorder is shared between recording and assistant flows.
-                // Only mirror recorder state when RecordingManager owns an active capture lifecycle.
-                guard !isStartingRecording, isRecording else { return }
+                let wasRecording = isRecording
+                let wasStarting = isStartingRecording
+                let wasStartOperationInFlight = isStartOperationInFlight
+                Task { @MainActor [weak self] in
+                    guard let self else { return }
 
-                isRecording = recorderIsRecording
-                if recorderIsRecording {
-                    isStartingRecording = false
+                    await lifecycleCoordinator.recorderStateDidChange(
+                        .init(
+                            recorderIsRecording: recorderIsRecording,
+                            wasRecording: wasRecording,
+                            isRecording: isRecording,
+                            isStarting: wasStarting,
+                            isStartOperationInFlight: wasStartOperationInFlight,
+                        ),
+                        operations: lifecycleOperations,
+                    )
                 }
             }
             .store(in: &cancellables)

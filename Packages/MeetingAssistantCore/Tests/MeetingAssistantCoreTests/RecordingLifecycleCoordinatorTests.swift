@@ -343,6 +343,171 @@ final class RecordingLifecycleCoordinatorTests: XCTestCase {
         XCTAssertEqual(state.endExclusivityCalls, 1)
         XCTAssertFalse(state.exclusive)
     }
+
+    func testCancellationThenRecorderFailureDuringAwaitedStartUsesCancellationCleanup() async {
+        await assertCancellationWinsDuringAwaitedStart(events: [.cancellation, .recorderFailure])
+    }
+
+    func testRecorderFailureThenCancellationDuringAwaitedStartUsesCancellationCleanup() async {
+        await assertCancellationWinsDuringAwaitedStart(events: [.recorderFailure, .cancellation])
+    }
+
+    func testUnexpectedRecorderStopCleansActiveCapture() async {
+        let state = RecordingLifecycleTestState()
+        state.captureActive = true
+        state.exclusive = true
+        state.incrementalActive = true
+        state.temporaryTaskActive = true
+        state.temporaryFilesExist = true
+        state.mergedAudioExists = true
+
+        await RecordingLifecycleCoordinator().recorderStateDidChange(
+            .init(
+                recorderIsRecording: false,
+                wasRecording: true,
+                isRecording: true,
+                isStarting: false,
+                isStartOperationInFlight: false,
+            ),
+            operations: makeOperations(state),
+        )
+
+        XCTAssertTrue(state.reset)
+        XCTAssertFalse(state.captureActive)
+        XCTAssertFalse(state.exclusive)
+        XCTAssertFalse(state.incrementalActive)
+        XCTAssertFalse(state.temporaryTaskActive)
+        XCTAssertFalse(state.temporaryFilesExist)
+        XCTAssertFalse(state.mergedAudioExists)
+        XCTAssertEqual(state.events, [
+            "stopRecorders",
+            "cancelPostStartTasks",
+            "cancelIncremental",
+            "cleanupTemporaryFiles",
+            "removeMergedAudio",
+            "resetState",
+            "endExclusivity",
+        ])
+    }
+
+    func testUnexpectedRecorderStopDuringCancellationDoesNotStartAnotherTransition() async {
+        let state = DelayedRecordingLifecycleTestState()
+        let stopStarted = expectation(description: "Cancellation stops recorders")
+        let operations = makeDelayedCancellationOperations(state, stopStarted: stopStarted)
+        let coordinator = RecordingLifecycleCoordinator()
+        let cancellationTask = Task { @MainActor in
+            await coordinator.cancel(
+                isRecording: true,
+                isStarting: false,
+                operations: operations,
+            )
+        }
+
+        await fulfillment(of: [stopStarted], timeout: 1)
+        await coordinator.recorderStateDidChange(
+            .init(
+                recorderIsRecording: false,
+                wasRecording: true,
+                isRecording: true,
+                isStarting: false,
+                isStartOperationInFlight: false,
+            ),
+            operations: operations,
+        )
+
+        XCTAssertEqual(state.stopCalls, 1)
+        XCTAssertEqual(state.cleanupCalls, 0)
+
+        state.stopContinuation?.resume(returning: (mic: nil, system: nil))
+        await cancellationTask.value
+
+        XCTAssertEqual(state.stopCalls, 1)
+        XCTAssertEqual(state.cleanupCalls, 1)
+        XCTAssertEqual(state.resetCalls, 1)
+        XCTAssertEqual(state.endExclusivityCalls, 1)
+    }
+}
+
+private extension RecordingLifecycleCoordinatorTests {
+    enum PendingStartEvent {
+        case cancellation
+        case recorderFailure
+    }
+
+    func sendPendingStartEvents(
+        _ events: [PendingStartEvent],
+        coordinator: RecordingLifecycleCoordinator,
+        operations: RecordingLifecycleCoordinator.Operations,
+    ) async {
+        for event in events {
+            switch event {
+            case .cancellation:
+                await coordinator.cancel(
+                    isRecording: false,
+                    isStarting: true,
+                    operations: operations,
+                )
+            case .recorderFailure:
+                await coordinator.recorderDidFail(
+                    RecordingLifecycleTestError.finalizationFailed,
+                    isRecording: false,
+                    isStarting: true,
+                    operations: operations,
+                )
+            }
+        }
+    }
+
+    func assertCancellationWinsDuringAwaitedStart(events: [PendingStartEvent]) async {
+        let state = DelayedStartLifecycleTestState()
+        let prepareStarted = expectation(description: "Start preparation is awaiting pending events")
+        let operations = makeDelayedStartOperations(state)
+        let coordinator = RecordingLifecycleCoordinator()
+        let startTask = Task { @MainActor in
+            await coordinator.start(
+                isRecording: false,
+                actions: .init(
+                    beginExclusivity: {
+                        state.beginExclusivityCalls += 1
+                        return true
+                    },
+                    beginState: {
+                        state.beginStateCalls += 1
+                    },
+                    prepare: {
+                        try await withCheckedThrowingContinuation { continuation in
+                            state.prepareContinuation = continuation
+                            prepareStarted.fulfill()
+                        }
+                    },
+                    commit: { _ in
+                        state.commitCalls += 1
+                    },
+                ),
+                operations: operations,
+                handleFailure: { _ in
+                    state.handleFailureCalls += 1
+                },
+            )
+        }
+
+        await fulfillment(of: [prepareStarted], timeout: 1)
+        await sendPendingStartEvents(events, coordinator: coordinator, operations: operations)
+
+        state.prepareContinuation?.resume(returning: URL(fileURLWithPath: "/tmp/pending-events-prepared.wav"))
+        await startTask.value
+
+        XCTAssertEqual(state.commitCalls, 0)
+        XCTAssertEqual(state.handleFailureCalls, 0)
+        XCTAssertEqual(state.stopRecordersCalls, 1)
+        XCTAssertEqual(state.cleanupCalls, 1)
+        XCTAssertEqual(state.removeMergedAudioCalls, 1)
+        XCTAssertEqual(state.resetCalls, 1)
+        XCTAssertNil(state.resetError)
+        XCTAssertEqual(state.endExclusivityCalls, 1)
+        XCTAssertEqual(state.playCancelledCalls, 1)
+        XCTAssertFalse(state.exclusive)
+    }
 }
 
 private final class RecordingLifecycleTestState {

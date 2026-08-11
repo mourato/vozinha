@@ -50,6 +50,13 @@ extension RecordingManager {
 
     /// Resets the manager and actor state to idle.
     public func reset() async {
+        if isRecording || isStartingRecording || isStartOperationInFlight {
+            await cancelRecording()
+            while isStartOperationInFlight {
+                await Task.yield()
+            }
+        }
+
         cancelPostStartCaptureTasks()
         await recordingActor.reset()
         isRecording = false
@@ -60,6 +67,7 @@ extension RecordingManager {
         foregroundTranscriptionSessionID = nil
         await cancelIncrementalTranscriptionSessionsIfNeeded()
         cancelEstimatedPostProcessingProgress()
+        meetingState = .idle
         currentMeeting = nil
         currentCapturePurpose = nil
         isMeetingMicrophoneEnabled = false
