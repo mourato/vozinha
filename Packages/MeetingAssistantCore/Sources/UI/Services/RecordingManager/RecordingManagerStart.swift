@@ -172,6 +172,7 @@ extension RecordingManager {
         postProcessingContext = nil
         postProcessingContextItems = []
         activeDictationStyleSnapshot = nil
+        clearActiveTranscriptionSnapshot()
         restoreMeetingNotesIfNeeded(for: meeting.id)
         isMeetingNotesPanelVisible = false
 
@@ -191,6 +192,8 @@ extension RecordingManager {
         }
 
         let settings = AppSettingsStore.shared
+        let vocabularySnapshot = VocabularySnapshot.current(from: settings)
+        activeVocabularySnapshot = vocabularySnapshot
         let dictationConfiguration = activeDictationStyleSnapshot?.transcriptionConfiguration
         let selection = dictationConfiguration?.selection
             ?? settings.resolvedTranscriptionSelection(for: purpose.transcriptionExecutionMode)
@@ -200,7 +203,7 @@ extension RecordingManager {
             providerID: selection.provider.rawValue,
             modelID: selection.selectedModel,
             inputLanguageCode: inputLanguageCode,
-            vocabularyHints: VocabularySnapshot.current(from: settings).providerHints,
+            vocabularyHints: vocabularySnapshot.providerHints,
         )
 
         let audioURL = storage.createRecordingURL(for: meeting, type: .merged)
@@ -355,6 +358,7 @@ extension RecordingManager {
         currentCapturePurpose = nil
         isMeetingMicrophoneEnabled = false
         activeStartTelemetry = nil
+        clearActiveTranscriptionSnapshot()
         clearPostProcessingReadinessWarning()
     }
 

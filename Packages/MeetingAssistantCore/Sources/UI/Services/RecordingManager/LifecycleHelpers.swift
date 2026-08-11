@@ -48,6 +48,7 @@ extension RecordingManager {
         dictationStartBundleIdentifier = nil
         dictationStartURL = nil
         activeStartTelemetry = nil
+        clearActiveTranscriptionSnapshot()
         clearPostProcessingReadinessWarning()
         lastError = error
         await RecordingExclusivityCoordinator.shared.endRecording()

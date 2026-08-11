@@ -128,6 +128,7 @@ public class RecordingManager: ObservableObject, RecordingServiceProtocol {
     var dictationStartURL: URL?
     var activeDictationStyleSnapshot: DictationStyle?
     var activeTranscriptionConfiguration: DomainTranscriptionRequestConfiguration?
+    var activeVocabularySnapshot: VocabularySnapshot?
     var activeTranscriptionSessionIDs = Set<UUID>()
     var foregroundTranscriptionSessionID: UUID?
     var incrementalDictationCoordinator: IncrementalTranscriptionCoordinator?

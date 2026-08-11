@@ -116,7 +116,7 @@ public final class TranscriptionRepositoryAdapter: TranscriptionRepository, Tran
         capturePurpose: CapturePurpose,
     ) async throws -> DomainTranscriptionResponse {
         guard TranscriptionProvider(rawValue: configuration.providerID) != nil else {
-            return try await transcribe(audioURL: audioURL, onProgress: onProgress, diarizationEnabledOverride: diarizationEnabledOverride, capturePurpose: capturePurpose)
+            throw TranscriptionError.transcriptionFailed("Unsupported transcription provider")
         }
         let response = try await transcriptionService.transcribe(
             audioURL: audioURL,
@@ -133,7 +133,7 @@ public final class TranscriptionRepositoryAdapter: TranscriptionRepository, Tran
         configuration: DomainTranscriptionRequestConfiguration,
     ) async throws -> DomainTranscriptionResponse {
         guard TranscriptionProvider(rawValue: configuration.providerID) != nil else {
-            return try await transcribe(samples: samples)
+            throw TranscriptionError.transcriptionFailed("Unsupported transcription provider")
         }
         let response = try await transcriptionService.transcribe(
             samples: samples,

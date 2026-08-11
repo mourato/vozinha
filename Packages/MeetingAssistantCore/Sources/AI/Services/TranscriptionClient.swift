@@ -654,17 +654,16 @@ public class TranscriptionClient: ObservableObject, TranscriptionService, Transc
     ) -> Bool? {
         guard selection.provider == .local else { return requestedOverride }
         guard LocalTranscriptionModel(rawValue: selection.selectedModel)?.supportsDiarization == true else {
+            if requestedOverride != false {
+                AppLogger.info(
+                    "Diarization auto-disabled for selected local transcription model",
+                    category: .transcriptionEngine,
+                    extra: ["model": selection.selectedModel],
+                )
+            }
             return requestedOverride
         }
-
-        if requestedOverride != false {
-            AppLogger.info(
-                "Diarization auto-disabled for selected local transcription model",
-                category: .transcriptionEngine,
-                extra: ["model": selection.selectedModel],
-            )
-        }
-        return false
+        return requestedOverride
     }
 
     private func updateCachedReadiness(_ state: CachedReadinessState) {

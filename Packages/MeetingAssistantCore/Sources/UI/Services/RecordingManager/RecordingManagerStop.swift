@@ -30,6 +30,7 @@ public extension RecordingManager {
 
             currentMeeting?.endTime = Date()
             transcriptionSession = currentMeeting.map(makeTranscriptionSessionSnapshot)
+            clearActiveTranscriptionSnapshot()
 
             if transcribe, let transcriptionSession {
                 registerTranscriptionSession(transcriptionSession.id, foreground: true)
@@ -105,6 +106,7 @@ public extension RecordingManager {
             dictationStartBundleIdentifier = nil
             dictationStartURL = nil
             activeDictationStyleSnapshot = nil
+            clearActiveTranscriptionSnapshot()
             activeStartTelemetry = nil
             clearPostProcessingReadinessWarning()
             await RecordingExclusivityCoordinator.shared.endRecording()
@@ -139,6 +141,7 @@ public extension RecordingManager {
         dictationStartBundleIdentifier = nil
         dictationStartURL = nil
         activeDictationStyleSnapshot = nil
+        clearActiveTranscriptionSnapshot()
         activeStartTelemetry = nil
         clearPostProcessingReadinessWarning()
         await RecordingExclusivityCoordinator.shared.endRecording()
@@ -245,6 +248,7 @@ private extension RecordingManager {
 
     func clearCompletedMeetingState(sessionID: UUID) {
         clearMeetingNotesState(removePersistedValue: true, meetingID: sessionID)
+        clearActiveTranscriptionSnapshot()
         guard currentMeeting?.id == sessionID else { return }
         currentMeeting = nil
         currentCapturePurpose = nil
@@ -260,6 +264,7 @@ private extension RecordingManager {
 
     func resetAfterDiscardingRecording() async {
         await cancelIncrementalTranscriptionSessionsIfNeeded()
+        clearActiveTranscriptionSnapshot()
         cancelEstimatedPostProcessingProgress(for: currentMeeting?.id)
         postProcessingContext = nil
         postProcessingContextItems = []
@@ -277,6 +282,7 @@ private extension RecordingManager {
     func handleStopRecordingError(_ error: Error, transcriptionSession: TranscriptionSessionSnapshot?) async {
         AppLogger.error("Failed to stop recording cleanly", category: .recordingManager, error: error)
         await cancelIncrementalTranscriptionSessionsIfNeeded()
+        clearActiveTranscriptionSnapshot()
         lastError = error
         isRecording = false
         if let transcriptionSession {

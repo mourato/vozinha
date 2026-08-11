@@ -7,6 +7,11 @@ import MeetingAssistantCoreInfrastructure
 // MARK: - Recording Control State
 
 extension RecordingManager {
+    func clearActiveTranscriptionSnapshot() {
+        activeTranscriptionConfiguration = nil
+        activeVocabularySnapshot = nil
+    }
+
     func makeTranscriptionSessionSnapshot(_ meeting: Meeting) -> TranscriptionSessionSnapshot {
         TranscriptionSessionSnapshot(
             id: meeting.id,
@@ -32,7 +37,7 @@ extension RecordingManager {
             dictationEnhancementsSelection: activeDictationStyleSnapshot?.enhancementsSelection,
             dictationPostProcessingEnabled: activeDictationStyleSnapshot?.postProcessingEnabled,
             dictationStyle: activeDictationStyleSnapshot,
-            vocabularySnapshot: VocabularySnapshot.current(from: .shared),
+            vocabularySnapshot: activeVocabularySnapshot ?? VocabularySnapshot.current(from: .shared),
         )
     }
 }

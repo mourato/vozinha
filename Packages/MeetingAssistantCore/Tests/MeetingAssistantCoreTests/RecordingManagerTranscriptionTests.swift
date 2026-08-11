@@ -6,6 +6,8 @@ import CryptoKit
 @testable import MeetingAssistantCoreUI
 import XCTest
 
+// swiftlint:disable file_length function_body_length
+
 @MainActor
 extension RecordingManagerTests {
     func testStopRecording_DictationUsesDictationPromptSelection() async throws {
@@ -605,10 +607,14 @@ extension RecordingManagerTests {
         let settings = AppSettingsStore.shared
         let originalStyles = settings.dictationStyles
         let originalAutoCopy = settings.autoCopyTranscriptionToClipboard
+        let originalReplacementRules = settings.vocabularyReplacementRules
         defer {
             settings.dictationStyles = originalStyles
             settings.autoCopyTranscriptionToClipboard = originalAutoCopy
+            settings.vocabularyReplacementRules = originalReplacementRules
         }
+        let snapshottedReplacementRules = [VocabularyReplacementRule(find: "captured", replace: "stable")]
+        settings.vocabularyReplacementRules = snapshottedReplacementRules
 
         let snapshottedPolicy = DictationTextHandlingPolicy(
             autoCopyToClipboard: true,
@@ -671,12 +677,14 @@ extension RecordingManagerTests {
         )
         settings.dictationStyles = mutatedStyles
         settings.autoCopyTranscriptionToClipboard = false
+        settings.vocabularyReplacementRules = [VocabularyReplacementRule(find: "captured", replace: "mutated")]
 
         let meeting = try XCTUnwrap(manager.currentMeeting)
         let session = manager.makeTranscriptionSessionSnapshot(meeting)
 
         XCTAssertEqual(session.dictationTextHandlingPolicy, snapshottedPolicy)
         XCTAssertEqual(session.dictationTranscriptionConfiguration, snapshottedTranscription)
+        XCTAssertEqual(session.vocabularySnapshot.replacementRules, snapshottedReplacementRules)
 
         await manager.cancelRecording()
     }
