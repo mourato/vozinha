@@ -346,21 +346,6 @@ extension RecordingManager {
             error: error,
             extra: ["state": "start_failed"],
         )
-        isStartingRecording = false
-        lastError = error
-        meetingState = .failed(error.localizedDescription)
-        currentMeeting?.state = .failed(error.localizedDescription)
-        cancelPostStartCaptureTasks()
-
-        _ = await micRecorder.stopRecording()
-        _ = await systemRecorder.stopRecording()
-
-        currentMeeting = nil
-        currentCapturePurpose = nil
-        isMeetingMicrophoneEnabled = false
-        activeStartTelemetry = nil
-        clearActiveTranscriptionSnapshot()
-        clearPostProcessingReadinessWarning()
     }
 
     private func enrichMeetingWithCalendarContextAfterRecordingStartIfNeeded(meetingID: UUID) {
