@@ -257,6 +257,7 @@ extension RecordingManager {
         let config = makeUseCaseConfig(session: session, settings: settings)
         let transcriptionIdentity = resolvedTranscriptionPerformanceIdentity(
             capturePurpose: session.meeting.capturePurpose,
+            configuration: session.transcriptionConfiguration,
         )
         let transcriptionCompletedAt = Date()
         let transcriptionStartedAt = transcriptionCompletedAt.addingTimeInterval(-max(0, transcriptionDuration))

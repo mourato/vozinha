@@ -35,7 +35,7 @@ final class MeetingAssistantAIService: NSObject, MeetingAssistantXPCProtocol {
                     minSpeakers: settings.minSpeakers,
                     maxSpeakers: settings.maxSpeakers,
                     numSpeakers: settings.numSpeakers,
-                    useSettingsLanguageFallback: false,
+                    useSettingsLanguageFallback: !settings.hasExplicitTranscriptionRequest,
                     useSettingsDiarizationFallback: false,
                 )
 

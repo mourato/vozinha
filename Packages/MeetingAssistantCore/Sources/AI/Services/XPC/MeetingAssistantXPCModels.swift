@@ -33,6 +33,10 @@ public enum MeetingAssistantXPCModels {
             self.inputLanguageCode = inputLanguageCode
             self.executionMode = executionMode
         }
+
+        public var hasExplicitTranscriptionRequest: Bool {
+            providerID != nil || modelID != nil || inputLanguageCode != nil || executionMode != nil
+        }
     }
 
     /// Service status information returned by the XPC service.

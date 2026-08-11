@@ -40,6 +40,7 @@ extension RecordingManager {
         selectionOverride: TranscriptionProviderSelection? = nil,
         inputLanguageCode: String? = nil,
         vocabularyHints: VocabularyProviderHints? = nil,
+        transcriptionConfiguration: DomainTranscriptionRequestConfiguration? = nil,
     ) async throws -> TranscriptionResponse {
         updateVisibleTranscriptionProgress(
             phase: .processing,
@@ -57,16 +58,18 @@ extension RecordingManager {
         }
 
         let executionMode: TranscriptionExecutionMode = capturePurpose.transcriptionExecutionMode
-        let resolvedInputLanguage = inputLanguageCode
-            ?? AppSettingsStore.shared.resolvedTranscriptionInputLanguageCode(for: executionMode)
-        let selection = selectionOverride
-            ?? AppSettingsStore.shared.resolvedTranscriptionSelection(for: executionMode)
-        let configuration = DomainTranscriptionRequestConfiguration(
-            providerID: selection.provider.rawValue,
-            modelID: selection.selectedModel,
-            inputLanguageCode: resolvedInputLanguage,
-            vocabularyHints: vocabularyHints,
-        )
+        let configuration = transcriptionConfiguration ?? {
+            let resolvedInputLanguage = inputLanguageCode
+                ?? AppSettingsStore.shared.resolvedTranscriptionInputLanguageCode(for: executionMode)
+            let selection = selectionOverride
+                ?? AppSettingsStore.shared.resolvedTranscriptionSelection(for: executionMode)
+            return DomainTranscriptionRequestConfiguration(
+                providerID: selection.provider.rawValue,
+                modelID: selection.selectedModel,
+                inputLanguageCode: resolvedInputLanguage,
+                vocabularyHints: vocabularyHints,
+            )
+        }()
         return try await transcriptionClient.transcribe(
             audioURL: audioURL,
             onProgress: onProgress,
@@ -79,7 +82,11 @@ extension RecordingManager {
     func resolvedTranscriptionPerformanceIdentity(
         capturePurpose: CapturePurpose,
         selectionOverride: TranscriptionProviderSelection? = nil,
+        configuration: DomainTranscriptionRequestConfiguration? = nil,
     ) -> ModelPerformanceModelIdentity {
+        if let configuration, let provider = TranscriptionProvider(rawValue: configuration.providerID) {
+            return provider.modelPerformanceIdentity(modelID: configuration.modelID)
+        }
         let executionMode: TranscriptionExecutionMode = capturePurpose.transcriptionExecutionMode
         let selection = selectionOverride ?? AppSettingsStore.shared.resolvedTranscriptionSelection(for: executionMode)
         return selection.provider.modelPerformanceIdentity(modelID: selection.selectedModel)

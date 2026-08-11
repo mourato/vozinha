@@ -101,14 +101,14 @@ public extension TranscriptionRepository {
         diarizationEnabledOverride _: Bool?,
         capturePurpose _: CapturePurpose,
     ) async throws -> DomainTranscriptionResponse {
-        try await transcribe(audioURL: audioURL, onProgress: onProgress)
+        throw DomainTranscriptionError.transcriptionFailed("Explicit transcription configuration is unsupported")
     }
 
     func transcribe(
         samples: [Float],
         configuration _: DomainTranscriptionRequestConfiguration,
     ) async throws -> DomainTranscriptionResponse {
-        try await transcribe(samples: samples)
+        throw DomainTranscriptionError.transcriptionFailed("Explicit transcription configuration is unsupported")
     }
 }
 

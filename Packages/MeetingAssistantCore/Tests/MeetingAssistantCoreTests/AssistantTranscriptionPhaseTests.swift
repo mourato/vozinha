@@ -228,7 +228,7 @@ final class AssistantTranscriptionPhaseTests: XCTestCase {
 }
 
 @MainActor
-private final class MockAssistantCommandTranscriber: AssistantCommandTranscribing {
+private final class MockAssistantCommandTranscriber: TranscriptionService {
     var response = TranscriptionResponse(
         text: "summarize this",
         language: "pt",
@@ -245,13 +245,27 @@ private final class MockAssistantCommandTranscriber: AssistantCommandTranscribin
         onProgress _: (@Sendable (Double) -> Void)?,
         executionMode: TranscriptionExecutionMode,
         diarizationEnabledOverride: Bool?,
-        selection _: TranscriptionProviderSelection,
-        inputLanguageCode _: String?,
-        vocabularyHints: VocabularyProviderHints?,
+        configuration: DomainTranscriptionRequestConfiguration,
     ) async throws -> TranscriptionResponse {
         lastExecutionMode = executionMode
         lastDiarizationOverride = diarizationEnabledOverride
-        lastVocabularyHints = vocabularyHints
+        lastVocabularyHints = configuration.vocabularyHints
         return response
+    }
+
+    func transcribe(audioURL _: URL, onProgress _: (@Sendable (Double) -> Void)?) async throws -> TranscriptionResponse {
+        response
+    }
+
+    func transcribe(samples _: [Float]) async throws -> TranscriptionResponse {
+        response
+    }
+
+    func healthCheck() async throws -> Bool {
+        true
+    }
+
+    func fetchServiceStatus() async throws -> ServiceStatusResponse {
+        fatalError("Assistant transcription test does not fetch service status")
     }
 }

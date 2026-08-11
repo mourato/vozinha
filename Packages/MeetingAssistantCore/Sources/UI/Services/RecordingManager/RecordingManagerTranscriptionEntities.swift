@@ -5,6 +5,8 @@ import MeetingAssistantCoreData
 import MeetingAssistantCoreDomain
 import MeetingAssistantCoreInfrastructure
 
+// swiftlint:disable function_body_length
+
 // MARK: - Transcription Entities
 
 extension RecordingManager {
@@ -96,6 +98,7 @@ extension RecordingManager {
 
         let transcriptionIdentity = resolvedTranscriptionPerformanceIdentity(
             capturePurpose: session.meeting.capturePurpose,
+            configuration: session.transcriptionConfiguration,
         )
         let failureDate = Date()
         let failedTranscription = Transcription(
@@ -114,9 +117,10 @@ extension RecordingManager {
             postProcessingRequestUserPrompt: nil,
             language: Locale.current.language.languageCode?.identifier ?? "und",
             createdAt: Date(),
-            modelName: AppSettingsStore.shared.resolvedTranscriptionSelection(
-                for: session.meeting.capturePurpose.transcriptionExecutionMode,
-            ).selectedModel,
+            modelName: session.transcriptionConfiguration?.modelID
+                ?? AppSettingsStore.shared.resolvedTranscriptionSelection(
+                    for: session.meeting.capturePurpose.transcriptionExecutionMode,
+                ).selectedModel,
             inputSource: resolveInputSourceLabel(
                 for: session.meeting,
                 recordingSource: session.recordingSource,

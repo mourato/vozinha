@@ -653,7 +653,7 @@ public class TranscriptionClient: ObservableObject, TranscriptionService, Transc
         requestedOverride: Bool?,
     ) -> Bool? {
         guard selection.provider == .local else { return requestedOverride }
-        guard !settingsStore.localModelSupportsDiarization(modelID: selection.selectedModel) else {
+        guard LocalTranscriptionModel(rawValue: selection.selectedModel)?.supportsDiarization == true else {
             return requestedOverride
         }
 

@@ -164,8 +164,8 @@ public final class AssistantVoiceCommandService: ObservableObject {
         // Snapshot current vocabulary state for this assistant command.
         let vocabularySnapshot = VocabularySnapshot.current(from: .shared)
         let vocabularyHints = vocabularySnapshot.providerHints
-        let selection = AppSettingsStore.shared.resolvedTranscriptionSelection(for: .assistant)
-        let inputLanguageCode = AppSettingsStore.shared.resolvedTranscriptionInputLanguageCode(for: .assistant)
+        let selection = settings.resolvedTranscriptionSelection(for: .assistant)
+        let inputLanguageCode = settings.resolvedTranscriptionInputLanguageCode(for: .assistant)
 
         return try await transcriptionPhase.performTranscription(
             recordingURL: recordingURL,

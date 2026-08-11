@@ -1,3 +1,5 @@
+// swiftlint:disable file_length
+
 import AppKit
 import Combine
 import Foundation
@@ -159,6 +161,27 @@ class MockTranscriptionClient: TranscriptionService, TranscriptionServiceFinalDi
             processedAt: Date().ISO8601Format(),
             confidenceScore: mockConfidenceScore,
         )
+    }
+
+    func transcribe(
+        audioURL: URL,
+        onProgress: (@Sendable (Double) -> Void)?,
+        executionMode _: TranscriptionExecutionMode,
+        diarizationEnabledOverride _: Bool?,
+        configuration _: DomainTranscriptionRequestConfiguration,
+    ) async throws -> TranscriptionResponse {
+        try await transcribe(audioURL: audioURL, onProgress: onProgress)
+    }
+
+    func transcribe(
+        samples: [Float],
+        configuration _: DomainTranscriptionRequestConfiguration,
+    ) async throws -> TranscriptionResponse {
+        try await transcribe(samples: samples)
+    }
+
+    func supportsIncrementalTranscription(selection _: TranscriptionProviderSelection) -> Bool {
+        true
     }
 
     func diarize(audioURL: URL) async throws -> [SpeakerTimelineSegment] {

@@ -4,29 +4,14 @@ import MeetingAssistantCoreCommon
 import MeetingAssistantCoreDomain
 import MeetingAssistantCoreInfrastructure
 
-@MainActor
-protocol AssistantCommandTranscribing: AnyObject {
-    func transcribe(
-        audioURL: URL,
-        onProgress: (@Sendable (Double) -> Void)?,
-        executionMode: TranscriptionExecutionMode,
-        diarizationEnabledOverride: Bool?,
-        selection: TranscriptionProviderSelection,
-        inputLanguageCode: String?,
-        vocabularyHints: VocabularyProviderHints?,
-    ) async throws -> TranscriptionResponse
-}
-
-extension TranscriptionClient: AssistantCommandTranscribing {}
-
 public struct AssistantTranscriptionPhase: @unchecked Sendable {
-    private let transcriptionClient: any AssistantCommandTranscribing
+    private let transcriptionClient: any TranscriptionService
 
     public init(transcriptionClient: TranscriptionClient) {
         self.transcriptionClient = transcriptionClient
     }
 
-    init(transcriptionClient: any AssistantCommandTranscribing) {
+    init(transcriptionClient: any TranscriptionService) {
         self.transcriptionClient = transcriptionClient
     }
 
@@ -45,14 +30,18 @@ public struct AssistantTranscriptionPhase: @unchecked Sendable {
         executionFlow: AssistantExecutionFlow,
         selectedIntegration: AssistantIntegrationConfig?,
     ) {
+        let configuration = DomainTranscriptionRequestConfiguration(
+            providerID: selection.provider.rawValue,
+            modelID: selection.selectedModel,
+            inputLanguageCode: inputLanguageCode,
+            vocabularyHints: vocabularyHints,
+        )
         let transcription = try await transcriptionClient.transcribe(
             audioURL: recordingURL,
             onProgress: nil,
             executionMode: .assistant,
             diarizationEnabledOverride: false,
-            selection: selection,
-            inputLanguageCode: inputLanguageCode,
-            vocabularyHints: vocabularyHints,
+            configuration: configuration,
         )
         let command = normalizedAssistantTranscription(
             transcription.text,

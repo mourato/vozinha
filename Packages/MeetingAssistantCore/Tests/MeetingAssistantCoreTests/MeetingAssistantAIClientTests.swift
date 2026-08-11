@@ -34,6 +34,22 @@ final class MeetingAssistantAIClientTests: XCTestCase {
         XCTAssertNil(decoded.modelID)
         XCTAssertNil(decoded.inputLanguageCode)
         XCTAssertNil(decoded.executionMode)
+        XCTAssertFalse(decoded.hasExplicitTranscriptionRequest)
+    }
+
+    func testAppSettings_ExplicitRequestWithNilLanguageDoesNotUseLegacyBranch() {
+        let settings = MeetingAssistantXPCModels.AppSettings(
+            diarization: false,
+            minSpeakers: 1,
+            maxSpeakers: 4,
+            numSpeakers: 0,
+            providerID: "local",
+            modelID: "parakeet-tdt-0.6b-v3",
+            inputLanguageCode: nil,
+            executionMode: "meeting",
+        )
+
+        XCTAssertTrue(settings.hasExplicitTranscriptionRequest)
     }
 
     func testFetchServiceStatus_CompletesWithinTimeout() async throws {

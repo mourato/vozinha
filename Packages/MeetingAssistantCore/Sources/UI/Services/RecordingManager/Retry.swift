@@ -4,6 +4,8 @@ import MeetingAssistantCoreCommon
 import MeetingAssistantCoreDomain
 import MeetingAssistantCoreInfrastructure
 
+// swiftlint:disable function_body_length
+
 // MARK: - Retry Transcription
 
 extension RecordingManager {
@@ -71,6 +73,13 @@ extension RecordingManager {
             ?? AppSettingsStore.shared.resolvedTranscriptionInputLanguageCode(
                 for: capturePurpose.transcriptionExecutionMode,
             )
+        let vocabularySnapshot = VocabularySnapshot.current(from: .shared)
+        let capturedConfiguration = DomainTranscriptionRequestConfiguration(
+            providerID: effectiveSelection.provider.rawValue,
+            modelID: effectiveSelection.selectedModel,
+            inputLanguageCode: retryInputLanguageCode,
+            vocabularyHints: vocabularySnapshot.providerHints.isEmpty ? nil : vocabularySnapshot.providerHints,
+        )
         let shouldRemoveSilence = shouldRemoveSilenceBeforeRetryTranscription(
             effectiveSelection: effectiveSelection,
         )
@@ -99,6 +108,8 @@ extension RecordingManager {
                 selectionOverride: effectiveSelectionOverride ?? effectiveSelection,
                 effectiveSelection: effectiveSelection,
                 inputLanguageCode: retryInputLanguageCode,
+                transcriptionConfiguration: capturedConfiguration,
+                vocabularySnapshot: vocabularySnapshot,
             )
             try await storage.saveTranscription(updated)
             await persistRetryPerformanceAttempts(
@@ -137,13 +148,15 @@ extension RecordingManager {
         selectionOverride: TranscriptionProviderSelection? = nil,
         effectiveSelection: TranscriptionProviderSelection,
         inputLanguageCode: String? = nil,
+        transcriptionConfiguration: DomainTranscriptionRequestConfiguration? = nil,
+        vocabularySnapshot: VocabularySnapshot? = nil,
     ) async throws -> Transcription {
         try await performHealthCheck(
             capturePurpose: transcription.meeting.capturePurpose,
             effectiveSelection: effectiveSelection,
         )
 
-        let vocabularySnapshot = VocabularySnapshot.current(from: .shared)
+        let vocabularySnapshot = vocabularySnapshot ?? VocabularySnapshot.current(from: .shared)
         let transcriptionStart = Date()
         let response = try await performTranscription(
             audioURL: audioURL,
@@ -152,6 +165,7 @@ extension RecordingManager {
             selectionOverride: selectionOverride ?? effectiveSelection,
             inputLanguageCode: inputLanguageCode,
             vocabularyHints: vocabularySnapshot.providerHints.isEmpty ? nil : vocabularySnapshot.providerHints,
+            transcriptionConfiguration: transcriptionConfiguration,
         )
         let transcriptionProcessingDuration = Date().timeIntervalSince(transcriptionStart)
         let replacedText = VocabularyReplacementRule.apply(
