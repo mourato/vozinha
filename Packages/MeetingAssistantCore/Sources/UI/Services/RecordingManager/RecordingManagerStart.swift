@@ -86,6 +86,9 @@ public extension RecordingManager {
                 prepare: {
                     try await self.prepareAndStartRecording(purpose: purpose, source: source)
                 },
+                commit: { audioURL in
+                    self.commitRecordingStart(audioURL: audioURL, source: source)
+                },
             ),
             operations: lifecycleOperations,
             handleFailure: { error in
@@ -146,7 +149,7 @@ public extension RecordingManager {
 }
 
 extension RecordingManager {
-    private func prepareAndStartRecording(purpose: CapturePurpose, source: RecordingSource) async throws {
+    private func prepareAndStartRecording(purpose: CapturePurpose, source: RecordingSource) async throws -> URL {
         let initialActiveContext = try? await activeAppContextProvider.fetchActiveAppContext()
         let refreshedActiveContext: ActiveAppContext? = if purpose == .dictation, shouldRefreshContextCapture(initialActiveContext) {
             try? await activeAppContextProvider.fetchActiveAppContext()
@@ -223,6 +226,12 @@ extension RecordingManager {
 
         let recorderStartAt = Date()
         markRecorderStartedAt(recorderStartAt)
+
+        return audioURL
+    }
+
+    private func commitRecordingStart(audioURL: URL, source: RecordingSource) {
+        guard let meeting = currentMeeting else { return }
 
         isRecording = true
         isStartingRecording = false

@@ -78,7 +78,8 @@ public extension RecordingManager {
     /// Cancel recording and discard audio files.
     func cancelRecording() async {
         let wasRecording = isRecording
-        guard wasRecording || isStartingRecording else { return }
+        let wasStarting = isStartingRecording
+        guard wasRecording || wasStarting || isStartOperationInFlight else { return }
 
         AppLogger.info(
             wasRecording ? "Cancelling recording..." : "Cancelling recording during startup...",
@@ -86,7 +87,7 @@ public extension RecordingManager {
         )
         await lifecycleCoordinator.cancel(
             isRecording: wasRecording,
-            isStarting: isStartingRecording,
+            isStarting: wasStarting,
             operations: lifecycleOperations,
         )
         AppLogger.info(
