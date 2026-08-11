@@ -29,6 +29,56 @@ extension RecordingManagerTests {
         XCTAssertNil(activeMode)
     }
 
+    func testStartFailureCleansRecorderFilesStateContextAndExclusivity() async throws {
+        let manager = try XCTUnwrap(manager)
+        let mockMic = try XCTUnwrap(mockMic)
+        let mockSystem = try XCTUnwrap(mockSystem)
+        let mockStorage = try XCTUnwrap(mockStorage)
+
+        let micURL = FileManager.default.temporaryDirectory.appendingPathComponent("start-failure-mic-\(UUID().uuidString).m4a")
+        let systemURL = FileManager.default.temporaryDirectory.appendingPathComponent("start-failure-system-\(UUID().uuidString).m4a")
+        let mergedURL = mockStorage.recordingsDirectory.appendingPathComponent("mock_merged.wav")
+        try Data([1]).write(to: micURL)
+        try Data([2]).write(to: systemURL)
+        try FileManager.default.createDirectory(
+            at: mockStorage.recordingsDirectory,
+            withIntermediateDirectories: true,
+        )
+        try Data([3]).write(to: mergedURL)
+        mockMic.currentRecordingURL = micURL
+        mockSystem.currentRecordingURL = systemURL
+        mockMic.isRecording = true
+        mockSystem.isRecording = true
+        mockMic.shouldFailStart = true
+
+        await manager.startRecording()
+
+        XCTAssertEqual(mockMic.stopRecordingCalledCount, 1)
+        XCTAssertEqual(mockSystem.stopRecordingCalledCount, 1)
+        XCTAssertTrue(mockStorage.cleanupTemporaryFilesCalled)
+        XCTAssertFalse(FileManager.default.fileExists(atPath: micURL.path))
+        XCTAssertFalse(FileManager.default.fileExists(atPath: systemURL.path))
+        XCTAssertFalse(FileManager.default.fileExists(atPath: mergedURL.path))
+        XCTAssertFalse(manager.isRecording)
+        XCTAssertFalse(manager.isStartingRecording)
+        XCTAssertNil(manager.currentMeeting)
+        XCTAssertNil(manager.currentCapturePurpose)
+        XCTAssertNil(manager.postProcessingContext)
+        XCTAssertTrue(manager.postProcessingContextItems.isEmpty)
+        XCTAssertNotNil(manager.lastError)
+        guard case .failed = manager.meetingState else {
+            return XCTFail("Expected start failure to leave the meeting in a failed state")
+        }
+        let micURLAfter = await manager.getMicAudioURL()
+        let systemURLAfter = await manager.getSystemAudioURL()
+        let mergedURLAfter = await manager.getMergedAudioURL()
+        let activeMode = await RecordingExclusivityCoordinator.shared.activeRecordingMode()
+        XCTAssertNil(micURLAfter)
+        XCTAssertNil(systemURLAfter)
+        XCTAssertNil(mergedURLAfter)
+        XCTAssertNil(activeMode)
+    }
+
     func testStopRecordingFinalizationFailureCleansReturnedFilesStateAndExclusivity() async throws {
         let manager = try XCTUnwrap(manager)
         let mockMic = try XCTUnwrap(mockMic)
@@ -102,6 +152,7 @@ extension RecordingManagerTests {
         XCTAssertFalse(manager.isStartingRecording)
         XCTAssertNil(manager.currentMeeting)
         XCTAssertNil(manager.currentCapturePurpose)
+        XCTAssertEqual(manager.meetingState, .idle)
         let activeMode = await RecordingExclusivityCoordinator.shared.activeRecordingMode()
         XCTAssertNil(activeMode)
     }

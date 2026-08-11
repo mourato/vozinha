@@ -53,6 +53,8 @@ extension RecordingManager {
             lastError = error
             meetingState = .failed(error.localizedDescription)
             currentMeeting?.state = .failed(error.localizedDescription)
+        } else {
+            meetingState = .idle
         }
         clearMeetingNotesState(removePersistedValue: true)
         currentMeeting = nil
