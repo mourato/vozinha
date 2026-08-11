@@ -19,6 +19,7 @@ public class RecordingManager: ObservableObject, RecordingServiceProtocol {
     // MARK: - Recording Actor
 
     let recordingActor = RecordingActor()
+    let lifecycleCoordinator = RecordingLifecycleCoordinator()
 
     // MARK: - Input Device
 
