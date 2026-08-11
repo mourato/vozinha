@@ -54,43 +54,44 @@ public extension RecordingManager {
             return
         }
 
-        guard await RecordingExclusivityCoordinator.shared.beginRecording(mode: exclusivityMode(for: purpose)) else {
-            AppLogger.info("Recording start blocked by exclusivity coordinator", category: .recordingManager)
-            return
-        }
-
-        currentCapturePurpose = purpose
-        recordingSource = source
-        activePostProcessingKernelMode = purpose.intelligenceKernelMode
-        isMeetingMicrophoneEnabled = purpose == .meeting
-        dictationSessionOutputLanguageOverride = nil
-        refreshPostProcessingReadinessWarning(for: purpose.intelligenceKernelMode)
-
         guard !isStartOperationInFlight else { return }
         isStartOperationInFlight = true
         defer { isStartOperationInFlight = false }
 
-        let managerEntryAt = Date()
-        activeStartTelemetry = RecordingStartTelemetry(
-            triggerLabel: triggerLabel,
-            source: source,
-            requestedAt: requestedAt,
-            managerEntryAt: managerEntryAt,
+        await lifecycleCoordinator.start(
+            isRecording: isRecording,
+            actions: RecordingLifecycleCoordinator.StartActions(
+                beginExclusivity: {
+                    let acquired = await RecordingExclusivityCoordinator.shared.beginRecording(mode: self.exclusivityMode(for: purpose))
+                    if !acquired {
+                        AppLogger.info("Recording start blocked by exclusivity coordinator", category: .recordingManager)
+                    }
+                    return acquired
+                },
+                beginState: {
+                    self.currentCapturePurpose = purpose
+                    self.recordingSource = source
+                    self.activePostProcessingKernelMode = purpose.intelligenceKernelMode
+                    self.isMeetingMicrophoneEnabled = purpose == .meeting
+                    self.dictationSessionOutputLanguageOverride = nil
+                    self.refreshPostProcessingReadinessWarning(for: purpose.intelligenceKernelMode)
+                    self.activeStartTelemetry = RecordingStartTelemetry(
+                        triggerLabel: triggerLabel,
+                        source: source,
+                        requestedAt: requestedAt,
+                        managerEntryAt: Date(),
+                    )
+                    self.isStartingRecording = true
+                },
+                prepare: {
+                    try await self.prepareAndStartRecording(purpose: purpose, source: source)
+                },
+            ),
+            operations: lifecycleOperations,
+            handleFailure: { error in
+                await self.handleStartRecordingError(error)
+            },
         )
-
-        isStartingRecording = true
-        do {
-            try await prepareAndStartRecording(purpose: purpose, source: source)
-        } catch {
-            await cancelIncrementalTranscriptionSessionsIfNeeded()
-            isStartingRecording = false
-            await RecordingExclusivityCoordinator.shared.endRecording()
-            cancelPostStartCaptureTasks()
-            postProcessingContext = nil
-            postProcessingContextItems = []
-            activeStartTelemetry = nil
-            await handleStartRecordingError(error)
-        }
     }
 
     func noteIndicatorShownForStartIfNeeded() {

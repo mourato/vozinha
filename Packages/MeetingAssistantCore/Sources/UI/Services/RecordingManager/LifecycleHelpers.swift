@@ -22,36 +22,17 @@ extension RecordingManager {
     }
 
     private func handleUnexpectedRecorderFailure(_ error: Error) async {
-        guard isRecording || isStartingRecording else { return }
-
         AppLogger.error(
             "Recorder reported an unexpected runtime failure",
             category: .recordingManager,
             error: error,
         )
-
-        cancelPostStartCaptureTasks()
-        await cancelIncrementalTranscriptionSessionsIfNeeded()
-        isRecording = false
-        isStartingRecording = false
-        isTranscribing = !activeTranscriptionSessionIDs.isEmpty
-        cancelEstimatedPostProcessingProgress(for: currentMeeting?.id)
-        meetingState = .failed(error.localizedDescription)
-        currentMeeting?.state = .failed(error.localizedDescription)
-        clearMeetingNotesState(removePersistedValue: true)
-        currentMeeting = nil
-        currentCapturePurpose = nil
-        isMeetingMicrophoneEnabled = false
-        postProcessingContext = nil
-        postProcessingContextItems = []
-        dictationSessionOutputLanguageOverride = nil
-        dictationStartBundleIdentifier = nil
-        dictationStartURL = nil
-        activeStartTelemetry = nil
-        clearActiveTranscriptionSnapshot()
-        clearPostProcessingReadinessWarning()
-        lastError = error
-        await RecordingExclusivityCoordinator.shared.endRecording()
+        await lifecycleCoordinator.recorderDidFail(
+            error,
+            isRecording: isRecording,
+            isStarting: isStartingRecording,
+            operations: lifecycleOperations,
+        )
     }
 
     func setupBindings() {

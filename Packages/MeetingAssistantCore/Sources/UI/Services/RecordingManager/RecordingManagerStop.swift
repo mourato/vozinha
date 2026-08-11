@@ -15,139 +15,98 @@ public extension RecordingManager {
     }
 
     func stopRecording(transcribe: Bool = true) async {
-        guard isRecording else {
-            AppLogger.info("Attempted to stop recording but not recording", category: .recordingManager)
-            return
-        }
-
-        cancelPostStartCaptureTasks()
-        isStartingRecording = false
         var transcriptionSession: TranscriptionSessionSnapshot?
-
-        do {
-            let micURL = await micRecorder.stopRecording()
-            let sysURL = await systemRecorder.stopRecording()
-
-            currentMeeting?.endTime = Date()
-            transcriptionSession = currentMeeting.map(makeTranscriptionSessionSnapshot)
-            clearActiveTranscriptionSnapshot()
-
-            if transcribe, let transcriptionSession {
-                registerTranscriptionSession(transcriptionSession.id, foreground: true)
-                meetingState = .processing(.transcribing)
-                currentMeeting?.state = .processing(.transcribing)
-            } else {
-                meetingState = .idle
-                currentMeeting?.state = .completed
-            }
-
-            isRecording = false
-            await RecordingExclusivityCoordinator.shared.endRecording()
-            SoundFeedbackService.shared.playRecordingStopSound()
-
-            AppLogger.info("Recording stopped", category: .recordingManager, extra: [
-                "micURL": micURL?.lastPathComponent ?? "nil",
-                "sysURL": sysURL?.lastPathComponent ?? "nil",
-            ])
-
-            let finalURL = try await processRecordedAudio(micURL: micURL, sysURL: sysURL)
-
-            if transcribe, let transcriptionSession {
-                if incrementalDictationCoordinator != nil, transcriptionSession.meeting.capturePurpose == .dictation {
-                    await transcribeIncrementalSession(
-                        audioURL: finalURL,
-                        session: transcriptionSession,
-                        coordinatorKind: .dictation,
+        await lifecycleCoordinator.stop(
+            isRecording: isRecording,
+            transcribe: transcribe,
+            operations: lifecycleOperations,
+            actions: RecordingLifecycleCoordinator.StopActions(
+                beforeRelease: { recordings in
+                    self.isStartingRecording = false
+                    self.currentMeeting?.endTime = Date()
+                    transcriptionSession = self.prepareStopState(transcribe: transcribe)
+                    self.isRecording = false
+                    AppLogger.info("Recording stopped", category: .recordingManager, extra: [
+                        "micURL": recordings.mic?.lastPathComponent ?? "nil",
+                        "sysURL": recordings.system?.lastPathComponent ?? "nil",
+                    ])
+                },
+                finalize: { recordings in
+                    let finalURL = try await self.processRecordedAudio(
+                        micURL: recordings.mic,
+                        sysURL: recordings.system,
                     )
-                } else if incrementalMeetingCoordinator != nil, transcriptionSession.meeting.capturePurpose == .meeting {
-                    await transcribeIncrementalSession(
-                        audioURL: finalURL,
-                        session: transcriptionSession,
-                        coordinatorKind: .meeting,
-                    )
-                } else {
-                    let preparedAudio = await prepareAudioForTranscription(
-                        audioURL: finalURL,
-                        allowSilenceRemoval: shouldRemoveSilenceBeforeTranscription(for: transcriptionSession),
-                    )
-                    await transcribeRecording(
-                        audioURL: preparedAudio.transcriptionURL,
-                        session: transcriptionSession,
-                        cleanupAudioURL: preparedAudio.cleanupURL,
-                    )
-                }
-            } else {
-                await resetAfterDiscardingRecording()
-            }
-        } catch {
-            await handleStopRecordingError(error, transcriptionSession: transcriptionSession)
-        }
+
+                    if transcribe, let transcriptionSession {
+                        if self.incrementalDictationCoordinator != nil, transcriptionSession.meeting.capturePurpose == .dictation {
+                            await self.transcribeIncrementalSession(
+                                audioURL: finalURL,
+                                session: transcriptionSession,
+                                coordinatorKind: .dictation,
+                            )
+                        } else if self.incrementalMeetingCoordinator != nil, transcriptionSession.meeting.capturePurpose == .meeting {
+                            await self.transcribeIncrementalSession(
+                                audioURL: finalURL,
+                                session: transcriptionSession,
+                                coordinatorKind: .meeting,
+                            )
+                        } else {
+                            let preparedAudio = await self.prepareAudioForTranscription(
+                                audioURL: finalURL,
+                                allowSilenceRemoval: self.shouldRemoveSilenceBeforeTranscription(for: transcriptionSession),
+                            )
+                            await self.transcribeRecording(
+                                audioURL: preparedAudio.transcriptionURL,
+                                session: transcriptionSession,
+                                cleanupAudioURL: preparedAudio.cleanupURL,
+                            )
+                        }
+                    }
+                },
+                handleFailure: { error in
+                    await self.handleStopRecordingError(error, transcriptionSession: transcriptionSession)
+                },
+            ),
+        )
+
     }
 
     /// Cancel recording and discard audio files.
     func cancelRecording() async {
-        guard isRecording || isStartingRecording else { return }
+        let wasRecording = isRecording
+        guard wasRecording || isStartingRecording else { return }
 
-        if !isRecording {
-            AppLogger.info("Cancelling recording during startup...", category: .recordingManager)
-            _ = await micRecorder.stopRecording()
-            _ = await systemRecorder.stopRecording()
-            await cancelIncrementalTranscriptionSessionsIfNeeded()
-            cancelPostStartCaptureTasks()
-            isStartingRecording = false
-            cancelEstimatedPostProcessingProgress(for: currentMeeting?.id)
-            currentCapturePurpose = nil
-            isMeetingMicrophoneEnabled = false
-            clearMeetingNotesState(removePersistedValue: true)
-            currentMeeting = nil
-            postProcessingContext = nil
-            postProcessingContextItems = []
-            dictationSessionOutputLanguageOverride = nil
-            dictationStartBundleIdentifier = nil
-            dictationStartURL = nil
-            activeDictationStyleSnapshot = nil
-            clearActiveTranscriptionSnapshot()
-            activeStartTelemetry = nil
-            clearPostProcessingReadinessWarning()
-            await RecordingExclusivityCoordinator.shared.endRecording()
-            SoundFeedbackService.shared.playRecordingCancelledSound()
-            AppLogger.info("Recording startup cancelled", category: .recordingManager)
-            return
-        }
+        AppLogger.info(
+            wasRecording ? "Cancelling recording..." : "Cancelling recording during startup...",
+            category: .recordingManager,
+        )
+        await lifecycleCoordinator.cancel(
+            isRecording: wasRecording,
+            isStarting: isStartingRecording,
+            operations: lifecycleOperations,
+        )
+        AppLogger.info(
+            wasRecording ? "Recording cancelled and files discarded" : "Recording startup cancelled",
+            category: .recordingManager,
+        )
+    }
+}
 
-        AppLogger.info("Cancelling recording...", category: .recordingManager)
-        _ = await micRecorder.stopRecording()
-        _ = await systemRecorder.stopRecording()
-        await cancelIncrementalTranscriptionSessionsIfNeeded()
-        cancelPostStartCaptureTasks()
-
-        await cleanupTemporaryFiles()
-
-        if let mergedURL = await getMergedAudioURL() {
-            try? FileManager.default.removeItem(at: mergedURL)
-            setMergedAudioURL(nil)
-        }
-
-        isRecording = false
-        isStartingRecording = false
-        cancelEstimatedPostProcessingProgress(for: currentMeeting?.id)
-        currentCapturePurpose = nil
-        isMeetingMicrophoneEnabled = false
-        clearMeetingNotesState(removePersistedValue: true)
-        currentMeeting = nil
-        postProcessingContext = nil
-        postProcessingContextItems = []
-        dictationSessionOutputLanguageOverride = nil
-        dictationStartBundleIdentifier = nil
-        dictationStartURL = nil
-        activeDictationStyleSnapshot = nil
+private extension RecordingManager {
+    func prepareStopState(transcribe: Bool) -> TranscriptionSessionSnapshot? {
+        let session = currentMeeting.map(makeTranscriptionSessionSnapshot)
         clearActiveTranscriptionSnapshot()
-        activeStartTelemetry = nil
-        clearPostProcessingReadinessWarning()
-        await RecordingExclusivityCoordinator.shared.endRecording()
-        SoundFeedbackService.shared.playRecordingCancelledSound()
 
-        AppLogger.info("Recording cancelled and files discarded", category: .recordingManager)
+        if transcribe, let session {
+            registerTranscriptionSession(session.id, foreground: true)
+            meetingState = .processing(.transcribing)
+            currentMeeting?.state = .processing(.transcribing)
+        } else {
+            meetingState = .idle
+            currentMeeting?.state = .completed
+        }
+
+        return session
     }
 }
 
@@ -262,46 +221,12 @@ private extension RecordingManager {
         clearPostProcessingReadinessWarning()
     }
 
-    func resetAfterDiscardingRecording() async {
-        await cancelIncrementalTranscriptionSessionsIfNeeded()
-        clearActiveTranscriptionSnapshot()
-        cancelEstimatedPostProcessingProgress(for: currentMeeting?.id)
-        postProcessingContext = nil
-        postProcessingContextItems = []
-        dictationSessionOutputLanguageOverride = nil
-        dictationStartBundleIdentifier = nil
-        dictationStartURL = nil
-        clearMeetingNotesState(removePersistedValue: true)
-        currentCapturePurpose = nil
-        isMeetingMicrophoneEnabled = false
-        currentMeeting = nil
-        activeStartTelemetry = nil
-        clearPostProcessingReadinessWarning()
-    }
-
     func handleStopRecordingError(_ error: Error, transcriptionSession: TranscriptionSessionSnapshot?) async {
         AppLogger.error("Failed to stop recording cleanly", category: .recordingManager, error: error)
         await cancelIncrementalTranscriptionSessionsIfNeeded()
-        clearActiveTranscriptionSnapshot()
-        lastError = error
-        isRecording = false
-        if let transcriptionSession {
-            unregisterTranscriptionSession(transcriptionSession.id)
-        }
-        cancelEstimatedPostProcessingProgress(for: currentMeeting?.id)
-        meetingState = .failed(error.localizedDescription)
-        currentMeeting?.state = .failed(error.localizedDescription)
-        await RecordingExclusivityCoordinator.shared.endRecording()
-        postProcessingContext = nil
-        postProcessingContextItems = []
-        isStartingRecording = false
-        dictationSessionOutputLanguageOverride = nil
-        dictationStartBundleIdentifier = nil
-        dictationStartURL = nil
-        clearMeetingNotesState(removePersistedValue: true)
-        currentCapturePurpose = nil
-        isMeetingMicrophoneEnabled = false
-        activeStartTelemetry = nil
-        clearPostProcessingReadinessWarning()
+        await resetRecordingLifecycleState(
+            error: error,
+            transcriptionID: transcriptionSession?.id,
+        )
     }
 }
