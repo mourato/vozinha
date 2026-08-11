@@ -1,6 +1,6 @@
 # Implementation Plans
 
-This is the active plan ledger. The next available plan number is 121.
+This is the active plan ledger. The next available plan number is 126.
 
 ## Execution rules
 
@@ -38,6 +38,11 @@ Status values: `TODO` | `IN PROGRESS` | `DONE` | `BLOCKED` | `REJECTED`.
 | [118](118-report-first-agent-artifact-cleanup.md) | Add report-first cleanup for agent build artifacts | P2 | M | 102 | DONE |
 | [119](119-adopt-global-macos-skill-overlays.md) | Adopt global macOS skills with the vozinha project overlay | P1 | M | global plan 004; 112–118 reconciled | DONE |
 | [120](120-establish-swift-6-2-agent-baseline.md) | Establish the Swift 6.2 agent baseline | P0 | L | 119; clean/reconciled worktree | DONE (merged in `9f1d3603`; review fix `0ec9eacb`) |
+| [121](121-deepen-transcription-execution-seam.md) | Centralize transcription execution behind one explicit request seam | P1 | L | 106, 110 | DONE |
+| [122](122-extract-recording-lifecycle-boundary.md) | Extract the RecordingManager lifecycle boundary | P1 | L | 121 | DONE (merged in `183bee4e`; remediation `61b13e7f`) |
+| [123](123-centralize-post-processing-request-seam.md) | Centralize post-processing behind one explicit request seam | P1 | L | 122 | TODO |
+| [124](124-persist-execution-provenance.md) | Persist execution provenance for transcription and post-processing | P1 | L | 123 | TODO |
+| [125](125-reduce-settings-singleton-coupling.md) | Reduce operation-time coupling to AppSettingsStore.shared | P1 | M | 122, 123, 124 | TODO |
 
 ## Dependency order
 
@@ -64,7 +69,28 @@ Plans 114 through 118 are the agent-cost and delivery-automation batch. Plan
 117 are validation infrastructure and should be implemented as separate serial
 workstreams. Plan 118 is report-first and must not delete artifacts until its
 allowlist and dry-run evidence are accepted. Skill selection otherwise remains
- semantic and follows the standard skill descriptions and project guidance.
+semantic and follows the standard skill descriptions and project guidance.
+
+Plan 121 is a serial architecture migration after the completed dictation
+configuration and vocabulary snapshot work in Plans 106 and 110. It owns the
+shared transcription request seam across full-file, retry, incremental,
+Assistant, provider, and XPC paths; do not parallelize those paths.
+Its implementation is reviewed and merged into local `main` through commit
+`a5536db9`; it has not been pushed.
+Manual validation and the required review are complete. The closeout reran the
+gates with Xcode 26.6 (`/Applications/Xcode.app`): Full validation passed, and
+`test-sensitive` reproduced the six pre-existing readiness-test failures
+already documented in `.agents/reports/phase0-audio-baseline-2026-05-25.md`;
+no Plan 121 source or test failure was introduced.
+
+Plan 122 is complete: its lifecycle boundary is merged into local `main` at
+`183bee4e`, with stale-callback and reset-order remediation in `61b13e7f`.
+The next architecture batch remains serial: Plan 123 centralizes
+post-processing requests; Plan 124 persists the resulting execution
+provenance; and Plan 125 is the final settings-boundary cleanup. Plan 125
+intentionally acts as the durable reminder for reducing `AppSettingsStore.shared`
+coupling after the first three boundaries are stable; no separate reminder
+mechanism is required.
 
 ## Archives
 
@@ -78,6 +104,13 @@ allowlist and dry-run evidence are accepted. Skill selection otherwise remains
 - Keep `AGENTS.md`, the skill descriptions, and the routing guide as the
   sources of truth for agent guidance.
 - Keep exact-range technical validation fail closed; reuse only compatible PASS evidence.
+- Run high-risk plans as one serial chain: preflight the worktree, toolchain,
+  dependencies, and exact test selectors; implement in isolation; validate
+  focused behavior; merge; review the integrated diff; remediate; run the full
+  gate; then update the ledger.
+- Keep `IN PROGRESS` until merge, integrated review, and validation are all
+  complete. Record the exact `DEVELOPER_DIR`, commands, results, and any
+  stalled reviewer or environment limitation in the plan closeout.
 - Store concrete provider/model/language and text-handling values per Dictation
   Mode, then snapshot the effective mode at recording start.
 - Keep Dictionary data local-only; preserve Prisma's existing literal and empty
@@ -88,6 +121,9 @@ allowlist and dry-run evidence are accepted. Skill selection otherwise remains
   reasoning for ambiguity, design judgment, and user-facing decisions.
 - Treat token or time savings as hypotheses until a later measurement pass
   confirms them; these plans intentionally do not require manual usage tables.
+- Keep transcription provider/model/language/vocabulary selection explicit at
+  the operation edge and route it through the existing adapter/client seam;
+  do not reintroduce live settings reads or mutable next-call overrides.
 
 Plan 119 is a guidance-only migration. It must wait until the global macOS
 skill bundle is merged and the currently dirty 112–118 work is reconciled. It
