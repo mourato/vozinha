@@ -30,6 +30,14 @@ final class RecordingLifecycleCoordinator {
         let handleFailure: (_ error: Error, _ recordings: (mic: URL?, system: URL?)) async -> Void
     }
 
+    struct RecorderState {
+        let recorderIsRecording: Bool
+        let wasRecording: Bool
+        let isRecording: Bool
+        let isStarting: Bool
+        let isStartOperationInFlight: Bool
+    }
+
     struct Operations {
         let stopRecorders: StopRecorders
         let cancelIncremental: Action
@@ -127,6 +135,19 @@ final class RecordingLifecycleCoordinator {
         await performRecorderFailure(error, operations: operations)
     }
 
+    func recorderStateDidChange(_ state: RecorderState, operations: Operations) async {
+        guard !state.recorderIsRecording,
+              state.wasRecording,
+              state.isRecording,
+              !state.isStarting,
+              !state.isStartOperationInFlight,
+              beginTransition(.recorderFailure)
+        else { return }
+        defer { inFlightTransition = nil }
+
+        await stopAndClean(operations: operations, resetError: nil)
+    }
+
     func stop(
         isRecording: Bool,
         transcribe: Bool,
@@ -173,12 +194,16 @@ final class RecordingLifecycleCoordinator {
     }
 
     private func performRecorderFailure(_ error: Error, operations: Operations) async {
+        await stopAndClean(operations: operations, resetError: error)
+    }
+
+    private func stopAndClean(operations: Operations, resetError: Error?) async {
         let recordings = await operations.stopRecorders()
         operations.cancelPostStartTasks()
         await operations.cancelIncremental()
         await operations.cleanupTemporaryFiles(recordings)
         await operations.removeMergedAudio()
-        await operations.resetState(error, nil)
+        await operations.resetState(resetError, nil)
         await operations.endExclusivity()
     }
 }
