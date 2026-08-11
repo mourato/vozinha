@@ -67,14 +67,20 @@ final class RecordingLifecycleCoordinator {
                 actions.commit(audioURL)
             }
         } catch {
-            let recordings = await operations.stopRecorders()
-            operations.cancelPostStartTasks()
-            await operations.cancelIncremental()
-            await operations.cleanupTemporaryFiles(recordings)
-            await operations.removeMergedAudio()
-            await operations.resetState(error, nil)
-            await operations.endExclusivity()
-            await handleFailure(error)
+            let shouldCancel = pendingStartCancellation
+            pendingStartCancellation = false
+            if shouldCancel {
+                await performCancellation(operations: operations)
+            } else {
+                let recordings = await operations.stopRecorders()
+                operations.cancelPostStartTasks()
+                await operations.cancelIncremental()
+                await operations.cleanupTemporaryFiles(recordings)
+                await operations.removeMergedAudio()
+                await operations.resetState(error, nil)
+                await operations.endExclusivity()
+                await handleFailure(error)
+            }
         }
     }
 

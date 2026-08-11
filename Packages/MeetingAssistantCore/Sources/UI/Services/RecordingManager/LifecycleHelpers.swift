@@ -45,7 +45,7 @@ extension RecordingManager {
                 // AudioRecorder is shared between recording and assistant flows.
                 // Only mirror recorder state when RecordingManager owns an active capture lifecycle.
                 let managerOwnsCapture = isStartingRecording || currentCapturePurpose != nil || isRecording
-                guard managerOwnsCapture else { return }
+                guard managerOwnsCapture, !isStartingRecording else { return }
 
                 isRecording = recorderIsRecording
                 if recorderIsRecording {
@@ -66,8 +66,8 @@ extension RecordingManager {
 
         storage.cleanupTemporaryFiles(urls: Array(Set(urlsToDelete)))
 
-        setMicAudioURL(nil)
-        setSystemAudioURL(nil)
+        await setMicAudioURL(nil)
+        await setSystemAudioURL(nil)
     }
 
     func markRecorderStartedAt(_ recorderStartedAt: Date) {

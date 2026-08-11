@@ -195,7 +195,7 @@ final class RecordingLifecycleCoordinatorTests: XCTestCase {
                         state.beginStateCalls += 1
                     },
                     prepare: {
-                        await withCheckedContinuation { continuation in
+                        try await withCheckedThrowingContinuation { continuation in
                             state.prepareContinuation = continuation
                             prepareStarted.fulfill()
                         }
@@ -229,6 +229,61 @@ final class RecordingLifecycleCoordinatorTests: XCTestCase {
         XCTAssertEqual(state.cleanupCalls, 1)
         XCTAssertEqual(state.removeMergedAudioCalls, 1)
         XCTAssertEqual(state.resetCalls, 1)
+        XCTAssertEqual(state.endExclusivityCalls, 1)
+        XCTAssertEqual(state.playCancelledCalls, 1)
+        XCTAssertFalse(state.exclusive)
+    }
+
+    func testCancellationDuringAwaitedStartFailureUsesCancellationCleanup() async {
+        let state = DelayedStartLifecycleTestState()
+        let prepareStarted = expectation(description: "Start preparation is awaiting failure")
+        let operations = makeDelayedStartOperations(state)
+        let coordinator = RecordingLifecycleCoordinator()
+        let startTask = Task { @MainActor in
+            await coordinator.start(
+                isRecording: false,
+                actions: .init(
+                    beginExclusivity: {
+                        state.beginExclusivityCalls += 1
+                        return true
+                    },
+                    beginState: {
+                        state.beginStateCalls += 1
+                    },
+                    prepare: {
+                        try await withCheckedThrowingContinuation { continuation in
+                            state.prepareContinuation = continuation
+                            prepareStarted.fulfill()
+                        }
+                    },
+                    commit: { _ in
+                        state.commitCalls += 1
+                    },
+                ),
+                operations: operations,
+                handleFailure: { _ in
+                    state.handleFailureCalls += 1
+                },
+            )
+        }
+
+        await fulfillment(of: [prepareStarted], timeout: 1)
+        await coordinator.cancel(
+            isRecording: false,
+            isStarting: true,
+            operations: operations,
+        )
+
+        state.prepareContinuation?.resume(throwing: RecordingLifecycleTestError.finalizationFailed)
+        await startTask.value
+
+        XCTAssertEqual(state.commitCalls, 0)
+        XCTAssertEqual(state.handleFailureCalls, 0)
+        XCTAssertEqual(state.stopRecordersCalls, 1)
+        XCTAssertEqual(state.cleanupCalls, 1)
+        XCTAssertEqual(state.removeMergedAudioCalls, 1)
+        XCTAssertEqual(state.resetCalls, 1)
+        XCTAssertNil(state.resetError)
         XCTAssertEqual(state.endExclusivityCalls, 1)
         XCTAssertEqual(state.playCancelledCalls, 1)
         XCTAssertFalse(state.exclusive)
@@ -335,10 +390,11 @@ private final class DelayedStartLifecycleTestState {
     var cleanupCalls = 0
     var removeMergedAudioCalls = 0
     var resetCalls = 0
+    var resetError: Error?
     var endExclusivityCalls = 0
     var playCancelledCalls = 0
     var exclusive = true
-    var prepareContinuation: CheckedContinuation<URL, Never>?
+    var prepareContinuation: CheckedContinuation<URL, Error>?
 }
 
 private func makeDelayedStartOperations(_ state: DelayedStartLifecycleTestState) -> RecordingLifecycleCoordinator.Operations {
@@ -358,8 +414,9 @@ private func makeDelayedStartOperations(_ state: DelayedStartLifecycleTestState)
         removeMergedAudio: {
             state.removeMergedAudioCalls += 1
         },
-        resetState: { _, _ in
+        resetState: { error, _ in
             state.resetCalls += 1
+            state.resetError = error
         },
         endExclusivity: {
             state.endExclusivityCalls += 1
