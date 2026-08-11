@@ -71,6 +71,41 @@ extension RecordingManagerTests {
         XCTAssertNil(activeMode)
     }
 
+    func testCancelRecordingCleansReturnedFilesWhenActorHasNoRecorderURLs() async throws {
+        let manager = try XCTUnwrap(manager)
+        let mockMic = try XCTUnwrap(mockMic)
+        let mockSystem = try XCTUnwrap(mockSystem)
+        let mockStorage = try XCTUnwrap(mockStorage)
+
+        let acquired = await RecordingExclusivityCoordinator.shared.beginRecording(mode: .dictation)
+        XCTAssertTrue(acquired)
+        manager.isRecording = true
+        manager.currentCapturePurpose = .dictation
+        manager.currentMeeting = Meeting(app: .unknown, capturePurpose: .dictation)
+        let micURL = FileManager.default.temporaryDirectory.appendingPathComponent("cancel-mic-\(UUID().uuidString).m4a")
+        let systemURL = FileManager.default.temporaryDirectory.appendingPathComponent("cancel-system-\(UUID().uuidString).m4a")
+        try Data([1]).write(to: micURL)
+        try Data([2]).write(to: systemURL)
+        mockMic.isRecording = true
+        mockMic.currentRecordingURL = micURL
+        mockSystem.isRecording = true
+        mockSystem.currentRecordingURL = systemURL
+
+        await manager.cancelRecording()
+
+        XCTAssertEqual(mockMic.stopRecordingCalledCount, 1)
+        XCTAssertEqual(mockSystem.stopRecordingCalledCount, 1)
+        XCTAssertTrue(mockStorage.cleanupTemporaryFilesCalled)
+        XCTAssertFalse(FileManager.default.fileExists(atPath: micURL.path))
+        XCTAssertFalse(FileManager.default.fileExists(atPath: systemURL.path))
+        XCTAssertFalse(manager.isRecording)
+        XCTAssertFalse(manager.isStartingRecording)
+        XCTAssertNil(manager.currentMeeting)
+        XCTAssertNil(manager.currentCapturePurpose)
+        let activeMode = await RecordingExclusivityCoordinator.shared.activeRecordingMode()
+        XCTAssertNil(activeMode)
+    }
+
     func testUnexpectedRecorderFailureThroughManagerCleansReturnedFilesStateAndExclusivity() async throws {
         let manager = try XCTUnwrap(manager)
         let mockMic = try XCTUnwrap(mockMic)
