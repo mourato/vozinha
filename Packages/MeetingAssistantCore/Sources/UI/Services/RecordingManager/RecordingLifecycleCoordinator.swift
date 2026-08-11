@@ -75,8 +75,11 @@ final class RecordingLifecycleCoordinator {
     ) async {
         guard isRecording || isStarting else { return }
 
+        _ = await operations.stopRecorders()
         operations.cancelPostStartTasks()
         await operations.cancelIncremental()
+        await operations.cleanupTemporaryFiles()
+        await operations.removeMergedAudio()
         await operations.resetState(error, nil)
         await operations.endExclusivity()
     }
