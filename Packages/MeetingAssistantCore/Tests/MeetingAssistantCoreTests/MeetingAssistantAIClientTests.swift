@@ -3,6 +3,39 @@ import Foundation
 import XCTest
 
 final class MeetingAssistantAIClientTests: XCTestCase {
+    func testAppSettings_EncodesExplicitTranscriptionRequest() throws {
+        let settings = MeetingAssistantXPCModels.AppSettings(
+            diarization: false,
+            minSpeakers: 1,
+            maxSpeakers: 4,
+            numSpeakers: 0,
+            providerID: "groq",
+            modelID: "whisper-large-v3-turbo",
+            inputLanguageCode: "pt-BR",
+            executionMode: "assistant",
+        )
+
+        let data = try JSONEncoder().encode(settings)
+        let decoded = try JSONDecoder().decode(MeetingAssistantXPCModels.AppSettings.self, from: data)
+
+        XCTAssertEqual(decoded.providerID, "groq")
+        XCTAssertEqual(decoded.modelID, "whisper-large-v3-turbo")
+        XCTAssertEqual(decoded.inputLanguageCode, "pt-BR")
+        XCTAssertEqual(decoded.executionMode, "assistant")
+    }
+
+    func testAppSettings_DecodesLegacyPayloadWithNilTranscriptionFields() throws {
+        let data = Data(#"{"diarization":true,"minSpeakers":1,"maxSpeakers":4,"numSpeakers":0}"#.utf8)
+
+        let decoded = try JSONDecoder().decode(MeetingAssistantXPCModels.AppSettings.self, from: data)
+
+        XCTAssertTrue(decoded.diarization)
+        XCTAssertNil(decoded.providerID)
+        XCTAssertNil(decoded.modelID)
+        XCTAssertNil(decoded.inputLanguageCode)
+        XCTAssertNil(decoded.executionMode)
+    }
+
     func testFetchServiceStatus_CompletesWithinTimeout() async throws {
         try XCTSkipIf(!FeatureFlags.useXPCService, "XPC Service is disabled")
 

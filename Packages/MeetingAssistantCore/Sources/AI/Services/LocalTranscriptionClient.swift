@@ -40,6 +40,8 @@ public class LocalTranscriptionClient {
         minSpeakers: Int? = nil,
         maxSpeakers: Int? = nil,
         numSpeakers: Int? = nil,
+        useSettingsLanguageFallback: Bool = true,
+        useSettingsDiarizationFallback: Bool = true,
         onProgress: (@Sendable (Double) -> Void)? = nil,
     ) async throws -> TranscriptionResponse {
         logger.info("Starting local transcription for: \(audioURL.lastPathComponent)")
@@ -50,7 +52,7 @@ public class LocalTranscriptionClient {
         let startTime = Date()
         let resolvedLanguageCode = normalizedLanguageCode(
             inputLanguageHintCode,
-            fallbackHint: AppSettingsStore.shared.transcriptionInputLanguageHint.languageCode,
+            fallbackHint: useSettingsLanguageFallback ? AppSettingsStore.shared.transcriptionInputLanguageHint.languageCode : nil,
         )
 
         let asrOutput = try await manager.transcribe(
@@ -72,6 +74,7 @@ public class LocalTranscriptionClient {
             context: context,
             isDiarizationEnabled: isDiarizationEnabled,
             model: selectedModel,
+            useSettingsFallback: useSettingsDiarizationFallback,
         )
 
         let duration = Date().timeIntervalSince(startTime)
@@ -92,6 +95,7 @@ public class LocalTranscriptionClient {
         samples: [Float],
         inputLanguageHintCode: String? = nil,
         modelID: String = MeetingAssistantCoreInfrastructure.TranscriptionProvider.localModelID,
+        useSettingsLanguageFallback: Bool = true,
     ) async throws -> TranscriptionResponse {
         logger.info("Starting local in-memory transcription for \(samples.count) samples")
 
@@ -102,7 +106,7 @@ public class LocalTranscriptionClient {
         let startTime = Date()
         let resolvedLanguageCode = normalizedLanguageCode(
             inputLanguageHintCode,
-            fallbackHint: AppSettingsStore.shared.transcriptionInputLanguageHint.languageCode,
+            fallbackHint: useSettingsLanguageFallback ? AppSettingsStore.shared.transcriptionInputLanguageHint.languageCode : nil,
         )
         let asrOutput = try await manager.transcribe(
             samples: samples,
@@ -155,8 +159,9 @@ public class LocalTranscriptionClient {
         context: TranscriptionRunContext,
         isDiarizationEnabled: Bool?,
         model: LocalTranscriptionModel,
+        useSettingsFallback: Bool = true,
     ) async -> [Transcription.Segment] {
-        let diarizationSetting = isDiarizationEnabled ?? AppSettingsStore.shared.isDiarizationEnabled
+        let diarizationSetting = isDiarizationEnabled ?? (useSettingsFallback && AppSettingsStore.shared.isDiarizationEnabled)
         let diarizationEnabled = diarizationSetting && FeatureFlags.enableDiarization && model.supportsDiarization
 
         if diarizationSetting, !model.supportsDiarization {

@@ -6,6 +6,8 @@ import MeetingAssistantCoreData
 import MeetingAssistantCoreDomain
 import MeetingAssistantCoreInfrastructure
 
+// swiftlint:disable function_body_length
+
 // MARK: - Recording Start
 
 public extension RecordingManager {
@@ -187,6 +189,19 @@ extension RecordingManager {
                 postProcessingContext = selectedTextCapture.context
             }
         }
+
+        let settings = AppSettingsStore.shared
+        let dictationConfiguration = activeDictationStyleSnapshot?.transcriptionConfiguration
+        let selection = dictationConfiguration?.selection
+            ?? settings.resolvedTranscriptionSelection(for: purpose.transcriptionExecutionMode)
+        let inputLanguageCode = dictationConfiguration?.inputLanguageCode
+            ?? settings.resolvedTranscriptionInputLanguageCode(for: purpose.transcriptionExecutionMode)
+        activeTranscriptionConfiguration = DomainTranscriptionRequestConfiguration(
+            providerID: selection.provider.rawValue,
+            modelID: selection.selectedModel,
+            inputLanguageCode: inputLanguageCode,
+            vocabularyHints: VocabularySnapshot.current(from: settings).providerHints,
+        )
 
         let audioURL = storage.createRecordingURL(for: meeting, type: .merged)
         setMergedAudioURL(audioURL)

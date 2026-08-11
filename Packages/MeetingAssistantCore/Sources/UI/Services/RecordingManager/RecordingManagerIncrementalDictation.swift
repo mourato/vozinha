@@ -32,7 +32,7 @@ extension RecordingManager {
         guard let recorder = concreteMicRecorder else { return }
         let transcriptionClientBox = UncheckedTranscriptionServiceBox(
             transcriptionClient,
-            configuration: activeDictationStyleSnapshot?.transcriptionConfiguration,
+            configuration: activeTranscriptionConfiguration,
         )
 
         let coordinator = IncrementalTranscriptionCoordinator(

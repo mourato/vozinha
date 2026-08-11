@@ -81,9 +81,37 @@ public class MeetingAssistantAIClient {
     }
 
     /// Transcribes an audio file using the XPC Service.
+    // Explicit XPC payload keeps speaker controls at this existing wire edge.
+    // swiftlint:disable function_parameter_count
     public func transcribe(
         audioURL: URL,
         diarizationEnabledOverride: Bool? = nil,
+    ) async throws -> TranscriptionResponse {
+        let store = AppSettingsStore.shared
+        let mode: TranscriptionExecutionMode = .meeting
+        return try await transcribe(
+            audioURL: audioURL,
+            diarizationEnabledOverride: diarizationEnabledOverride,
+            executionMode: mode,
+            selection: store.resolvedTranscriptionSelection(for: mode),
+            inputLanguageCode: store.resolvedTranscriptionInputLanguageCode(for: mode),
+            vocabularyHints: nil,
+            minSpeakers: store.minSpeakers ?? 1,
+            maxSpeakers: store.maxSpeakers ?? 10,
+            numSpeakers: store.numSpeakers ?? 0,
+        )
+    }
+
+    public func transcribe(
+        audioURL: URL,
+        diarizationEnabledOverride: Bool?,
+        executionMode: TranscriptionExecutionMode,
+        selection: TranscriptionProviderSelection,
+        inputLanguageCode: String?,
+        vocabularyHints _: VocabularyProviderHints?,
+        minSpeakers: Int = 1,
+        maxSpeakers: Int = 10,
+        numSpeakers: Int = 0,
     ) async throws -> TranscriptionResponse {
         guard FeatureFlags.useXPCService else {
             throw TranscriptionError.serviceUnavailable
@@ -100,16 +128,25 @@ public class MeetingAssistantAIClient {
             return try await transcribe(
                 audioURL: audioURL,
                 diarizationEnabledOverride: diarizationEnabledOverride,
+                executionMode: executionMode,
+                selection: selection,
+                inputLanguageCode: inputLanguageCode,
+                vocabularyHints: nil,
+                minSpeakers: minSpeakers,
+                maxSpeakers: maxSpeakers,
+                numSpeakers: numSpeakers,
             )
         }
 
-        // Prepare settings from AppSettingsStore using shared model
-        let store = AppSettingsStore.shared
         let settings = MeetingAssistantXPCModels.AppSettings(
-            diarization: diarizationEnabledOverride ?? store.isDiarizationEnabled,
-            minSpeakers: store.minSpeakers ?? 1,
-            maxSpeakers: store.maxSpeakers ?? 10,
-            numSpeakers: store.numSpeakers ?? 0,
+            diarization: diarizationEnabledOverride ?? false,
+            minSpeakers: minSpeakers,
+            maxSpeakers: maxSpeakers,
+            numSpeakers: numSpeakers,
+            providerID: selection.provider.rawValue,
+            modelID: selection.selectedModel,
+            inputLanguageCode: inputLanguageCode,
+            executionMode: executionMode.rawValue,
         )
         let settingsData = try JSONEncoder().encode(settings)
 
@@ -145,6 +182,8 @@ public class MeetingAssistantAIClient {
             }
         }
     }
+
+    // swiftlint:enable function_parameter_count
 
     /// Fetches the status of the AI service with timeout.
     public func fetchServiceStatus(timeout: TimeInterval = 5.0) async throws -> MeetingAssistantXPCModels.ServiceStatus {

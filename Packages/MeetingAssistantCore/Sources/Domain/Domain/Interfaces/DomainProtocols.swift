@@ -76,6 +76,40 @@ public protocol TranscriptionRepository: Sendable {
     func transcribe(
         samples: [Float],
     ) async throws -> DomainTranscriptionResponse
+
+    /// Transcribes an audio file using one captured request configuration.
+    func transcribe(
+        audioURL: URL,
+        onProgress: (@Sendable (Double) -> Void)?,
+        configuration: DomainTranscriptionRequestConfiguration,
+        diarizationEnabledOverride: Bool?,
+        capturePurpose: CapturePurpose,
+    ) async throws -> DomainTranscriptionResponse
+
+    /// Transcribes a sample window using one captured request configuration.
+    func transcribe(
+        samples: [Float],
+        configuration: DomainTranscriptionRequestConfiguration,
+    ) async throws -> DomainTranscriptionResponse
+}
+
+public extension TranscriptionRepository {
+    func transcribe(
+        audioURL: URL,
+        onProgress: (@Sendable (Double) -> Void)?,
+        configuration _: DomainTranscriptionRequestConfiguration,
+        diarizationEnabledOverride _: Bool?,
+        capturePurpose _: CapturePurpose,
+    ) async throws -> DomainTranscriptionResponse {
+        try await transcribe(audioURL: audioURL, onProgress: onProgress)
+    }
+
+    func transcribe(
+        samples: [Float],
+        configuration _: DomainTranscriptionRequestConfiguration,
+    ) async throws -> DomainTranscriptionResponse {
+        try await transcribe(samples: samples)
+    }
 }
 
 public protocol TranscriptionRepositoryDiarizationOverride: Sendable {
@@ -121,21 +155,6 @@ public struct DomainTranscriptionRequestConfiguration: Codable, Hashable, Sendab
         self.inputLanguageCode = inputLanguageCode
         self.vocabularyHints = vocabularyHints
     }
-}
-
-public protocol TranscriptionRepositoryConfigurationAware: Sendable {
-    func transcribe(
-        audioURL: URL,
-        onProgress: (@Sendable (Double) -> Void)?,
-        configuration: DomainTranscriptionRequestConfiguration,
-        diarizationEnabledOverride: Bool?,
-        capturePurpose: CapturePurpose,
-    ) async throws -> DomainTranscriptionResponse
-
-    func transcribe(
-        samples: [Float],
-        configuration: DomainTranscriptionRequestConfiguration,
-    ) async throws -> DomainTranscriptionResponse
 }
 
 @MainActor

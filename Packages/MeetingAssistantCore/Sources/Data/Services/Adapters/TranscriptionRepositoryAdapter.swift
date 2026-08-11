@@ -6,7 +6,7 @@ import MeetingAssistantCoreInfrastructure
 
 /// Adapter que implementa TranscriptionRepository usando TranscriptionClient existente
 @MainActor
-public final class TranscriptionRepositoryAdapter: TranscriptionRepository, TranscriptionRepositoryConfigurationAware, TranscriptionRepositoryDiarizationOverride, TranscriptionRepositoryPurposeAware, TranscriptionRepositoryPurposeDiarized, TranscriptionRepositoryFinalDiarization {
+public final class TranscriptionRepositoryAdapter: TranscriptionRepository, TranscriptionRepositoryDiarizationOverride, TranscriptionRepositoryPurposeAware, TranscriptionRepositoryPurposeDiarized, TranscriptionRepositoryFinalDiarization {
     private let transcriptionService: any TranscriptionService
 
     public init(transcriptionService: any TranscriptionService) {
@@ -115,19 +115,15 @@ public final class TranscriptionRepositoryAdapter: TranscriptionRepository, Tran
         diarizationEnabledOverride: Bool?,
         capturePurpose: CapturePurpose,
     ) async throws -> DomainTranscriptionResponse {
-        guard let service = transcriptionService as? any TranscriptionServiceConfigurationAware,
-              let provider = TranscriptionProvider(rawValue: configuration.providerID)
-        else {
+        guard TranscriptionProvider(rawValue: configuration.providerID) != nil else {
             return try await transcribe(audioURL: audioURL, onProgress: onProgress, diarizationEnabledOverride: diarizationEnabledOverride, capturePurpose: capturePurpose)
         }
-        let response = try await service.transcribe(
+        let response = try await transcriptionService.transcribe(
             audioURL: audioURL,
             onProgress: onProgress,
             executionMode: capturePurpose.transcriptionExecutionMode,
             diarizationEnabledOverride: diarizationEnabledOverride,
-            selection: TranscriptionProviderSelection(provider: provider, selectedModel: configuration.modelID),
-            inputLanguageCode: configuration.inputLanguageCode,
-            vocabularyHints: configuration.vocabularyHints,
+            configuration: configuration,
         )
         return mapToDomainResponse(response)
     }
@@ -136,14 +132,12 @@ public final class TranscriptionRepositoryAdapter: TranscriptionRepository, Tran
         samples: [Float],
         configuration: DomainTranscriptionRequestConfiguration,
     ) async throws -> DomainTranscriptionResponse {
-        guard let service = transcriptionService as? any TranscriptionServiceConfigurationAware,
-              let provider = TranscriptionProvider(rawValue: configuration.providerID)
-        else { return try await transcribe(samples: samples) }
-        let response = try await service.transcribe(
+        guard TranscriptionProvider(rawValue: configuration.providerID) != nil else {
+            return try await transcribe(samples: samples)
+        }
+        let response = try await transcriptionService.transcribe(
             samples: samples,
-            selection: TranscriptionProviderSelection(provider: provider, selectedModel: configuration.modelID),
-            inputLanguageCode: configuration.inputLanguageCode,
-            vocabularyHints: configuration.vocabularyHints,
+            configuration: configuration,
         )
         return mapToDomainResponse(response)
     }

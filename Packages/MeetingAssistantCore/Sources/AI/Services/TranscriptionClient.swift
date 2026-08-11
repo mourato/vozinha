@@ -5,23 +5,20 @@ import MeetingAssistantCoreDomain
 import MeetingAssistantCoreInfrastructure
 import os.log
 
+// swiftlint:disable file_length type_body_length function_body_length function_parameter_count
+
 // MARK: - Transcription Client
 
 /// Client for communicating with the local FluidAudio transcription service.
 /// Adapts the local model manager to the existing client interface.
 @MainActor
-public class TranscriptionClient: ObservableObject, TranscriptionService, TranscriptionServiceConfigurationAware, TranscriptionServiceDiarizationOverride, TranscriptionServicePurposeAware, TranscriptionServicePurposeDiarized, TranscriptionServiceFinalDiarization {
+public class TranscriptionClient: ObservableObject, TranscriptionService, TranscriptionServiceDiarizationOverride, TranscriptionServicePurposeAware, TranscriptionServicePurposeDiarized, TranscriptionServiceFinalDiarization {
     public static let shared = TranscriptionClient()
 
     private let logger = Logger(subsystem: AppIdentity.logSubsystem, category: "TranscriptionClient")
     private let settingsStore: AppSettingsStore
     private let groqTranscriptionClient: GroqTranscriptionClient
     private let elevenLabsTranscriptionClient: ElevenLabsTranscriptionClient
-
-    /// Transient override for the transcription provider/model selection.
-    /// When set, the next `transcribe` call uses this selection instead of resolving from settings.
-    /// Automatically cleared after being consumed.
-    public var selectionOverride: TranscriptionProviderSelection?
 
     public enum CachedReadinessState: String, Sendable {
         case unknown
@@ -55,6 +52,11 @@ public class TranscriptionClient: ObservableObject, TranscriptionService, Transc
     public func supportsIncrementalTranscription(for mode: TranscriptionExecutionMode) -> Bool {
         guard transcriptionImplementation == .local else { return false }
         return settingsStore.supportsIncrementalTranscription(for: mode)
+    }
+
+    public func supportsIncrementalTranscription(selection: TranscriptionProviderSelection) -> Bool {
+        guard transcriptionImplementation == .local, selection.provider == .local else { return false }
+        return LocalTranscriptionModel(rawValue: selection.selectedModel)?.supportsIncrementalTranscription ?? false
     }
 
     private init(
@@ -250,6 +252,48 @@ public class TranscriptionClient: ObservableObject, TranscriptionService, Transc
         try await transcribe(samples: samples, inputLanguageCode: inputLanguageCode, selection: selection)
     }
 
+    public func transcribe(
+        audioURL: URL,
+        onProgress: (@Sendable (Double) -> Void)?,
+        executionMode: TranscriptionExecutionMode,
+        diarizationEnabledOverride: Bool?,
+        configuration: DomainTranscriptionRequestConfiguration,
+    ) async throws -> TranscriptionResponse {
+        guard let provider = MeetingAssistantCoreInfrastructure.TranscriptionProvider(rawValue: configuration.providerID) else {
+            throw TranscriptionError.transcriptionFailed("Unsupported transcription provider")
+        }
+        if provider == .local, LocalTranscriptionModel(rawValue: configuration.modelID) == nil {
+            throw TranscriptionError.transcriptionFailed("Unsupported local transcription model")
+        }
+        return try await transcribeConfigured(
+            audioURL: audioURL,
+            onProgress: onProgress,
+            executionMode: executionMode,
+            diarizationEnabledOverride: diarizationEnabledOverride,
+            selection: .init(provider: provider, selectedModel: configuration.modelID),
+            inputLanguageCode: configuration.inputLanguageCode,
+            vocabularyHints: configuration.vocabularyHints,
+        )
+    }
+
+    public func transcribe(
+        samples: [Float],
+        configuration: DomainTranscriptionRequestConfiguration,
+    ) async throws -> TranscriptionResponse {
+        guard let provider = MeetingAssistantCoreInfrastructure.TranscriptionProvider(rawValue: configuration.providerID) else {
+            throw TranscriptionError.transcriptionFailed("Unsupported transcription provider")
+        }
+        if provider == .local, LocalTranscriptionModel(rawValue: configuration.modelID) == nil {
+            throw TranscriptionError.transcriptionFailed("Unsupported local transcription model")
+        }
+        return try await transcribe(
+            samples: samples,
+            selection: .init(provider: provider, selectedModel: configuration.modelID),
+            inputLanguageCode: configuration.inputLanguageCode,
+            vocabularyHints: configuration.vocabularyHints,
+        )
+    }
+
     private func transcribe(
         samples: [Float],
         inputLanguageCode: String,
@@ -271,6 +315,7 @@ public class TranscriptionClient: ObservableObject, TranscriptionService, Transc
             samples: samples,
             inputLanguageHintCode: inputLanguageCode,
             modelID: selection.selectedModel,
+            useSettingsLanguageFallback: false,
         )
     }
 
@@ -285,7 +330,7 @@ public class TranscriptionClient: ObservableObject, TranscriptionService, Transc
             onProgress: onProgress,
             executionMode: executionMode,
             diarizationEnabledOverride: diarizationEnabledOverride,
-            selection: selectionOverride ?? settingsStore.resolvedTranscriptionSelection(for: executionMode),
+            selection: settingsStore.resolvedTranscriptionSelection(for: executionMode),
             inputLanguageCode: settingsStore.resolvedTranscriptionInputLanguageCode(for: executionMode),
             vocabularyHints: nil,
         )
@@ -300,7 +345,6 @@ public class TranscriptionClient: ObservableObject, TranscriptionService, Transc
         inputLanguageCode: String?,
         vocabularyHints: VocabularyProviderHints?,
     ) async throws -> TranscriptionResponse {
-        selectionOverride = nil
         let backend = resolvedBackend(for: selection)
         let implementationLabel = switch backend {
         case .xpc:
@@ -331,6 +375,10 @@ public class TranscriptionClient: ObservableObject, TranscriptionService, Transc
                 audioURL: audioURL,
                 onProgress: onProgress,
                 diarizationEnabledOverride: diarizationEnabledOverride,
+                executionMode: executionMode,
+                selection: selection,
+                inputLanguageCode: inputLanguageCode,
+                vocabularyHints: vocabularyHints,
             )
         case .local:
             let effectiveDiarizationOverride = localDiarizationOverride(
@@ -343,6 +391,7 @@ public class TranscriptionClient: ObservableObject, TranscriptionService, Transc
                 diarizationEnabledOverride: effectiveDiarizationOverride,
                 modelID: selection.selectedModel,
                 inputLanguageCode: inputLanguageCode,
+                useSettingsFallback: false,
             )
         case let .groq(modelID):
             return try await transcribeViaGroq(
@@ -433,11 +482,19 @@ public class TranscriptionClient: ObservableObject, TranscriptionService, Transc
         audioURL: URL,
         onProgress: (@Sendable (Double) -> Void)?,
         diarizationEnabledOverride: Bool?,
+        executionMode: TranscriptionExecutionMode,
+        selection: TranscriptionProviderSelection,
+        inputLanguageCode: String?,
+        vocabularyHints: VocabularyProviderHints?,
     ) async throws -> TranscriptionResponse {
         do {
             let response = try await MeetingAssistantAIClient.shared.transcribe(
                 audioURL: audioURL,
                 diarizationEnabledOverride: diarizationEnabledOverride,
+                executionMode: executionMode,
+                selection: selection,
+                inputLanguageCode: inputLanguageCode,
+                vocabularyHints: vocabularyHints,
             )
             updateCachedReadiness(.healthy)
             AppLogger.info(
@@ -464,6 +521,7 @@ public class TranscriptionClient: ObservableObject, TranscriptionService, Transc
         diarizationEnabledOverride: Bool?,
         modelID: String,
         inputLanguageCode: String?,
+        useSettingsFallback: Bool = true,
     ) async throws -> TranscriptionResponse {
         do {
             let response = try await LocalTranscriptionClient.shared.transcribe(
@@ -471,6 +529,8 @@ public class TranscriptionClient: ObservableObject, TranscriptionService, Transc
                 isDiarizationEnabled: diarizationEnabledOverride,
                 modelID: modelID,
                 inputLanguageHintCode: inputLanguageCode,
+                useSettingsLanguageFallback: useSettingsFallback,
+                useSettingsDiarizationFallback: useSettingsFallback,
                 onProgress: onProgress,
             )
             updateCachedReadiness(.healthy)

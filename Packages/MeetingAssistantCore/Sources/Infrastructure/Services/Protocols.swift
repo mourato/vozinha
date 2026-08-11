@@ -59,6 +59,46 @@ public protocol TranscriptionService: ObservableObject {
     func transcribe(
         samples: [Float],
     ) async throws -> TranscriptionResponse
+
+    /// Executes a file request using the caller's captured provider/model data.
+    func transcribe(
+        audioURL: URL,
+        onProgress: (@Sendable (Double) -> Void)?,
+        executionMode: TranscriptionExecutionMode,
+        diarizationEnabledOverride: Bool?,
+        configuration: DomainTranscriptionRequestConfiguration,
+    ) async throws -> TranscriptionResponse
+
+    /// Executes an incremental request using the caller's captured provider/model data.
+    func transcribe(
+        samples: [Float],
+        configuration: DomainTranscriptionRequestConfiguration,
+    ) async throws -> TranscriptionResponse
+
+    func supportsIncrementalTranscription(selection: TranscriptionProviderSelection) -> Bool
+}
+
+public extension TranscriptionService {
+    func transcribe(
+        audioURL: URL,
+        onProgress: (@Sendable (Double) -> Void)?,
+        executionMode _: TranscriptionExecutionMode,
+        diarizationEnabledOverride _: Bool?,
+        configuration _: DomainTranscriptionRequestConfiguration,
+    ) async throws -> TranscriptionResponse {
+        try await transcribe(audioURL: audioURL, onProgress: onProgress)
+    }
+
+    func transcribe(
+        samples: [Float],
+        configuration _: DomainTranscriptionRequestConfiguration,
+    ) async throws -> TranscriptionResponse {
+        try await transcribe(samples: samples)
+    }
+
+    func supportsIncrementalTranscription(selection _: TranscriptionProviderSelection) -> Bool {
+        false
+    }
 }
 
 @MainActor
@@ -86,26 +126,6 @@ public protocol TranscriptionServicePurposeDiarized: ObservableObject {
         onProgress: (@Sendable (Double) -> Void)?,
         diarizationEnabledOverride: Bool?,
         capturePurpose: CapturePurpose,
-    ) async throws -> TranscriptionResponse
-}
-
-@MainActor
-public protocol TranscriptionServiceConfigurationAware: ObservableObject {
-    func transcribe(
-        audioURL: URL,
-        onProgress: (@Sendable (Double) -> Void)?,
-        executionMode: TranscriptionExecutionMode,
-        diarizationEnabledOverride: Bool?,
-        selection: TranscriptionProviderSelection,
-        inputLanguageCode: String?,
-        vocabularyHints: VocabularyProviderHints?,
-    ) async throws -> TranscriptionResponse
-
-    func transcribe(
-        samples: [Float],
-        selection: TranscriptionProviderSelection,
-        inputLanguageCode: String?,
-        vocabularyHints: VocabularyProviderHints?,
     ) async throws -> TranscriptionResponse
 }
 

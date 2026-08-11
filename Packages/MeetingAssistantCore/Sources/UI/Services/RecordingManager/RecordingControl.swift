@@ -28,6 +28,7 @@ extension RecordingManager {
             dictationStyleID: activeDictationStyleSnapshot?.id,
             dictationTextHandlingPolicy: activeDictationStyleSnapshot?.textHandlingPolicy,
             dictationTranscriptionConfiguration: activeDictationStyleSnapshot?.transcriptionConfiguration,
+            transcriptionConfiguration: activeTranscriptionConfiguration,
             dictationEnhancementsSelection: activeDictationStyleSnapshot?.enhancementsSelection,
             dictationPostProcessingEnabled: activeDictationStyleSnapshot?.postProcessingEnabled,
             dictationStyle: activeDictationStyleSnapshot,

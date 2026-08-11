@@ -10,7 +10,7 @@ final class MeetingAssistantAIService: NSObject, MeetingAssistantXPCProtocol {
     func transcribe(
         audioURL: URL,
         settingsData: Data,
-        withReply reply: @escaping @Sendable (Data?, Error?) -> Void
+        withReply reply: @escaping @Sendable (Data?, Error?) -> Void,
     ) {
         MeetingAssistantAIService.logger.info("XPC Request: Transcribe \(audioURL.lastPathComponent)")
 
@@ -18,13 +18,25 @@ final class MeetingAssistantAIService: NSObject, MeetingAssistantXPCProtocol {
             do {
                 let decoder = JSONDecoder()
                 let settings = try decoder.decode(MeetingAssistantXPCModels.AppSettings.self, from: settingsData)
+                let providerID = settings.providerID ?? TranscriptionProvider.local.rawValue
+                guard providerID == TranscriptionProvider.local.rawValue else {
+                    throw TranscriptionError.transcriptionFailed("XPC transcription supports only the local provider")
+                }
+                let modelID = settings.modelID ?? LocalTranscriptionModel.parakeetTdt06BV3.rawValue
+                guard LocalTranscriptionModel(rawValue: modelID) != nil else {
+                    throw TranscriptionError.transcriptionFailed("Unsupported local transcription model")
+                }
 
                 let result = try await LocalTranscriptionClient.shared.transcribe(
                     audioURL: audioURL,
                     isDiarizationEnabled: settings.diarization,
+                    modelID: modelID,
+                    inputLanguageHintCode: settings.inputLanguageCode,
                     minSpeakers: settings.minSpeakers,
                     maxSpeakers: settings.maxSpeakers,
-                    numSpeakers: settings.numSpeakers
+                    numSpeakers: settings.numSpeakers,
+                    useSettingsLanguageFallback: false,
+                    useSettingsDiarizationFallback: false,
                 )
 
                 let encoder = JSONEncoder()
@@ -51,7 +63,7 @@ final class MeetingAssistantAIService: NSObject, MeetingAssistantXPCProtocol {
                     modelLoaded: currentState == .loaded,
                     device: "ANE",
                     modelName: "parakeet-tdt-0.6b-v3",
-                    uptimeSeconds: 0
+                    uptimeSeconds: 0,
                 )
 
                 let encoder = JSONEncoder()

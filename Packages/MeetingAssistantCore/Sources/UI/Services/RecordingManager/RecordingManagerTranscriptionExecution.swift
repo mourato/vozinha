@@ -59,65 +59,20 @@ extension RecordingManager {
         let executionMode: TranscriptionExecutionMode = capturePurpose.transcriptionExecutionMode
         let resolvedInputLanguage = inputLanguageCode
             ?? AppSettingsStore.shared.resolvedTranscriptionInputLanguageCode(for: executionMode)
-
-        if let selectionOverride,
-           let configuredClient = transcriptionClient as? any TranscriptionServiceConfigurationAware
-        {
-            return try await configuredClient.transcribe(
-                audioURL: audioURL,
-                onProgress: onProgress,
-                executionMode: executionMode,
-                diarizationEnabledOverride: diarizationEnabledOverride,
-                selection: selectionOverride,
-                inputLanguageCode: resolvedInputLanguage,
-                vocabularyHints: vocabularyHints,
-            )
-        }
-
-        // Prefer configuration-aware path when vocabulary hints must reach remote backends.
-        if let vocabularyHints, !vocabularyHints.isEmpty,
-           let configuredClient = transcriptionClient as? any TranscriptionServiceConfigurationAware
-        {
-            let selection = AppSettingsStore.shared.resolvedTranscriptionSelection(for: executionMode)
-            return try await configuredClient.transcribe(
-                audioURL: audioURL,
-                onProgress: onProgress,
-                executionMode: executionMode,
-                diarizationEnabledOverride: diarizationEnabledOverride,
-                selection: selection,
-                inputLanguageCode: resolvedInputLanguage,
-                vocabularyHints: vocabularyHints,
-            )
-        }
-
-        if let diarizationAwareClient = transcriptionClient as? any TranscriptionServicePurposeDiarized {
-            return try await diarizationAwareClient.transcribe(
-                audioURL: audioURL,
-                onProgress: onProgress,
-                diarizationEnabledOverride: diarizationEnabledOverride,
-                capturePurpose: capturePurpose,
-            )
-        }
-
-        if let diarizationAwareClient = transcriptionClient as? any TranscriptionServiceDiarizationOverride {
-            return try await diarizationAwareClient.transcribe(
-                audioURL: audioURL,
-                onProgress: onProgress,
-                diarizationEnabledOverride: diarizationEnabledOverride,
-            )
-        }
-
-        if let purposeAwareClient = transcriptionClient as? any TranscriptionServicePurposeAware {
-            return try await purposeAwareClient.transcribe(
-                audioURL: audioURL,
-                onProgress: onProgress,
-                capturePurpose: capturePurpose,
-            )
-        }
-
+        let selection = selectionOverride
+            ?? AppSettingsStore.shared.resolvedTranscriptionSelection(for: executionMode)
+        let configuration = DomainTranscriptionRequestConfiguration(
+            providerID: selection.provider.rawValue,
+            modelID: selection.selectedModel,
+            inputLanguageCode: resolvedInputLanguage,
+            vocabularyHints: vocabularyHints,
+        )
         return try await transcriptionClient.transcribe(
             audioURL: audioURL,
             onProgress: onProgress,
+            executionMode: executionMode,
+            diarizationEnabledOverride: diarizationEnabledOverride,
+            configuration: configuration,
         )
     }
 

@@ -1,5 +1,7 @@
 // TranscribeAudioUseCase - Caso de uso para transcrever áudio
 
+// swiftlint:disable type_body_length
+
 import Foundation
 import MeetingAssistantCoreCommon
 
@@ -93,33 +95,12 @@ public final class TranscribeAudioUseCase: Sendable {
                     transcriptionConfiguration,
                     vocabularyTerms: vocabularyTerms,
                 )
-                if let effectiveConfiguration,
-                   let configurationAwareRepository = transcriptionRepository as? any TranscriptionRepositoryConfigurationAware
-                {
-                    response = try await configurationAwareRepository.transcribe(
+                if let effectiveConfiguration {
+                    response = try await transcriptionRepository.transcribe(
                         audioURL: audioURL,
                         onProgress: onTranscriptionProgress,
                         configuration: effectiveConfiguration,
                         diarizationEnabledOverride: diarizationEnabledOverride,
-                        capturePurpose: meeting.capturePurpose,
-                    )
-                } else if let diarizationPurposeAwareRepository = transcriptionRepository as? any TranscriptionRepositoryPurposeDiarized {
-                    response = try await diarizationPurposeAwareRepository.transcribe(
-                        audioURL: audioURL,
-                        onProgress: onTranscriptionProgress,
-                        diarizationEnabledOverride: diarizationEnabledOverride,
-                        capturePurpose: meeting.capturePurpose,
-                    )
-                } else if let diarizationAwareRepository = transcriptionRepository as? any TranscriptionRepositoryDiarizationOverride {
-                    response = try await diarizationAwareRepository.transcribe(
-                        audioURL: audioURL,
-                        onProgress: onTranscriptionProgress,
-                        diarizationEnabledOverride: diarizationEnabledOverride,
-                    )
-                } else if let capturePurposeAwareRepository = transcriptionRepository as? any TranscriptionRepositoryPurposeAware {
-                    response = try await capturePurposeAwareRepository.transcribe(
-                        audioURL: audioURL,
-                        onProgress: onTranscriptionProgress,
                         capturePurpose: meeting.capturePurpose,
                     )
                 } else {

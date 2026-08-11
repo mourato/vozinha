@@ -24,23 +24,19 @@ extension RecordingManager {
 
     final class UncheckedTranscriptionServiceBox: @unchecked Sendable {
         @MainActor private let value: any TranscriptionService
-        @MainActor private let configuration: DictationTranscriptionConfiguration?
+        @MainActor private let configuration: DomainTranscriptionRequestConfiguration?
 
-        @MainActor init(_ value: any TranscriptionService, configuration: DictationTranscriptionConfiguration? = nil) {
+        @MainActor init(_ value: any TranscriptionService, configuration: DomainTranscriptionRequestConfiguration? = nil) {
             self.value = value
             self.configuration = configuration
         }
 
         @MainActor
         func transcribe(samples: [Float]) async throws -> TranscriptionResponse {
-            if let configuration,
-               let configuredValue = value as? any TranscriptionServiceConfigurationAware
-            {
-                return try await configuredValue.transcribe(
+            if let configuration {
+                return try await value.transcribe(
                     samples: samples,
-                    selection: configuration.selection,
-                    inputLanguageCode: configuration.inputLanguageCode,
-                    vocabularyHints: nil,
+                    configuration: configuration,
                 )
             }
             return try await value.transcribe(samples: samples)
@@ -177,8 +173,12 @@ extension RecordingManager {
         guard actualPurpose == config.expectedPurpose, actualSource == config.expectedSource else { return false }
         guard let recorder = concreteMicRecorder else { return false }
         guard recorder === AudioRecorder.shared else { return false }
-        guard let transcriptionClient = transcriptionClient as? TranscriptionClient else { return false }
-        return transcriptionClient.supportsIncrementalTranscription(for: config.executionMode)
+        guard let configuration = activeTranscriptionConfiguration,
+              let provider = TranscriptionProvider(rawValue: configuration.providerID)
+        else { return false }
+        return transcriptionClient.supportsIncrementalTranscription(
+            selection: .init(provider: provider, selectedModel: configuration.modelID),
+        )
     }
 
     func warmupIncrementalTranscriptionIfNeeded() {

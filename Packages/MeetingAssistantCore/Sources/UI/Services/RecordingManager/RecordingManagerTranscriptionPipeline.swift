@@ -145,9 +145,9 @@ extension RecordingManager {
         let transcriptionStart = Date()
         let meetingEntity = makeMeetingEntity(meeting: session.meeting, audioDuration: audioDuration)
         let config = makeUseCaseConfig(session: session, settings: settings)
-        let transcriptionIdentity = resolvedTranscriptionPerformanceIdentity(
-            capturePurpose: session.meeting.capturePurpose,
-        )
+        let transcriptionIdentity = session.transcriptionConfiguration.flatMap { configuration in
+            TranscriptionProvider(rawValue: configuration.providerID)?.modelPerformanceIdentity(modelID: configuration.modelID)
+        } ?? resolvedTranscriptionPerformanceIdentity(capturePurpose: session.meeting.capturePurpose)
         let diarizationEnabledOverride = shouldEnableDiarization(
             for: session.meeting,
             capturePurposeOverride: session.meeting.capturePurpose,
@@ -158,11 +158,7 @@ extension RecordingManager {
         }
 
         let vocabularySnapshot = session.vocabularySnapshot
-        let transcriptionConfiguration = makeDomainTranscriptionConfiguration(
-            from: config.dictationTranscriptionConfiguration,
-            vocabularyHints: vocabularySnapshot.providerHints,
-            capturePurpose: session.meeting.capturePurpose,
-        )
+        let transcriptionConfiguration = session.transcriptionConfiguration
 
         let transcriptionEntity = try await transcribeAudioUseCase.execute(
             audioURL: audioURL,

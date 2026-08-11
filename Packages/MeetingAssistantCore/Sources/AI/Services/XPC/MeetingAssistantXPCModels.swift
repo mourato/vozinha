@@ -9,12 +9,29 @@ public enum MeetingAssistantXPCModels {
         public var minSpeakers: Int
         public var maxSpeakers: Int
         public var numSpeakers: Int
+        public var providerID: String?
+        public var modelID: String?
+        public var inputLanguageCode: String?
+        public var executionMode: String?
 
-        public init(diarization: Bool, minSpeakers: Int, maxSpeakers: Int, numSpeakers: Int) {
+        public init(
+            diarization: Bool,
+            minSpeakers: Int,
+            maxSpeakers: Int,
+            numSpeakers: Int,
+            providerID: String? = nil,
+            modelID: String? = nil,
+            inputLanguageCode: String? = nil,
+            executionMode: String? = nil,
+        ) {
             self.diarization = diarization
             self.minSpeakers = minSpeakers
             self.maxSpeakers = maxSpeakers
             self.numSpeakers = numSpeakers
+            self.providerID = providerID
+            self.modelID = modelID
+            self.inputLanguageCode = inputLanguageCode
+            self.executionMode = executionMode
         }
     }
 

@@ -127,6 +127,7 @@ public class RecordingManager: ObservableObject, RecordingServiceProtocol {
     var dictationStartBundleIdentifier: String?
     var dictationStartURL: URL?
     var activeDictationStyleSnapshot: DictationStyle?
+    var activeTranscriptionConfiguration: DomainTranscriptionRequestConfiguration?
     var activeTranscriptionSessionIDs = Set<UUID>()
     var foregroundTranscriptionSessionID: UUID?
     var incrementalDictationCoordinator: IncrementalTranscriptionCoordinator?
@@ -161,6 +162,7 @@ public class RecordingManager: ObservableObject, RecordingServiceProtocol {
         let dictationStyleID: UUID?
         let dictationTextHandlingPolicy: DictationTextHandlingPolicy?
         let dictationTranscriptionConfiguration: DictationTranscriptionConfiguration?
+        let transcriptionConfiguration: DomainTranscriptionRequestConfiguration?
         let dictationEnhancementsSelection: EnhancementsAISelection?
         let dictationPostProcessingEnabled: Bool?
         let dictationStyle: DictationStyle?
@@ -180,6 +182,7 @@ public class RecordingManager: ObservableObject, RecordingServiceProtocol {
             dictationStyleID: UUID? = nil,
             dictationTextHandlingPolicy: DictationTextHandlingPolicy? = nil,
             dictationTranscriptionConfiguration: DictationTranscriptionConfiguration? = nil,
+            transcriptionConfiguration: DomainTranscriptionRequestConfiguration? = nil,
             dictationEnhancementsSelection: EnhancementsAISelection? = nil,
             dictationPostProcessingEnabled: Bool? = nil,
             dictationStyle: DictationStyle? = nil,
@@ -198,6 +201,7 @@ public class RecordingManager: ObservableObject, RecordingServiceProtocol {
             self.dictationStyleID = dictationStyleID
             self.dictationTextHandlingPolicy = dictationTextHandlingPolicy
             self.dictationTranscriptionConfiguration = dictationTranscriptionConfiguration
+            self.transcriptionConfiguration = transcriptionConfiguration
             self.dictationEnhancementsSelection = dictationEnhancementsSelection
             self.dictationPostProcessingEnabled = dictationPostProcessingEnabled
             self.dictationStyle = dictationStyle
