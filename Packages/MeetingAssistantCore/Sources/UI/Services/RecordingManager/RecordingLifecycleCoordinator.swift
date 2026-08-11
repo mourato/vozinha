@@ -1,4 +1,17 @@
 import Foundation
+import os.lock
+
+final class RecorderCallbackGeneration: @unchecked Sendable {
+    private let lock = OSAllocatedUnfairLock(initialState: UInt64(0))
+
+    var value: UInt64 {
+        lock.withLock { $0 }
+    }
+
+    func invalidate() {
+        lock.withLock { $0 &+= 1 }
+    }
+}
 
 @MainActor
 final class RecordingLifecycleCoordinator {
@@ -16,6 +29,7 @@ final class RecordingLifecycleCoordinator {
     private var inFlightTransition: TransitionPhase?
     private var pendingStartCancellation = false
     private var pendingStartFailure: Error?
+    let recorderCallbackGeneration = RecorderCallbackGeneration()
 
     struct StartActions {
         let beginExclusivity: () async -> Bool
@@ -32,7 +46,6 @@ final class RecordingLifecycleCoordinator {
 
     struct RecorderState {
         let recorderIsRecording: Bool
-        let wasRecording: Bool
         let isRecording: Bool
         let isStarting: Bool
         let isStartOperationInFlight: Bool
@@ -116,12 +129,18 @@ final class RecordingLifecycleCoordinator {
         await performCancellation(operations: operations)
     }
 
+    nonisolated func currentRecorderCallbackGeneration() -> UInt64 {
+        recorderCallbackGeneration.value
+    }
+
     func recorderDidFail(
         _ error: Error,
         isRecording: Bool,
         isStarting: Bool,
+        generation: UInt64? = nil,
         operations: Operations,
     ) async {
+        guard generation == nil || generation == currentRecorderCallbackGeneration() else { return }
         if inFlightTransition == .starting {
             pendingStartFailure = error
             return
@@ -135,9 +154,13 @@ final class RecordingLifecycleCoordinator {
         await performRecorderFailure(error, operations: operations)
     }
 
-    func recorderStateDidChange(_ state: RecorderState, operations: Operations) async {
+    func recorderStateDidChange(
+        _ state: RecorderState,
+        generation: UInt64? = nil,
+        operations: Operations,
+    ) async {
+        guard generation == nil || generation == currentRecorderCallbackGeneration() else { return }
         guard !state.recorderIsRecording,
-              state.wasRecording,
               state.isRecording,
               !state.isStarting,
               !state.isStartOperationInFlight,
@@ -176,9 +199,16 @@ final class RecordingLifecycleCoordinator {
         }
     }
 
+    func waitForIdle() async {
+        while inFlightTransition != nil {
+            await Task.yield()
+        }
+    }
+
     private func beginTransition(_ phase: TransitionPhase) -> Bool {
         guard inFlightTransition == nil else { return false }
         inFlightTransition = phase
+        recorderCallbackGeneration.invalidate()
         return true
     }
 

@@ -13,15 +13,17 @@ import UserNotifications
 extension RecordingManager {
     func setupRecorderErrorForwarding() {
         guard let recorder = concreteMicRecorder else { return }
+        let callbackGeneration = lifecycleCoordinator.recorderCallbackGeneration
 
-        recorder.onRecordingError = { [weak self] error in
+        recorder.onRecordingError = { [weak self, callbackGeneration] error in
+            let generation = callbackGeneration.value
             Task { @MainActor [weak self] in
-                await self?.handleUnexpectedRecorderFailure(error)
+                await self?.handleUnexpectedRecorderFailure(error, generation: generation)
             }
         }
     }
 
-    private func handleUnexpectedRecorderFailure(_ error: Error) async {
+    private func handleUnexpectedRecorderFailure(_ error: Error, generation: UInt64) async {
         AppLogger.error(
             "Recorder reported an unexpected runtime failure",
             category: .recordingManager,
@@ -31,31 +33,31 @@ extension RecordingManager {
             error,
             isRecording: isRecording,
             isStarting: isStartingRecording,
+            generation: generation,
             operations: lifecycleOperations,
         )
     }
 
     func setupBindings() {
         // Sync with audio recorder state
+        let callbackGeneration = lifecycleCoordinator.recorderCallbackGeneration
         micRecorder.isRecordingPublisher
             .receive(on: DispatchQueue.main)
             .sink { [weak self] recorderIsRecording in
                 guard let self else { return }
 
-                let wasRecording = isRecording
-                let wasStarting = isStartingRecording
-                let wasStartOperationInFlight = isStartOperationInFlight
+                let generation = callbackGeneration.value
                 Task { @MainActor [weak self] in
                     guard let self else { return }
 
                     await lifecycleCoordinator.recorderStateDidChange(
                         .init(
                             recorderIsRecording: recorderIsRecording,
-                            wasRecording: wasRecording,
                             isRecording: isRecording,
-                            isStarting: wasStarting,
-                            isStartOperationInFlight: wasStartOperationInFlight,
+                            isStarting: isStartingRecording,
+                            isStartOperationInFlight: isStartOperationInFlight,
                         ),
+                        generation: generation,
                         operations: lifecycleOperations,
                     )
                 }
