@@ -208,7 +208,7 @@ extension RecordingManager {
         )
 
         let audioURL = storage.createRecordingURL(for: meeting, type: .merged)
-        setMergedAudioURL(audioURL)
+        await setMergedAudioURL(audioURL)
         try await prepareIncrementalDictationSessionIfNeeded(
             meeting: meeting,
             purpose: purpose,

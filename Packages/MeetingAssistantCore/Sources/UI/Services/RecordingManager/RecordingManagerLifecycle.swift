@@ -23,7 +23,7 @@ extension RecordingManager {
             removeMergedAudio: {
                 if let mergedURL = await self.getMergedAudioURL() {
                     try? FileManager.default.removeItem(at: mergedURL)
-                    self.setMergedAudioURL(nil)
+                    await self.setMergedAudioURL(nil)
                 }
             },
             resetState: { error, transcriptionID in
