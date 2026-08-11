@@ -155,6 +155,33 @@ extension RecordingManagerTests {
         XCTAssertTrue(manager.isStartingRecording)
     }
 
+    func testStaleRecorderActivityAfterCaptureEndsDoesNotResurrectRecording() async throws {
+        let manager = try XCTUnwrap(manager)
+        let mockMic = try XCTUnwrap(mockMic)
+
+        manager.currentCapturePurpose = .dictation
+        manager.isRecording = false
+        manager.isStartingRecording = false
+        var recorderActivitySubscription: AnyCancellable?
+        defer {
+            recorderActivitySubscription?.cancel()
+            manager.currentCapturePurpose = nil
+            mockMic.isRecording = false
+        }
+
+        let recorderActivity = expectation(description: "Recorder reports stale activity")
+        recorderActivitySubscription = mockMic.$isRecording.sink { isRecording in
+            if isRecording {
+                recorderActivity.fulfill()
+            }
+        }
+        mockMic.isRecording = true
+
+        await fulfillment(of: [recorderActivity], timeout: 1)
+
+        XCTAssertFalse(manager.isRecording)
+    }
+
     func testCancelRecordingWhileStartOperationIsInFlightPreventsCommitBeforeStartupState() async throws {
         let manager = try XCTUnwrap(manager)
         let mockMic = try XCTUnwrap(mockMic)
@@ -178,10 +205,17 @@ extension RecordingManagerTests {
                         }
                     },
                     beginState: {
+                        manager.currentMeeting = Meeting(
+                            app: .unknown,
+                            capturePurpose: .dictation,
+                            state: .idle,
+                        )
+                        manager.currentCapturePurpose = .dictation
                         manager.isStartingRecording = true
                     },
                     prepare: {
-                        URL(fileURLWithPath: "/tmp/start-before-state-cancel.wav")
+                        XCTAssertEqual(manager.currentMeeting?.state, .idle)
+                        return URL(fileURLWithPath: "/tmp/start-before-state-cancel.wav")
                     },
                     commit: { _ in
                         commitCalled = true

@@ -44,8 +44,7 @@ extension RecordingManager {
 
                 // AudioRecorder is shared between recording and assistant flows.
                 // Only mirror recorder state when RecordingManager owns an active capture lifecycle.
-                let managerOwnsCapture = isStartingRecording || currentCapturePurpose != nil || isRecording
-                guard managerOwnsCapture, !isStartingRecording else { return }
+                guard !isStartingRecording, isRecording else { return }
 
                 isRecording = recorderIsRecording
                 if recorderIsRecording {

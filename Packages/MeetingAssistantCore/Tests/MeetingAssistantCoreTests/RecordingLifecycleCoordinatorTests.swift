@@ -288,6 +288,61 @@ final class RecordingLifecycleCoordinatorTests: XCTestCase {
         XCTAssertEqual(state.playCancelledCalls, 1)
         XCTAssertFalse(state.exclusive)
     }
+
+    func testRecorderFailureDuringAwaitedStartPreventsCommitAndResetsFailure() async {
+        let state = DelayedStartLifecycleTestState()
+        let prepareStarted = expectation(description: "Start preparation is awaiting recorder failure")
+        let operations = makeDelayedStartOperations(state)
+        let coordinator = RecordingLifecycleCoordinator()
+        let startTask = Task { @MainActor in
+            await coordinator.start(
+                isRecording: false,
+                actions: .init(
+                    beginExclusivity: {
+                        state.beginExclusivityCalls += 1
+                        return true
+                    },
+                    beginState: {
+                        state.beginStateCalls += 1
+                    },
+                    prepare: {
+                        try await withCheckedThrowingContinuation { continuation in
+                            state.prepareContinuation = continuation
+                            prepareStarted.fulfill()
+                        }
+                    },
+                    commit: { _ in
+                        state.commitCalls += 1
+                    },
+                ),
+                operations: operations,
+                handleFailure: { _ in
+                    state.handleFailureCalls += 1
+                },
+            )
+        }
+
+        await fulfillment(of: [prepareStarted], timeout: 1)
+        await coordinator.recorderDidFail(
+            RecordingLifecycleTestError.finalizationFailed,
+            isRecording: false,
+            isStarting: true,
+            operations: operations,
+        )
+
+        state.prepareContinuation?.resume(returning: URL(fileURLWithPath: "/tmp/recorder-failure-prepared.wav"))
+        await startTask.value
+
+        XCTAssertEqual(state.commitCalls, 0)
+        XCTAssertEqual(state.handleFailureCalls, 0)
+        XCTAssertEqual(state.stopRecordersCalls, 1)
+        XCTAssertEqual(state.cleanupCalls, 1)
+        XCTAssertEqual(state.removeMergedAudioCalls, 1)
+        XCTAssertEqual(state.resetCalls, 1)
+        XCTAssertTrue(state.resetError is RecordingLifecycleTestError)
+        XCTAssertEqual(state.endExclusivityCalls, 1)
+        XCTAssertFalse(state.exclusive)
+    }
 }
 
 private final class RecordingLifecycleTestState {
