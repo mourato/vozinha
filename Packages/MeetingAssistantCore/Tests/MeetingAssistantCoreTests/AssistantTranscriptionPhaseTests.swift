@@ -119,6 +119,9 @@ final class AssistantTranscriptionPhaseTests: XCTestCase {
         XCTAssertEqual(transcriber.lastExecutionMode, .assistant)
         XCTAssertEqual(transcriber.lastDiarizationOverride, false)
         XCTAssertNil(transcriber.lastVocabularyHints)
+        XCTAssertEqual(transcriber.lastConfiguration?.providerID, TranscriptionProvider.local.rawValue)
+        XCTAssertEqual(transcriber.lastConfiguration?.modelID, TranscriptionProviderSelection.default.selectedModel)
+        XCTAssertNil(transcriber.lastConfiguration?.inputLanguageCode)
     }
 
     func testPerformTranscription_PassesVocabularyHintsWithoutOverride() async throws {
@@ -145,6 +148,10 @@ final class AssistantTranscriptionPhaseTests: XCTestCase {
         )
 
         XCTAssertEqual(transcriber.lastVocabularyHints, hints)
+        XCTAssertEqual(transcriber.lastConfiguration?.providerID, TranscriptionProviderSelection.default.provider.rawValue)
+        XCTAssertEqual(transcriber.lastConfiguration?.modelID, TranscriptionProviderSelection.default.selectedModel)
+        XCTAssertEqual(transcriber.lastConfiguration?.inputLanguageCode, "en")
+        XCTAssertEqual(transcriber.lastConfiguration?.vocabularyHints, hints)
     }
 
     func testPerformTranscription_ThrowsEmptyCommandAfterNormalization() async {
@@ -239,6 +246,7 @@ private final class MockAssistantCommandTranscriber: TranscriptionService {
     var lastExecutionMode: TranscriptionExecutionMode?
     var lastDiarizationOverride: Bool?
     var lastVocabularyHints: VocabularyProviderHints?
+    var lastConfiguration: DomainTranscriptionRequestConfiguration?
 
     func transcribe(
         audioURL _: URL,
@@ -249,6 +257,7 @@ private final class MockAssistantCommandTranscriber: TranscriptionService {
     ) async throws -> TranscriptionResponse {
         lastExecutionMode = executionMode
         lastDiarizationOverride = diarizationEnabledOverride
+        lastConfiguration = configuration
         lastVocabularyHints = configuration.vocabularyHints
         return response
     }

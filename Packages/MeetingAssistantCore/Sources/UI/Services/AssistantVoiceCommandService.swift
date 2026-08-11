@@ -162,7 +162,7 @@ public final class AssistantVoiceCommandService: ObservableObject {
         }
 
         // Snapshot current vocabulary state for this assistant command.
-        let vocabularySnapshot = VocabularySnapshot.current(from: .shared)
+        let vocabularySnapshot = VocabularySnapshot.current(from: settings)
         let vocabularyHints = vocabularySnapshot.providerHints
         let selection = settings.resolvedTranscriptionSelection(for: .assistant)
         let inputLanguageCode = settings.resolvedTranscriptionInputLanguageCode(for: .assistant)
