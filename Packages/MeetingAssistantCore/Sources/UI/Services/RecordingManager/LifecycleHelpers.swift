@@ -55,8 +55,8 @@ extension RecordingManager {
             .store(in: &cancellables)
     }
 
-    func cleanupTemporaryFiles() async {
-        var urlsToDelete: [URL] = []
+    func cleanupTemporaryFiles(additionalURLs: [URL] = []) async {
+        var urlsToDelete = additionalURLs
         if let micURL = await getMicAudioURL() {
             urlsToDelete.append(micURL)
         }
@@ -64,7 +64,7 @@ extension RecordingManager {
             urlsToDelete.append(sysURL)
         }
 
-        storage.cleanupTemporaryFiles(urls: urlsToDelete)
+        storage.cleanupTemporaryFiles(urls: Array(Set(urlsToDelete)))
 
         setMicAudioURL(nil)
         setSystemAudioURL(nil)

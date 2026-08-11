@@ -1,0 +1,158 @@
+import Foundation
+@testable import MeetingAssistantCore
+@testable import MeetingAssistantCoreUI
+import XCTest
+
+@MainActor
+extension RecordingManagerTests {
+    func testStopWithoutTranscriptionUsesRealLifecycleCleanup() async throws {
+        let manager = try XCTUnwrap(manager)
+        let mockMic = try XCTUnwrap(mockMic)
+        let mockStorage = try XCTUnwrap(mockStorage)
+
+        await manager.startRecording()
+        XCTAssertTrue(manager.isRecording)
+
+        await manager.stopRecording(transcribe: false)
+
+        XCTAssertEqual(mockMic.stopRecordingCalledCount, 1)
+        XCTAssertFalse(manager.isRecording)
+        XCTAssertFalse(manager.isStartingRecording)
+        XCTAssertNil(manager.currentMeeting)
+        XCTAssertNil(manager.currentCapturePurpose)
+        let micURL = await manager.getMicAudioURL()
+        let systemURL = await manager.getSystemAudioURL()
+        XCTAssertNil(micURL)
+        XCTAssertNil(systemURL)
+        XCTAssertTrue(mockStorage.cleanupTemporaryFilesCalled)
+        let activeMode = await RecordingExclusivityCoordinator.shared.activeRecordingMode()
+        XCTAssertNil(activeMode)
+    }
+
+    func testStopRecordingFinalizationFailureCleansReturnedFilesStateAndExclusivity() async throws {
+        let manager = try XCTUnwrap(manager)
+        let mockMic = try XCTUnwrap(mockMic)
+        let mockSystem = try XCTUnwrap(mockSystem)
+        let mockStorage = try XCTUnwrap(mockStorage)
+
+        let settings = AppSettingsStore.shared
+        let originalMergeSetting = settings.shouldMergeAudioFiles
+        settings.shouldMergeAudioFiles = false
+        defer { settings.shouldMergeAudioFiles = originalMergeSetting }
+
+        let acquired = await RecordingExclusivityCoordinator.shared.beginRecording(mode: .dictation)
+        XCTAssertTrue(acquired)
+        manager.isRecording = true
+        manager.currentCapturePurpose = .dictation
+        manager.currentMeeting = Meeting(app: .unknown, capturePurpose: .dictation)
+
+        let mergedURL = FileManager.default.temporaryDirectory.appendingPathComponent("finalization-merged-\(UUID().uuidString).m4a")
+        let systemURL = FileManager.default.temporaryDirectory.appendingPathComponent("finalization-system-\(UUID().uuidString).m4a")
+        try Data([1]).write(to: mergedURL)
+        try Data([2]).write(to: systemURL)
+        mockMic.currentRecordingURL = nil
+        mockSystem.currentRecordingURL = systemURL
+        await manager.recordingActor.setMergedAudioURL(mergedURL)
+
+        await manager.stopRecording(transcribe: false)
+
+        XCTAssertEqual(mockMic.stopRecordingCalledCount, 1)
+        XCTAssertEqual(mockSystem.stopRecordingCalledCount, 1)
+        XCTAssertTrue(mockStorage.cleanupTemporaryFilesCalled)
+        XCTAssertFalse(FileManager.default.fileExists(atPath: systemURL.path))
+        XCTAssertFalse(FileManager.default.fileExists(atPath: mergedURL.path))
+        XCTAssertFalse(manager.isRecording)
+        XCTAssertFalse(manager.isStartingRecording)
+        XCTAssertNil(manager.currentMeeting)
+        XCTAssertNil(manager.currentCapturePurpose)
+        let mergedURLAfter = await manager.getMergedAudioURL()
+        let activeMode = await RecordingExclusivityCoordinator.shared.activeRecordingMode()
+        XCTAssertNil(mergedURLAfter)
+        XCTAssertNil(activeMode)
+    }
+
+    func testCancelRecordingCleansReturnedFilesWhenActorHasNoRecorderURLs() async throws {
+        let manager = try XCTUnwrap(manager)
+        let mockMic = try XCTUnwrap(mockMic)
+        let mockSystem = try XCTUnwrap(mockSystem)
+        let mockStorage = try XCTUnwrap(mockStorage)
+
+        let acquired = await RecordingExclusivityCoordinator.shared.beginRecording(mode: .dictation)
+        XCTAssertTrue(acquired)
+        manager.isRecording = true
+        manager.currentCapturePurpose = .dictation
+        manager.currentMeeting = Meeting(app: .unknown, capturePurpose: .dictation)
+        let micURL = FileManager.default.temporaryDirectory.appendingPathComponent("cancel-mic-\(UUID().uuidString).m4a")
+        let systemURL = FileManager.default.temporaryDirectory.appendingPathComponent("cancel-system-\(UUID().uuidString).m4a")
+        try Data([1]).write(to: micURL)
+        try Data([2]).write(to: systemURL)
+        mockMic.isRecording = true
+        mockMic.currentRecordingURL = micURL
+        mockSystem.isRecording = true
+        mockSystem.currentRecordingURL = systemURL
+
+        await manager.cancelRecording()
+
+        XCTAssertEqual(mockMic.stopRecordingCalledCount, 1)
+        XCTAssertEqual(mockSystem.stopRecordingCalledCount, 1)
+        XCTAssertTrue(mockStorage.cleanupTemporaryFilesCalled)
+        XCTAssertFalse(FileManager.default.fileExists(atPath: micURL.path))
+        XCTAssertFalse(FileManager.default.fileExists(atPath: systemURL.path))
+        XCTAssertFalse(manager.isRecording)
+        XCTAssertFalse(manager.isStartingRecording)
+        XCTAssertNil(manager.currentMeeting)
+        XCTAssertNil(manager.currentCapturePurpose)
+        let activeMode = await RecordingExclusivityCoordinator.shared.activeRecordingMode()
+        XCTAssertNil(activeMode)
+    }
+
+    func testUnexpectedRecorderFailureThroughManagerCleansReturnedFilesStateAndExclusivity() async throws {
+        let manager = try XCTUnwrap(manager)
+        let mockMic = try XCTUnwrap(mockMic)
+        let mockSystem = try XCTUnwrap(mockSystem)
+        let mockStorage = try XCTUnwrap(mockStorage)
+
+        let acquired = await RecordingExclusivityCoordinator.shared.beginRecording(mode: .dictation)
+        XCTAssertTrue(acquired)
+        manager.isRecording = true
+        manager.currentCapturePurpose = .dictation
+        manager.currentMeeting = Meeting(app: .unknown, capturePurpose: .dictation)
+        let mergedURL = FileManager.default.temporaryDirectory.appendingPathComponent("lifecycle-merged-\(UUID().uuidString).m4a")
+        let micURL = FileManager.default.temporaryDirectory.appendingPathComponent("lifecycle-mic-\(UUID().uuidString).m4a")
+        let systemURL = FileManager.default.temporaryDirectory.appendingPathComponent("lifecycle-system-\(UUID().uuidString).m4a")
+        try Data([1]).write(to: mergedURL)
+        try Data([2]).write(to: micURL)
+        try Data([3]).write(to: systemURL)
+        mockMic.isRecording = true
+        mockMic.currentRecordingURL = micURL
+        mockSystem.isRecording = true
+        mockSystem.currentRecordingURL = systemURL
+        await manager.recordingActor.setMergedAudioURL(mergedURL)
+
+        await manager.lifecycleCoordinator.recorderDidFail(
+            NSError(domain: "RecordingManagerTests", code: 1),
+            isRecording: true,
+            isStarting: false,
+            operations: manager.lifecycleOperations,
+        )
+
+        XCTAssertEqual(mockMic.stopRecordingCalledCount, 1)
+        XCTAssertEqual(mockSystem.stopRecordingCalledCount, 1)
+        XCTAssertTrue(mockStorage.cleanupTemporaryFilesCalled)
+        XCTAssertFalse(FileManager.default.fileExists(atPath: micURL.path))
+        XCTAssertFalse(FileManager.default.fileExists(atPath: systemURL.path))
+        XCTAssertFalse(FileManager.default.fileExists(atPath: mergedURL.path))
+        XCTAssertFalse(manager.isRecording)
+        XCTAssertFalse(manager.isStartingRecording)
+        XCTAssertNil(manager.currentMeeting)
+        XCTAssertNil(manager.currentCapturePurpose)
+        let micURLAfter = await manager.getMicAudioURL()
+        let systemURLAfter = await manager.getSystemAudioURL()
+        let mergedURLAfter = await manager.getMergedAudioURL()
+        let activeMode = await RecordingExclusivityCoordinator.shared.activeRecordingMode()
+        XCTAssertNil(micURLAfter)
+        XCTAssertNil(systemURLAfter)
+        XCTAssertNil(mergedURLAfter)
+        XCTAssertNil(activeMode)
+    }
+}

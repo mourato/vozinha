@@ -58,7 +58,7 @@ final class RecordingLifecycleCoordinatorTests: XCTestCase {
             actions: .init(
                 beforeRelease: { _ in state.events.append("beforeRelease") },
                 finalize: { _ in state.events.append("finalize") },
-                handleFailure: { _ in XCTFail("Unexpected finalization failure") },
+                handleFailure: { _, _ in XCTFail("Unexpected finalization failure") },
             ),
         )
 
@@ -79,7 +79,7 @@ final class RecordingLifecycleCoordinatorTests: XCTestCase {
             actions: .init(
                 beforeRelease: { _ in state.events.append("beforeRelease") },
                 finalize: { _ in state.events.append("fullFileHandoff") },
-                handleFailure: { _ in XCTFail("Unexpected finalization failure") },
+                handleFailure: { _, _ in XCTFail("Unexpected finalization failure") },
             ),
         )
 
@@ -101,7 +101,7 @@ final class RecordingLifecycleCoordinatorTests: XCTestCase {
             actions: .init(
                 beforeRelease: { _ in state.events.append("beforeRelease") },
                 finalize: { _ in throw RecordingLifecycleTestError.finalizationFailed },
-                handleFailure: { _ in
+                handleFailure: { _, _ in
                     state.events.append("handleFailure")
                     state.captureActive = false
                     state.reset = true
@@ -172,7 +172,7 @@ private func makeOperations(_ state: RecordingLifecycleTestState) -> RecordingLi
             state.events.append("cancelPostStartTasks")
             state.temporaryTaskActive = false
         },
-        cleanupTemporaryFiles: {
+        cleanupTemporaryFiles: { _ in
             state.events.append("cleanupTemporaryFiles")
             state.temporaryFilesExist = false
         },

@@ -6,34 +6,10 @@ import CryptoKit
 @testable import MeetingAssistantCoreUI
 import XCTest
 
-// swiftlint:disable file_length function_body_length
+// swiftlint:disable function_body_length
 
 @MainActor
 extension RecordingManagerTests {
-    func testStopWithoutTranscriptionUsesRealLifecycleCleanup() async throws {
-        let manager = try XCTUnwrap(manager)
-        let mockMic = try XCTUnwrap(mockMic)
-        let mockStorage = try XCTUnwrap(mockStorage)
-
-        await manager.startRecording()
-        XCTAssertTrue(manager.isRecording)
-
-        await manager.stopRecording(transcribe: false)
-
-        XCTAssertEqual(mockMic.stopRecordingCalledCount, 1)
-        XCTAssertFalse(manager.isRecording)
-        XCTAssertFalse(manager.isStartingRecording)
-        XCTAssertNil(manager.currentMeeting)
-        XCTAssertNil(manager.currentCapturePurpose)
-        let micURL = await manager.getMicAudioURL()
-        let systemURL = await manager.getSystemAudioURL()
-        XCTAssertNil(micURL)
-        XCTAssertNil(systemURL)
-        XCTAssertTrue(mockStorage.cleanupTemporaryFilesCalled)
-        let activeMode = await RecordingExclusivityCoordinator.shared.activeRecordingMode()
-        XCTAssertNil(activeMode)
-    }
-
     func testStopRecordingUsesFullFileHandoffThroughLifecycle() async throws {
         let manager = try XCTUnwrap(manager)
         let mockMic = try XCTUnwrap(mockMic)
@@ -59,58 +35,6 @@ extension RecordingManagerTests {
         XCTAssertEqual(mockTranscription.lastTranscribeAudioURL, finalURL)
         XCTAssertGreaterThan(mockTranscription.fileTranscribeCallCount, 0)
         XCTAssertFalse(manager.isRecording)
-    }
-
-    func testUnexpectedRecorderFailureThroughManagerCleansRecordersFilesStateAndExclusivity() async throws {
-        let manager = try XCTUnwrap(manager)
-        let mockMic = try XCTUnwrap(mockMic)
-        let mockSystem = try XCTUnwrap(mockSystem)
-        let mockStorage = try XCTUnwrap(mockStorage)
-
-        let acquired = await RecordingExclusivityCoordinator.shared.beginRecording(mode: .dictation)
-        XCTAssertTrue(acquired)
-        manager.isRecording = true
-        manager.currentCapturePurpose = .dictation
-        manager.currentMeeting = Meeting(app: .unknown, capturePurpose: .dictation)
-        let mergedURL = FileManager.default.temporaryDirectory.appendingPathComponent("lifecycle-merged-\(UUID().uuidString).m4a")
-        let micURL = FileManager.default.temporaryDirectory.appendingPathComponent("lifecycle-mic-\(UUID().uuidString).m4a")
-        let systemURL = FileManager.default.temporaryDirectory.appendingPathComponent("lifecycle-system-\(UUID().uuidString).m4a")
-        try Data([1]).write(to: mergedURL)
-        try Data([2]).write(to: micURL)
-        try Data([3]).write(to: systemURL)
-        mockMic.isRecording = true
-        mockMic.currentRecordingURL = micURL
-        mockSystem.isRecording = true
-        mockSystem.currentRecordingURL = systemURL
-        await manager.recordingActor.setMergedAudioURL(mergedURL)
-        await manager.recordingActor.setMicAudioURL(micURL)
-        await manager.recordingActor.setSystemAudioURL(systemURL)
-
-        await manager.lifecycleCoordinator.recorderDidFail(
-            NSError(domain: "RecordingManagerTests", code: 1),
-            isRecording: true,
-            isStarting: false,
-            operations: manager.lifecycleOperations,
-        )
-
-        XCTAssertEqual(mockMic.stopRecordingCalledCount, 1)
-        XCTAssertEqual(mockSystem.stopRecordingCalledCount, 1)
-        XCTAssertTrue(mockStorage.cleanupTemporaryFilesCalled)
-        XCTAssertFalse(FileManager.default.fileExists(atPath: micURL.path))
-        XCTAssertFalse(FileManager.default.fileExists(atPath: systemURL.path))
-        XCTAssertFalse(FileManager.default.fileExists(atPath: mergedURL.path))
-        XCTAssertFalse(manager.isRecording)
-        XCTAssertFalse(manager.isStartingRecording)
-        XCTAssertNil(manager.currentMeeting)
-        XCTAssertNil(manager.currentCapturePurpose)
-        let micURLAfter = await manager.getMicAudioURL()
-        let systemURLAfter = await manager.getSystemAudioURL()
-        let mergedURLAfter = await manager.getMergedAudioURL()
-        let activeMode = await RecordingExclusivityCoordinator.shared.activeRecordingMode()
-        XCTAssertNil(micURLAfter)
-        XCTAssertNil(systemURLAfter)
-        XCTAssertNil(mergedURLAfter)
-        XCTAssertNil(activeMode)
     }
 
     func testStopRecording_DictationUsesDictationPromptSelection() async throws {
@@ -725,93 +649,6 @@ extension RecordingManagerTests {
         XCTAssertEqual(mockMic.startRecordingParams.count, 1)
         XCTAssertEqual(mockMic.startRecordingParams.first?.url, audioURL)
         XCTAssertEqual(mockMic.stopRecordingCalledCount, 1)
-    }
-
-    func testModeConfigurationIsStableDuringSession() async throws {
-        let manager = try XCTUnwrap(manager)
-        let settings = AppSettingsStore.shared
-        let originalStyles = settings.dictationStyles
-        let originalAutoCopy = settings.autoCopyTranscriptionToClipboard
-        let originalReplacementRules = settings.vocabularyReplacementRules
-        defer {
-            settings.dictationStyles = originalStyles
-            settings.autoCopyTranscriptionToClipboard = originalAutoCopy
-            settings.vocabularyReplacementRules = originalReplacementRules
-        }
-        let snapshottedReplacementRules = [VocabularyReplacementRule(find: "captured", replace: "stable")]
-        settings.vocabularyReplacementRules = snapshottedReplacementRules
-
-        let snapshottedPolicy = DictationTextHandlingPolicy(
-            autoCopyToClipboard: true,
-            autoPasteToActiveApp: false,
-            smartSpacingAndCapitalization: true,
-            smartParagraphs: false,
-        )
-        let snapshottedTranscription = DictationTranscriptionConfiguration(
-            selection: TranscriptionProviderSelection(provider: .groq, selectedModel: "whisper-large-v3"),
-            inputLanguageCode: "pt-BR",
-        )
-        var styles = settings.dictationStyles
-        let defaultIndex = try XCTUnwrap(styles.firstIndex(where: \.isDefault))
-        styles[defaultIndex] = DictationStyle(
-            id: styles[defaultIndex].id,
-            name: styles[defaultIndex].name,
-            iconSymbol: styles[defaultIndex].iconSymbol,
-            promptInstructions: styles[defaultIndex].promptInstructions,
-            postProcessingEnabled: styles[defaultIndex].postProcessingEnabled,
-            forceMarkdownOutput: styles[defaultIndex].forceMarkdownOutput,
-            replaceBasePrompt: styles[defaultIndex].replaceBasePrompt,
-            outputLanguage: styles[defaultIndex].outputLanguage,
-            targets: [],
-            contextSourcePolicy: styles[defaultIndex].contextSourcePolicy,
-            enhancementsSelection: styles[defaultIndex].enhancementsSelection,
-            isDefault: true,
-            textHandlingPolicy: snapshottedPolicy,
-            transcriptionConfiguration: snapshottedTranscription,
-        )
-        settings.dictationStyles = styles
-
-        await manager.startRecording(source: .microphone)
-        XCTAssertTrue(manager.isRecording)
-
-        var mutatedStyles = settings.dictationStyles
-        let mutatedIndex = try XCTUnwrap(mutatedStyles.firstIndex(where: \.isDefault))
-        mutatedStyles[mutatedIndex] = DictationStyle(
-            id: mutatedStyles[mutatedIndex].id,
-            name: mutatedStyles[mutatedIndex].name,
-            iconSymbol: mutatedStyles[mutatedIndex].iconSymbol,
-            promptInstructions: mutatedStyles[mutatedIndex].promptInstructions,
-            postProcessingEnabled: mutatedStyles[mutatedIndex].postProcessingEnabled,
-            forceMarkdownOutput: mutatedStyles[mutatedIndex].forceMarkdownOutput,
-            replaceBasePrompt: mutatedStyles[mutatedIndex].replaceBasePrompt,
-            outputLanguage: mutatedStyles[mutatedIndex].outputLanguage,
-            targets: [],
-            contextSourcePolicy: mutatedStyles[mutatedIndex].contextSourcePolicy,
-            enhancementsSelection: mutatedStyles[mutatedIndex].enhancementsSelection,
-            isDefault: true,
-            textHandlingPolicy: DictationTextHandlingPolicy(
-                autoCopyToClipboard: false,
-                autoPasteToActiveApp: true,
-                smartSpacingAndCapitalization: false,
-                smartParagraphs: true,
-            ),
-            transcriptionConfiguration: DictationTranscriptionConfiguration(
-                selection: .default,
-                inputLanguageCode: "en",
-            ),
-        )
-        settings.dictationStyles = mutatedStyles
-        settings.autoCopyTranscriptionToClipboard = false
-        settings.vocabularyReplacementRules = [VocabularyReplacementRule(find: "captured", replace: "mutated")]
-
-        let meeting = try XCTUnwrap(manager.currentMeeting)
-        let session = manager.makeTranscriptionSessionSnapshot(meeting)
-
-        XCTAssertEqual(session.dictationTextHandlingPolicy, snapshottedPolicy)
-        XCTAssertEqual(session.dictationTranscriptionConfiguration, snapshottedTranscription)
-        XCTAssertEqual(session.vocabularySnapshot.replacementRules, snapshottedReplacementRules)
-
-        await manager.cancelRecording()
     }
 
     private func writeTestAudioFile(at url: URL) throws {

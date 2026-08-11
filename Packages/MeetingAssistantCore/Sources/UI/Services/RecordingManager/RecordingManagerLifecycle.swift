@@ -15,8 +15,10 @@ extension RecordingManager {
             cancelPostStartTasks: {
                 self.cancelPostStartCaptureTasks()
             },
-            cleanupTemporaryFiles: {
-                await self.cleanupTemporaryFiles()
+            cleanupTemporaryFiles: { recordings in
+                await self.cleanupTemporaryFiles(
+                    additionalURLs: [recordings.mic, recordings.system].compactMap(\.self),
+                )
             },
             removeMergedAudio: {
                 if let mergedURL = await self.getMergedAudioURL() {
