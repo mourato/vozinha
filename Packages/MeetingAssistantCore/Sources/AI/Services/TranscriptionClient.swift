@@ -661,7 +661,7 @@ public class TranscriptionClient: ObservableObject, TranscriptionService, Transc
                     extra: ["model": selection.selectedModel],
                 )
             }
-            return requestedOverride
+            return false
         }
         return requestedOverride
     }
