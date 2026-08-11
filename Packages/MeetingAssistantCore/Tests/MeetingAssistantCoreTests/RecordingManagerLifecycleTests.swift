@@ -124,6 +124,63 @@ extension RecordingManagerTests {
         XCTAssertNil(activeMode)
     }
 
+    func testCancelRecordingWhileStartOperationIsInFlightPreventsCommitBeforeStartupState() async throws {
+        let manager = try XCTUnwrap(manager)
+        let mockMic = try XCTUnwrap(mockMic)
+        let mockSystem = try XCTUnwrap(mockSystem)
+        let mockStorage = try XCTUnwrap(mockStorage)
+
+        var beginExclusivityContinuation: CheckedContinuation<Bool, Never>?
+        var commitCalled = false
+        manager.isStartOperationInFlight = true
+        defer { manager.isStartOperationInFlight = false }
+
+        let exclusivityStarted = expectation(description: "Start is awaiting exclusivity")
+        let startTask = Task { @MainActor in
+            await manager.lifecycleCoordinator.start(
+                isRecording: false,
+                actions: .init(
+                    beginExclusivity: {
+                        await withCheckedContinuation { continuation in
+                            beginExclusivityContinuation = continuation
+                            exclusivityStarted.fulfill()
+                        }
+                    },
+                    beginState: {
+                        manager.isStartingRecording = true
+                    },
+                    prepare: {
+                        URL(fileURLWithPath: "/tmp/start-before-state-cancel.wav")
+                    },
+                    commit: { _ in
+                        commitCalled = true
+                    },
+                ),
+                operations: manager.lifecycleOperations,
+                handleFailure: { _ in
+                    XCTFail("Unexpected start failure")
+                },
+            )
+            manager.isStartOperationInFlight = false
+        }
+
+        await fulfillment(of: [exclusivityStarted], timeout: 1)
+        XCTAssertFalse(manager.isStartingRecording)
+
+        await manager.cancelRecording()
+
+        beginExclusivityContinuation?.resume(returning: true)
+        await startTask.value
+
+        XCTAssertFalse(commitCalled)
+        XCTAssertEqual(mockMic.stopRecordingCalledCount, 1)
+        XCTAssertEqual(mockSystem.stopRecordingCalledCount, 1)
+        XCTAssertTrue(mockStorage.cleanupTemporaryFilesCalled)
+        XCTAssertFalse(manager.isRecording)
+        XCTAssertFalse(manager.isStartingRecording)
+        XCTAssertEqual(manager.meetingState, .idle)
+    }
+
     func testStopRecordingFinalizationFailureCleansReturnedFilesStateAndExclusivity() async throws {
         let manager = try XCTUnwrap(manager)
         let mockMic = try XCTUnwrap(mockMic)
