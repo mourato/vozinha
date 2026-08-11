@@ -12,6 +12,9 @@ Vozinha is the display brand for this local-first macOS meeting capture, transcr
 - New SwiftUI state prefers Observation; preserve `ObservableObject` until an intentional migration is verified.
 - `Packages/MeetingAssistantCore/Sources/` uses short dirs: `Common`, `Domain`, `Infrastructure`, `Data`, `Audio`, `AI`, `UI`, `Core`, `Mocking`, `MockingMacros`.
 - Public SwiftPM targets remain `MeetingAssistantCore*`; physical paths and public imports differ.
+- Read [`docs/ui.md`](docs/ui.md) before changing user-facing UI. Update it
+  when a reusable visual rule or invariant changes; use an ADR for durable
+  rationale when the project has an ADR directory.
 - Colocate types (`Services/RecordingManager/RecordingManager.swift`); no `Type+Concern.swift` filenames.
 
 Module ownership: `Common`, `Domain`, `Infrastructure`, `Data`, `Audio`, `AI`, `UI`, `Core` — utilities, entities, adapters, persistence, capture, transcription, presentation, exports respectively.
