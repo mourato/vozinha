@@ -52,10 +52,8 @@ extension RecordingManager {
     public func reset() async {
         if isRecording || isStartingRecording || isStartOperationInFlight {
             await cancelRecording()
-            while isStartOperationInFlight {
-                await Task.yield()
-            }
         }
+        await lifecycleCoordinator.waitForIdle()
 
         cancelPostStartCaptureTasks()
         await recordingActor.reset()
