@@ -234,7 +234,7 @@ private extension RecordingManager {
         await cleanupTemporaryFiles(additionalURLs: [recordings.mic, recordings.system].compactMap(\.self))
         if let mergedURL = await getMergedAudioURL() {
             try? FileManager.default.removeItem(at: mergedURL)
-            setMergedAudioURL(nil)
+            await setMergedAudioURL(nil)
         }
         await cancelIncrementalTranscriptionSessionsIfNeeded()
         await resetRecordingLifecycleState(
