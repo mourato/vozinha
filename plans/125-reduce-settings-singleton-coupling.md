@@ -288,3 +288,87 @@ and `git diff --check` pass with no new baseline failure.
 - This plan is intentionally last in the sequence; if Plans 122–124 do not
   expose a stable operation/session/provenance boundary, stop rather than
   forcing the singleton cleanup early.
+
+## Closeout
+
+- Implementation commits: `c8d919ad` (`refactor(settings): freeze operation configuration`) and
+  `183cee7d` (`fix(settings): close operation snapshot fallbacks`).
+- Toolchain: `DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer` (Xcode 26.6, Swift 6.3.3, SDK 26.5).
+- The normal full-file and incremental paths now consume the session's
+  `UseCaseConfig`, export policy, and `DeliverySettingsSnapshot`. Retry and
+  manual reprocess capture explicit post-processing values at their operation
+  edge; persisted provenance wins for retry, with the legacy no-provenance
+  fallback remaining explicit and tested.
+- The explicit AI routes no longer resolve Settings after request creation.
+  `PostProcessingService` and `PostProcessingRepositoryAdapter` retain their
+  Settings references only for legacy overloads. `LocalTranscriptionClient`
+  already keeps its Settings reads behind its explicit-request fallback flags,
+  so no additional source change was needed there.
+- Focused gates passed under the stable toolchain: the session configuration
+  tests (normal, prompt snapshot, disabled retry route, and mode fallback),
+  retry provenance and persisted automatic-language tests, long manual
+  post-processing test, delivery snapshot test, and all five
+  `PostProcessingServiceValidationTests`.
+- `make build-agent`, `make arch-check`, and `git diff --check` passed.
+- Committed validation for `c8d919ad..183cee7d` passed the complete Xcode test
+  gate: `1,143/1,143` tests, and the Debug build plus SwiftFormat passed. The
+  only committed-gate failure is the unchanged six-violation lint
+  baseline: the two `TranscribeAudioUseCasePostProcessingMacroMockingTests`
+  body/type-length violations and the `RecordingManager` initializer body
+  violation, each reported for the package/app targets. The first working-tree
+  `validate-agent --lane auto` attempt was rejected before checks because the
+  tree was clean and its scope was `HEAD -> working tree`; the committed retry
+  used `--base 83c2c1ab --head c8d919ad` and produced the evidence above.
+
+### Remaining `AppSettingsStore.shared` allowlist
+
+The following production reads were inspected on 2026-08-12. They are the
+complete remaining allowlist by semantic boundary; no unclassified read was
+changed by Plan 125.
+
+- Operation-edge capture or compatibility fallback: `RecordingManagerStart`,
+  `RecordingControl`, `PostProcessingPipeline`, `Retry`,
+  `RecordingManagerTranscriptionExecution`,
+  `RecordingManagerTranscriptionEntities`,
+  `RecordingManagerTranscriptionPipeline`,
+  `RecordingManagerIncrementalShared`, `RecordingManagerStop`, and
+  `ConversationAndPostProcessing`. These reads either create a new snapshot,
+  synthesize a request when an older caller supplied none, resolve a retry for
+  a legacy record, or produce failure/presentation metadata.
+- Explicit-route compatibility: `AI/Services/PostProcessingService`,
+  `Data/Services/Adapters/PostProcessingRepositoryAdapter`, and the default
+  argument of `AI/Services/TranscriptionDeliveryService`. Explicit request
+  overloads consume their request/snapshot; legacy overloads keep the default
+  for existing callers.
+- AI readiness, health, model lifetime, XPC, and local-runtime boundaries:
+  `AI/Services/TranscriptionClient`, `AI/Services/LocalTranscriptionClient`,
+  `AI/Services/LocalModelResidencyCoordinator`,
+  `AI/Services/FluidAIModelManager`,
+  `AI/Services/XPC/MeetingAssistantAIClient`, `AI/Services/MeetingQAService`,
+  and `AI/Services/PostProcessingService`. These reads observe runtime
+  capability or preserve an explicit legacy fallback, rather than selecting
+  values for an already-created request.
+- Audio/runtime and capture policy: `Audio/Services/SoundFeedbackService`,
+  `Audio/Services/AudioRecorder/AudioRecorder`,
+  `AudioRecorderDeviceRecovery`, `AudioRecorderOutputInterruption`,
+  `InputDeviceSelection`, `EngineSetup`,
+  `UI/Services/RecordingManager/RecordingManagerContextCapture`, and
+  `UI/Services/RecordingManager/LifecycleHelpers`. These are device, audio,
+  context, permission, or lifecycle observations.
+- Startup, automation, calendar, export, and composition-root wiring:
+  `RecordingManager`, `RecordingManagerStart`,
+  `RecordingManagerAutomaticMeetingRecording`,
+  `RecordingManagerIncrementalMeeting`, `MeetingCalendarIntegrationService`,
+  `SummaryExportHelper`, `CaptureContextResolver`,
+  `AssistantVoiceCommandService`, and `AssistantVoiceCommand/AssistantAIPhase`.
+- UI/settings presentation and injectable settings defaults: the settings
+  pages/components and view models under `UI/pages/settings`,
+  `UI/components/settings`, `UI/pages/onboarding`,
+  `UI/components/transcription`, and `UI/ViewModels` (including onboarding,
+  shortcuts, integrations, dictionary, modes, transcription settings, and
+  metrics). These reads are the presentation/composition boundary and are not
+  in-flight transcription or post-processing execution.
+
+This allowlist is the maintenance boundary for the next architecture pass:
+new operational code must accept an existing narrow snapshot or explicit
+request instead of adding another Settings read.
