@@ -34,9 +34,7 @@ extension RecordingManager {
         let kernelMode = session.kernelMode
         let isDictation = kernelMode == .dictation
         let dictationSelection = isDictation ? session.dictationEnhancementsSelection : nil
-        let postProcessingSelection = dictationSelection
-            ?? session.postProcessingEnhancementsSelection
-            ?? settings.enhancementsSelection(for: kernelMode)
+        let postProcessingSelection = resolvedPostProcessingSelection(session: session, settings: settings)
         let modePostProcessingEnabled = dictationPostProcessingEnabled(for: session, settings: settings)
         let readinessIssue = modePostProcessingEnabled
             ? (dictationSelection.map { settings.enhancementsInferenceReadinessIssue(for: $0, apiKeyExists: apiKeyExists) } ?? settings.enhancementsInferenceReadinessIssue(for: kernelMode, apiKeyExists: apiKeyExists))
@@ -69,7 +67,6 @@ extension RecordingManager {
                 readinessIssue: readinessIssue,
                 disabledForRecording: disabledForRecording,
                 isDictation: isDictation,
-                postProcessingSelection: postProcessingSelection,
                 settings: settings,
             )
         }
@@ -143,9 +140,9 @@ extension RecordingManager {
         readinessIssue: EnhancementsInferenceReadinessIssue?,
         disabledForRecording: Bool,
         isDictation: Bool,
-        postProcessingSelection: EnhancementsAISelection,
         settings: AppSettingsStore,
     ) -> UseCaseConfig {
+        let postProcessingSelection = resolvedPostProcessingSelection(session: session, settings: settings)
         let reasonCode = resolveDisabledReasonCode(
             settings: settings,
             readinessIssue: readinessIssue,
@@ -180,6 +177,16 @@ extension RecordingManager {
             dictationTranscriptionConfiguration: session.dictationTranscriptionConfiguration,
             postProcessingSelection: postProcessingSelection,
         )
+    }
+
+    private func resolvedPostProcessingSelection(
+        session: TranscriptionSessionSnapshot,
+        settings: AppSettingsStore,
+    ) -> EnhancementsAISelection {
+        let dictationSelection = session.kernelMode == .dictation ? session.dictationEnhancementsSelection : nil
+        return dictationSelection
+            ?? session.postProcessingEnhancementsSelection
+            ?? settings.enhancementsSelection(for: session.kernelMode)
     }
 
     private func resolveDisabledReasonCode(
