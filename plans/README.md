@@ -40,7 +40,7 @@ Status values: `TODO` | `IN PROGRESS` | `DONE` | `BLOCKED` | `REJECTED`.
 | [120](120-establish-swift-6-2-agent-baseline.md) | Establish the Swift 6.2 agent baseline | P0 | L | 119; clean/reconciled worktree | DONE (merged in `9f1d3603`; review fix `0ec9eacb`) |
 | [121](121-deepen-transcription-execution-seam.md) | Centralize transcription execution behind one explicit request seam | P1 | L | 106, 110 | DONE |
 | [122](122-extract-recording-lifecycle-boundary.md) | Extract the RecordingManager lifecycle boundary | P1 | L | 121 | DONE (merged in `183bee4e`; remediation `61b13e7f`) |
-| [123](123-centralize-post-processing-request-seam.md) | Centralize post-processing behind one explicit request seam | P1 | L | 122 | TODO |
+| [123](123-centralize-post-processing-request-seam.md) | Centralize post-processing behind one explicit request seam | P1 | L | 122 | DONE (merged in `8a5907e9`) |
 | [124](124-persist-execution-provenance.md) | Persist execution provenance for transcription and post-processing | P1 | L | 123 | TODO |
 | [125](125-reduce-settings-singleton-coupling.md) | Reduce operation-time coupling to AppSettingsStore.shared | P1 | M | 122, 123, 124 | TODO |
 
@@ -85,8 +85,10 @@ no Plan 121 source or test failure was introduced.
 
 Plan 122 is complete: its lifecycle boundary is merged into local `main` at
 `183bee4e`, with stale-callback and reset-order remediation in `61b13e7f`.
-The next architecture batch remains serial: Plan 123 centralizes
-post-processing requests; Plan 124 persists the resulting execution
+Plan 123 is complete: its explicit post-processing request seam is merged
+into local `main` at `8a5907e9`; build/test passed all 1,130 tests, with the
+known six structural lint baseline violations unchanged. The next
+architecture batch remains serial: Plan 124 persists the resulting execution
 provenance; and Plan 125 is the final settings-boundary cleanup. Plan 125
 intentionally acts as the durable reminder for reducing `AppSettingsStore.shared`
 coupling after the first three boundaries are stable; no separate reminder
