@@ -22,7 +22,7 @@ extension RecordingManager {
         let postProcessingContextItems: [TranscriptionContextItem]
         let dictationTextHandlingPolicy: DictationTextHandlingPolicy?
         let dictationTranscriptionConfiguration: DictationTranscriptionConfiguration?
-        let dictationEnhancementsSelection: EnhancementsAISelection?
+        let postProcessingSelection: EnhancementsAISelection?
     }
 
     func makeUseCaseConfig(
@@ -33,6 +33,7 @@ extension RecordingManager {
         let kernelMode = session.kernelMode
         let isDictation = kernelMode == .dictation
         let dictationSelection = isDictation ? session.dictationEnhancementsSelection : nil
+        let postProcessingSelection = dictationSelection ?? settings.enhancementsSelection(for: kernelMode)
         let modePostProcessingEnabled = dictationPostProcessingEnabled(for: session, settings: settings)
         let readinessIssue = modePostProcessingEnabled
             ? (dictationSelection.map { settings.enhancementsInferenceReadinessIssue(for: $0, apiKeyExists: apiKeyExists) } ?? settings.enhancementsInferenceReadinessIssue(for: kernelMode, apiKeyExists: apiKeyExists))
@@ -104,9 +105,7 @@ extension RecordingManager {
             }
         }
 
-        let resolvedConfiguration = dictationSelection.map {
-            settings.resolvedEnhancementsAIConfiguration(for: $0)
-        } ?? settings.resolvedEnhancementsAIConfiguration(for: kernelMode)
+        let resolvedConfiguration = settings.resolvedEnhancementsAIConfiguration(for: postProcessingSelection)
 
         return UseCaseConfig(
             kernelMode: kernelMode,
@@ -115,7 +114,7 @@ extension RecordingManager {
             postProcessingPrompt: prompt,
             defaultPostProcessingPrompt: autoDetectMeetingType ? defaultMeetingPrompt : nil,
             postProcessingModel: resolvedConfiguration.selectedModel,
-            postProcessingIdentity: dictationSelection.map { $0.provider.modelPerformanceIdentity(modelID: $0.selectedModel) } ?? settings.resolvedEnhancementsPerformanceIdentity(for: kernelMode),
+            postProcessingIdentity: postProcessingSelection.provider.modelPerformanceIdentity(modelID: postProcessingSelection.selectedModel),
             postProcessingConfiguration: DomainPostProcessingConfiguration(
                 providerID: resolvedConfiguration.provider.rawValue,
                 baseURL: resolvedConfiguration.baseURL,
@@ -129,7 +128,7 @@ extension RecordingManager {
             postProcessingContextItems: resolvedContextItems,
             dictationTextHandlingPolicy: session.dictationTextHandlingPolicy,
             dictationTranscriptionConfiguration: session.dictationTranscriptionConfiguration,
-            dictationEnhancementsSelection: session.dictationEnhancementsSelection,
+            postProcessingSelection: postProcessingSelection,
         )
     }
 
@@ -172,7 +171,7 @@ extension RecordingManager {
             postProcessingContextItems: session.postProcessingContextItems,
             dictationTextHandlingPolicy: session.dictationTextHandlingPolicy,
             dictationTranscriptionConfiguration: session.dictationTranscriptionConfiguration,
-            dictationEnhancementsSelection: session.dictationEnhancementsSelection,
+            postProcessingSelection: session.dictationEnhancementsSelection,
         )
     }
 

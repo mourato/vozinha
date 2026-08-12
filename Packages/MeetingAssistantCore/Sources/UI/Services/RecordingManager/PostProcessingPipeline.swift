@@ -151,12 +151,9 @@ extension RecordingManager {
         selectionOverride: EnhancementsAISelection? = nil,
         dictationStructuredPostProcessingEnabled: Bool,
     ) async -> PostProcessingResult {
-        let requestConfig = selectionOverride.map {
-            settings.resolvedEnhancementsAIConfiguration(for: $0)
-        } ?? settings.resolvedEnhancementsAIConfiguration(for: kernelMode)
-        let readinessIssue = selectionOverride.map {
-            settings.enhancementsInferenceReadinessIssue(for: $0, apiKeyExists: apiKeyExists)
-        } ?? settings.enhancementsInferenceReadinessIssue(for: kernelMode, apiKeyExists: apiKeyExists)
+        let requestSelection = selectionOverride ?? settings.enhancementsSelection(for: kernelMode)
+        let requestConfig = settings.resolvedEnhancementsAIConfiguration(for: requestSelection)
+        let readinessIssue = settings.enhancementsInferenceReadinessIssue(for: requestSelection, apiKeyExists: apiKeyExists)
         let (requestSystemPrompt, requestUserPrompt) = buildRequestPrompts(
             prompt: prompt,
             from: prompt.promptText,
@@ -171,7 +168,7 @@ extension RecordingManager {
             let request = makePostProcessingRequest(
                 prompt: prompt,
                 mode: kernelMode,
-                selectionOverride: selectionOverride,
+                selectionOverride: requestSelection,
                 configuration: DomainPostProcessingConfiguration(
                     providerID: requestConfig.provider.rawValue,
                     baseURL: requestConfig.baseURL,
