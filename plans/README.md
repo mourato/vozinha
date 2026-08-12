@@ -42,7 +42,7 @@ Status values: `TODO` | `IN PROGRESS` | `DONE` | `BLOCKED` | `REJECTED`.
 | [122](122-extract-recording-lifecycle-boundary.md) | Extract the RecordingManager lifecycle boundary | P1 | L | 121 | DONE (merged in `183bee4e`; remediation `61b13e7f`) |
 | [123](123-centralize-post-processing-request-seam.md) | Centralize post-processing behind one explicit request seam | P1 | L | 122 | DONE (merged in `8a5907e9`) |
 | [124](124-persist-execution-provenance.md) | Persist execution provenance for transcription and post-processing | P1 | L | 123 | DONE (merged in `35e8fefb`; review remediation `0c80c993`) |
-| [125](125-reduce-settings-singleton-coupling.md) | Reduce operation-time coupling to AppSettingsStore.shared | P1 | M | 122, 123, 124 | TODO |
+| [125](125-reduce-settings-singleton-coupling.md) | Reduce operation-time coupling to AppSettingsStore.shared | P1 | M | 122, 123, 124 | DONE (merged in `49d83d6a`) |
 
 ## Dependency order
 
@@ -91,10 +91,9 @@ known six structural lint baseline violations unchanged. Plan 124 is complete:
 execution provenance is persisted through Core Data 1.6, retry and incremental
 paths use captured inputs, and the integrated Xcode 26.6 gate passed all 1,138
 tests. The only formal gate failure is the unchanged four-violation strict-lint
-baseline. Plan 125 is the final settings-boundary cleanup. Plan 125
-intentionally acts as the durable reminder for reducing `AppSettingsStore.shared`
-coupling after the first three boundaries are stable; no separate reminder
-mechanism is required.
+baseline. Plan 125 is complete: its settings-boundary cleanup is merged into
+local `main` at `49d83d6a`, with the remaining singleton reads documented by
+semantic allowlist. No separate reminder mechanism is required.
 
 ## Archives
 
