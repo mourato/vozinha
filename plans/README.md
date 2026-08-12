@@ -41,7 +41,7 @@ Status values: `TODO` | `IN PROGRESS` | `DONE` | `BLOCKED` | `REJECTED`.
 | [121](121-deepen-transcription-execution-seam.md) | Centralize transcription execution behind one explicit request seam | P1 | L | 106, 110 | DONE |
 | [122](122-extract-recording-lifecycle-boundary.md) | Extract the RecordingManager lifecycle boundary | P1 | L | 121 | DONE (merged in `183bee4e`; remediation `61b13e7f`) |
 | [123](123-centralize-post-processing-request-seam.md) | Centralize post-processing behind one explicit request seam | P1 | L | 122 | DONE (merged in `8a5907e9`) |
-| [124](124-persist-execution-provenance.md) | Persist execution provenance for transcription and post-processing | P1 | L | 123 | TODO |
+| [124](124-persist-execution-provenance.md) | Persist execution provenance for transcription and post-processing | P1 | L | 123 | DONE (merged in `35e8fefb`; review remediation `0c80c993`) |
 | [125](125-reduce-settings-singleton-coupling.md) | Reduce operation-time coupling to AppSettingsStore.shared | P1 | M | 122, 123, 124 | TODO |
 
 ## Dependency order
@@ -87,9 +87,11 @@ Plan 122 is complete: its lifecycle boundary is merged into local `main` at
 `183bee4e`, with stale-callback and reset-order remediation in `61b13e7f`.
 Plan 123 is complete: its explicit post-processing request seam is merged
 into local `main` at `8a5907e9`; build/test passed all 1,130 tests, with the
-known six structural lint baseline violations unchanged. The next
-architecture batch remains serial: Plan 124 persists the resulting execution
-provenance; and Plan 125 is the final settings-boundary cleanup. Plan 125
+known six structural lint baseline violations unchanged. Plan 124 is complete:
+execution provenance is persisted through Core Data 1.6, retry and incremental
+paths use captured inputs, and the integrated Xcode 26.6 gate passed all 1,138
+tests. The only formal gate failure is the unchanged four-violation strict-lint
+baseline. Plan 125 is the final settings-boundary cleanup. Plan 125
 intentionally acts as the durable reminder for reducing `AppSettingsStore.shared`
 coupling after the first three boundaries are stable; no separate reminder
 mechanism is required.

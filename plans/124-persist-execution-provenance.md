@@ -275,3 +275,19 @@ background-context usage and recoverability.
   naturally rewritten; do not create a broad backfill that guesses settings.
 - Plan 125 may remove live Settings reads after persisted/session snapshots are
   available; it must not bypass this repository contract.
+
+## Closeout
+
+- Integrated into local `main` in `35e8fefb`; review remediation is `0c80c993`.
+- Stable toolchain: `DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer`
+  (Xcode 26.6, Swift 6.3.3).
+- Focused gates: CoreDataRepositoryTests 20/20;
+  TranscribeAudioUseCaseMacroMockingTests 4/4.
+- Full committed validation: build passed; 1,138/1,138 tests passed;
+  SwiftFormat passed.
+- Strict lint reports only the four pre-existing structural violations in
+  `RecordingManager.swift`, `PostProcessing.swift`, and
+  `TranscribeAudioUseCasePostProcessingMacroMockingTests.swift`.
+- The final re-review subagent did not return within the timebox; the
+  integrated diff was checked locally against the three review findings before
+  closeout. No source changes remain unreviewed in scope.
