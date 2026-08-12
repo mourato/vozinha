@@ -140,9 +140,44 @@ public protocol TranscriptionServiceFinalDiarization: ObservableObject {
 
 // MARK: - Post-Processing Protocol
 
+/// Configuration frozen by the operation edge before AI execution begins.
+public struct PostProcessingRequest: Sendable {
+    public let prompt: PostProcessingPrompt?
+    public let mode: IntelligenceKernelMode
+    public let selection: EnhancementsAISelection?
+    public let configuration: AIConfiguration
+    public let readinessIssue: String?
+    public let outputLanguageID: String?
+    public let useStructuredPipeline: Bool
+    public let systemPromptOverride: String?
+
+    public init(
+        prompt: PostProcessingPrompt?,
+        mode: IntelligenceKernelMode,
+        selection: EnhancementsAISelection?,
+        configuration: AIConfiguration,
+        readinessIssue: String? = nil,
+        outputLanguageID: String? = nil,
+        useStructuredPipeline: Bool,
+        systemPromptOverride: String? = nil,
+    ) {
+        self.prompt = prompt
+        self.mode = mode
+        self.selection = selection
+        self.configuration = configuration
+        self.readinessIssue = readinessIssue
+        self.outputLanguageID = outputLanguageID
+        self.useStructuredPipeline = useStructuredPipeline
+        self.systemPromptOverride = systemPromptOverride
+    }
+}
+
 /// Abstract interface for AI post-processing services.
 @MainActor
 public protocol PostProcessingServiceProtocol: ObservableObject {
+    func processTranscription(_ transcription: String, request: PostProcessingRequest) async throws -> String
+    func processTranscriptionStructured(_ transcription: String, request: PostProcessingRequest) async throws -> DomainPostProcessingResult
+
     var isProcessing: Bool { get }
     var lastError: PostProcessingError? { get }
 

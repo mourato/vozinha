@@ -87,7 +87,7 @@ public class RecordingManager: ObservableObject, RecordingServiceProtocol {
     let audioSilenceCompactor: any AudioSilenceCompacting
     let meetingDetector: MeetingDetector
     let transcriptionClient: any TranscriptionService
-    let postProcessingService: any PostProcessingServiceProtocol
+    let postProcessingRepository: any PostProcessingRepository
     let calendarEventService: any CalendarEventServiceProtocol
     let storage: any StorageService
     let notificationService: NotificationService
@@ -166,6 +166,7 @@ public class RecordingManager: ObservableObject, RecordingServiceProtocol {
         let dictationTranscriptionConfiguration: DictationTranscriptionConfiguration?
         let transcriptionConfiguration: DomainTranscriptionRequestConfiguration?
         let dictationEnhancementsSelection: EnhancementsAISelection?
+        let postProcessingEnhancementsSelection: EnhancementsAISelection?
         let dictationPostProcessingEnabled: Bool?
         let dictationStyle: DictationStyle?
         let vocabularySnapshot: VocabularySnapshot
@@ -186,6 +187,7 @@ public class RecordingManager: ObservableObject, RecordingServiceProtocol {
             dictationTranscriptionConfiguration: DictationTranscriptionConfiguration? = nil,
             transcriptionConfiguration: DomainTranscriptionRequestConfiguration? = nil,
             dictationEnhancementsSelection: EnhancementsAISelection? = nil,
+            postProcessingEnhancementsSelection: EnhancementsAISelection? = nil,
             dictationPostProcessingEnabled: Bool? = nil,
             dictationStyle: DictationStyle? = nil,
             vocabularySnapshot: VocabularySnapshot = .empty,
@@ -205,6 +207,7 @@ public class RecordingManager: ObservableObject, RecordingServiceProtocol {
             self.dictationTranscriptionConfiguration = dictationTranscriptionConfiguration
             self.transcriptionConfiguration = transcriptionConfiguration
             self.dictationEnhancementsSelection = dictationEnhancementsSelection
+            self.postProcessingEnhancementsSelection = postProcessingEnhancementsSelection
             self.dictationPostProcessingEnabled = dictationPostProcessingEnabled
             self.dictationStyle = dictationStyle
             self.vocabularySnapshot = vocabularySnapshot
@@ -334,7 +337,8 @@ public class RecordingManager: ObservableObject, RecordingServiceProtocol {
         self.micRecorder = micRecorder
         self.systemRecorder = systemRecorder
         self.transcriptionClient = transcriptionClient
-        self.postProcessingService = postProcessingService
+        let postProcessingRepository = PostProcessingRepositoryAdapter(postProcessingService: postProcessingService)
+        self.postProcessingRepository = postProcessingRepository
         self.calendarEventService = calendarEventService
         self.audioMerger = audioMerger
         self.audioSilenceCompactor = audioSilenceCompactor
@@ -378,7 +382,7 @@ public class RecordingManager: ObservableObject, RecordingServiceProtocol {
         transcribeAudioUseCase = TranscribeAudioUseCase(
             transcriptionRepository: TranscriptionRepositoryAdapter(transcriptionService: transcriptionClient),
             transcriptionStorageRepository: CoreDataTranscriptionStorageRepository(stack: .shared),
-            postProcessingRepository: PostProcessingRepositoryAdapter(postProcessingService: postProcessingService),
+            postProcessingRepository: postProcessingRepository,
         )
 
         setupBindings()

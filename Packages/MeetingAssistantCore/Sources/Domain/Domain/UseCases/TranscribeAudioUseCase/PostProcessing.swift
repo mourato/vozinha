@@ -16,6 +16,8 @@ extension TranscribeAudioUseCase {
         let dictationStructuredPostProcessingEnabled: Bool
         let postProcessingModelID: String?
         let selection: DomainPostProcessingSelection?
+        let configuration: DomainPostProcessingConfiguration?
+        let systemPromptOverride: String?
 
         init(
             applyPostProcessing: Bool,
@@ -27,6 +29,8 @@ extension TranscribeAudioUseCase {
             dictationStructuredPostProcessingEnabled: Bool = false,
             postProcessingModelID: String? = nil,
             selection: DomainPostProcessingSelection? = nil,
+            configuration: DomainPostProcessingConfiguration? = nil,
+            systemPromptOverride: String? = nil,
         ) {
             self.applyPostProcessing = applyPostProcessing
             self.postProcessingPrompt = postProcessingPrompt
@@ -37,6 +41,8 @@ extension TranscribeAudioUseCase {
             self.dictationStructuredPostProcessingEnabled = dictationStructuredPostProcessingEnabled
             self.postProcessingModelID = postProcessingModelID
             self.selection = selection
+            self.configuration = configuration
+            self.systemPromptOverride = systemPromptOverride
         }
 
         func shouldRunPostProcessing(postProcessingRepository: PostProcessingRepository?) -> Bool {
@@ -167,6 +173,8 @@ extension TranscribeAudioUseCase {
         let qualityProfile: TranscriptionQualityProfile
         let selectedModel: String?
         let selection: DomainPostProcessingSelection?
+        let configuration: DomainPostProcessingConfiguration
+        let systemPromptOverride: String?
     }
 
     private struct PromptSelection {
@@ -191,6 +199,8 @@ extension TranscribeAudioUseCase {
             qualityProfile: qualityProfile,
             selectedModel: config.postProcessingModelID,
             selection: config.selection,
+            configuration: config.configuration ?? .unconfigured,
+            systemPromptOverride: config.systemPromptOverride,
         )
     }
 
@@ -220,17 +230,17 @@ extension TranscribeAudioUseCase {
         )
 
         if context.useStructuredPipeline {
-            let structuredResult: DomainPostProcessingResult = if let selection = context.selection,
-                                                                  let repository = context.repository as? any PostProcessingRepositorySelectionAware
-            {
-                try await repository.processTranscriptionStructured(input, with: prompt, mode: context.kernelMode, selection: selection)
-            } else {
-                try await context.repository.processTranscriptionStructured(
-                    input,
-                    with: prompt,
+            let structuredResult = try await context.repository.processTranscriptionStructured(
+                input,
+                request: DomainPostProcessingRequest(
+                    prompt: prompt,
                     mode: context.kernelMode,
-                )
-            }
+                    selection: context.selection,
+                    configuration: context.configuration,
+                    useStructuredPipeline: true,
+                    systemPromptOverride: context.systemPromptOverride,
+                ),
+            )
             return PostProcessingResult(
                 processedContent: structuredResult.processedText,
                 canonicalSummary: recalibrateCanonicalSummary(
@@ -247,17 +257,17 @@ extension TranscribeAudioUseCase {
             )
         }
 
-        let processedContent: String = if let selection = context.selection,
-                                          let repository = context.repository as? any PostProcessingRepositorySelectionAware
-        {
-            try await repository.processTranscription(input, with: prompt, mode: context.kernelMode, selection: selection)
-        } else {
-            try await context.repository.processTranscription(
-                input,
-                with: prompt,
+        let processedContent = try await context.repository.processTranscription(
+            input,
+            request: DomainPostProcessingRequest(
+                prompt: prompt,
                 mode: context.kernelMode,
-            )
-        }
+                selection: context.selection,
+                configuration: context.configuration,
+                useStructuredPipeline: false,
+                systemPromptOverride: context.systemPromptOverride,
+            ),
+        )
         return PostProcessingResult(
             processedContent: processedContent,
             canonicalSummary: nil,
@@ -314,7 +324,13 @@ extension TranscribeAudioUseCase {
         if context.useStructuredPipeline {
             let structuredResult = try await context.repository.processTranscriptionStructured(
                 input,
-                mode: context.kernelMode,
+                request: DomainPostProcessingRequest(
+                    mode: context.kernelMode,
+                    selection: context.selection,
+                    configuration: context.configuration,
+                    useStructuredPipeline: true,
+                    systemPromptOverride: context.systemPromptOverride,
+                ),
             )
             return PostProcessingResult(
                 processedContent: structuredResult.processedText,
@@ -334,7 +350,13 @@ extension TranscribeAudioUseCase {
 
         let processedContent = try await context.repository.processTranscription(
             input,
-            mode: context.kernelMode,
+            request: DomainPostProcessingRequest(
+                mode: context.kernelMode,
+                selection: context.selection,
+                configuration: context.configuration,
+                useStructuredPipeline: false,
+                systemPromptOverride: context.systemPromptOverride,
+            ),
         )
         return PostProcessingResult(
             processedContent: processedContent,
@@ -370,8 +392,14 @@ extension TranscribeAudioUseCase {
 
         let jsonString = try await context.repository.processTranscription(
             text,
-            with: classifierPrompt,
-            mode: context.kernelMode,
+            request: DomainPostProcessingRequest(
+                prompt: classifierPrompt,
+                mode: context.kernelMode,
+                selection: context.selection,
+                configuration: context.configuration,
+                useStructuredPipeline: false,
+                systemPromptOverride: context.systemPromptOverride,
+            ),
         )
         return parseMeetingType(from: jsonString)
     }

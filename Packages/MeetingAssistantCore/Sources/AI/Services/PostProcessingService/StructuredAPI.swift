@@ -18,6 +18,75 @@ extension PostProcessingService {
 
     // MARK: - Public API (Structured)
 
+    public func processTranscriptionStructured(
+        _ transcription: String,
+        request: PostProcessingRequest,
+    ) async throws -> DomainPostProcessingResult {
+        guard let prompt = request.prompt else {
+            return try await processTranscriptionStructured(
+                transcription,
+                with: .defaultPrompt,
+                request: request,
+            )
+        }
+        return try await processTranscriptionStructured(transcription, with: prompt, request: request)
+    }
+
+    private func processTranscriptionStructured(
+        _ transcription: String,
+        with prompt: PostProcessingPrompt,
+        request: PostProcessingRequest,
+    ) async throws -> DomainPostProcessingResult {
+        if !request.useStructuredPipeline {
+            let text = try await processTranscription(transcription, request: request)
+            return summaryFallbackBuilder.build(providerOutput: text, transcription: transcription)
+        }
+        _ = try validateInput(transcription)
+        guard request.readinessIssue == nil else {
+            throw unavailableConfigurationError(
+                mode: request.mode,
+                message: "Structured post-processing blocked: enhancements configuration not ready",
+                reasonCode: request.readinessIssue,
+            )
+        }
+        let context = makeStructuredRequestContext(
+            transcription: transcription,
+            prompt: prompt,
+            mode: request.mode,
+            selectionOverride: request.selection,
+            systemPromptOverride: request.systemPromptOverride,
+            requestConfig: request.configuration,
+            useLiveSettings: false,
+            outputLanguageID: request.outputLanguageID,
+        )
+        return try await executeStructuredRequest(context: context)
+    }
+
+    private func executeStructuredRequest(context: StructuredRequestContext) async throws -> DomainPostProcessingResult {
+        isProcessing = true
+        lastError = nil
+        defer {
+            isProcessing = false
+            reportDictationPostProcessingDurationIfNeeded(mode: context.mode, startedAt: context.startedAt)
+        }
+        do {
+            let result = try await sendToAIStructured(
+                transcription: context.transcription,
+                prompt: context.prompt,
+                mode: context.mode,
+                selectionOverride: context.selectionOverride,
+                systemPromptOverride: context.systemPromptOverride,
+                requestProfile: context.requestProfile,
+                requestConfig: context.requestConfig,
+                traceContext: context.traceContext,
+            )
+            let metadata = TranscriptionOutputSanitizer.extractContextMetadata(fromPromptInput: context.transcription)
+            return sanitizeStructuredResult(result, transcription: context.transcription, contextMetadata: metadata)
+        } catch {
+            return try await handleStructuredFailure(context: context, error: error)
+        }
+    }
+
     public func processTranscriptionStructured(_ transcription: String) async throws -> DomainPostProcessingResult {
         guard settings.postProcessingEnabled else {
             let fallback = summaryFallbackBuilder.build(providerOutput: "", transcription: transcription)
@@ -96,6 +165,8 @@ extension PostProcessingService {
         mode: IntelligenceKernelMode,
         selectionOverride: EnhancementsAISelection?,
         systemPromptOverride: String?,
+        requestConfig: AIConfiguration? = nil,
+        useLiveSettings: Bool = true,
     ) async throws -> DomainPostProcessingResult {
         _ = try validateInput(transcription)
         let readinessIssue = selectionOverride.map {
@@ -114,6 +185,8 @@ extension PostProcessingService {
             mode: mode,
             selectionOverride: selectionOverride,
             systemPromptOverride: systemPromptOverride,
+            requestConfig: requestConfig,
+            useLiveSettings: useLiveSettings,
         )
 
         if !context.requestProfile.useStructuredPipeline {
@@ -168,9 +241,17 @@ extension PostProcessingService {
         mode: IntelligenceKernelMode,
         selectionOverride: EnhancementsAISelection?,
         systemPromptOverride: String?,
+        requestConfig explicitRequestConfig: AIConfiguration? = nil,
+        useLiveSettings: Bool = true,
+        outputLanguageID: String? = nil,
     ) -> StructuredRequestContext {
-        let requestProfile = profile(for: mode, prefersStructuredPipeline: true)
-        let requestConfig = selectionOverride.map {
+        let requestProfile = profile(
+            for: mode,
+            prefersStructuredPipeline: true,
+            useLiveSettings: useLiveSettings,
+            outputLanguageID: outputLanguageID,
+        )
+        let requestConfig = explicitRequestConfig ?? selectionOverride.map {
             settings.resolvedEnhancementsAIConfiguration(for: $0)
         } ?? settings.resolvedEnhancementsAIConfiguration(for: mode)
         let traceContext = makeTraceContext(
@@ -197,10 +278,15 @@ extension PostProcessingService {
     private func runFastStructuredFallback(from context: StructuredRequestContext) async throws -> DomainPostProcessingResult {
         let fastResult = try await processTranscription(
             context.transcription,
-            with: context.prompt,
-            mode: context.mode,
-            selectionOverride: context.selectionOverride,
-            systemPromptOverride: context.systemPromptOverride,
+            request: PostProcessingRequest(
+                prompt: context.prompt,
+                mode: context.mode,
+                selection: context.selectionOverride,
+                configuration: context.requestConfig,
+                outputLanguageID: context.requestProfile.outputLanguageID,
+                useStructuredPipeline: false,
+                systemPromptOverride: context.systemPromptOverride,
+            ),
         )
         // Keep processedText and canonicalSummary on the same fallback contract.
         return summaryFallbackBuilder.build(
@@ -252,7 +338,7 @@ extension PostProcessingService {
                 prompt: fallbackPrompt,
                 mode: context.mode,
                 selectionOverride: context.selectionOverride,
-                systemPromptOverride: nil,
+                systemPromptOverride: context.systemPromptOverride,
                 requestProfile: fallbackProfile,
                 requestConfig: context.requestConfig,
                 traceContext: fallbackTraceContext,

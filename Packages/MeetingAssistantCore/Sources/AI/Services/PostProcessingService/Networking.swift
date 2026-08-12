@@ -14,6 +14,8 @@ extension PostProcessingService {
         let requestConfig: AIConfiguration
         let traceContext: RequestTraceContext
         let attempt: Int
+        let useLiveSettings: Bool
+        let outputLanguageID: String?
     }
 
     struct CustomProviderRequestContext {
@@ -25,6 +27,7 @@ extension PostProcessingService {
         let requestConfig: AIConfiguration
         let traceContext: RequestTraceContext
         let attempt: Int
+        let useLiveSettings: Bool
     }
 
     // MARK: - Request/Response
@@ -32,21 +35,14 @@ extension PostProcessingService {
     func performAIRequest(context: ProviderRequestContext) async throws -> String {
         let requestStartedAt = Date()
         let config = context.requestConfig
-        let apiKey = try getAPIKey(selectionOverride: context.selectionOverride, mode: context.mode, provider: config.provider)
-
-        let requestPrompts = AIPromptTemplates.requestPrompts(
-            transcription: context.transcription,
-            prompt: context.prompt,
+        let apiKey = try getAPIKey(
+            selectionOverride: context.selectionOverride,
             mode: context.mode,
-            selectedModel: config.selectedModel,
-            baseSystemPrompt: baseSystemPromptOverride(context.systemPromptOverride, mode: context.mode),
-            promptContentTransformer: { cleanPrompt in
-                guard self.shouldApplyMeetingLanguagePreference(mode: context.mode, prompt: context.prompt) else {
-                    return cleanPrompt
-                }
-                return self.applyMeetingLanguagePreferenceIfNeeded(to: cleanPrompt, mode: context.mode)
-            },
+            provider: config.provider,
+            useLiveSettings: context.useLiveSettings,
         )
+
+        let requestPrompts = requestPrompts(for: context, config: config)
 
         let request = ProviderHTTPClient.Request(
             provider: config.provider,
@@ -88,10 +84,42 @@ extension PostProcessingService {
         }
     }
 
+    private func requestPrompts(
+        for context: ProviderRequestContext,
+        config: AIConfiguration,
+    ) -> AIPromptTemplates.RequestPrompts {
+        AIPromptTemplates.requestPrompts(
+            transcription: context.transcription,
+            prompt: context.prompt,
+            mode: context.mode,
+            selectedModel: config.selectedModel,
+            baseSystemPrompt: baseSystemPromptOverride(
+                context.systemPromptOverride,
+                mode: context.mode,
+                useLiveSettings: context.useLiveSettings,
+            ),
+            promptContentTransformer: { cleanPrompt in
+                guard self.shouldApplyMeetingLanguagePreference(mode: context.mode, prompt: context.prompt) else {
+                    return cleanPrompt
+                }
+                return self.applyMeetingLanguagePreferenceIfNeeded(
+                    to: cleanPrompt,
+                    mode: context.mode,
+                    outputLanguageID: context.outputLanguageID,
+                )
+            },
+        )
+    }
+
     func performCustomAIRequest(context: CustomProviderRequestContext) async throws -> String {
         let requestStartedAt = Date()
         let config = context.requestConfig
-        let apiKey = try getAPIKey(selectionOverride: context.selectionOverride, mode: context.mode, provider: config.provider)
+        let apiKey = try getAPIKey(
+            selectionOverride: context.selectionOverride,
+            mode: context.mode,
+            provider: config.provider,
+            useLiveSettings: context.useLiveSettings,
+        )
 
         let request = ProviderHTTPClient.Request(
             provider: config.provider,
@@ -163,16 +191,24 @@ extension PostProcessingService {
         selectionOverride: EnhancementsAISelection?,
         mode: IntelligenceKernelMode,
         provider: AIProvider,
+        useLiveSettings: Bool = true,
     ) throws -> String {
-        if let selectionOverride,
-           let modeKey = settings.enhancementsAPIKey(for: selectionOverride),
-           !modeKey.isEmpty
-        {
-            return modeKey
-        }
+        if useLiveSettings {
+            if let selectionOverride,
+               let modeKey = settings.enhancementsAPIKey(for: selectionOverride),
+               !modeKey.isEmpty
+            {
+                return modeKey
+            }
 
-        if let modeKey = settings.enhancementsAPIKey(for: mode), !modeKey.isEmpty {
-            return modeKey
+            if let modeKey = settings.enhancementsAPIKey(for: mode), !modeKey.isEmpty {
+                return modeKey
+            }
+        } else if let registrationID = selectionOverride?.registrationID,
+                  let registrationKey = try? KeychainManager.retrieveAPIKey(for: registrationID),
+                  !registrationKey.isEmpty
+        {
+            return registrationKey
         }
 
         guard let apiKey = try? KeychainManager.retrieveAPIKey(for: provider), !apiKey.isEmpty else {
@@ -181,12 +217,16 @@ extension PostProcessingService {
         return apiKey
     }
 
-    private func baseSystemPromptOverride(_ systemPromptOverride: String?, mode: IntelligenceKernelMode) -> String? {
+    private func baseSystemPromptOverride(
+        _ systemPromptOverride: String?,
+        mode: IntelligenceKernelMode,
+        useLiveSettings: Bool,
+    ) -> String? {
         switch mode {
         case .dictation:
             systemPromptOverride
         case .meeting, .assistant:
-            systemPromptOverride ?? settings.systemPrompt
+            systemPromptOverride ?? (useLiveSettings ? settings.systemPrompt : nil)
         }
     }
 
@@ -201,10 +241,15 @@ extension PostProcessingService {
     private func applyMeetingLanguagePreferenceIfNeeded(
         to prompt: String,
         mode: IntelligenceKernelMode,
+        outputLanguageID: String?,
     ) -> String {
         guard mode == .meeting else { return prompt }
 
-        let language = settings.meetingSummaryOutputLanguage
+        guard let languageID = outputLanguageID,
+              let language = DictationOutputLanguage(rawValue: languageID)
+        else {
+            return prompt
+        }
         let languageInstruction = if language == .original {
             """
             <OUTPUT_LANGUAGE>

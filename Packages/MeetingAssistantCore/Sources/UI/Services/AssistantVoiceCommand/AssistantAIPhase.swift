@@ -1,18 +1,24 @@
 import Foundation
 import MeetingAssistantCoreAI
 import MeetingAssistantCoreCommon
+import MeetingAssistantCoreData
 import MeetingAssistantCoreDomain
 import MeetingAssistantCoreInfrastructure
 
+@MainActor
 public struct AssistantAIPhase: @unchecked Sendable {
-    private let postProcessingService: any PostProcessingServiceProtocol
+    private let postProcessingRepository: any PostProcessingRepository
+    private let settings: AppSettingsStore
     private let runScript: @Sendable (_ script: String, _ input: String, _ timeoutSeconds: UInt64) async throws -> String?
 
     public init(
         postProcessingService: any PostProcessingServiceProtocol,
         scriptRunner: AssistantBashScriptRunner,
+        postProcessingRepository: (any PostProcessingRepository)? = nil,
+        settings: AppSettingsStore = .shared,
     ) {
-        self.postProcessingService = postProcessingService
+        self.postProcessingRepository = postProcessingRepository ?? PostProcessingRepositoryAdapter(postProcessingService: postProcessingService)
+        self.settings = settings
         runScript = { script, input, timeoutSeconds in
             try await scriptRunner.run(
                 script: script,
@@ -25,8 +31,11 @@ public struct AssistantAIPhase: @unchecked Sendable {
     init(
         postProcessingService: any PostProcessingServiceProtocol,
         runScript: @escaping @Sendable (_ script: String, _ input: String, _ timeoutSeconds: UInt64) async throws -> String?,
+        postProcessingRepository: (any PostProcessingRepository)? = nil,
+        settings: AppSettingsStore = .shared,
     ) {
-        self.postProcessingService = postProcessingService
+        self.postProcessingRepository = postProcessingRepository ?? PostProcessingRepositoryAdapter(postProcessingService: postProcessingService)
+        self.settings = settings
         self.runScript = runScript
     }
 
@@ -52,14 +61,38 @@ public struct AssistantAIPhase: @unchecked Sendable {
                 executionFlow: executionFlow,
             ),
         )
+        let selection = settings.enhancementsSelection(for: .assistant)
+        let configuration = settings.resolvedEnhancementsAIConfiguration(for: selection)
+        let readinessIssue = settings.enhancementsInferenceReadinessIssue(
+            for: selection,
+            apiKeyExists: nil,
+        )?.rawValue
 
-        let processedCommand = try await postProcessingService.processTranscription(
+        let processedCommand = try await postProcessingRepository.processTranscription(
             sourceText,
-            with: integrationPrompt,
-            mode: .assistant,
-            systemPromptOverride: executionFlow == .integrationDispatch
-                ? AIPromptTemplates.assistantSystemPrompt
-                : nil,
+            request: DomainPostProcessingRequest(
+                prompt: DomainPostProcessingPrompt(
+                    id: integrationPrompt.id,
+                    title: integrationPrompt.title,
+                    content: integrationPrompt.promptText,
+                ),
+                mode: .assistant,
+                selection: DomainPostProcessingSelection(
+                    providerID: selection.provider.rawValue,
+                    modelID: selection.selectedModel,
+                    registrationID: selection.registrationID,
+                ),
+                configuration: DomainPostProcessingConfiguration(
+                    providerID: configuration.provider.rawValue,
+                    baseURL: configuration.baseURL,
+                    modelID: configuration.selectedModel,
+                    readinessIssue: readinessIssue,
+                ),
+                useStructuredPipeline: false,
+                systemPromptOverride: executionFlow == .integrationDispatch
+                    ? AIPromptTemplates.assistantSystemPrompt
+                    : nil,
+            ),
         )
 
         logPayloadIfNeeded("Assistant post-processing payload", [

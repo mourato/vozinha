@@ -15,13 +15,15 @@ extension RecordingManager {
         let defaultPostProcessingPrompt: DomainPostProcessingPrompt?
         let postProcessingModel: String?
         let postProcessingIdentity: ModelPerformanceModelIdentity?
+        let postProcessingConfiguration: DomainPostProcessingConfiguration?
         let autoDetectMeetingType: Bool
         let availablePrompts: [DomainPostProcessingPrompt]
         let postProcessingContext: String?
+        let postProcessingSystemPrompt: String?
         let postProcessingContextItems: [TranscriptionContextItem]
         let dictationTextHandlingPolicy: DictationTextHandlingPolicy?
         let dictationTranscriptionConfiguration: DictationTranscriptionConfiguration?
-        let dictationEnhancementsSelection: EnhancementsAISelection?
+        let postProcessingSelection: EnhancementsAISelection?
     }
 
     func makeUseCaseConfig(
@@ -32,6 +34,7 @@ extension RecordingManager {
         let kernelMode = session.kernelMode
         let isDictation = kernelMode == .dictation
         let dictationSelection = isDictation ? session.dictationEnhancementsSelection : nil
+        let postProcessingSelection = resolvedPostProcessingSelection(session: session, settings: settings)
         let modePostProcessingEnabled = dictationPostProcessingEnabled(for: session, settings: settings)
         let readinessIssue = modePostProcessingEnabled
             ? (dictationSelection.map { settings.enhancementsInferenceReadinessIssue(for: $0, apiKeyExists: apiKeyExists) } ?? settings.enhancementsInferenceReadinessIssue(for: kernelMode, apiKeyExists: apiKeyExists))
@@ -103,21 +106,31 @@ extension RecordingManager {
             }
         }
 
+        let resolvedConfiguration = settings.resolvedEnhancementsAIConfiguration(for: postProcessingSelection)
+
         return UseCaseConfig(
             kernelMode: kernelMode,
             applyPostProcessing: true,
             dictationStructuredPostProcessingEnabled: settings.dictationStructuredPostProcessingEnabled,
             postProcessingPrompt: prompt,
             defaultPostProcessingPrompt: autoDetectMeetingType ? defaultMeetingPrompt : nil,
-            postProcessingModel: (dictationSelection.map { settings.resolvedEnhancementsAIConfiguration(for: $0) } ?? settings.resolvedEnhancementsAIConfiguration(for: kernelMode)).selectedModel,
-            postProcessingIdentity: dictationSelection.map { $0.provider.modelPerformanceIdentity(modelID: $0.selectedModel) } ?? settings.resolvedEnhancementsPerformanceIdentity(for: kernelMode),
+            postProcessingModel: resolvedConfiguration.selectedModel,
+            postProcessingIdentity: postProcessingSelection.provider.modelPerformanceIdentity(modelID: postProcessingSelection.selectedModel),
+            postProcessingConfiguration: DomainPostProcessingConfiguration(
+                providerID: resolvedConfiguration.provider.rawValue,
+                baseURL: resolvedConfiguration.baseURL,
+                modelID: resolvedConfiguration.selectedModel,
+                readinessIssue: readinessIssue?.rawValue,
+                outputLanguageID: kernelMode == .meeting ? settings.meetingSummaryOutputLanguage.rawValue : nil,
+            ),
             autoDetectMeetingType: autoDetectMeetingType,
             availablePrompts: availablePrompts,
             postProcessingContext: session.postProcessingContext,
+            postProcessingSystemPrompt: kernelMode == .meeting ? settings.systemPrompt : nil,
             postProcessingContextItems: resolvedContextItems,
             dictationTextHandlingPolicy: session.dictationTextHandlingPolicy,
             dictationTranscriptionConfiguration: session.dictationTranscriptionConfiguration,
-            dictationEnhancementsSelection: session.dictationEnhancementsSelection,
+            postProcessingSelection: postProcessingSelection,
         )
     }
 
@@ -129,6 +142,7 @@ extension RecordingManager {
         isDictation: Bool,
         settings: AppSettingsStore,
     ) -> UseCaseConfig {
+        let postProcessingSelection = resolvedPostProcessingSelection(session: session, settings: settings)
         let reasonCode = resolveDisabledReasonCode(
             settings: settings,
             readinessIssue: readinessIssue,
@@ -153,14 +167,26 @@ extension RecordingManager {
             defaultPostProcessingPrompt: nil,
             postProcessingModel: nil,
             postProcessingIdentity: nil,
+            postProcessingConfiguration: nil,
             autoDetectMeetingType: false,
             availablePrompts: [],
             postProcessingContext: nil,
+            postProcessingSystemPrompt: nil,
             postProcessingContextItems: session.postProcessingContextItems,
             dictationTextHandlingPolicy: session.dictationTextHandlingPolicy,
             dictationTranscriptionConfiguration: session.dictationTranscriptionConfiguration,
-            dictationEnhancementsSelection: session.dictationEnhancementsSelection,
+            postProcessingSelection: postProcessingSelection,
         )
+    }
+
+    private func resolvedPostProcessingSelection(
+        session: TranscriptionSessionSnapshot,
+        settings: AppSettingsStore,
+    ) -> EnhancementsAISelection {
+        let dictationSelection = session.kernelMode == .dictation ? session.dictationEnhancementsSelection : nil
+        return dictationSelection
+            ?? session.postProcessingEnhancementsSelection
+            ?? settings.enhancementsSelection(for: session.kernelMode)
     }
 
     private func resolveDisabledReasonCode(

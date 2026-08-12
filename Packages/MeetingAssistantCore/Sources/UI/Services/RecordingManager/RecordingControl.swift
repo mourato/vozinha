@@ -13,14 +13,15 @@ extension RecordingManager {
     }
 
     func makeTranscriptionSessionSnapshot(_ meeting: Meeting) -> TranscriptionSessionSnapshot {
-        TranscriptionSessionSnapshot(
+        let kernelMode = postProcessingKernelMode(
+            for: meeting,
+            capturePurposeOverride: meeting.capturePurpose,
+        )
+        return TranscriptionSessionSnapshot(
             id: meeting.id,
             meeting: meeting,
             recordingSource: recordingSource,
-            kernelMode: postProcessingKernelMode(
-                for: meeting,
-                capturePurposeOverride: meeting.capturePurpose,
-            ),
+            kernelMode: kernelMode,
             postProcessingContext: postProcessingContext,
             postProcessingContextItems: postProcessingContextItems,
             meetingNotesContent: MeetingNotesContent(
@@ -35,6 +36,7 @@ extension RecordingManager {
             dictationTranscriptionConfiguration: activeDictationStyleSnapshot?.transcriptionConfiguration,
             transcriptionConfiguration: activeTranscriptionConfiguration,
             dictationEnhancementsSelection: activeDictationStyleSnapshot?.enhancementsSelection,
+            postProcessingEnhancementsSelection: AppSettingsStore.shared.enhancementsSelection(for: kernelMode),
             dictationPostProcessingEnabled: activeDictationStyleSnapshot?.postProcessingEnabled,
             dictationStyle: activeDictationStyleSnapshot,
             vocabularySnapshot: activeVocabularySnapshot ?? VocabularySnapshot.current(from: .shared),

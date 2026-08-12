@@ -175,12 +175,14 @@ extension RecordingManager {
             postProcessingPrompt: config.postProcessingPrompt,
             defaultPostProcessingPrompt: config.defaultPostProcessingPrompt,
             postProcessingIdentity: config.postProcessingIdentity,
-            postProcessingSelection: config.dictationEnhancementsSelection.map {
+            postProcessingSelection: config.postProcessingSelection.map {
                 DomainPostProcessingSelection(providerID: $0.provider.rawValue, modelID: $0.selectedModel, registrationID: $0.registrationID)
             },
+            postProcessingConfiguration: config.postProcessingConfiguration,
             autoDetectMeetingType: config.autoDetectMeetingType,
             availablePrompts: config.availablePrompts,
             postProcessingContext: config.postProcessingContext,
+            postProcessingSystemPrompt: config.postProcessingSystemPrompt,
             kernelMode: config.kernelMode,
             dictationStructuredPostProcessingEnabled: config.dictationStructuredPostProcessingEnabled,
             onPhaseChange: { [weak self] phase in

@@ -34,6 +34,8 @@ public final class PostProcessingService: ObservableObject, PostProcessingServic
         let useStructuredPipeline: Bool
         let useRepair: Bool
         let pipeline: String
+        let useLiveSettings: Bool
+        let outputLanguageID: String?
     }
 
     struct RequestTraceContext {

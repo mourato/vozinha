@@ -19,7 +19,10 @@ extension PostProcessingService {
     func profile(
         for mode: IntelligenceKernelMode,
         prefersStructuredPipeline: Bool,
+        useLiveSettings: Bool = true,
+        outputLanguageID: String? = nil,
     ) -> RequestProfile {
+        let resolvedOutputLanguageID = outputLanguageID ?? (useLiveSettings && mode == .meeting ? settings.meetingSummaryOutputLanguage.rawValue : nil)
         switch mode {
         case .meeting:
             return RequestProfile(
@@ -29,9 +32,11 @@ extension PostProcessingService {
                 useStructuredPipeline: prefersStructuredPipeline,
                 useRepair: prefersStructuredPipeline,
                 pipeline: prefersStructuredPipeline ? "structured" : "fast",
+                useLiveSettings: useLiveSettings,
+                outputLanguageID: resolvedOutputLanguageID,
             )
         case .dictation, .assistant:
-            let canUseStructured = prefersStructuredPipeline && settings.dictationStructuredPostProcessingEnabled
+            let canUseStructured = prefersStructuredPipeline && (!useLiveSettings || settings.dictationStructuredPostProcessingEnabled)
             return RequestProfile(
                 name: "dictationProfile",
                 timeoutSeconds: Constants.dictationRequestTimeoutSeconds,
@@ -39,6 +44,8 @@ extension PostProcessingService {
                 useStructuredPipeline: canUseStructured,
                 useRepair: canUseStructured,
                 pipeline: canUseStructured ? "structured" : "fast",
+                useLiveSettings: useLiveSettings,
+                outputLanguageID: resolvedOutputLanguageID,
             )
         }
     }
@@ -51,6 +58,8 @@ extension PostProcessingService {
             useStructuredPipeline: false,
             useRepair: false,
             pipeline: "fast",
+            useLiveSettings: false,
+            outputLanguageID: nil,
         )
     }
 
