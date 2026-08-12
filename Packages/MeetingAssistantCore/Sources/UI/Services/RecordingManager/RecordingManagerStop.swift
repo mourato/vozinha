@@ -201,7 +201,7 @@ private extension RecordingManager {
             transcription: transcription,
             recordingSource: session.recordingSource,
             textPolicy: session.dictationTextHandlingPolicy,
-            settings: session.deliverySettings ?? AppSettingsStore.shared,
+            settings: session.deliverySettings ?? DeliverySettingsSnapshot(),
         )
         completeVisibleTranscription(success: true, sessionID: session.id)
         notifySuccess(for: transcription)

@@ -18,11 +18,25 @@ public struct DeliverySettingsSnapshot: DeliverySettingsConfig {
     public let smartSpacingAndCapitalizationEnabled: Bool
     public let smartParagraphsEnabled: Bool
 
+    public init(
+        autoCopyTranscriptionToClipboard: Bool = false,
+        autoPasteTranscriptionToActiveApp: Bool = false,
+        smartSpacingAndCapitalizationEnabled: Bool = false,
+        smartParagraphsEnabled: Bool = false,
+    ) {
+        self.autoCopyTranscriptionToClipboard = autoCopyTranscriptionToClipboard
+        self.autoPasteTranscriptionToActiveApp = autoPasteTranscriptionToActiveApp
+        self.smartSpacingAndCapitalizationEnabled = smartSpacingAndCapitalizationEnabled
+        self.smartParagraphsEnabled = smartParagraphsEnabled
+    }
+
     public init(settings: any DeliverySettingsConfig) {
-        autoCopyTranscriptionToClipboard = settings.autoCopyTranscriptionToClipboard
-        autoPasteTranscriptionToActiveApp = settings.autoPasteTranscriptionToActiveApp
-        smartSpacingAndCapitalizationEnabled = settings.smartSpacingAndCapitalizationEnabled
-        smartParagraphsEnabled = settings.smartParagraphsEnabled
+        self.init(
+            autoCopyTranscriptionToClipboard: settings.autoCopyTranscriptionToClipboard,
+            autoPasteTranscriptionToActiveApp: settings.autoPasteTranscriptionToActiveApp,
+            smartSpacingAndCapitalizationEnabled: settings.smartSpacingAndCapitalizationEnabled,
+            smartParagraphsEnabled: settings.smartParagraphsEnabled,
+        )
     }
 }
 

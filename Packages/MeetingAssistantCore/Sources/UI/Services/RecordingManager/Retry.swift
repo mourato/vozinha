@@ -76,11 +76,16 @@ extension RecordingManager {
         }
         let capturedPostProcessingSelection = persistedPostProcessingSelection
             ?? postProcessingSettings.enhancementsSelection(for: postProcessingMode)
-        let capturedPostProcessingConfiguration = postProcessingSettings.resolvedEnhancementsAIConfiguration(
-            for: capturedPostProcessingSelection,
-        )
-        let capturedPostProcessingReadiness = postProcessingSettings.enhancementsInferenceReadinessIssue(
-            for: capturedPostProcessingSelection,
+        let capturedPostProcessingConfiguration = persistedPostProcessingSelection.map {
+            postProcessingSettings.resolvedEnhancementsAIConfiguration(for: $0)
+        } ?? postProcessingSettings.resolvedEnhancementsAIConfiguration(for: postProcessingMode)
+        let capturedPostProcessingReadiness = persistedPostProcessingSelection.map {
+            postProcessingSettings.enhancementsInferenceReadinessIssue(
+                for: $0,
+                apiKeyExists: apiKeyExists,
+            )
+        } ?? postProcessingSettings.enhancementsInferenceReadinessIssue(
+            for: postProcessingMode,
             apiKeyExists: apiKeyExists,
         )
         let capturedPostProcessingIdentity = transcription.executionProvenance?.postProcessingModelIdentity
@@ -131,11 +136,14 @@ extension RecordingManager {
             transcriptionAPIKeyExists: transcriptionAPIKeyExists,
             isLocalModelReady: isLocalRetryModelReady,
         )
-        let retryInputLanguageCode = persistedRequest?.inputLanguageCode
-            ?? retryConfiguration?.inputLanguageCode
-            ?? AppSettingsStore.shared.resolvedTranscriptionInputLanguageCode(
-                for: capturePurpose.transcriptionExecutionMode,
-            )
+        let retryInputLanguageCode = if let persistedRequest {
+            persistedRequest.inputLanguageCode
+        } else {
+            retryConfiguration?.inputLanguageCode
+                ?? AppSettingsStore.shared.resolvedTranscriptionInputLanguageCode(
+                    for: capturePurpose.transcriptionExecutionMode,
+                )
+        }
         let vocabularySnapshot = selectionOverride == nil
             ? transcription.executionProvenance?.vocabularySnapshot ?? VocabularySnapshot.current(from: .shared)
             : VocabularySnapshot.current(from: .shared)

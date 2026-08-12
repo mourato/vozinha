@@ -69,7 +69,7 @@ extension RecordingManager {
                 transcription: transcription,
                 recordingSource: session.recordingSource,
                 textPolicy: session.dictationTextHandlingPolicy,
-                settings: session.deliverySettings ?? AppSettingsStore.shared,
+                settings: session.deliverySettings ?? DeliverySettingsSnapshot(),
             )
 
             completeVisibleTranscription(success: true, sessionID: session.id)
@@ -145,12 +145,14 @@ extension RecordingManager {
     ) async throws -> Transcription {
         let transcriptionStart = Date()
         let meetingEntity = makeMeetingEntity(meeting: session.meeting, audioDuration: audioDuration)
-        var config = session.useCaseConfig ?? makeUseCaseConfig(session: session, settings: AppSettingsStore.shared)
+        guard var config = session.useCaseConfig else {
+            throw TranscriptionError.transcriptionFailed("Missing transcription operation configuration.")
+        }
         config.postProcessingContext = session.postProcessingContext
         config.postProcessingContextItems = session.postProcessingContextItems
         let transcriptionIdentity = session.transcriptionConfiguration.flatMap { configuration in
             TranscriptionProvider(rawValue: configuration.providerID)?.modelPerformanceIdentity(modelID: configuration.modelID)
-        } ?? resolvedTranscriptionPerformanceIdentity(capturePurpose: session.meeting.capturePurpose)
+        } ?? ModelPerformanceIdentityResolver.unknown()
         let diarizationEnabledOverride = shouldEnableDiarization(
             for: session.meeting,
             capturePurposeOverride: session.meeting.capturePurpose,

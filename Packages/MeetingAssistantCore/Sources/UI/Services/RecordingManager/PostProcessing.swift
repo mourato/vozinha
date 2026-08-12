@@ -107,7 +107,9 @@ extension RecordingManager {
             }
         }
 
-        let resolvedConfiguration = settings.resolvedEnhancementsAIConfiguration(for: postProcessingSelection)
+        let resolvedConfiguration = isDictation
+            ? settings.resolvedEnhancementsAIConfiguration(for: postProcessingSelection)
+            : settings.resolvedEnhancementsAIConfiguration(for: kernelMode)
 
         return UseCaseConfig(
             kernelMode: kernelMode,
@@ -116,7 +118,7 @@ extension RecordingManager {
             postProcessingPrompt: prompt,
             defaultPostProcessingPrompt: autoDetectMeetingType ? defaultMeetingPrompt : nil,
             postProcessingModel: resolvedConfiguration.selectedModel,
-            postProcessingIdentity: postProcessingSelection.provider.modelPerformanceIdentity(modelID: postProcessingSelection.selectedModel),
+            postProcessingIdentity: resolvedConfiguration.provider.modelPerformanceIdentity(modelID: resolvedConfiguration.selectedModel),
             postProcessingConfiguration: DomainPostProcessingConfiguration(
                 providerID: resolvedConfiguration.provider.rawValue,
                 baseURL: resolvedConfiguration.baseURL,
