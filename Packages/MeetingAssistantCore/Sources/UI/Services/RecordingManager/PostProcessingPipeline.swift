@@ -65,12 +65,14 @@ extension RecordingManager {
         let outputState: DomainPostProcessingOutputState?
     }
 
+    // swiftlint:disable:next function_body_length
     func applyPostProcessing(
         postProcessingInput: String,
         meeting: Meeting?,
         qualityProfile: TranscriptionQualityProfile?,
         capturePurposeOverride: CapturePurpose? = nil,
         selectionOverride: EnhancementsAISelection? = nil,
+        promptIDOverride: UUID? = nil,
     ) async -> PostProcessingResult {
         transcriptionStatus.updateProgress(phase: .postProcessing, percentage: Constants.postProcessingProgress)
         RecordingIndicatorProcessingStateStore.shared.update(
@@ -118,12 +120,19 @@ extension RecordingManager {
                 ),
             )
         }
-        let prompt = await resolvePostProcessingPrompt(
-            rawText: TranscriptionOutputSanitizer.stripPromptMetadata(from: postProcessingInput),
-            isDictation: isDictation,
-            meetingType: type,
-            settings: settings,
-        )
+        let availablePrompts = isDictation ? settings.dictationAvailablePrompts : settings.meetingAvailablePrompts
+        let prompt = if let promptIDOverride,
+                        let persistedPrompt = availablePrompts.first(where: { $0.id == promptIDOverride })
+        {
+            persistedPrompt
+        } else {
+            await resolvePostProcessingPrompt(
+                rawText: TranscriptionOutputSanitizer.stripPromptMetadata(from: postProcessingInput),
+                isDictation: isDictation,
+                meetingType: type,
+                settings: settings,
+            )
+        }
 
         transcriptionStatus.updateProgress(phase: .postProcessing, percentage: Constants.aiProcessingProgress)
         RecordingIndicatorProcessingStateStore.shared.update(

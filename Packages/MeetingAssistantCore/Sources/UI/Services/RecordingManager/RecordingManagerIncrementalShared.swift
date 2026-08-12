@@ -275,6 +275,7 @@ extension RecordingManager {
             contextItems: config.postProcessingContextItems,
             vocabularyReplacementRules: session.vocabularySnapshot.replacementRules,
             vocabularyTerms: session.vocabularySnapshot.terms,
+            transcriptionConfiguration: session.transcriptionConfiguration,
             applyPostProcessing: config.applyPostProcessing,
             postProcessingPrompt: config.postProcessingPrompt,
             defaultPostProcessingPrompt: config.defaultPostProcessingPrompt,

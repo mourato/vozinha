@@ -519,6 +519,44 @@ extension RecordingManagerTests {
         XCTAssertEqual(mockPostProcessing.lastPromptTitle, dictationPrompt.title)
     }
 
+    func testApplyPostProcessing_UsesPersistedPromptWhenCurrentSelectionChanged() async throws {
+        let manager = try XCTUnwrap(manager)
+        let mockPostProcessing = try XCTUnwrap(mockPostProcessing)
+        let settings = AppSettingsStore.shared
+        let originalPostProcessingEnabled = settings.postProcessingEnabled
+        let originalSelectedPromptID = settings.selectedPromptId
+        let originalMeetingPrompts = settings.meetingPrompts
+        let originalMeetingSelection = settings.enhancementsAISelection
+        let originalProviderModels = settings.enhancementsProviderSelectedModels
+        let originalProviderModelsByRegistration = settings.enhancementsProviderSelectedModelsByRegistration
+        let currentPrompt = PostProcessingPrompt(title: "Current", promptText: "current")
+        let persistedPrompt = PostProcessingPrompt(title: "Persisted", promptText: "persisted")
+        defer {
+            settings.postProcessingEnabled = originalPostProcessingEnabled
+            settings.selectedPromptId = originalSelectedPromptID
+            settings.meetingPrompts = originalMeetingPrompts
+            settings.enhancementsAISelection = originalMeetingSelection
+            settings.enhancementsProviderSelectedModels = originalProviderModels
+            settings.enhancementsProviderSelectedModelsByRegistration = originalProviderModelsByRegistration
+        }
+
+        settings.postProcessingEnabled = true
+        settings.meetingPrompts = [currentPrompt, persistedPrompt]
+        settings.selectedPromptId = currentPrompt.id
+        settings.updateEnhancementsSelection(provider: .openai, model: "gpt-5.4-mini", for: .meeting)
+
+        _ = await manager.applyPostProcessing(
+            postProcessingInput: "meeting text",
+            meeting: Meeting(app: .zoom, capturePurpose: .meeting),
+            qualityProfile: nil,
+            capturePurposeOverride: .meeting,
+            promptIDOverride: persistedPrompt.id,
+        )
+
+        XCTAssertEqual(mockPostProcessing.lastPromptTitle, persistedPrompt.title)
+        XCTAssertEqual(mockPostProcessing.lastPromptText, persistedPrompt.promptText)
+    }
+
     func testTranscribeExternalAudio_DoesNotApplySilenceCompaction() async throws {
         let manager = try XCTUnwrap(manager)
         let mockTranscription = try XCTUnwrap(mockTranscription)

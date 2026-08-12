@@ -66,6 +66,63 @@ final class TranscribeAudioUseCaseMacroMockingTests: XCTestCase {
         XCTAssertEqual(transcriptionRepository.transcribeCalls.count, 1)
     }
 
+    func testFinalizePreparedResponse_PersistsExecutionProvenance() async throws {
+        let transcriptionRepository = MeetingAssistantCoreDomain.MacroMockTranscriptionRepository()
+        let storageRepository = makeMacroMockTranscriptionStorageRepository()
+        var savedAttempts: [ModelPerformanceAttempt] = []
+        storageRepository.saveTranscriptionHandler = { _ in }
+        storageRepository.saveModelPerformanceAttemptHandler = { attempt in
+            savedAttempts.append(attempt)
+        }
+
+        let useCase = TranscribeAudioUseCase(
+            transcriptionRepository: transcriptionRepository,
+            transcriptionStorageRepository: storageRepository,
+            postProcessingRepository: nil,
+        )
+        let transcriptionIdentity = ModelPerformanceModelIdentity(
+            providerID: "local",
+            providerDisplayName: "Local",
+            modelID: "model-a",
+            modelDisplayName: "Model A",
+            runtimeKind: .local,
+        )
+        let requestConfiguration = DomainTranscriptionRequestConfiguration(
+            providerID: "local",
+            modelID: "model-a",
+            inputLanguageCode: "pt",
+        )
+        let vocabularyTerms = [VocabularyTerm(term: "Prisma", definition: "App name")]
+        let replacementRules = [VocabularyReplacementRule(find: "prizma", replace: "Prisma")]
+
+        let transcription = try await useCase.finalizePreparedResponse(
+            response: DomainTranscriptionResponse(
+                text: "Hello world",
+                language: "en",
+                durationSeconds: 1,
+                model: "model-a",
+                processedAt: "now",
+            ),
+            transcriptionID: UUID(),
+            meeting: MeetingEntity(app: .unknown, capturePurpose: .dictation),
+            transcriptionIdentity: transcriptionIdentity,
+            vocabularyReplacementRules: replacementRules,
+            vocabularyTerms: vocabularyTerms,
+            transcriptionConfiguration: requestConfiguration,
+            transcriptionDuration: 1,
+        )
+
+        XCTAssertEqual(transcription.executionProvenance?.transcriptionRequest?.providerID, "local")
+        XCTAssertEqual(transcription.executionProvenance?.transcriptionRequest?.modelID, "model-a")
+        XCTAssertEqual(
+            transcription.executionProvenance?.vocabularySnapshot,
+            VocabularySnapshot(terms: vocabularyTerms, replacementRules: replacementRules),
+        )
+        XCTAssertEqual(transcription.executionProvenance?.transcriptionModelIdentity, transcriptionIdentity)
+        XCTAssertEqual(savedAttempts.count, 1)
+        XCTAssertEqual(savedAttempts.first?.executionProvenance, transcription.executionProvenance)
+    }
+
     func testExecuteSuccess_PersistsModelPerformanceAttempts() async throws {
         let transcriptionRepository = MeetingAssistantCoreDomain.MacroMockTranscriptionRepository()
         let storageRepository = makeMacroMockTranscriptionStorageRepository()
