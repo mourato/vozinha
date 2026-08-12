@@ -131,9 +131,7 @@ The pre-commit hook applies SwiftFormat and SwiftLint autofix to staged Swift fi
 | `make setup` | Install local development dependencies (SwiftLint, SwiftFormat) and configure Git hooks. |
 | `make ci-build` | Run the CI build sequence: architecture checks, lint, tests, and release build. |
 | `make ci-test` | Run the CI test path. |
-| `make ci-release-parity` | Run the local Sparkle release parity gate in dry-run mode. |
-| `make ci-release-parity-self-signed` | Run the signed local Sparkle parity flow and generate the appcast. |
-| `make deliverable-gate` | Run `build-test`, `lint`, and `ci-release-parity` together. |
+| `make deliverable-gate` | Run `build-test` and `lint` together. |
 
 #### Documentation
 
@@ -151,13 +149,7 @@ Run the deliverable gate to reduce CI surprises:
 make deliverable-gate
 ```
 
-This includes `make lint`, `make build-test`, and `make ci-release-parity` (lint runs first as a fast-fail gate).
-
-To enforce strict Xcode pin matching in automated runs:
-
-```bash
-MA_CI_PARITY_STRICT_XCODE_VERSION=1 make ci-release-parity
-```
+This includes `make lint` and `make build-test` (lint runs first as a fast-fail gate).
 
 ### Canonical xcodebuild usage
 
@@ -238,11 +230,6 @@ MA_RELEASE_SIGNING_MODE=self-signed make dmg
 # Force unsigned/ad-hoc mode without prompting
 MA_RELEASE_SIGNING_MODE=adhoc make dmg
 
-# 3) Build signed Sparkle archive + appcast (requires Sparkle private key env)
-SPARKLE_PRIVATE_KEY_B64="<base64-pem>" \
-make ci-release-parity-self-signed \
-  DOWNLOAD_URL_PREFIX="https://github.com/<owner>/<repo>/releases/download/<tag>" \
-  RELEASE_TAG="v0.3.4"
 ```
 
 Notes:
@@ -252,7 +239,6 @@ Notes:
 - `make dmg` now prompts for signing mode. The default choice is automatic detection: if the exact configured identity is found in keychain, the DMG is self-signed; otherwise it falls back to unsigned/ad-hoc.
 - Use `MA_RELEASE_SIGNING_MODE=adhoc make dmg` or `MA_RELEASE_SIGNING_MODE=self-signed make dmg` to skip the prompt and force a specific mode.
 - Install by replacing the existing app in `/Applications` to maximize permission persistence.
-- Sparkle signing key can come from `SPARKLE_PRIVATE_KEY_B64` / `SPARKLE_PRIVATE_KEY` env, or from Sparkle's default Keychain account (`ed25519`).
 
 ## Troubleshooting
 

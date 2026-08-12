@@ -26,7 +26,6 @@ let package = Package(
         .package(url: "https://github.com/sindresorhus/KeyboardShortcuts", from: "2.0.0"),
         .package(url: "https://github.com/apple/swift-atomics.git", .upToNextMajor(from: "1.2.0")),
         .package(url: "https://github.com/apple/swift-syntax.git", exact: "602.0.0"),
-        .package(url: "https://github.com/sparkle-project/Sparkle", from: "2.0.0"),
         .package(url: "https://github.com/nodes-app/swift-markdown-engine", exact: "0.6.0"),
     ],
     targets: [
@@ -60,7 +59,6 @@ let package = Package(
                 "MeetingAssistantCoreCommon",
                 "MeetingAssistantCoreDomain",
                 .product(name: "KeyboardShortcuts", package: "KeyboardShortcuts"),
-                .product(name: "Sparkle", package: "Sparkle"),
             ],
             path: "Sources/Infrastructure",
         ),
@@ -141,6 +139,10 @@ let package = Package(
                 "MeetingAssistantCoreAudio",
                 "MeetingAssistantCoreUI",
                 "MeetingAssistantCoreDomain",
+                .product(name: "SwiftCompilerPlugin", package: "swift-syntax"),
+                .product(name: "SwiftSyntax", package: "swift-syntax"),
+                .product(name: "SwiftSyntaxBuilder", package: "swift-syntax"),
+                .product(name: "SwiftSyntaxMacros", package: "swift-syntax"),
             ],
             path: "Tests/MeetingAssistantCoreTests",
             resources: [

@@ -60,8 +60,7 @@ make workflow-test      # Deterministic validation workflow fixtures (no Xcode)
 make test-ci-strict     # Xcode test run without retry/fallback
 make preflight          # Build + Test + Lint + Benchmark (full validation)
 make preflight-fast     # Lint + Build + Test (skips benchmark, faster feedback)
-make ci-release-parity  # Sparkle release build/archive parity gate (local)
-make deliverable-gate   # build-test + lint + ci-release-parity
+make deliverable-gate   # build-test + lint
 make run                # Run app in debug mode
 make build-and-run      # Interactive Debug/Release workflow
 make install-app        # Interactive signed Release install and launch (Release/clean default to yes)
@@ -74,7 +73,6 @@ make lint               # Run SwiftLint checks
 make build-release      # Optimized release build
 make dmg                # Create DMG installer (auto-detect self-signed identity by exact name)
 make setup-self-signed-cert # Bootstrap local self-signed code-signing cert
-make ci-release-parity-self-signed DOWNLOAD_URL_PREFIX=... RELEASE_TAG=... # Signed Sparkle parity (archive + appcast)
 ```
 
 `make build-and-run` and `make install-app` never install Debug into `/Applications`. Release
@@ -224,14 +222,13 @@ Useful options for the script:
 ```bash
 make ci-test             # XCTest output compatible with CI systems
 make ci-build            # Includes arch-check
-make ci-release-parity   # Mirrors sparkle-release build/archive gate locally
 ```
 
 ### Deliverable gate (recommended before push/release)
 ```bash
 make deliverable-gate
 ```
-This command keeps fast local iteration while adding the release parity guard (`build-test + lint + ci-release-parity`).
+This command keeps fast local iteration while running the build and lint gates.
 
 ## Git Hooks Setup
 
@@ -343,7 +340,6 @@ On failure, scripts print compact excerpts to terminal while keeping full logs o
 **Recommended before merge:**
 - ✓ `make preflight` — full validation
 - ✓ `make lint-strict` — code quality checks
-- ✓ `make ci-release-parity` — Sparkle release build/archive parity
 
 **Pre-release:**
 - ✓ `make preflight` + full validation

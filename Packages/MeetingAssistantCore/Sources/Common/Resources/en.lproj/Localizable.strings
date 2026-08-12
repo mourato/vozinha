@@ -799,7 +799,6 @@
 "menubar.stop_recording" = "Stop Recording";
 "menubar.settings" = "Settings...";
 "menubar.onboarding" = "Open Onboarding...";
-"menubar.check_updates" = "Check for Updates...";
 "menubar.quit" = "Quit";
 "menubar.accessibility.recording" = "Recording in progress";
 "menubar.accessibility.idle" = "Vozinha";
@@ -1038,10 +1037,6 @@
 "about.version" = "Version %@";
 "about.description" = "Automatically transcribe your video meetings using AI.";
 "about.copyright" = "© %d All rights reserved.";
-
-/* Updates */
-"updates.check_title" = "Check for Updates";
-"updates.latest_version" = "You are using the latest version of Vozinha.";
 
 /* Menu Bar */
 "menubar.record_section" = "Record...";

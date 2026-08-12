@@ -230,9 +230,6 @@ extension AppDelegate {
                     self?.promoteAppForWindowPresentation()
                     self?.openOnboarding()
                 },
-                checkForUpdates: { [weak self] in
-                    self?.checkForUpdates()
-                },
                 quit: { [weak self] in
                     self?.quitApp()
                 },

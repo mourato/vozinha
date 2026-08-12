@@ -27,6 +27,7 @@ final class RecordingLifecycleCoordinator {
     }
 
     private var inFlightTransition: TransitionPhase?
+    private var finalizationCount = 0
     private var pendingStartCancellation = false
     private var pendingStartFailure: Error?
     let recorderCallbackGeneration = RecorderCallbackGeneration()
@@ -178,15 +179,22 @@ final class RecordingLifecycleCoordinator {
         actions: StopActions,
     ) async {
         guard beginTransition(.stopping) else { return }
-        defer { inFlightTransition = nil }
-
-        guard isRecording else { return }
+        guard isRecording else {
+            inFlightTransition = nil
+            return
+        }
 
         operations.cancelPostStartTasks()
         let recordings = await operations.stopRecorders()
         await actions.beforeRelease(recordings)
         await operations.endExclusivity()
         operations.playStopSound()
+
+        // Capture is released before transcription/finalization. A new recording
+        // must not wait for post-processing of the previous session.
+        finalizationCount += 1
+        inFlightTransition = nil
+        defer { finalizationCount -= 1 }
 
         do {
             try await actions.finalize(recordings)
@@ -200,7 +208,7 @@ final class RecordingLifecycleCoordinator {
     }
 
     func waitForIdle() async {
-        while inFlightTransition != nil {
+        while inFlightTransition != nil || finalizationCount > 0 {
             await Task.yield()
         }
     }

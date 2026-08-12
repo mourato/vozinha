@@ -88,8 +88,4 @@ public final class NavigationService {
         alert.runModal()
     }
 
-    /// Triggers a user-initiated update check via Sparkle.
-    public func checkForUpdates() {
-        UpdateService.shared.checkForUpdates()
-    }
 }

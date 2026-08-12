@@ -82,8 +82,9 @@ extension RecordingManager {
     func finishIncrementalMeetingSession(
         audioURL: URL,
         session: TranscriptionSessionSnapshot,
+        coordinator: IncrementalTranscriptionCoordinator? = nil,
     ) async throws -> Transcription {
-        guard let incrementalMeetingCoordinator else {
+        guard let coordinator = coordinator ?? incrementalMeetingCoordinator else {
             throw TranscriptionError.transcriptionFailed("Missing incremental meeting session")
         }
 
@@ -99,7 +100,7 @@ extension RecordingManager {
             sessionID: session.id,
         )
 
-        let result = try await incrementalMeetingCoordinator.finish(
+        let result = try await coordinator.finish(
             audioURL: audioURL,
             diarizationEnabled: diarizationEnabled,
             finalDiarizationServiceBox: finalDiarizationServiceBox,
@@ -120,8 +121,13 @@ extension RecordingManager {
             audioDuration: audioDuration,
             transcriptionDuration: result.wallClockDuration,
         )
-        teardownIncrementalMeetingSession()
+        teardownIncrementalMeetingSession(ownedBy: coordinator)
         return transcription
+    }
+
+    func teardownIncrementalMeetingSession(ownedBy coordinator: IncrementalTranscriptionCoordinator) {
+        guard incrementalMeetingCoordinator === coordinator else { return }
+        teardownIncrementalMeetingSession()
     }
 
     func teardownIncrementalMeetingSession() {

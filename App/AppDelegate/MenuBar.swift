@@ -94,10 +94,6 @@ extension AppDelegate {
             action: #selector(openOnboarding),
         ))
         contextMenu?.addItem(createMenuItem(
-            key: "menubar.check_updates",
-            action: #selector(checkForUpdates),
-        ))
-        contextMenu?.addItem(createMenuItem(
             key: "menubar.quit",
             action: #selector(quitApp),
             keyEquivalent: "q",
@@ -464,13 +460,6 @@ extension AppDelegate {
                     await self.recordingManager.cancelRecording()
                 }
             }
-        }
-    }
-
-    @objc func checkForUpdates() {
-        performAfterMenuDismissal { [weak self] in
-            self?.promoteAppForWindowPresentation()
-            NavigationService.shared.checkForUpdates()
         }
     }
 

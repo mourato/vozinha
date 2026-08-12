@@ -107,13 +107,19 @@ extension RecordingManager {
         )
     }
 
-    func processRecordedAudio(micURL: URL?, sysURL: URL?) async throws -> URL {
-        guard let outputURL = await getMergedAudioURL() else {
+    func processRecordedAudio(
+        micURL: URL?,
+        sysURL: URL?,
+        mergedAudioURL: URL? = nil,
+        usesIncrementalDictation: Bool? = nil,
+    ) async throws -> URL {
+        guard let outputURL = mergedAudioURL != nil ? mergedAudioURL : await getMergedAudioURL() else {
             throw RecordingManagerError.noOutputPath
         }
 
-        if incrementalDictationCoordinator != nil,
-           currentCapturePurpose == .dictation,
+        let usesIncrementalDictation = usesIncrementalDictation
+            ?? (incrementalDictationCoordinator != nil && currentCapturePurpose == .dictation)
+        if usesIncrementalDictation,
            let micURL
         {
             return micURL

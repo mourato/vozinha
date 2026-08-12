@@ -56,9 +56,5 @@
 	<string>NSApplication</string>
 	<key>NSScreenCaptureUsageDescription</key>
 	<string>Vozinha needs to capture system audio to record your video call meetings.</string>
-	<key>SUFeedURL</key>
-	<string>https://mourato.github.io/prisma/appcast.xml</string>
-	<key>SUPublicEDKey</key>
-	<string>kHVGz1FG9xRHPytOCsOj2TegNR95izY0eOImnoPkgkM=</string>
 </dict>
 </plist>

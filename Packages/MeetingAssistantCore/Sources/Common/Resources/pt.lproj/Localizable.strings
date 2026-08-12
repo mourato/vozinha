@@ -800,7 +800,6 @@
 "menubar.stop_recording" = "Parar Gravação";
 "menubar.settings" = "Configurações...";
 "menubar.onboarding" = "Abrir Onboarding...";
-"menubar.check_updates" = "Verificar Atualizações...";
 "menubar.quit" = "Sair";
 "menubar.accessibility.recording" = "Gravação em andamento";
 "menubar.accessibility.idle" = "Vozinha";
@@ -1039,10 +1038,6 @@
 "about.version" = "Versão %@";
 "about.description" = "Transcreva suas reuniões de vídeo automaticamente usando IA.";
 "about.copyright" = "© %d Todos os direitos reservados.";
-
-/* Updates */
-"updates.check_title" = "Verificar Atualizações";
-"updates.latest_version" = "Você está usando a versão mais recente do Vozinha.";
 
 /* Menu Bar */
 "menubar.record_section" = "Gravar...";

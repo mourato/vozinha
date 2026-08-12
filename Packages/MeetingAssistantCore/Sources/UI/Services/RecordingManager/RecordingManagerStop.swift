@@ -14,8 +14,12 @@ public extension RecordingManager {
         await stopRecording(transcribe: true)
     }
 
+    // swiftlint:disable:next function_body_length
     func stopRecording(transcribe: Bool = true) async {
         var transcriptionSession: TranscriptionSessionSnapshot?
+        var mergedAudioURL: URL?
+        var incrementalDictationCoordinator: IncrementalTranscriptionCoordinator?
+        var incrementalMeetingCoordinator: IncrementalTranscriptionCoordinator?
         await lifecycleCoordinator.stop(
             isRecording: isRecording,
             transcribe: transcribe,
@@ -25,6 +29,9 @@ public extension RecordingManager {
                     self.isStartingRecording = false
                     self.currentMeeting?.endTime = Date()
                     transcriptionSession = self.prepareStopState(transcribe: transcribe)
+                    mergedAudioURL = await self.getMergedAudioURL()
+                    incrementalDictationCoordinator = self.incrementalDictationCoordinator
+                    incrementalMeetingCoordinator = self.incrementalMeetingCoordinator
                     self.isRecording = false
                     AppLogger.info("Recording stopped", category: .recordingManager, extra: [
                         "micURL": recordings.mic?.lastPathComponent ?? "nil",
@@ -35,19 +42,27 @@ public extension RecordingManager {
                     let finalURL = try await self.processRecordedAudio(
                         micURL: recordings.mic,
                         sysURL: recordings.system,
+                        mergedAudioURL: mergedAudioURL,
+                        usesIncrementalDictation: incrementalDictationCoordinator != nil,
                     )
 
                     if transcribe, let transcriptionSession {
-                        if self.incrementalDictationCoordinator != nil, transcriptionSession.meeting.capturePurpose == .dictation {
+                        if let incrementalDictationCoordinator,
+                           transcriptionSession.meeting.capturePurpose == .dictation
+                        {
                             await self.transcribeIncrementalSession(
                                 audioURL: finalURL,
                                 session: transcriptionSession,
+                                coordinator: incrementalDictationCoordinator,
                                 coordinatorKind: .dictation,
                             )
-                        } else if self.incrementalMeetingCoordinator != nil, transcriptionSession.meeting.capturePurpose == .meeting {
+                        } else if let incrementalMeetingCoordinator,
+                                  transcriptionSession.meeting.capturePurpose == .meeting
+                        {
                             await self.transcribeIncrementalSession(
                                 audioURL: finalURL,
                                 session: transcriptionSession,
+                                coordinator: incrementalMeetingCoordinator,
                                 coordinatorKind: .meeting,
                             )
                         } else {
@@ -68,6 +83,7 @@ public extension RecordingManager {
                         error,
                         recordings: recordings,
                         transcriptionSession: transcriptionSession,
+                        mergedAudioURL: mergedAudioURL,
                     )
                 },
             ),
@@ -124,21 +140,25 @@ private extension RecordingManager {
     func transcribeIncrementalSession(
         audioURL: URL,
         session: TranscriptionSessionSnapshot,
+        coordinator: IncrementalTranscriptionCoordinator,
         coordinatorKind: IncrementalCoordinatorKind,
     ) async {
-        let checkpointID: UUID? = switch coordinatorKind {
-        case .dictation:
-            await incrementalDictationCoordinator?.checkpointID
-        case .meeting:
-            await incrementalMeetingCoordinator?.checkpointID
-        }
+        let checkpointID = await coordinator.checkpointID
 
         do {
             let transcription: Transcription = switch coordinatorKind {
             case .dictation:
-                try await finishIncrementalDictationSession(audioURL: audioURL, session: session)
+                try await finishIncrementalDictationSession(
+                    audioURL: audioURL,
+                    session: session,
+                    coordinator: coordinator,
+                )
             case .meeting:
-                try await finishIncrementalMeetingSession(audioURL: audioURL, session: session)
+                try await finishIncrementalMeetingSession(
+                    audioURL: audioURL,
+                    session: session,
+                    coordinator: coordinator,
+                )
             }
             finishSuccessfulTranscription(transcription, session: session)
             if session.autoExportSummaries {
@@ -146,7 +166,7 @@ private extension RecordingManager {
             }
             clearCompletedMeetingState(sessionID: session.id)
         } catch {
-            let fallbackReason = await incrementalFallbackReason(for: coordinatorKind)
+            let fallbackReason = await coordinator.fallbackReason?.rawValue ?? "unknown"
             AppLogger.warning(
                 "Incremental transcription failed during finalization; falling back to legacy full-file pipeline",
                 category: .recordingManager,
@@ -155,7 +175,7 @@ private extension RecordingManager {
                     "reason": fallbackReason,
                 ],
             )
-            teardownIncrementalCoordinator(for: coordinatorKind)
+            teardownIncrementalCoordinator(for: coordinatorKind, coordinator: coordinator)
             let preparedAudio = await prepareAudioForTranscription(
                 audioURL: audioURL,
                 allowSilenceRemoval: shouldRemoveSilenceBeforeTranscription(for: session),
@@ -171,21 +191,15 @@ private extension RecordingManager {
         }
     }
 
-    func incrementalFallbackReason(for kind: IncrementalCoordinatorKind) async -> String {
+    func teardownIncrementalCoordinator(
+        for kind: IncrementalCoordinatorKind,
+        coordinator: IncrementalTranscriptionCoordinator,
+    ) {
         switch kind {
         case .dictation:
-            await incrementalDictationCoordinator?.fallbackReason?.rawValue ?? "unknown"
+            teardownIncrementalDictationSession(ownedBy: coordinator)
         case .meeting:
-            await incrementalMeetingCoordinator?.fallbackReason?.rawValue ?? "unknown"
-        }
-    }
-
-    func teardownIncrementalCoordinator(for kind: IncrementalCoordinatorKind) {
-        switch kind {
-        case .dictation:
-            teardownIncrementalDictationSession()
-        case .meeting:
-            teardownIncrementalMeetingSession()
+            teardownIncrementalMeetingSession(ownedBy: coordinator)
         }
     }
 
@@ -208,7 +222,9 @@ private extension RecordingManager {
         scheduleStatusReset(sessionID: session.id)
         unregisterTranscriptionSession(session.id)
         cancelEstimatedPostProcessingProgress(for: session.id)
-        isStartingRecording = false
+        if currentMeeting?.id == session.id {
+            isStartingRecording = false
+        }
 
         if foregroundTranscriptionSessionID == nil, !isRecording, !isStartingRecording {
             meetingState = .idle
@@ -235,8 +251,24 @@ private extension RecordingManager {
         _ error: Error,
         recordings: (mic: URL?, system: URL?),
         transcriptionSession: TranscriptionSessionSnapshot?,
+        mergedAudioURL: URL?,
     ) async {
         AppLogger.error("Failed to stop recording cleanly", category: .recordingManager, error: error)
+
+        let ownsCurrentLifecycleState: Bool = if let transcriptionSession {
+            currentMeeting?.id == transcriptionSession.id && !isRecording && !isStartingRecording
+        } else {
+            !isRecording && !isStartingRecording
+        }
+        guard ownsCurrentLifecycleState else {
+            var urls = [recordings.mic, recordings.system].compactMap(\.self)
+            if let mergedAudioURL {
+                urls.append(mergedAudioURL)
+            }
+            storage.cleanupTemporaryFiles(urls: Array(Set(urls)))
+            return
+        }
+
         await cleanupTemporaryFiles(additionalURLs: [recordings.mic, recordings.system].compactMap(\.self))
         if let mergedURL = await getMergedAudioURL() {
             try? FileManager.default.removeItem(at: mergedURL)

@@ -104,7 +104,9 @@ extension RecordingManager {
 
         unregisterTranscriptionSession(session.id)
         cancelEstimatedPostProcessingProgress(for: session.id)
-        isStartingRecording = false
+        if currentMeeting?.id == session.id {
+            isStartingRecording = false
+        }
 
         if foregroundTranscriptionSessionID == nil, !isRecording, !isStartingRecording {
             meetingState = .idle

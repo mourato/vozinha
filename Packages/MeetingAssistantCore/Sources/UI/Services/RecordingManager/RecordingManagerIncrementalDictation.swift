@@ -86,8 +86,9 @@ extension RecordingManager {
     func finishIncrementalDictationSession(
         audioURL: URL,
         session: TranscriptionSessionSnapshot,
+        coordinator: IncrementalTranscriptionCoordinator? = nil,
     ) async throws -> Transcription {
-        guard let incrementalDictationCoordinator else {
+        guard let coordinator = coordinator ?? incrementalDictationCoordinator else {
             throw TranscriptionError.transcriptionFailed("Missing incremental dictation session")
         }
 
@@ -96,7 +97,7 @@ extension RecordingManager {
             sessionID: session.id,
         )
 
-        let result = try await incrementalDictationCoordinator.finish(
+        let result = try await coordinator.finish(
             audioURL: audioURL,
             diarizationEnabled: false,
             finalDiarizationServiceBox: nil,
@@ -117,8 +118,13 @@ extension RecordingManager {
             audioDuration: audioDuration,
             transcriptionDuration: result.wallClockDuration,
         )
-        teardownIncrementalDictationSession()
+        teardownIncrementalDictationSession(ownedBy: coordinator)
         return transcription
+    }
+
+    func teardownIncrementalDictationSession(ownedBy coordinator: IncrementalTranscriptionCoordinator) {
+        guard incrementalDictationCoordinator === coordinator else { return }
+        teardownIncrementalDictationSession()
     }
 
     func teardownIncrementalDictationSession() {

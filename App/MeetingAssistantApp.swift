@@ -77,7 +77,6 @@ final class AppCommandRouter: ObservableObject {
         let openSettings: () -> Void
         let openHistory: () -> Void
         let openOnboarding: () -> Void
-        let checkForUpdates: () -> Void
         let quit: () -> Void
     }
 
@@ -92,7 +91,6 @@ final class AppCommandRouter: ObservableObject {
     private var openSettingsHandler: (() -> Void)?
     private var openHistoryHandler: (() -> Void)?
     private var openOnboardingHandler: (() -> Void)?
-    private var checkForUpdatesHandler: (() -> Void)?
     private var quitHandler: (() -> Void)?
 
     private init() {}
@@ -105,7 +103,6 @@ final class AppCommandRouter: ObservableObject {
         openSettingsHandler = handlers.openSettings
         openHistoryHandler = handlers.openHistory
         openOnboardingHandler = handlers.openOnboarding
-        checkForUpdatesHandler = handlers.checkForUpdates
         quitHandler = handlers.quit
     }
 
@@ -159,14 +156,6 @@ final class AppCommandRouter: ObservableObject {
         }
     }
 
-    func checkForUpdates() {
-        if let checkForUpdatesHandler {
-            checkForUpdatesHandler()
-        } else {
-            NavigationService.shared.checkForUpdates()
-        }
-    }
-
     func bringAllToFront() {
         NSApp.arrangeInFront(nil)
         NSApp.activate(ignoringOtherApps: true)
@@ -193,14 +182,6 @@ struct MeetingAssistantCommands: Commands {
                 commandRouter.openSettings()
             }
             .keyboardShortcut(",", modifiers: .command)
-        }
-
-        CommandGroup(after: .appInfo) {
-            Divider()
-
-            Button("menubar.check_updates".localized) {
-                commandRouter.checkForUpdates()
-            }
         }
 
         CommandMenu("commands.capture.title".localized) {

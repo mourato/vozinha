@@ -5,7 +5,7 @@
 # with CI/CD pipelines and headless environments.
 # =============================================================================
 
-.PHONY: help build build-debug build-release build-agent build-test build-test-strict xcodebuild-safe test test-agent test-full test-full-agent test-smoke test-perf test-sensitive test-appkit test-parity test-parity-agent test-swift test-verbose test-strict test-ci-strict scope-check scope-check-agent validate-agent workflow-test benchmark-summary benchmark-summary-agent lint lint-agent lint-report lint-strict lint-strict-agent lint-fix arch-check preview-check localization-check guidance-check preflight preflight-fast preflight-agent preflight-agent-fast agent-artifacts-report agent-artifacts-dry-run agent-artifacts-clean clean run run-release build-and-run install-app install-release dmg setup-self-signed-cert setup format health ci-build ci-test ci-release-parity ci-release-parity-self-signed deliverable-gate docs docs-preview docs-clean profile profile-report profile-cpu profile-memory profile-animation profile-animation-report
+.PHONY: help build build-debug build-release build-agent build-test build-test-strict xcodebuild-safe test test-agent test-full test-full-agent test-smoke test-perf test-sensitive test-appkit test-parity test-parity-agent test-swift test-verbose test-strict test-ci-strict scope-check scope-check-agent validate-agent workflow-test benchmark-summary benchmark-summary-agent lint lint-agent lint-report lint-strict lint-strict-agent lint-fix arch-check preview-check localization-check guidance-check preflight preflight-fast preflight-agent preflight-agent-fast agent-artifacts-report agent-artifacts-dry-run agent-artifacts-clean clean run run-release build-and-run install-app install-release dmg setup-self-signed-cert setup format health ci-build ci-test deliverable-gate docs docs-preview docs-clean profile profile-report profile-cpu profile-memory profile-animation profile-animation-report
 
 # Default target
 help:
@@ -89,9 +89,7 @@ help:
 	@echo "CI/CD Commands:"
 	@echo "  make ci-build       - Full CI build (lint + test + build-release)"
 	@echo "  make ci-test        - CI test run (no user interaction)"
-	@echo "  make ci-release-parity - Run local parity gate for Sparkle release build/archive"
-	@echo "  make ci-release-parity-self-signed - Run local signed Sparkle parity (build+appcast)"
-	@echo "  make deliverable-gate - Run build-test + lint + ci-release-parity"
+	@echo "  make deliverable-gate - Run build-test + lint"
 	@echo ""
 	@echo "Documentation:"
 	@echo "  make docs           - Build DocC documentation"
@@ -365,22 +363,9 @@ ci-build: arch-check lint test build-release
 ci-test: test
 	@echo -e "$(GREEN)✓ CI tests completed$(NC)"
 
-ci-release-parity:
-	@./scripts/ci-release-parity.sh --mode local --phase build-archive --dry-run 1
-
-ci-release-parity-self-signed:
-	@if [ -z "$(DOWNLOAD_URL_PREFIX)" ]; then \
-		echo -e "$(RED)Error: set DOWNLOAD_URL_PREFIX for appcast generation.$(NC)"; \
-		echo -e "Example: make ci-release-parity-self-signed DOWNLOAD_URL_PREFIX=https://example.com/releases RELEASE_TAG=v0.3.4"; \
-		exit 1; \
-	fi
-	@MA_RELEASE_SIGNING_MODE=self-signed ./scripts/ci-release-parity.sh --mode local --phase build-archive --dry-run 0 $(if $(RELEASE_TAG),--release-tag $(RELEASE_TAG),)
-	@MA_RELEASE_SIGNING_MODE=self-signed ./scripts/ci-release-parity.sh --mode local --phase package-appcast --dry-run 0 --archive-path build/$(APP_PRODUCT_NAME).xcarchive --download-url-prefix "$(DOWNLOAD_URL_PREFIX)" $(if $(RELEASE_TAG),--release-tag $(RELEASE_TAG),)
-
 deliverable-gate:
 	@$(MAKE) lint
 	@$(MAKE) build-test
-	@$(MAKE) ci-release-parity
 # Documentation
 docs:
 	@echo -e "$(BLUE)Building DocC documentation...$(NC)"
