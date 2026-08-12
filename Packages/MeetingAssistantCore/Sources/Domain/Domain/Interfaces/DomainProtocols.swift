@@ -211,14 +211,14 @@ public protocol PostProcessingRepository: Sendable {
         with prompt: DomainPostProcessingPrompt,
         mode: IntelligenceKernelMode,
     ) async throws -> DomainPostProcessingResult
-}
 
-public protocol ExplicitPostProcessingRepository: PostProcessingRepository {
+    /// Canonical operation-edge request for fast post-processing.
     func processTranscription(
         _ transcription: String,
         request: DomainPostProcessingRequest,
     ) async throws -> String
 
+    /// Canonical operation-edge request for structured post-processing.
     func processTranscriptionStructured(
         _ transcription: String,
         request: DomainPostProcessingRequest,
@@ -237,11 +237,41 @@ public struct DomainPostProcessingSelection: Codable, Hashable, Sendable {
     }
 }
 
+public struct DomainPostProcessingConfiguration: Codable, Hashable, Sendable {
+    public let providerID: String
+    public let baseURL: String
+    public let modelID: String
+    public let readinessIssue: String?
+    public let outputLanguageID: String?
+
+    public init(
+        providerID: String,
+        baseURL: String,
+        modelID: String,
+        readinessIssue: String? = nil,
+        outputLanguageID: String? = nil,
+    ) {
+        self.providerID = providerID
+        self.baseURL = baseURL
+        self.modelID = modelID
+        self.readinessIssue = readinessIssue
+        self.outputLanguageID = outputLanguageID
+    }
+
+    public static let unconfigured = DomainPostProcessingConfiguration(
+        providerID: "openai",
+        baseURL: "",
+        modelID: "",
+        readinessIssue: "enhancements.missing_model",
+    )
+}
+
 /// Immutable operation-edge snapshot for post-processing.
 public struct DomainPostProcessingRequest: Sendable {
     public let prompt: DomainPostProcessingPrompt?
     public let mode: IntelligenceKernelMode
     public let selection: DomainPostProcessingSelection?
+    public let configuration: DomainPostProcessingConfiguration
     public let useStructuredPipeline: Bool
     public let systemPromptOverride: String?
 
@@ -249,53 +279,17 @@ public struct DomainPostProcessingRequest: Sendable {
         prompt: DomainPostProcessingPrompt? = nil,
         mode: IntelligenceKernelMode,
         selection: DomainPostProcessingSelection? = nil,
+        configuration: DomainPostProcessingConfiguration = .unconfigured,
         useStructuredPipeline: Bool,
         systemPromptOverride: String? = nil,
     ) {
         self.prompt = prompt
         self.mode = mode
         self.selection = selection
+        self.configuration = configuration
         self.useStructuredPipeline = useStructuredPipeline
         self.systemPromptOverride = systemPromptOverride
     }
-}
-
-public extension PostProcessingRepository {
-    func processTranscription(
-        _ transcription: String,
-        request: DomainPostProcessingRequest,
-    ) async throws -> String {
-        if let prompt = request.prompt {
-            return try await processTranscription(transcription, with: prompt, mode: request.mode)
-        }
-        return try await processTranscription(transcription, mode: request.mode)
-    }
-
-    func processTranscriptionStructured(
-        _ transcription: String,
-        request: DomainPostProcessingRequest,
-    ) async throws -> DomainPostProcessingResult {
-        if let prompt = request.prompt {
-            return try await processTranscriptionStructured(transcription, with: prompt, mode: request.mode)
-        }
-        return try await processTranscriptionStructured(transcription, mode: request.mode)
-    }
-}
-
-public protocol PostProcessingRepositorySelectionAware: Sendable {
-    func processTranscription(
-        _ transcription: String,
-        with prompt: DomainPostProcessingPrompt,
-        mode: IntelligenceKernelMode,
-        selection: DomainPostProcessingSelection,
-    ) async throws -> String
-
-    func processTranscriptionStructured(
-        _ transcription: String,
-        with prompt: DomainPostProcessingPrompt,
-        mode: IntelligenceKernelMode,
-        selection: DomainPostProcessingSelection,
-    ) async throws -> DomainPostProcessingResult
 }
 
 public extension PostProcessingRepository {

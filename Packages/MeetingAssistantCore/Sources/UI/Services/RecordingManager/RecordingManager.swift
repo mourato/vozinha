@@ -87,7 +87,7 @@ public class RecordingManager: ObservableObject, RecordingServiceProtocol {
     let audioSilenceCompactor: any AudioSilenceCompacting
     let meetingDetector: MeetingDetector
     let transcriptionClient: any TranscriptionService
-    let postProcessingRepository: any ExplicitPostProcessingRepository
+    let postProcessingRepository: any PostProcessingRepository
     let calendarEventService: any CalendarEventServiceProtocol
     let storage: any StorageService
     let notificationService: NotificationService

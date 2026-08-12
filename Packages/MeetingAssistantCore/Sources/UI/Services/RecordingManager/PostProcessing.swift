@@ -15,6 +15,7 @@ extension RecordingManager {
         let defaultPostProcessingPrompt: DomainPostProcessingPrompt?
         let postProcessingModel: String?
         let postProcessingIdentity: ModelPerformanceModelIdentity?
+        let postProcessingConfiguration: DomainPostProcessingConfiguration?
         let autoDetectMeetingType: Bool
         let availablePrompts: [DomainPostProcessingPrompt]
         let postProcessingContext: String?
@@ -103,14 +104,25 @@ extension RecordingManager {
             }
         }
 
+        let resolvedConfiguration = dictationSelection.map {
+            settings.resolvedEnhancementsAIConfiguration(for: $0)
+        } ?? settings.resolvedEnhancementsAIConfiguration(for: kernelMode)
+
         return UseCaseConfig(
             kernelMode: kernelMode,
             applyPostProcessing: true,
             dictationStructuredPostProcessingEnabled: settings.dictationStructuredPostProcessingEnabled,
             postProcessingPrompt: prompt,
             defaultPostProcessingPrompt: autoDetectMeetingType ? defaultMeetingPrompt : nil,
-            postProcessingModel: (dictationSelection.map { settings.resolvedEnhancementsAIConfiguration(for: $0) } ?? settings.resolvedEnhancementsAIConfiguration(for: kernelMode)).selectedModel,
+            postProcessingModel: resolvedConfiguration.selectedModel,
             postProcessingIdentity: dictationSelection.map { $0.provider.modelPerformanceIdentity(modelID: $0.selectedModel) } ?? settings.resolvedEnhancementsPerformanceIdentity(for: kernelMode),
+            postProcessingConfiguration: DomainPostProcessingConfiguration(
+                providerID: resolvedConfiguration.provider.rawValue,
+                baseURL: resolvedConfiguration.baseURL,
+                modelID: resolvedConfiguration.selectedModel,
+                readinessIssue: readinessIssue?.rawValue,
+                outputLanguageID: kernelMode == .meeting ? settings.meetingSummaryOutputLanguage.rawValue : nil,
+            ),
             autoDetectMeetingType: autoDetectMeetingType,
             availablePrompts: availablePrompts,
             postProcessingContext: session.postProcessingContext,
@@ -153,6 +165,7 @@ extension RecordingManager {
             defaultPostProcessingPrompt: nil,
             postProcessingModel: nil,
             postProcessingIdentity: nil,
+            postProcessingConfiguration: nil,
             autoDetectMeetingType: false,
             availablePrompts: [],
             postProcessingContext: nil,

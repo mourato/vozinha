@@ -286,6 +286,7 @@ extension RecordingManager {
                     registrationID: $0.registrationID,
                 )
             },
+            postProcessingConfiguration: config.postProcessingConfiguration,
             autoDetectMeetingType: config.autoDetectMeetingType,
             availablePrompts: config.availablePrompts,
             postProcessingContext: config.postProcessingContext,

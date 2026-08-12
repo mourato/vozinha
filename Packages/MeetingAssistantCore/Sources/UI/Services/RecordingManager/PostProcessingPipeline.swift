@@ -59,6 +59,12 @@ extension RecordingManager {
         }
     }
 
+    private struct PostProcessingExecution {
+        let processedContent: String
+        let canonicalSummary: CanonicalSummary?
+        let outputState: DomainPostProcessingOutputState?
+    }
+
     func applyPostProcessing(
         postProcessingInput: String,
         meeting: Meeting?,
@@ -148,6 +154,9 @@ extension RecordingManager {
         let requestConfig = selectionOverride.map {
             settings.resolvedEnhancementsAIConfiguration(for: $0)
         } ?? settings.resolvedEnhancementsAIConfiguration(for: kernelMode)
+        let readinessIssue = selectionOverride.map {
+            settings.enhancementsInferenceReadinessIssue(for: $0, apiKeyExists: apiKeyExists)
+        } ?? settings.enhancementsInferenceReadinessIssue(for: kernelMode, apiKeyExists: apiKeyExists)
         let (requestSystemPrompt, requestUserPrompt) = buildRequestPrompts(
             prompt: prompt,
             from: prompt.promptText,
@@ -163,66 +172,37 @@ extension RecordingManager {
                 prompt: prompt,
                 mode: kernelMode,
                 selectionOverride: selectionOverride,
+                configuration: DomainPostProcessingConfiguration(
+                    providerID: requestConfig.provider.rawValue,
+                    baseURL: requestConfig.baseURL,
+                    modelID: requestConfig.selectedModel,
+                    readinessIssue: readinessIssue?.rawValue,
+                    outputLanguageID: kernelMode == .meeting ? settings.meetingSummaryOutputLanguage.rawValue : nil,
+                ),
                 useStructuredPipeline: useStructuredPipeline,
             )
-            let pipeline = useStructuredPipeline ? "structured" : "fast"
-            let processedContent: String
-            let canonicalSummary: CanonicalSummary?
-            let outputState: DomainPostProcessingOutputState?
-
-            if useStructuredPipeline {
-                let structuredResult = try await postProcessingRepository.processTranscriptionStructured(
-                    postProcessingInput,
-                    request: request,
-                )
-                processedContent = structuredResult.processedText
-                canonicalSummary = qualityProfile.map { profile in
-                    recalibrateCanonicalSummary(structuredResult.canonicalSummary, with: profile)
-                } ?? structuredResult.canonicalSummary
-                outputState = structuredResult.outputState
-                AppLogger.info(
-                    "Post-processing complete",
-                    category: .recordingManager,
-                    extra: [
-                        "mode": kernelMode.rawValue,
-                        "pipeline": pipeline,
-                        "prompt": prompt.title,
-                        "output_state": structuredResult.outputState.rawValue,
-                    ],
-                )
-            } else {
-                processedContent = try await postProcessingRepository.processTranscription(
-                    postProcessingInput,
-                    request: request,
-                )
-                canonicalSummary = nil
-                outputState = nil
-                AppLogger.info(
-                    "Post-processing complete",
-                    category: .recordingManager,
-                    extra: [
-                        "mode": kernelMode.rawValue,
-                        "pipeline": pipeline,
-                        "prompt": prompt.title,
-                    ],
-                )
-            }
+            let execution = try await executePostProcessing(
+                input: postProcessingInput,
+                request: request,
+                mode: kernelMode,
+                qualityProfile: qualityProfile,
+                useStructuredPipeline: useStructuredPipeline,
+            )
 
             let duration = Date().timeIntervalSince(startTime)
-            let model = requestConfig.selectedModel
             RecordingIndicatorProcessingStateStore.shared.update(
                 snapshot: RecordingIndicatorProcessingSnapshot(step: .finalizingResult, progressPercent: 100),
             )
             return PostProcessingResult(
-                processedContent: processedContent,
-                canonicalSummary: canonicalSummary,
+                processedContent: execution.processedContent,
+                canonicalSummary: execution.canonicalSummary,
                 promptId: prompt.id,
                 promptTitle: prompt.title,
                 duration: duration,
-                model: model,
+                model: requestConfig.selectedModel,
                 requestSystemPrompt: requestSystemPrompt,
                 requestUserPrompt: requestUserPrompt,
-                outputState: outputState,
+                outputState: execution.outputState,
             )
         } catch {
             AppLogger.error("Post-processing failed, using raw transcription", category: .recordingManager, error: error)
@@ -233,10 +213,52 @@ extension RecordingManager {
         }
     }
 
+    private func executePostProcessing(
+        input: String,
+        request: DomainPostProcessingRequest,
+        mode: IntelligenceKernelMode,
+        qualityProfile: TranscriptionQualityProfile?,
+        useStructuredPipeline: Bool,
+    ) async throws -> PostProcessingExecution {
+        let pipeline = useStructuredPipeline ? "structured" : "fast"
+        let promptTitle = request.prompt?.title ?? "unknown"
+        if useStructuredPipeline {
+            let result = try await postProcessingRepository.processTranscriptionStructured(input, request: request)
+            AppLogger.info(
+                "Post-processing complete",
+                category: .recordingManager,
+                extra: [
+                    "mode": mode.rawValue,
+                    "pipeline": pipeline,
+                    "prompt": promptTitle,
+                    "output_state": result.outputState.rawValue,
+                ],
+            )
+            return PostProcessingExecution(
+                processedContent: result.processedText,
+                canonicalSummary: qualityProfile.map { recalibrateCanonicalSummary(result.canonicalSummary, with: $0) } ?? result.canonicalSummary,
+                outputState: result.outputState,
+            )
+        }
+
+        let content = try await postProcessingRepository.processTranscription(input, request: request)
+        AppLogger.info(
+            "Post-processing complete",
+            category: .recordingManager,
+            extra: [
+                "mode": mode.rawValue,
+                "pipeline": pipeline,
+                "prompt": promptTitle,
+            ],
+        )
+        return PostProcessingExecution(processedContent: content, canonicalSummary: nil, outputState: nil)
+    }
+
     private func makePostProcessingRequest(
         prompt: PostProcessingPrompt,
         mode: IntelligenceKernelMode,
         selectionOverride: EnhancementsAISelection?,
+        configuration: DomainPostProcessingConfiguration,
         useStructuredPipeline: Bool,
     ) -> DomainPostProcessingRequest {
         DomainPostProcessingRequest(
@@ -249,6 +271,7 @@ extension RecordingManager {
                     registrationID: $0.registrationID,
                 )
             },
+            configuration: configuration,
             useStructuredPipeline: useStructuredPipeline,
         )
     }
@@ -280,6 +303,9 @@ extension RecordingManager {
     func resolveAutodetectPrompt(rawText: String, settings: AppSettingsStore) async -> PostProcessingPrompt {
         let fallback = settings.selectedPrompt ?? PromptService.shared.strategy(for: .general).promptObject()
         let classifierPrompt = makeMeetingTypeClassifierPrompt()
+        let selection = settings.enhancementsSelection(for: .meeting)
+        let configuration = settings.resolvedEnhancementsAIConfiguration(for: selection)
+        let readinessIssue = settings.enhancementsInferenceReadinessIssue(for: selection, apiKeyExists: apiKeyExists)
 
         do {
             let jsonString = try await postProcessingRepository.processTranscription(
@@ -291,6 +317,18 @@ extension RecordingManager {
                         content: classifierPrompt.promptText,
                     ),
                     mode: .meeting,
+                    selection: DomainPostProcessingSelection(
+                        providerID: selection.provider.rawValue,
+                        modelID: selection.selectedModel,
+                        registrationID: selection.registrationID,
+                    ),
+                    configuration: DomainPostProcessingConfiguration(
+                        providerID: configuration.provider.rawValue,
+                        baseURL: configuration.baseURL,
+                        modelID: configuration.selectedModel,
+                        readinessIssue: readinessIssue?.rawValue,
+                        outputLanguageID: settings.meetingSummaryOutputLanguage.rawValue,
+                    ),
                     useStructuredPipeline: false,
                 ),
             )

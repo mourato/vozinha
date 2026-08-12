@@ -80,7 +80,7 @@ final class TranscribeAudioUseCaseMacroMockingTests: XCTestCase {
                 processedAt: "now",
             )
         }
-        postProcessingRepository.processTranscriptionStructured_4Handler = { _, _, _ in
+        postProcessingRepository.processTranscriptionStructured_5Handler = { _, _ in
             DomainPostProcessingResult(
                 processedText: "Processed",
                 canonicalSummary: CanonicalSummary(title: "Processed", summary: "Processed"),
@@ -146,7 +146,7 @@ final class TranscribeAudioUseCaseMacroMockingTests: XCTestCase {
                 processedAt: "now",
             )
         }
-        postProcessingRepository.processTranscriptionStructured_4Handler = { _, _, _ in
+        postProcessingRepository.processTranscriptionStructured_5Handler = { _, _ in
             DomainPostProcessingResult(
                 processedText: "Processed",
                 canonicalSummary: CanonicalSummary(title: "Processed", summary: "Processed"),

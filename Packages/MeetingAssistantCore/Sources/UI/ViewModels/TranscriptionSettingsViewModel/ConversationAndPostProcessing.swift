@@ -318,9 +318,25 @@ public extension TranscriptionSettingsViewModel {
     ) async throws -> ReprocessPipelineResult {
         let useStructuredPipeline = mode == .meeting
             || AppSettingsStore.shared.dictationStructuredPostProcessingEnabled
+        let settings = AppSettingsStore.shared
+        let selection = settings.enhancementsSelection(for: mode)
+        let configuration = settings.resolvedEnhancementsAIConfiguration(for: selection)
+        let readinessIssue = settings.enhancementsInferenceReadinessIssue(for: selection, apiKeyExists: nil)
         let request = DomainPostProcessingRequest(
             prompt: DomainPostProcessingPrompt(id: prompt.id, title: prompt.title, content: prompt.promptText),
             mode: mode,
+            selection: DomainPostProcessingSelection(
+                providerID: selection.provider.rawValue,
+                modelID: selection.selectedModel,
+                registrationID: selection.registrationID,
+            ),
+            configuration: DomainPostProcessingConfiguration(
+                providerID: configuration.provider.rawValue,
+                baseURL: configuration.baseURL,
+                modelID: configuration.selectedModel,
+                readinessIssue: readinessIssue?.rawValue,
+                outputLanguageID: mode == .meeting ? settings.meetingSummaryOutputLanguage.rawValue : nil,
+            ),
             useStructuredPipeline: useStructuredPipeline,
         )
 

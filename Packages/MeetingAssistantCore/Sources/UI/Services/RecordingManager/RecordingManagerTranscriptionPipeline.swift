@@ -178,6 +178,7 @@ extension RecordingManager {
             postProcessingSelection: config.dictationEnhancementsSelection.map {
                 DomainPostProcessingSelection(providerID: $0.provider.rawValue, modelID: $0.selectedModel, registrationID: $0.registrationID)
             },
+            postProcessingConfiguration: config.postProcessingConfiguration,
             autoDetectMeetingType: config.autoDetectMeetingType,
             availablePrompts: config.availablePrompts,
             postProcessingContext: config.postProcessingContext,

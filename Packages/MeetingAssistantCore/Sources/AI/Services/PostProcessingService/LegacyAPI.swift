@@ -11,11 +11,12 @@ public extension PostProcessingService {
     ) async throws -> String {
         let prompt = request.prompt ?? .defaultPrompt
         _ = try validateInput(transcription)
-        if let selection = request.selection {
-            let readinessIssue = settings.enhancementsInferenceReadinessIssue(for: selection, apiKeyExists: nil)
-            guard readinessIssue == nil else {
-                throw unavailableConfigurationError(mode: request.mode, message: "Post-processing blocked: enhancements configuration not ready")
-            }
+        guard request.readinessIssue == nil else {
+            throw unavailableConfigurationError(
+                mode: request.mode,
+                message: "Post-processing blocked: enhancements configuration not ready",
+                reasonCode: request.readinessIssue,
+            )
         }
         let context = makeLegacyRequestContext(
             transcription: transcription,
@@ -24,6 +25,8 @@ public extension PostProcessingService {
             selectionOverride: request.selection,
             systemPromptOverride: request.systemPromptOverride,
             requestConfig: request.configuration,
+            useLiveSettings: false,
+            outputLanguageID: request.outputLanguageID,
         )
         isProcessing = true
         lastError = nil
@@ -138,6 +141,7 @@ extension PostProcessingService {
         selectionOverride: EnhancementsAISelection?,
         systemPromptOverride: String?,
         requestConfig: AIConfiguration? = nil,
+        useLiveSettings: Bool = true,
     ) async throws -> String {
         _ = try validateInput(transcription)
         let readinessIssue = selectionOverride.map {
@@ -157,6 +161,7 @@ extension PostProcessingService {
             selectionOverride: selectionOverride,
             systemPromptOverride: systemPromptOverride,
             requestConfig: requestConfig,
+            useLiveSettings: useLiveSettings,
         )
 
         isProcessing = true
@@ -217,8 +222,15 @@ extension PostProcessingService {
         selectionOverride: EnhancementsAISelection?,
         systemPromptOverride: String?,
         requestConfig explicitRequestConfig: AIConfiguration? = nil,
+        useLiveSettings: Bool = true,
+        outputLanguageID: String? = nil,
     ) -> LegacyRequestContext {
-        let requestProfile = profile(for: mode, prefersStructuredPipeline: false)
+        let requestProfile = profile(
+            for: mode,
+            prefersStructuredPipeline: false,
+            useLiveSettings: useLiveSettings,
+            outputLanguageID: outputLanguageID,
+        )
         let requestConfig = explicitRequestConfig ?? selectionOverride.map {
             settings.resolvedEnhancementsAIConfiguration(for: $0)
         } ?? settings.resolvedEnhancementsAIConfiguration(for: mode)
@@ -295,8 +307,12 @@ extension PostProcessingService {
         }
     }
 
-    func unavailableConfigurationError(mode: IntelligenceKernelMode, message: String) -> PostProcessingError {
-        let reasonCode = settings
+    func unavailableConfigurationError(
+        mode: IntelligenceKernelMode,
+        message: String,
+        reasonCode explicitReasonCode: String? = nil,
+    ) -> PostProcessingError {
+        let reasonCode = explicitReasonCode ?? settings
             .enhancementsInferenceReadinessIssue(for: mode, apiKeyExists: nil)?
             .rawValue ?? "enhancements.not_ready"
         AppLogger.info(message, category: .transcriptionEngine, extra: ["reasonCode": reasonCode])

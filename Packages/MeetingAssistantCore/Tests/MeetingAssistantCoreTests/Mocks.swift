@@ -235,6 +235,32 @@ class MockPostProcessingService: PostProcessingServiceProtocol {
     var lastPromptText: String?
     var lastMode: IntelligenceKernelMode?
     var lastSystemPromptOverride: String?
+    var lastRequest: PostProcessingRequest?
+    var lastStructuredRequest: PostProcessingRequest?
+
+    func processTranscription(_ text: String, request: PostProcessingRequest) async throws -> String {
+        lastRequest = request
+        let prompt = request.prompt ?? .defaultPrompt
+        return try await processTranscription(
+            text,
+            with: prompt,
+            mode: request.mode,
+            systemPromptOverride: request.systemPromptOverride,
+        )
+    }
+
+    func processTranscriptionStructured(
+        _ transcription: String,
+        request: PostProcessingRequest,
+    ) async throws -> DomainPostProcessingResult {
+        lastStructuredRequest = request
+        let prompt = request.prompt ?? .defaultPrompt
+        return try await processTranscriptionStructured(
+            transcription,
+            with: prompt,
+            mode: request.mode,
+        )
+    }
 
     func processTranscription(_ text: String, with prompt: PostProcessingPrompt) async throws -> String {
         processTranscriptionCallCount += 1

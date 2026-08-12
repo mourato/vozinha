@@ -76,6 +76,7 @@ public final class TranscribeAudioUseCase: Sendable {
         defaultPostProcessingPrompt: DomainPostProcessingPrompt? = nil,
         postProcessingIdentity: ModelPerformanceModelIdentity? = nil,
         postProcessingSelection: DomainPostProcessingSelection? = nil,
+        postProcessingConfiguration: DomainPostProcessingConfiguration? = nil,
         autoDetectMeetingType: Bool = false,
         availablePrompts: [DomainPostProcessingPrompt] = [],
         postProcessingContext: String? = nil,
@@ -128,6 +129,7 @@ public final class TranscribeAudioUseCase: Sendable {
                 postProcessingPrompt: postProcessingPrompt,
                 defaultPostProcessingPrompt: defaultPostProcessingPrompt,
                 postProcessingIdentity: postProcessingIdentity,
+                postProcessingConfiguration: postProcessingConfiguration,
                 autoDetectMeetingType: autoDetectMeetingType,
                 availablePrompts: availablePrompts,
                 postProcessingContext: postProcessingContext,
@@ -164,6 +166,7 @@ public final class TranscribeAudioUseCase: Sendable {
         defaultPostProcessingPrompt: DomainPostProcessingPrompt? = nil,
         postProcessingIdentity: ModelPerformanceModelIdentity? = nil,
         postProcessingSelection: DomainPostProcessingSelection? = nil,
+        postProcessingConfiguration: DomainPostProcessingConfiguration? = nil,
         autoDetectMeetingType: Bool = false,
         availablePrompts: [DomainPostProcessingPrompt] = [],
         postProcessingContext: String? = nil,
@@ -208,6 +211,7 @@ public final class TranscribeAudioUseCase: Sendable {
                 dictationStructuredPostProcessingEnabled: dictationStructuredPostProcessingEnabled,
                 postProcessingModelID: postProcessingIdentity?.modelID,
                 selection: postProcessingSelection,
+                configuration: postProcessingConfiguration,
             )
             let shouldAttemptPostProcessing = postProcessingConfig.shouldRunPostProcessing(postProcessingRepository: postProcessingRepository)
 

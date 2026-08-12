@@ -46,6 +46,7 @@ public final class AssistantVoiceCommandService: ObservableObject {
         self.aiPhase = aiPhase ?? AssistantAIPhase(
             postProcessingService: postProcessingService,
             scriptRunner: scriptRunner,
+            settings: settings,
         )
         self.recordingManager = recordingManager
         self.indicator = indicator

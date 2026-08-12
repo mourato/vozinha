@@ -16,6 +16,7 @@ extension TranscribeAudioUseCase {
         let dictationStructuredPostProcessingEnabled: Bool
         let postProcessingModelID: String?
         let selection: DomainPostProcessingSelection?
+        let configuration: DomainPostProcessingConfiguration?
 
         init(
             applyPostProcessing: Bool,
@@ -27,6 +28,7 @@ extension TranscribeAudioUseCase {
             dictationStructuredPostProcessingEnabled: Bool = false,
             postProcessingModelID: String? = nil,
             selection: DomainPostProcessingSelection? = nil,
+            configuration: DomainPostProcessingConfiguration? = nil,
         ) {
             self.applyPostProcessing = applyPostProcessing
             self.postProcessingPrompt = postProcessingPrompt
@@ -37,6 +39,7 @@ extension TranscribeAudioUseCase {
             self.dictationStructuredPostProcessingEnabled = dictationStructuredPostProcessingEnabled
             self.postProcessingModelID = postProcessingModelID
             self.selection = selection
+            self.configuration = configuration
         }
 
         func shouldRunPostProcessing(postProcessingRepository: PostProcessingRepository?) -> Bool {
@@ -167,6 +170,7 @@ extension TranscribeAudioUseCase {
         let qualityProfile: TranscriptionQualityProfile
         let selectedModel: String?
         let selection: DomainPostProcessingSelection?
+        let configuration: DomainPostProcessingConfiguration
     }
 
     private struct PromptSelection {
@@ -191,6 +195,7 @@ extension TranscribeAudioUseCase {
             qualityProfile: qualityProfile,
             selectedModel: config.postProcessingModelID,
             selection: config.selection,
+            configuration: config.configuration ?? .unconfigured,
         )
     }
 
@@ -220,15 +225,15 @@ extension TranscribeAudioUseCase {
         )
 
         if context.useStructuredPipeline {
-            let structuredResult = try await executeStructuredPostProcessing(
+            let structuredResult = try await context.repository.processTranscriptionStructured(
                 input,
                 request: DomainPostProcessingRequest(
                     prompt: prompt,
                     mode: context.kernelMode,
                     selection: context.selection,
+                    configuration: context.configuration,
                     useStructuredPipeline: true,
                 ),
-                repository: context.repository,
             )
             return PostProcessingResult(
                 processedContent: structuredResult.processedText,
@@ -246,15 +251,15 @@ extension TranscribeAudioUseCase {
             )
         }
 
-        let processedContent = try await executePostProcessing(
+        let processedContent = try await context.repository.processTranscription(
             input,
             request: DomainPostProcessingRequest(
                 prompt: prompt,
                 mode: context.kernelMode,
                 selection: context.selection,
+                configuration: context.configuration,
                 useStructuredPipeline: false,
             ),
-            repository: context.repository,
         )
         return PostProcessingResult(
             processedContent: processedContent,
@@ -310,14 +315,14 @@ extension TranscribeAudioUseCase {
         meetingType: String?,
     ) async throws -> PostProcessingResult {
         if context.useStructuredPipeline {
-            let structuredResult = try await executeStructuredPostProcessing(
+            let structuredResult = try await context.repository.processTranscriptionStructured(
                 input,
                 request: DomainPostProcessingRequest(
                     mode: context.kernelMode,
                     selection: context.selection,
+                    configuration: context.configuration,
                     useStructuredPipeline: true,
                 ),
-                repository: context.repository,
             )
             return PostProcessingResult(
                 processedContent: structuredResult.processedText,
@@ -335,14 +340,14 @@ extension TranscribeAudioUseCase {
             )
         }
 
-        let processedContent = try await executePostProcessing(
+        let processedContent = try await context.repository.processTranscription(
             input,
             request: DomainPostProcessingRequest(
                 mode: context.kernelMode,
                 selection: context.selection,
+                configuration: context.configuration,
                 useStructuredPipeline: false,
             ),
-            repository: context.repository,
         )
         return PostProcessingResult(
             processedContent: processedContent,
@@ -376,45 +381,17 @@ extension TranscribeAudioUseCase {
             isDefault: false,
         )
 
-        let jsonString = try await executePostProcessing(
+        let jsonString = try await context.repository.processTranscription(
             text,
             request: DomainPostProcessingRequest(
                 prompt: classifierPrompt,
                 mode: context.kernelMode,
                 selection: context.selection,
+                configuration: context.configuration,
                 useStructuredPipeline: false,
             ),
-            repository: context.repository,
         )
         return parseMeetingType(from: jsonString)
-    }
-
-    private func executePostProcessing(
-        _ input: String,
-        request: DomainPostProcessingRequest,
-        repository: PostProcessingRepository,
-    ) async throws -> String {
-        if let repository = repository as? any ExplicitPostProcessingRepository {
-            return try await repository.processTranscription(input, request: request)
-        }
-        if let prompt = request.prompt {
-            return try await repository.processTranscription(input, with: prompt, mode: request.mode)
-        }
-        return try await repository.processTranscription(input, mode: request.mode)
-    }
-
-    private func executeStructuredPostProcessing(
-        _ input: String,
-        request: DomainPostProcessingRequest,
-        repository: PostProcessingRepository,
-    ) async throws -> DomainPostProcessingResult {
-        if let repository = repository as? any ExplicitPostProcessingRepository {
-            return try await repository.processTranscriptionStructured(input, request: request)
-        }
-        if let prompt = request.prompt {
-            return try await repository.processTranscriptionStructured(input, with: prompt, mode: request.mode)
-        }
-        return try await repository.processTranscriptionStructured(input, mode: request.mode)
     }
 
     private func findPrompt(for type: String, in prompts: [DomainPostProcessingPrompt]) -> DomainPostProcessingPrompt? {

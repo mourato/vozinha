@@ -146,6 +146,8 @@ public struct PostProcessingRequest: Sendable {
     public let mode: IntelligenceKernelMode
     public let selection: EnhancementsAISelection?
     public let configuration: AIConfiguration
+    public let readinessIssue: String?
+    public let outputLanguageID: String?
     public let useStructuredPipeline: Bool
     public let systemPromptOverride: String?
 
@@ -154,6 +156,8 @@ public struct PostProcessingRequest: Sendable {
         mode: IntelligenceKernelMode,
         selection: EnhancementsAISelection?,
         configuration: AIConfiguration,
+        readinessIssue: String? = nil,
+        outputLanguageID: String? = nil,
         useStructuredPipeline: Bool,
         systemPromptOverride: String? = nil,
     ) {
@@ -161,6 +165,8 @@ public struct PostProcessingRequest: Sendable {
         self.mode = mode
         self.selection = selection
         self.configuration = configuration
+        self.readinessIssue = readinessIssue
+        self.outputLanguageID = outputLanguageID
         self.useStructuredPipeline = useStructuredPipeline
         self.systemPromptOverride = systemPromptOverride
     }
@@ -224,31 +230,6 @@ public protocol PostProcessingServiceProtocol: ObservableObject {
 }
 
 public extension PostProcessingServiceProtocol {
-    func processTranscription(_ transcription: String, request: PostProcessingRequest) async throws -> String {
-        if let prompt = request.prompt {
-            return try await processTranscription(
-                transcription,
-                with: prompt,
-                mode: request.mode,
-                selectionOverride: request.selection ?? .default,
-                systemPromptOverride: request.systemPromptOverride,
-            )
-        }
-        return try await processTranscription(transcription)
-    }
-
-    func processTranscriptionStructured(_ transcription: String, request: PostProcessingRequest) async throws -> DomainPostProcessingResult {
-        if let prompt = request.prompt {
-            return try await processTranscriptionStructured(
-                transcription,
-                with: prompt,
-                mode: request.mode,
-                selectionOverride: request.selection ?? .default,
-            )
-        }
-        return try await processTranscriptionStructured(transcription)
-    }
-
     func processTranscription(
         _ transcription: String,
         with prompt: PostProcessingPrompt,
