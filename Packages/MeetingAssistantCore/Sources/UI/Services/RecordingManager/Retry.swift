@@ -138,6 +138,8 @@ extension RecordingManager {
             await persistFailedRetryPerformanceAttempt(
                 transcription: transcription,
                 effectiveSelection: effectiveSelection,
+                transcriptionConfiguration: capturedConfiguration,
+                vocabularySnapshot: vocabularySnapshot,
                 startedAt: retryStartedAt,
                 completedAt: Date(),
                 audioDuration: audioDuration,
@@ -245,6 +247,7 @@ extension RecordingManager {
             qualityProfile: qualityProfile,
             capturePurposeOverride: transcription.meeting.capturePurpose,
             selectionOverride: persistedPostProcessingSelection,
+            promptIDOverride: transcription.executionProvenance?.postProcessingPromptID,
         )
         let resolvedMeeting = meetingWithResolvedTitle(meeting, canonicalSummary: postProcessing.canonicalSummary)
         let postProcessingMode = transcription.capturePurpose.intelligenceKernelMode
@@ -360,9 +363,12 @@ extension RecordingManager {
         try? await storage.saveModelPerformanceAttempt(postProcessingAttempt)
     }
 
+    // swiftlint:disable:next function_parameter_count
     private func persistFailedRetryPerformanceAttempt(
         transcription: Transcription,
         effectiveSelection: TranscriptionProviderSelection,
+        transcriptionConfiguration: DomainTranscriptionRequestConfiguration,
+        vocabularySnapshot: VocabularySnapshot,
         startedAt: Date,
         completedAt: Date,
         audioDuration: Double?,
@@ -386,7 +392,11 @@ extension RecordingManager {
             inputCharacterCount: 0,
             outputCharacterCount: 0,
             failureReason: error.localizedDescription,
-            executionProvenance: transcription.executionProvenance,
+            executionProvenance: ExecutionProvenance(
+                transcriptionRequest: transcriptionConfiguration,
+                vocabularySnapshot: vocabularySnapshot,
+                transcriptionModelIdentity: identity,
+            ),
         )
         try? await storage.saveModelPerformanceAttempt(attempt)
     }

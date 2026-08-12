@@ -237,6 +237,69 @@ final class CoreDataRepositoryTests: XCTestCase {
         XCTAssertEqual(fetched?.executionProvenance, provenance)
     }
 
+    func testExecutionProvenanceSchemaIsOptionalBinaryForIncrementalMigration() throws {
+        let model = CoreDataModel.createManagedObjectModel()
+
+        for entityName in ["TranscriptionMO", "ModelPerformanceAttemptMO"] {
+            let entity = try XCTUnwrap(model.entitiesByName[entityName])
+            let attribute = try XCTUnwrap(entity.attributesByName["executionProvenanceData"])
+            XCTAssertEqual(attribute.attributeType, .binaryDataAttributeType)
+            XCTAssertTrue(attribute.isOptional)
+            XCTAssertTrue(attribute.allowsExternalBinaryDataStorage)
+        }
+
+        XCTAssertEqual(CoreDataModel.currentVersion, "1.6")
+    }
+
+    func testCorruptExecutionProvenance_IsIgnoredForTranscriptionAndAttempt() async throws {
+        let meeting = MeetingEntity(app: .unknown, capturePurpose: .dictation)
+        try await meetingRepo.saveMeeting(meeting)
+        let transcription = TranscriptionEntity(
+            meeting: meeting,
+            config: .init(text: "Raw text", rawText: "Raw text"),
+        )
+        try await transcriptionRepo.saveTranscription(transcription)
+        try await transcriptionRepo.saveModelPerformanceAttempt(
+            makeAttempt(
+                transcriptionID: transcription.id,
+                providerID: "local",
+                modelID: "model-a",
+                startedAt: Date(),
+                executionProvenance: ExecutionProvenance(
+                    transcriptionRequest: .init(providerID: "local", modelID: "model-a", inputLanguageCode: "pt"),
+                    vocabularySnapshot: .empty,
+                    transcriptionModelIdentity: .init(
+                        providerID: "local",
+                        providerDisplayName: "Local",
+                        modelID: "model-a",
+                        modelDisplayName: "Model A",
+                        runtimeKind: .local,
+                    ),
+                ),
+            ),
+        )
+
+        try await stack.performBackgroundTask { context in
+            let transcriptionMO = try XCTUnwrap(
+                context.fetch(TranscriptionMO.fetchRequest(forTranscriptionId: transcription.id)).first,
+            )
+            transcriptionMO.executionProvenanceData = Data([0x00, 0x01, 0x02])
+
+            let attemptMO = try XCTUnwrap(
+                context.fetch(ModelPerformanceAttemptMO.fetchRequest(forTranscriptionID: transcription.id)).first,
+            )
+            attemptMO.executionProvenanceData = Data([0x03, 0x04, 0x05])
+            try context.save()
+        }
+
+        let fetchedTranscription = try await transcriptionRepo.fetchTranscription(by: transcription.id)
+        let fetchedAttempts = try await transcriptionRepo.fetchModelPerformanceAttempts(
+            matching: .init(stage: .transcription),
+        )
+        XCTAssertNil(fetchedTranscription?.executionProvenance)
+        XCTAssertNil(fetchedAttempts.first?.executionProvenance)
+    }
+
     func testLoadMetadata_AppliesNewestSortAndLimit() async throws {
         let storage = FileSystemStorageService(
             honorsConfiguredRecordingDirectory: false,
