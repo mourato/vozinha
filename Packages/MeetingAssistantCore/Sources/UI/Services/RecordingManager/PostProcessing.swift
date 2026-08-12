@@ -34,7 +34,9 @@ extension RecordingManager {
         let kernelMode = session.kernelMode
         let isDictation = kernelMode == .dictation
         let dictationSelection = isDictation ? session.dictationEnhancementsSelection : nil
-        let postProcessingSelection = dictationSelection ?? settings.enhancementsSelection(for: kernelMode)
+        let postProcessingSelection = dictationSelection
+            ?? session.postProcessingEnhancementsSelection
+            ?? settings.enhancementsSelection(for: kernelMode)
         let modePostProcessingEnabled = dictationPostProcessingEnabled(for: session, settings: settings)
         let readinessIssue = modePostProcessingEnabled
             ? (dictationSelection.map { settings.enhancementsInferenceReadinessIssue(for: $0, apiKeyExists: apiKeyExists) } ?? settings.enhancementsInferenceReadinessIssue(for: kernelMode, apiKeyExists: apiKeyExists))
@@ -67,6 +69,7 @@ extension RecordingManager {
                 readinessIssue: readinessIssue,
                 disabledForRecording: disabledForRecording,
                 isDictation: isDictation,
+                postProcessingSelection: postProcessingSelection,
                 settings: settings,
             )
         }
@@ -140,6 +143,7 @@ extension RecordingManager {
         readinessIssue: EnhancementsInferenceReadinessIssue?,
         disabledForRecording: Bool,
         isDictation: Bool,
+        postProcessingSelection: EnhancementsAISelection,
         settings: AppSettingsStore,
     ) -> UseCaseConfig {
         let reasonCode = resolveDisabledReasonCode(
@@ -174,7 +178,7 @@ extension RecordingManager {
             postProcessingContextItems: session.postProcessingContextItems,
             dictationTextHandlingPolicy: session.dictationTextHandlingPolicy,
             dictationTranscriptionConfiguration: session.dictationTranscriptionConfiguration,
-            postProcessingSelection: session.dictationEnhancementsSelection,
+            postProcessingSelection: postProcessingSelection,
         )
     }
 

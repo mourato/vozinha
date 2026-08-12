@@ -338,7 +338,7 @@ extension PostProcessingService {
                 prompt: fallbackPrompt,
                 mode: context.mode,
                 selectionOverride: context.selectionOverride,
-                systemPromptOverride: nil,
+                systemPromptOverride: context.systemPromptOverride,
                 requestProfile: fallbackProfile,
                 requestConfig: context.requestConfig,
                 traceContext: fallbackTraceContext,

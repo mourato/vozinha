@@ -69,6 +69,36 @@ extension RecordingManagerTests {
 
         await manager.cancelRecording()
     }
+
+    func testMeetingPostProcessingSelectionIsStableDuringSession() async throws {
+        let manager = try XCTUnwrap(manager)
+        let settings = AppSettingsStore.shared
+        let originalSelection = settings.enhancementsAISelection
+        let frozenSelection = EnhancementsAISelection(
+            provider: .anthropic,
+            selectedModel: "frozen-meeting-model",
+            registrationID: UUID(),
+        )
+        defer {
+            settings.enhancementsAISelection = originalSelection
+        }
+
+        settings.enhancementsAISelection = frozenSelection
+        await manager.startRecording(source: .all)
+        let meeting = try XCTUnwrap(manager.currentMeeting)
+        let session = manager.makeTranscriptionSessionSnapshot(meeting)
+
+        settings.enhancementsAISelection = EnhancementsAISelection(
+            provider: .openai,
+            selectedModel: "mutated-meeting-model",
+        )
+        let config = manager.makeUseCaseConfig(session: session, settings: settings)
+
+        XCTAssertEqual(session.postProcessingEnhancementsSelection, frozenSelection)
+        XCTAssertEqual(config.postProcessingSelection, frozenSelection)
+
+        await manager.cancelRecording()
+    }
 }
 
 private func makeDictationStyle(

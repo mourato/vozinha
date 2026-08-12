@@ -166,6 +166,7 @@ public class RecordingManager: ObservableObject, RecordingServiceProtocol {
         let dictationTranscriptionConfiguration: DictationTranscriptionConfiguration?
         let transcriptionConfiguration: DomainTranscriptionRequestConfiguration?
         let dictationEnhancementsSelection: EnhancementsAISelection?
+        let postProcessingEnhancementsSelection: EnhancementsAISelection?
         let dictationPostProcessingEnabled: Bool?
         let dictationStyle: DictationStyle?
         let vocabularySnapshot: VocabularySnapshot
@@ -186,6 +187,7 @@ public class RecordingManager: ObservableObject, RecordingServiceProtocol {
             dictationTranscriptionConfiguration: DictationTranscriptionConfiguration? = nil,
             transcriptionConfiguration: DomainTranscriptionRequestConfiguration? = nil,
             dictationEnhancementsSelection: EnhancementsAISelection? = nil,
+            postProcessingEnhancementsSelection: EnhancementsAISelection? = nil,
             dictationPostProcessingEnabled: Bool? = nil,
             dictationStyle: DictationStyle? = nil,
             vocabularySnapshot: VocabularySnapshot = .empty,
@@ -205,6 +207,7 @@ public class RecordingManager: ObservableObject, RecordingServiceProtocol {
             self.dictationTranscriptionConfiguration = dictationTranscriptionConfiguration
             self.transcriptionConfiguration = transcriptionConfiguration
             self.dictationEnhancementsSelection = dictationEnhancementsSelection
+            self.postProcessingEnhancementsSelection = postProcessingEnhancementsSelection
             self.dictationPostProcessingEnabled = dictationPostProcessingEnabled
             self.dictationStyle = dictationStyle
             self.vocabularySnapshot = vocabularySnapshot
