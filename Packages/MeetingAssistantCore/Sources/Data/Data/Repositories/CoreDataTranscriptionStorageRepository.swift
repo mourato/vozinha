@@ -210,6 +210,7 @@ public final class CoreDataTranscriptionStorageRepository: TranscriptionStorageR
         config.postProcessingFailureReason = transcription.postProcessingFailureReason
         config.postProcessingOutputState = transcription.postProcessingOutputState
         config.transcriptionFailureReason = transcription.transcriptionFailureReason
+        config.executionProvenance = transcription.executionProvenance
         return TranscriptionEntity(meeting: sanitizedMeeting, config: config)
     }
 

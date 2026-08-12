@@ -5,6 +5,7 @@ import CoreData
 @testable import MeetingAssistantCore
 import XCTest
 
+// swiftlint:disable:next type_body_length
 final class CoreDataRepositoryTests: XCTestCase {
     var stack: CoreDataStack!
     var meetingRepo: CoreDataMeetingRepository!
@@ -208,6 +209,34 @@ final class CoreDataRepositoryTests: XCTestCase {
         XCTAssertEqual(fetched?.segments.first?.text, "Hi")
     }
 
+    func testSaveAndFetchTranscription_PreservesExecutionProvenance() async throws {
+        let meeting = MeetingEntity(app: .googleMeet)
+        try await meetingRepo.saveMeeting(meeting)
+        let provenance = ExecutionProvenance(
+            transcriptionRequest: DomainTranscriptionRequestConfiguration(
+                providerID: "local",
+                modelID: "model-a",
+                inputLanguageCode: "pt",
+            ),
+            vocabularySnapshot: .empty,
+            transcriptionModelIdentity: ModelPerformanceModelIdentity(
+                providerID: "local",
+                providerDisplayName: "Local",
+                modelID: "model-a",
+                modelDisplayName: "Model A",
+                runtimeKind: .local,
+            ),
+        )
+        var config = TranscriptionEntity.Configuration(text: "Hi", rawText: "Hi")
+        config.executionProvenance = provenance
+        let transcription = TranscriptionEntity(meeting: meeting, config: config)
+
+        try await transcriptionRepo.saveTranscription(transcription)
+
+        let fetched = try await transcriptionRepo.fetchTranscription(by: transcription.id)
+        XCTAssertEqual(fetched?.executionProvenance, provenance)
+    }
+
     func testLoadMetadata_AppliesNewestSortAndLimit() async throws {
         let storage = FileSystemStorageService(
             honorsConfiguredRecordingDirectory: false,
@@ -380,6 +409,52 @@ final class CoreDataRepositoryTests: XCTestCase {
         XCTAssertEqual(attempts.map(\.startedAt), [baseDate.addingTimeInterval(20), baseDate.addingTimeInterval(10)])
     }
 
+    func testModelPerformanceAttemptsKeepDistinctExecutionProvenance() async throws {
+        let meeting = MeetingEntity(app: .unknown, capturePurpose: .dictation)
+        try await meetingRepo.saveMeeting(meeting)
+        let transcription = TranscriptionEntity(
+            meeting: meeting,
+            config: .init(text: "Raw text", rawText: "Raw text"),
+        )
+        try await transcriptionRepo.saveTranscription(transcription)
+
+        func provenance(_ modelID: String) -> ExecutionProvenance {
+            ExecutionProvenance(
+                transcriptionRequest: .init(providerID: "local", modelID: modelID, inputLanguageCode: "pt"),
+                vocabularySnapshot: .empty,
+                transcriptionModelIdentity: .init(
+                    providerID: "local",
+                    providerDisplayName: "Local",
+                    modelID: modelID,
+                    modelDisplayName: modelID,
+                    runtimeKind: .local,
+                ),
+            )
+        }
+
+        let attemptA = makeAttempt(
+            transcriptionID: transcription.id,
+            providerID: "local",
+            modelID: "model-a",
+            startedAt: Date(timeIntervalSince1970: 1_700_000_000),
+            executionProvenance: provenance("model-a"),
+        )
+        try await transcriptionRepo.saveModelPerformanceAttempt(attemptA)
+        let attemptB = makeAttempt(
+            transcriptionID: transcription.id,
+            providerID: "local",
+            modelID: "model-b",
+            startedAt: Date(timeIntervalSince1970: 1_700_000_010),
+            executionProvenance: provenance("model-b"),
+        )
+        try await transcriptionRepo.saveModelPerformanceAttempt(attemptB)
+
+        let attempts = try await transcriptionRepo.fetchModelPerformanceAttempts(
+            matching: .init(stage: .transcription),
+        )
+        XCTAssertEqual(Set(attempts.compactMap { $0.executionProvenance?.transcriptionRequest?.modelID }), Set(["model-a", "model-b"]))
+    }
+
     func testSaveTranscription_NonMeetingMetadataDoesNotExposeTitleOrCalendarFallback() async throws {
         let meeting = MeetingEntity(
             id: UUID(),
@@ -461,6 +536,7 @@ final class CoreDataRepositoryTests: XCTestCase {
         providerID: String,
         modelID: String,
         startedAt: Date,
+        executionProvenance: ExecutionProvenance? = nil,
     ) -> ModelPerformanceAttempt {
         ModelPerformanceAttempt(
             transcriptionID: transcriptionID,
@@ -482,6 +558,7 @@ final class CoreDataRepositoryTests: XCTestCase {
             inputUTF8Bytes: 0,
             inputCharacterCount: 0,
             outputCharacterCount: 100,
+            executionProvenance: executionProvenance,
         )
     }
 }

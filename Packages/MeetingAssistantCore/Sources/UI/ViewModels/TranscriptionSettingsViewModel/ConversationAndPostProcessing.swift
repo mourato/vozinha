@@ -1,3 +1,5 @@
+// swiftlint:disable file_length
+
 import AppKit
 import Foundation
 import MeetingAssistantCoreAI
@@ -247,6 +249,7 @@ public extension TranscriptionSettingsViewModel {
         }
     }
 
+    // swiftlint:disable:next function_body_length
     func applyPostProcessing(prompt: PostProcessingPrompt, to transcription: Transcription) async {
         guard !isProcessingAI else { return }
 
@@ -254,7 +257,18 @@ public extension TranscriptionSettingsViewModel {
         markPostProcessingStarted(for: transcriptionID)
         let startTime = Date()
         let mode: IntelligenceKernelMode = transcription.capturePurpose.intelligenceKernelMode
-        let postProcessingIdentity = AppSettingsStore.shared.resolvedEnhancementsPerformanceIdentity(for: mode)
+        let settings = AppSettingsStore.shared
+        let postProcessingSelection = settings.enhancementsSelection(for: mode)
+        let postProcessingIdentity = settings.resolvedEnhancementsPerformanceIdentity(for: mode)
+        let useStructuredPipeline = mode == .meeting || settings.dictationStructuredPostProcessingEnabled
+        let executionProvenance = makeReprocessProvenance(
+            transcription: transcription,
+            prompt: prompt,
+            selection: postProcessingSelection,
+            identity: postProcessingIdentity,
+            mode: mode,
+            useStructuredPipeline: useStructuredPipeline,
+        )
         let postProcessingInput = postProcessingInput(for: transcription)
         defer { markPostProcessingFinished(for: transcriptionID) }
 
@@ -265,7 +279,7 @@ public extension TranscriptionSettingsViewModel {
                 postProcessingInput: postProcessingInput,
             )
             let duration = Date().timeIntervalSince(startTime)
-            let modelUsed = AppSettingsStore.shared.resolvedEnhancementsAIConfiguration.selectedModel
+            let modelUsed = postProcessingSelection.selectedModel
             let updatedTranscription = makePostProcessedTranscription(
                 from: transcription,
                 prompt: prompt,
@@ -274,6 +288,7 @@ public extension TranscriptionSettingsViewModel {
                 outputState: result.outputState,
                 duration: duration,
                 modelUsed: modelUsed,
+                executionProvenance: executionProvenance,
             )
 
             try await storage.saveTranscription(updatedTranscription)
@@ -287,6 +302,7 @@ public extension TranscriptionSettingsViewModel {
                     input: postProcessingInput,
                     outputCharacterCount: result.processedText.count,
                     failureReason: nil,
+                    executionProvenance: executionProvenance,
                 ),
             )
 
@@ -301,6 +317,7 @@ public extension TranscriptionSettingsViewModel {
                 identity: postProcessingIdentity,
                 startedAt: startTime,
                 input: postProcessingInput,
+                executionProvenance: executionProvenance,
             )
         }
     }
@@ -364,6 +381,7 @@ public extension TranscriptionSettingsViewModel {
         )
     }
 
+    // swiftlint:disable:next function_parameter_count
     private func makeReprocessAttempt(
         transcription: Transcription,
         identity: ModelPerformanceModelIdentity,
@@ -373,6 +391,7 @@ public extension TranscriptionSettingsViewModel {
         input: String,
         outputCharacterCount: Int,
         failureReason: String?,
+        executionProvenance: ExecutionProvenance,
     ) -> ModelPerformanceAttempt {
         ModelPerformanceAttempt(
             transcriptionID: transcription.id,
@@ -389,9 +408,11 @@ public extension TranscriptionSettingsViewModel {
             inputCharacterCount: input.count,
             outputCharacterCount: outputCharacterCount,
             failureReason: failureReason,
+            executionProvenance: executionProvenance,
         )
     }
 
+    // swiftlint:disable:next function_parameter_count
     private func handlePostProcessingFailure(
         error: Error,
         transcription: Transcription,
@@ -399,6 +420,7 @@ public extension TranscriptionSettingsViewModel {
         identity: ModelPerformanceModelIdentity,
         startedAt: Date,
         input: String,
+        executionProvenance: ExecutionProvenance,
     ) async {
         let message: String
         if let processingError = error as? PostProcessingError {
@@ -419,12 +441,14 @@ public extension TranscriptionSettingsViewModel {
                 input: input,
                 outputCharacterCount: 0,
                 failureReason: message,
+                executionProvenance: executionProvenance,
             ),
         )
         postProcessingErrorByTranscriptionID[transcriptionID] = message
         operationErrorMessage = message
     }
 
+    // swiftlint:disable:next function_parameter_count
     private func makePostProcessedTranscription(
         from transcription: Transcription,
         prompt: PostProcessingPrompt,
@@ -433,6 +457,7 @@ public extension TranscriptionSettingsViewModel {
         outputState: DomainPostProcessingOutputState?,
         duration: TimeInterval,
         modelUsed: String,
+        executionProvenance: ExecutionProvenance,
     ) -> Transcription {
         Transcription(
             id: transcription.id,
@@ -458,6 +483,40 @@ public extension TranscriptionSettingsViewModel {
             postProcessingFailureReason: nil,
             postProcessingOutputState: outputState,
             transcriptionFailureReason: transcription.transcriptionFailureReason,
+            executionProvenance: executionProvenance,
+        )
+    }
+
+    // swiftlint:disable:next function_parameter_count
+    private func makeReprocessProvenance(
+        transcription: Transcription,
+        prompt: PostProcessingPrompt,
+        selection: EnhancementsAISelection,
+        identity: ModelPerformanceModelIdentity,
+        mode: IntelligenceKernelMode,
+        useStructuredPipeline: Bool,
+    ) -> ExecutionProvenance {
+        ExecutionProvenance(
+            transcriptionRequest: transcription.executionProvenance?.transcriptionRequest,
+            vocabularySnapshot: transcription.executionProvenance?.vocabularySnapshot ?? .empty,
+            transcriptionModelIdentity: transcription.executionProvenance?.transcriptionModelIdentity
+                ?? ModelPerformanceModelIdentity(
+                    providerID: "unknown",
+                    providerDisplayName: "Unknown",
+                    modelID: "unknown",
+                    modelDisplayName: "Unknown",
+                    runtimeKind: .unknown,
+                ),
+            postProcessingSelection: DomainPostProcessingSelection(
+                providerID: selection.provider.rawValue,
+                modelID: selection.selectedModel,
+                registrationID: selection.registrationID,
+            ),
+            postProcessingModelIdentity: identity,
+            postProcessingPromptID: prompt.id,
+            postProcessingPromptTitle: prompt.title,
+            kernelMode: mode,
+            usedStructuredPostProcessing: useStructuredPipeline,
         )
     }
 

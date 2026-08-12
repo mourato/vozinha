@@ -37,6 +37,7 @@ public final class TranscriptionMO: NSManagedObject {
     @NSManaged public var contextItemsData: Data?
     @NSManaged public var canonicalSummaryData: Data?
     @NSManaged public var transcriptionQualityData: Data?
+    @NSManaged public var executionProvenanceData: Data?
     @NSManaged public var canonicalSummarySchemaVersion: Int16
     @NSManaged public var summaryGroundedInTranscript: Bool
     @NSManaged public var summaryContainsSpeculation: Bool
@@ -132,6 +133,8 @@ extension TranscriptionMO {
     private static let meetingConversationStateEncoder = JSONEncoder()
     private static let transcriptionQualityDecoder = JSONDecoder()
     private static let transcriptionQualityEncoder = JSONEncoder()
+    private static let executionProvenanceDecoder = JSONDecoder()
+    private static let executionProvenanceEncoder = JSONEncoder()
     private static func segmentSortComparator(_ lhs: TranscriptionEntity.Segment, _ rhs: TranscriptionEntity.Segment) -> Bool {
         if lhs.startTime != rhs.startTime {
             return lhs.startTime < rhs.startTime
@@ -175,6 +178,7 @@ extension TranscriptionMO {
         config.meetingConversationState = decodeMeetingConversationState()
         config.canonicalSummary = decodeCanonicalSummary()
         config.qualityProfile = decodeTranscriptionQuality()
+        config.executionProvenance = decodeExecutionProvenance()
 
         return TranscriptionEntity(meeting: meeting.toDomain(), config: config)
     }
@@ -205,6 +209,7 @@ extension TranscriptionMO {
         contextItemsData = encodeContextItems(entity.contextItems)
         applyCanonicalSummary(entity.canonicalSummary)
         applyTranscriptionQuality(entity.qualityProfile)
+        executionProvenanceData = encodeExecutionProvenance(entity.executionProvenance)
 
         self.meeting = meeting
 
@@ -246,6 +251,7 @@ extension TranscriptionMO {
         transcriptionMO.contextItemsData = transcriptionMO.encodeContextItems(entity.contextItems)
         transcriptionMO.applyCanonicalSummary(entity.canonicalSummary)
         transcriptionMO.applyTranscriptionQuality(entity.qualityProfile)
+        transcriptionMO.executionProvenanceData = transcriptionMO.encodeExecutionProvenance(entity.executionProvenance)
         transcriptionMO.meeting = meeting
 
         // Criar segmentos
@@ -298,6 +304,16 @@ extension TranscriptionMO {
     private func decodeTranscriptionQuality() -> TranscriptionQualityProfile? {
         guard let data = transcriptionQualityData else { return nil }
         return try? Self.transcriptionQualityDecoder.decode(TranscriptionQualityProfile.self, from: data)
+    }
+
+    private func decodeExecutionProvenance() -> ExecutionProvenance? {
+        guard let data = executionProvenanceData else { return nil }
+        return try? Self.executionProvenanceDecoder.decode(ExecutionProvenance.self, from: data)
+    }
+
+    private func encodeExecutionProvenance(_ provenance: ExecutionProvenance?) -> Data? {
+        guard let provenance else { return nil }
+        return try? Self.executionProvenanceEncoder.encode(provenance)
     }
 
     private func applyCanonicalSummary(_ summary: CanonicalSummary?) {

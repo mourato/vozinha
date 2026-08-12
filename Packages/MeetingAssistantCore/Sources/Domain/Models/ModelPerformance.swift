@@ -108,6 +108,7 @@ public struct ModelPerformanceAttempt: Identifiable, Codable, Hashable, Sendable
     public let inputCharacterCount: Int
     public let outputCharacterCount: Int
     public let failureReason: String?
+    public let executionProvenance: ExecutionProvenance?
 
     public init(
         id: UUID = UUID(),
@@ -125,6 +126,7 @@ public struct ModelPerformanceAttempt: Identifiable, Codable, Hashable, Sendable
         inputCharacterCount: Int,
         outputCharacterCount: Int,
         failureReason: String? = nil,
+        executionProvenance: ExecutionProvenance? = nil,
     ) {
         self.id = id
         self.transcriptionID = transcriptionID
@@ -141,6 +143,7 @@ public struct ModelPerformanceAttempt: Identifiable, Codable, Hashable, Sendable
         self.inputCharacterCount = inputCharacterCount
         self.outputCharacterCount = outputCharacterCount
         self.failureReason = failureReason
+        self.executionProvenance = executionProvenance
     }
 }
 

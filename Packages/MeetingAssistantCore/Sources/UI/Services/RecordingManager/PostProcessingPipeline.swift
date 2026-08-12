@@ -70,6 +70,7 @@ extension RecordingManager {
         meeting: Meeting?,
         qualityProfile: TranscriptionQualityProfile?,
         capturePurposeOverride: CapturePurpose? = nil,
+        selectionOverride: EnhancementsAISelection? = nil,
     ) async -> PostProcessingResult {
         transcriptionStatus.updateProgress(phase: .postProcessing, percentage: Constants.postProcessingProgress)
         RecordingIndicatorProcessingStateStore.shared.update(
@@ -91,10 +92,10 @@ extension RecordingManager {
         guard !isDictation || (matchingDictationStyleForDictation(settings: settings)?.postProcessingEnabled ?? true) else {
             return PostProcessingResult(failureReason: "Post-processing is disabled for this recording type.")
         }
-        let dictationSelectionOverride = isDictation
+        let requestSelectionOverride = selectionOverride ?? (isDictation
             ? matchingDictationStyleForDictation(settings: settings)?.enhancementsSelection
-            : nil
-        let readinessIssue = dictationSelectionOverride.map {
+            : nil)
+        let readinessIssue = requestSelectionOverride.map {
             settings.enhancementsInferenceReadinessIssue(for: $0, apiKeyExists: apiKeyExists)
         } ?? settings.enhancementsInferenceReadinessIssue(for: kernelMode, apiKeyExists: apiKeyExists)
         setPostProcessingReadinessWarning(issue: readinessIssue, mode: kernelMode)
@@ -137,7 +138,7 @@ extension RecordingManager {
             settings: settings,
             qualityProfile: qualityProfile,
             kernelMode: kernelMode,
-            selectionOverride: dictationSelectionOverride,
+            selectionOverride: requestSelectionOverride,
             dictationStructuredPostProcessingEnabled: settings.dictationStructuredPostProcessingEnabled,
         )
     }

@@ -61,6 +61,9 @@ public struct Transcription: Identifiable, Codable, Hashable, Sendable {
     /// Reason why ASR / transcription itself failed (nil when transcription succeeded).
     public var transcriptionFailureReason: String?
 
+    /// Immutable request metadata used by default historical retry.
+    public var executionProvenance: ExecutionProvenance?
+
     /// Full initializer with post-processing support.
     public init(
         id: UUID = UUID(),
@@ -89,6 +92,7 @@ public struct Transcription: Identifiable, Codable, Hashable, Sendable {
         postProcessingFailureReason: String? = nil,
         postProcessingOutputState: DomainPostProcessingOutputState? = nil,
         transcriptionFailureReason: String? = nil,
+        executionProvenance: ExecutionProvenance? = nil,
     ) {
         self.id = id
         self.meeting = meeting
@@ -117,6 +121,7 @@ public struct Transcription: Identifiable, Codable, Hashable, Sendable {
         self.postProcessingFailureReason = postProcessingFailureReason
         self.postProcessingOutputState = postProcessingOutputState
         self.transcriptionFailureReason = transcriptionFailureReason
+        self.executionProvenance = executionProvenance
     }
 
     /// Convenience initializer for backward compatibility (no post-processing).
