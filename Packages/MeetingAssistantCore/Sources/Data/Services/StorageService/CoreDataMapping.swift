@@ -57,6 +57,7 @@ extension FileSystemStorageService {
         config.meetingType = transcription.meetingType
         config.lifecycleState = transcription.lifecycleState
         config.meetingConversationState = transcription.meetingConversationState
+        config.executionProvenance = transcription.executionProvenance
 
         return TranscriptionEntity(meeting: meetingEntity, config: config)
     }
@@ -152,6 +153,7 @@ extension FileSystemStorageService {
             postProcessingFailureReason: entity.postProcessingFailureReason,
             postProcessingOutputState: entity.postProcessingOutputState,
             transcriptionFailureReason: entity.transcriptionFailureReason,
+            executionProvenance: entity.executionProvenance,
         )
     }
 }

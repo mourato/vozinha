@@ -107,7 +107,7 @@ public struct VocabularyProviderHints: Sendable, Hashable, Codable, Equatable {
 /// | Local FluidAudio | ASR parameter | ❌ Unsupported | N/A | No vocabulary/hint API on `AsrManager.transcribe()` |
 /// | XPC local | ASR parameter | ❌ Unsupported | N/A | Same local FluidAudio surface via XPC |
 /// | Incremental samples | In-memory ASR | ❌ Unsupported | N/A | Local-only path; provider hints never applied |
-public struct VocabularySnapshot: Sendable, Hashable, Equatable {
+public struct VocabularySnapshot: Codable, Sendable, Hashable, Equatable {
     /// Vocabulary terms for provider-side recognition hints (normalized once).
     public let terms: [VocabularyTerm]
 

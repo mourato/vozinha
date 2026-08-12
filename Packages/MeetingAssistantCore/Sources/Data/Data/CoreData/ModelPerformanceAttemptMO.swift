@@ -23,6 +23,7 @@ public final class ModelPerformanceAttemptMO: NSManagedObject {
     @NSManaged public var inputCharacterCount: Int64
     @NSManaged public var outputCharacterCount: Int64
     @NSManaged public var failureReason: String?
+    @NSManaged public var executionProvenanceData: Data?
     @NSManaged public var transcription: TranscriptionMO
 }
 
@@ -62,6 +63,7 @@ public extension ModelPerformanceAttemptMO {
             inputCharacterCount: Int(inputCharacterCount),
             outputCharacterCount: Int(outputCharacterCount),
             failureReason: failureReason,
+            executionProvenance: decodeExecutionProvenance(),
         )
     }
 
@@ -85,6 +87,7 @@ public extension ModelPerformanceAttemptMO {
         inputCharacterCount = Int64(attempt.inputCharacterCount)
         outputCharacterCount = Int64(attempt.outputCharacterCount)
         failureReason = attempt.failureReason
+        executionProvenanceData = encodeExecutionProvenance(attempt.executionProvenance)
         self.transcription = transcription
     }
 
@@ -99,5 +102,15 @@ public extension ModelPerformanceAttemptMO {
         )
         managedObject.update(from: attempt, transcription: transcription)
         return managedObject
+    }
+
+    private func decodeExecutionProvenance() -> ExecutionProvenance? {
+        guard let data = executionProvenanceData else { return nil }
+        return try? JSONDecoder().decode(ExecutionProvenance.self, from: data)
+    }
+
+    private func encodeExecutionProvenance(_ provenance: ExecutionProvenance?) -> Data? {
+        guard let provenance else { return nil }
+        return try? JSONEncoder().encode(provenance)
     }
 }

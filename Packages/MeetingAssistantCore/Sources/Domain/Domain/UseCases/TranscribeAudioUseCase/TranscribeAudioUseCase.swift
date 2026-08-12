@@ -26,6 +26,7 @@ public final class TranscribeAudioUseCase: Sendable {
         let postProcessingStartedAt: Date
         let postProcessingCompletedAt: Date
         let postProcessingDuration: Double
+        let executionProvenance: ExecutionProvenance?
     }
 
     private let transcriptionRepository: TranscriptionRepository
@@ -126,6 +127,7 @@ public final class TranscribeAudioUseCase: Sendable {
                 contextItems: contextItems,
                 vocabularyReplacementRules: vocabularyReplacementRules,
                 vocabularyTerms: vocabularyTerms,
+                transcriptionConfiguration: transcriptionConfiguration,
                 applyPostProcessing: applyPostProcessing,
                 postProcessingPrompt: postProcessingPrompt,
                 defaultPostProcessingPrompt: defaultPostProcessingPrompt,
@@ -148,6 +150,7 @@ public final class TranscribeAudioUseCase: Sendable {
         }
     }
 
+    // swiftlint:disable:next function_body_length
     public func finalizePreparedResponse(
         response: DomainTranscriptionResponse,
         transcriptionID: UUID?,
@@ -163,6 +166,7 @@ public final class TranscribeAudioUseCase: Sendable {
         contextItems: [TranscriptionContextItem] = [],
         vocabularyReplacementRules: [VocabularyReplacementRule] = [],
         vocabularyTerms: [VocabularyTerm] = [],
+        transcriptionConfiguration: DomainTranscriptionRequestConfiguration? = nil,
         applyPostProcessing: Bool = false,
         postProcessingPrompt: DomainPostProcessingPrompt? = nil,
         defaultPostProcessingPrompt: DomainPostProcessingPrompt? = nil,
@@ -233,6 +237,18 @@ public final class TranscribeAudioUseCase: Sendable {
             let postProcessingDuration = Date().timeIntervalSince(postProcessingStartTime)
             let postProcessingCompletedAt = Date()
             let resolvedMeeting = meetingWithResolvedTitle(meeting, postProcessingResult: postProcessingResult)
+            let executionProvenance = makeExecutionProvenance(
+                transcriptionConfiguration: transcriptionConfiguration,
+                vocabularyTerms: vocabularyTerms,
+                vocabularyReplacementRules: vocabularyReplacementRules,
+                transcriptionIdentity: transcriptionIdentity,
+                postProcessingSelection: postProcessingSelection,
+                postProcessingIdentity: postProcessingIdentity,
+                prompt: postProcessingPrompt ?? defaultPostProcessingPrompt,
+                postProcessingResult: postProcessingResult,
+                kernelMode: kernelMode,
+                usedStructuredPostProcessing: kernelMode == .meeting || dictationStructuredPostProcessingEnabled,
+            )
 
             let transcription = TranscriptionEntity(
                 meeting: resolvedMeeting,
@@ -257,6 +273,7 @@ public final class TranscribeAudioUseCase: Sendable {
                         requestUserPrompt: postProcessingResult.requestUserPrompt,
                         postProcessingFailureReason: postProcessingResult.failureReason,
                         postProcessingOutputState: postProcessingResult.outputState,
+                        executionProvenance: executionProvenance,
                     ),
                 ),
             )
@@ -279,6 +296,7 @@ public final class TranscribeAudioUseCase: Sendable {
                     postProcessingStartedAt: postProcessingStartTime,
                     postProcessingCompletedAt: postProcessingCompletedAt,
                     postProcessingDuration: postProcessingDuration,
+                    executionProvenance: executionProvenance,
                 ),
             )
             onPhaseChange?(.completed)
@@ -358,6 +376,7 @@ public final class TranscribeAudioUseCase: Sendable {
         let requestUserPrompt: String?
         let postProcessingFailureReason: String?
         let postProcessingOutputState: DomainPostProcessingOutputState?
+        let executionProvenance: ExecutionProvenance?
     }
 
     private func buildConfiguration(_ input: ConfigurationBuildInput) -> TranscriptionEntity.Configuration {
@@ -403,7 +422,41 @@ public final class TranscribeAudioUseCase: Sendable {
         config.postProcessingRequestUserPrompt = input.requestUserPrompt
         config.postProcessingFailureReason = input.postProcessingFailureReason
         config.postProcessingOutputState = input.postProcessingOutputState
+        config.executionProvenance = input.executionProvenance
         return config
+    }
+
+    // swiftlint:disable:next function_parameter_count
+    private func makeExecutionProvenance(
+        transcriptionConfiguration: DomainTranscriptionRequestConfiguration?,
+        vocabularyTerms: [VocabularyTerm],
+        vocabularyReplacementRules: [VocabularyReplacementRule],
+        transcriptionIdentity: ModelPerformanceModelIdentity,
+        postProcessingSelection: DomainPostProcessingSelection?,
+        postProcessingIdentity: ModelPerformanceModelIdentity?,
+        prompt: DomainPostProcessingPrompt?,
+        postProcessingResult: PostProcessingResult,
+        kernelMode: IntelligenceKernelMode,
+        usedStructuredPostProcessing: Bool,
+    ) -> ExecutionProvenance? {
+        guard let transcriptionConfiguration else { return nil }
+        return ExecutionProvenance(
+            transcriptionRequest: Self.configurationWithVocabularyHints(
+                transcriptionConfiguration,
+                vocabularyTerms: vocabularyTerms,
+            ),
+            vocabularySnapshot: VocabularySnapshot(
+                terms: vocabularyTerms,
+                replacementRules: vocabularyReplacementRules,
+            ),
+            transcriptionModelIdentity: transcriptionIdentity,
+            postProcessingSelection: postProcessingSelection,
+            postProcessingModelIdentity: postProcessingIdentity,
+            postProcessingPromptID: postProcessingResult.promptId ?? prompt?.id,
+            postProcessingPromptTitle: postProcessingResult.promptTitle ?? prompt?.title,
+            kernelMode: kernelMode,
+            usedStructuredPostProcessing: usedStructuredPostProcessing,
+        )
     }
 
     private func persistModelPerformanceAttempts(
@@ -424,6 +477,7 @@ public final class TranscribeAudioUseCase: Sendable {
             inputCharacterCount: 0,
             outputCharacterCount: input.transcriptionText.count,
             failureReason: nil,
+            executionProvenance: input.executionProvenance,
         )
 
         do {
@@ -456,6 +510,7 @@ public final class TranscribeAudioUseCase: Sendable {
             inputCharacterCount: input.postProcessingInput.count,
             outputCharacterCount: input.postProcessingResult.processedContent?.count ?? 0,
             failureReason: input.postProcessingResult.failureReason,
+            executionProvenance: input.executionProvenance,
         )
 
         do {

@@ -1,0 +1,40 @@
+@testable import MeetingAssistantCore
+import XCTest
+
+final class ExecutionProvenanceTests: XCTestCase {
+    func testCodableRoundTripPreservesKnownExecutionInputs() throws {
+        let request = DomainTranscriptionRequestConfiguration(
+            providerID: "groq",
+            modelID: "whisper-large-v3",
+            inputLanguageCode: "pt",
+        )
+        let provenance = ExecutionProvenance(
+            transcriptionRequest: request,
+            vocabularySnapshot: VocabularySnapshot.empty,
+            transcriptionModelIdentity: ModelPerformanceModelIdentity(
+                providerID: "groq",
+                providerDisplayName: "Groq",
+                modelID: "whisper-large-v3",
+                modelDisplayName: "Whisper",
+                runtimeKind: .remote,
+            ),
+            postProcessingSelection: DomainPostProcessingSelection(
+                providerID: "openai",
+                modelID: "gpt-4o-mini",
+                registrationID: nil,
+            ),
+            kernelMode: .meeting,
+            usedStructuredPostProcessing: true,
+        )
+
+        let data = try JSONEncoder().encode(provenance)
+        XCTAssertEqual(try JSONDecoder().decode(ExecutionProvenance.self, from: data), provenance)
+    }
+
+    func testMissingOptionalProvenanceDecodesAsUnavailable() throws {
+        let data = try JSONSerialization.data(withJSONObject: ["text": "legacy"])
+        struct Legacy: Codable { let text: String
+            let provenance: ExecutionProvenance? }
+        XCTAssertNil(try JSONDecoder().decode(Legacy.self, from: data).provenance)
+    }
+}

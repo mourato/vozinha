@@ -53,7 +53,14 @@ extension RecordingManager {
     ) async {
         let capturePurpose = transcription.meeting.capturePurpose
         let retryConfiguration = configuredRetryTranscriptionConfiguration(for: transcription)
-        let configuredSelection = retryConfiguration?.selection
+        let persistedRequest = transcription.executionProvenance?.transcriptionRequest
+        let persistedSelection = persistedRequest.flatMap { request in
+            TranscriptionProvider(rawValue: request.providerID).map {
+                TranscriptionProviderSelection(provider: $0, selectedModel: request.modelID)
+            }
+        }
+        let configuredSelection = persistedSelection
+            ?? retryConfiguration?.selection
             ?? configuredRetrySelection(for: capturePurpose, meeting: transcription.meeting)
         let effectiveSelection = RetryTranscriptionSelectionMatrix.effectiveSelection(
             requestedOverride: selectionOverride,
@@ -69,11 +76,14 @@ extension RecordingManager {
             transcriptionAPIKeyExists: transcriptionAPIKeyExists,
             isLocalModelReady: isLocalRetryModelReady,
         )
-        let retryInputLanguageCode = retryConfiguration?.inputLanguageCode
+        let retryInputLanguageCode = persistedRequest?.inputLanguageCode
+            ?? retryConfiguration?.inputLanguageCode
             ?? AppSettingsStore.shared.resolvedTranscriptionInputLanguageCode(
                 for: capturePurpose.transcriptionExecutionMode,
             )
-        let vocabularySnapshot = VocabularySnapshot.current(from: .shared)
+        let vocabularySnapshot = selectionOverride == nil
+            ? transcription.executionProvenance?.vocabularySnapshot ?? VocabularySnapshot.current(from: .shared)
+            : VocabularySnapshot.current(from: .shared)
         let capturedConfiguration = DomainTranscriptionRequestConfiguration(
             providerID: effectiveSelection.provider.rawValue,
             modelID: effectiveSelection.selectedModel,
@@ -227,6 +237,9 @@ extension RecordingManager {
             capturePurposeOverride: transcription.meeting.capturePurpose,
         )
         let resolvedMeeting = meetingWithResolvedTitle(meeting, canonicalSummary: postProcessing.canonicalSummary)
+        let postProcessingMode = transcription.capturePurpose.intelligenceKernelMode
+        let retryPostProcessingSelection = AppSettingsStore.shared.enhancementsSelection(for: postProcessingMode)
+        let retryPostProcessingIdentity = AppSettingsStore.shared.resolvedEnhancementsPerformanceIdentity(for: postProcessingMode)
 
         return Transcription(
             id: transcription.id,
@@ -253,6 +266,21 @@ extension RecordingManager {
             postProcessingFailureReason: postProcessing.failureReason,
             postProcessingOutputState: postProcessing.outputState,
             transcriptionFailureReason: nil,
+            executionProvenance: ExecutionProvenance(
+                transcriptionRequest: transcriptionConfiguration ?? transcription.executionProvenance?.transcriptionRequest,
+                vocabularySnapshot: vocabularySnapshot,
+                transcriptionModelIdentity: effectiveSelection.provider.modelPerformanceIdentity(modelID: effectiveSelection.selectedModel),
+                postProcessingSelection: DomainPostProcessingSelection(
+                    providerID: retryPostProcessingSelection.provider.rawValue,
+                    modelID: retryPostProcessingSelection.selectedModel,
+                    registrationID: retryPostProcessingSelection.registrationID,
+                ),
+                postProcessingModelIdentity: retryPostProcessingIdentity,
+                postProcessingPromptID: postProcessing.promptId ?? transcription.executionProvenance?.postProcessingPromptID,
+                postProcessingPromptTitle: postProcessing.promptTitle ?? transcription.executionProvenance?.postProcessingPromptTitle,
+                kernelMode: transcription.executionProvenance?.kernelMode,
+                usedStructuredPostProcessing: transcription.executionProvenance?.usedStructuredPostProcessing,
+            ),
         )
     }
 
@@ -286,6 +314,7 @@ extension RecordingManager {
             inputCharacterCount: 0,
             outputCharacterCount: updatedTranscription.rawText.count,
             failureReason: nil,
+            executionProvenance: updatedTranscription.executionProvenance,
         )
         try? await storage.saveModelPerformanceAttempt(transcriptionAttempt)
 
@@ -310,6 +339,7 @@ extension RecordingManager {
             inputCharacterCount: updatedTranscription.rawText.count,
             outputCharacterCount: updatedTranscription.processedContent?.count ?? 0,
             failureReason: updatedTranscription.postProcessingFailureReason,
+            executionProvenance: updatedTranscription.executionProvenance,
         )
         try? await storage.saveModelPerformanceAttempt(postProcessingAttempt)
     }
@@ -340,6 +370,7 @@ extension RecordingManager {
             inputCharacterCount: 0,
             outputCharacterCount: 0,
             failureReason: error.localizedDescription,
+            executionProvenance: transcription.executionProvenance,
         )
         try? await storage.saveModelPerformanceAttempt(attempt)
     }

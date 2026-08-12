@@ -56,6 +56,7 @@ public struct TranscriptionEntity: Identifiable, Codable, Hashable, Sendable {
     public var postProcessingFailureReason: String?
     public var postProcessingOutputState: DomainPostProcessingOutputState?
     public var transcriptionFailureReason: String?
+    public var executionProvenance: ExecutionProvenance?
 
     /// Inicializador completo com suporte a pós-processamento.
     /// Configuração para inicialização flexível de TranscriptionEntity.
@@ -85,6 +86,7 @@ public struct TranscriptionEntity: Identifiable, Codable, Hashable, Sendable {
         public var postProcessingFailureReason: String?
         public var postProcessingOutputState: DomainPostProcessingOutputState?
         public var transcriptionFailureReason: String?
+        public var executionProvenance: ExecutionProvenance?
 
         public init(
             text: String,
@@ -128,6 +130,7 @@ public struct TranscriptionEntity: Identifiable, Codable, Hashable, Sendable {
         postProcessingFailureReason = config.postProcessingFailureReason
         postProcessingOutputState = config.postProcessingOutputState
         transcriptionFailureReason = config.transcriptionFailureReason
+        executionProvenance = config.executionProvenance
     }
 
     /// Inicializador depreciado mantido para compatibilidade temporária (será removido).

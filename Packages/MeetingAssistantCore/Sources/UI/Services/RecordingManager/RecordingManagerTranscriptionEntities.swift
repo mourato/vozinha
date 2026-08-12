@@ -78,6 +78,7 @@ extension RecordingManager {
             postProcessingFailureReason: entity.postProcessingFailureReason,
             postProcessingOutputState: entity.postProcessingOutputState,
             transcriptionFailureReason: entity.transcriptionFailureReason,
+            executionProvenance: entity.executionProvenance,
         )
     }
 
@@ -134,6 +135,14 @@ extension RecordingManager {
             postProcessingFailureReason: nil,
             postProcessingOutputState: nil,
             transcriptionFailureReason: transcriptionStatusError(from: error).localizedDescription,
+            executionProvenance: session.transcriptionConfiguration.map {
+                ExecutionProvenance(
+                    transcriptionRequest: $0,
+                    vocabularySnapshot: session.vocabularySnapshot,
+                    transcriptionModelIdentity: transcriptionIdentity,
+                    kernelMode: session.kernelMode,
+                )
+            },
         )
 
         do {
@@ -153,6 +162,7 @@ extension RecordingManager {
                 inputCharacterCount: 0,
                 outputCharacterCount: 0,
                 failureReason: transcriptionStatusError(from: error).localizedDescription,
+                executionProvenance: failedTranscription.executionProvenance,
             )
             try? await storage.saveModelPerformanceAttempt(failedAttempt)
             NotificationCenter.default.post(

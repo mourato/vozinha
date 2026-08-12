@@ -7,9 +7,10 @@ import CoreData
 import Foundation
 
 /// Configuração programática do modelo CoreData
+// swiftlint:disable:next type_body_length
 public enum CoreDataModel {
     /// Versão atual do modelo
-    public static let currentVersion = "1.5"
+    public static let currentVersion = "1.6"
 
     /// Cria o modelo CoreData programaticamente
     // swiftlint:disable function_body_length
@@ -230,6 +231,12 @@ public enum CoreDataModel {
         attemptFailureReasonAttribute.attributeType = .stringAttributeType
         attemptFailureReasonAttribute.isOptional = true
 
+        let attemptExecutionProvenanceAttribute = NSAttributeDescription()
+        attemptExecutionProvenanceAttribute.name = "executionProvenanceData"
+        attemptExecutionProvenanceAttribute.attributeType = .binaryDataAttributeType
+        attemptExecutionProvenanceAttribute.isOptional = true
+        attemptExecutionProvenanceAttribute.allowsExternalBinaryDataStorage = true
+
         attemptEntity.properties = [
             attemptIdAttribute,
             attemptTranscriptionIdAttribute,
@@ -250,6 +257,7 @@ public enum CoreDataModel {
             attemptInputCharacterCountAttribute,
             attemptOutputCharacterCountAttribute,
             attemptFailureReasonAttribute,
+            attemptExecutionProvenanceAttribute,
         ]
 
         // Entidade Transcription
@@ -388,6 +396,12 @@ public enum CoreDataModel {
         transcriptionQualityDataAttribute.isOptional = true
         transcriptionQualityDataAttribute.allowsExternalBinaryDataStorage = true
 
+        let transcriptionExecutionProvenanceAttribute = NSAttributeDescription()
+        transcriptionExecutionProvenanceAttribute.name = "executionProvenanceData"
+        transcriptionExecutionProvenanceAttribute.attributeType = .binaryDataAttributeType
+        transcriptionExecutionProvenanceAttribute.isOptional = true
+        transcriptionExecutionProvenanceAttribute.allowsExternalBinaryDataStorage = true
+
         let canonicalSummarySchemaVersionAttribute = NSAttributeDescription()
         canonicalSummarySchemaVersionAttribute.name = "canonicalSummarySchemaVersion"
         canonicalSummarySchemaVersionAttribute.attributeType = .integer16AttributeType
@@ -455,6 +469,7 @@ public enum CoreDataModel {
             transcriptionContextItemsAttribute,
             canonicalSummaryDataAttribute,
             transcriptionQualityDataAttribute,
+            transcriptionExecutionProvenanceAttribute,
             canonicalSummarySchemaVersionAttribute,
             summaryGroundedInTranscriptAttribute,
             summaryContainsSpeculationAttribute,

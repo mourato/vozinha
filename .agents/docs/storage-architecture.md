@@ -27,7 +27,7 @@ The canonical owners are:
 | Persistent store, contexts, loading, fallback, store migration | [`CoreDataStack.swift`](../../Packages/MeetingAssistantCore/Sources/Data/Data/CoreData/CoreDataStack.swift) | Owns the `NSPersistentContainer`, SQLite URL, background contexts, automatic migration settings, and one-time Core Data maintenance. |
 | Domain/Core Data mapping and repository queries | [`CoreDataTranscriptionStorageRepository.swift`](../../Packages/MeetingAssistantCore/Sources/Data/Data/Repositories/CoreDataTranscriptionStorageRepository.swift) | Maps `TranscriptionEntity` and related domain values to `MeetingMO`, `TranscriptionMO`, and `ModelPerformanceAttemptMO`. Performs repository work through background contexts. |
 | Application storage facade and recording files | [`StorageService.swift`](../../Packages/MeetingAssistantCore/Sources/Data/Services/StorageService/StorageService.swift) and its [`StorageService/`](../../Packages/MeetingAssistantCore/Sources/Data/Services/StorageService) extensions | Exposes async save/load/delete APIs, creates recording URLs, validates configured paths, migrates legacy JSON, and owns retention cleanup orchestration. |
-| Core Data schema | [`CoreDataModel.swift`](../../Packages/MeetingAssistantCore/Sources/Data/Data/CoreData/CoreDataModel.swift) | Builds the programmatic model. Current model version is `1.5`; the stack requests automatic lightweight migration and inferred mapping where Core Data can provide it. |
+| Core Data schema | [`CoreDataModel.swift`](../../Packages/MeetingAssistantCore/Sources/Data/Data/CoreData/CoreDataModel.swift) | Builds the programmatic model. Current model version is `1.6`; the stack requests automatic lightweight migration and inferred mapping where Core Data can provide it. |
 | Preferences and migration checkpoints | [`AppSettingsStore/`](../../Packages/MeetingAssistantCore/Sources/Infrastructure/Models/AppSettingsStore) | Stores lightweight settings in `UserDefaults`, preserves stable keys, and performs legacy-domain/default migrations during initialization. |
 | Secrets | [`KeychainManager.swift`](../../Packages/MeetingAssistantCore/Sources/Infrastructure/Services/KeychainManager.swift) | Stores provider, registration, and transcription credentials through `KeychainProvider`/`DefaultKeychainProvider`; secrets do not belong in UserDefaults, Core Data, or plain files. |
 
@@ -41,6 +41,7 @@ Core Data currently contains:
 - `TranscriptionMO`, including raw/transcribed/processed content, segments, lifecycle state, summary fields, and relationships to a meeting and performance attempts.
 - `TranscriptionSegmentMO` for speaker/timing segments.
 - `ModelPerformanceAttemptMO` for immutable transcription and post-processing attempts. Attempts are append-only history; aggregate dashboard queries are separate views over that history.
+- `TranscriptionMO.executionProvenanceData` and `ModelPerformanceAttemptMO.executionProvenanceData` hold optional JSON-encoded `ExecutionProvenance`. It contains request/model/vocabulary and post-processing identity metadata only; it never contains credentials, raw prompts, transcript text, or provider responses.
 
 The normal application path is:
 
@@ -60,6 +61,8 @@ The normal application path is:
 ## Migration policy
 
 All migrations must be deterministic, idempotent, recoverable, and checkpointed only after successful completion. New migrations should preserve the existing repository/storage abstraction and add tests for a fresh run and a no-op re-run.
+
+Model `1.6` adds only optional binary attributes for execution provenance. Existing SQLite stores therefore use inferred lightweight migration; legacy rows remain nil rather than receiving guessed Settings values. Missing or malformed provenance decodes as unavailable, so history remains loadable and retry uses the documented compatibility fallback. The migration adds no backfill or checkpoint and is safe to load repeatedly.
 
 ### Application Support and SQLite store
 
