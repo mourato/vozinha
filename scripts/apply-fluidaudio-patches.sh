@@ -7,6 +7,22 @@ set -euo pipefail
 
 PROJECT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 
+apply_perl_patch_if_changed() {
+    local file_path="$1"
+    local expression="$2"
+    local temp_path
+
+    temp_path="$(mktemp "${file_path}.tmp.XXXXXX")"
+    cp -p "${file_path}" "${temp_path}"
+    perl -0pi -e "${expression}" "${temp_path}"
+
+    if cmp -s "${file_path}" "${temp_path}"; then
+        rm -f "${temp_path}"
+    else
+        mv "${temp_path}" "${file_path}"
+    fi
+}
+
 patch_checkout() {
     local checkout_root="$1"
     local asr_manager_path
@@ -37,7 +53,7 @@ patch_checkout() {
 
     if [ -f "${asr_manager_path}" ] && grep -q "public final class AsrManager" "${asr_manager_path}" \
         && ! grep -q "public final class AsrManager: @unchecked Sendable {" "${asr_manager_path}"; then
-        perl -0pi -e 's/public final class AsrManager(?::\s+Sendable)? \{/public final class AsrManager: \@unchecked Sendable {/g' "${asr_manager_path}"
+        apply_perl_patch_if_changed "${asr_manager_path}" 's/public final class AsrManager(?::\s+Sendable)? \{/public final class AsrManager: \@unchecked Sendable {/g'
     fi
 
     if [ -f "${asr_manager_path}" ] && grep -q "public final class AsrManager" "${asr_manager_path}" \
@@ -47,9 +63,9 @@ patch_checkout() {
     fi
 
     if [ -f "${streaming_asr_manager_path}" ]; then
-        perl -0pi -e 's/nonisolated\(unsafe\) private var asrManager: AsrManager\?/private var asrManager: AsrManager?/g' "${streaming_asr_manager_path}"
-        perl -0pi -e 's/nonisolated\(unsafe\) private var ctcSpotter: CtcKeywordSpotter\?/private var ctcSpotter: CtcKeywordSpotter?/g' "${streaming_asr_manager_path}"
-        perl -0pi -e 's/nonisolated\(unsafe\) private var vocabularyRescorer: VocabularyRescorer\?/private var vocabularyRescorer: VocabularyRescorer?/g' "${streaming_asr_manager_path}"
+        apply_perl_patch_if_changed "${streaming_asr_manager_path}" 's/nonisolated\(unsafe\) private var asrManager: AsrManager\?/private var asrManager: AsrManager?/g'
+        apply_perl_patch_if_changed "${streaming_asr_manager_path}" 's/nonisolated\(unsafe\) private var ctcSpotter: CtcKeywordSpotter\?/private var ctcSpotter: CtcKeywordSpotter?/g'
+        apply_perl_patch_if_changed "${streaming_asr_manager_path}" 's/nonisolated\(unsafe\) private var vocabularyRescorer: VocabularyRescorer\?/private var vocabularyRescorer: VocabularyRescorer?/g'
 
         if grep -q "nonisolated(unsafe) private var asrManager: AsrManager?" "${streaming_asr_manager_path}"; then
             echo "Failed to patch StreamingAsrManager concurrency state at ${checkout_root}" >&2
@@ -58,7 +74,7 @@ patch_checkout() {
     fi
 
     if [ -f "${granite_models_path}" ]; then
-        perl -0pi -e 's/public struct GraniteAsrModels \{/public struct GraniteAsrModels: \@unchecked Sendable {/g' "${granite_models_path}"
+        apply_perl_patch_if_changed "${granite_models_path}" 's/public struct GraniteAsrModels \{/public struct GraniteAsrModels: \@unchecked Sendable {/g'
         if ! grep -q "public struct GraniteAsrModels: @unchecked Sendable {" "${granite_models_path}"; then
             echo "Failed to patch GraniteAsrModels Sendable conformance at ${checkout_root}" >&2
             exit 1
@@ -66,7 +82,7 @@ patch_checkout() {
     fi
 
     if [ -f "${granite_plus_models_path}" ]; then
-        perl -0pi -e 's/public struct GranitePlusAsrModels \{/public struct GranitePlusAsrModels: \@unchecked Sendable {/g' "${granite_plus_models_path}"
+        apply_perl_patch_if_changed "${granite_plus_models_path}" 's/public struct GranitePlusAsrModels \{/public struct GranitePlusAsrModels: \@unchecked Sendable {/g'
         if ! grep -q "public struct GranitePlusAsrModels: @unchecked Sendable {" "${granite_plus_models_path}"; then
             echo "Failed to patch GranitePlusAsrModels Sendable conformance at ${checkout_root}" >&2
             exit 1
@@ -74,7 +90,7 @@ patch_checkout() {
     fi
 
     if [ -f "${nemotron_manager_path}" ]; then
-        perl -0pi -e 's/\n\s*case \.int8:\n\s*bytesPerElement = MemoryLayout<Int8>\.stride//g' "${nemotron_manager_path}"
+        apply_perl_patch_if_changed "${nemotron_manager_path}" 's/\n\s*case \.int8:\n\s*bytesPerElement = MemoryLayout<Int8>\.stride//g'
         if grep -q "case \\.int8:" "${nemotron_manager_path}"; then
             echo "Failed to patch NemotronStreamingAsrManager int8 case at ${checkout_root}" >&2
             exit 1
@@ -82,7 +98,7 @@ patch_checkout() {
     fi
 
     if [ -f "${kokoro_memory_path}" ]; then
-        perl -0pi -e 's/\s*#if canImport\(FoundationModels\).*?#endif/\n            @unknown default:\n                memset(array.dataPointer, 0, elementCount * MemoryLayout<Float>.stride)/sg' "${kokoro_memory_path}"
+        apply_perl_patch_if_changed "${kokoro_memory_path}" 's/\s*#if canImport\(FoundationModels\).*?#endif/\n            @unknown default:\n                memset(array.dataPointer, 0, elementCount * MemoryLayout<Float>.stride)/sg'
         if grep -q "case \\.int8:" "${kokoro_memory_path}"; then
             echo "Failed to patch KokoroSynthesizer memory int8 case at ${checkout_root}" >&2
             exit 1
