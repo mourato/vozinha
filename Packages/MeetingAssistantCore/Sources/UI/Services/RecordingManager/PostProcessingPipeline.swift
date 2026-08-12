@@ -177,6 +177,7 @@ extension RecordingManager {
                     outputLanguageID: kernelMode == .meeting ? settings.meetingSummaryOutputLanguage.rawValue : nil,
                 ),
                 useStructuredPipeline: useStructuredPipeline,
+                systemPromptOverride: kernelMode == .meeting ? settings.systemPrompt : nil,
             )
             let execution = try await executePostProcessing(
                 input: postProcessingInput,
@@ -257,6 +258,7 @@ extension RecordingManager {
         selectionOverride: EnhancementsAISelection?,
         configuration: DomainPostProcessingConfiguration,
         useStructuredPipeline: Bool,
+        systemPromptOverride: String?,
     ) -> DomainPostProcessingRequest {
         DomainPostProcessingRequest(
             prompt: DomainPostProcessingPrompt(id: prompt.id, title: prompt.title, content: prompt.promptText),
@@ -270,6 +272,7 @@ extension RecordingManager {
             },
             configuration: configuration,
             useStructuredPipeline: useStructuredPipeline,
+            systemPromptOverride: systemPromptOverride,
         )
     }
 
@@ -327,6 +330,7 @@ extension RecordingManager {
                         outputLanguageID: settings.meetingSummaryOutputLanguage.rawValue,
                     ),
                     useStructuredPipeline: false,
+                    systemPromptOverride: settings.systemPrompt,
                 ),
             )
             guard let detectedType = parseMeetingType(from: jsonString), detectedType != .general else { return fallback }

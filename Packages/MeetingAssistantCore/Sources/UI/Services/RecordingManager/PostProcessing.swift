@@ -19,6 +19,7 @@ extension RecordingManager {
         let autoDetectMeetingType: Bool
         let availablePrompts: [DomainPostProcessingPrompt]
         let postProcessingContext: String?
+        let postProcessingSystemPrompt: String?
         let postProcessingContextItems: [TranscriptionContextItem]
         let dictationTextHandlingPolicy: DictationTextHandlingPolicy?
         let dictationTranscriptionConfiguration: DictationTranscriptionConfiguration?
@@ -125,6 +126,7 @@ extension RecordingManager {
             autoDetectMeetingType: autoDetectMeetingType,
             availablePrompts: availablePrompts,
             postProcessingContext: session.postProcessingContext,
+            postProcessingSystemPrompt: kernelMode == .meeting ? settings.systemPrompt : nil,
             postProcessingContextItems: resolvedContextItems,
             dictationTextHandlingPolicy: session.dictationTextHandlingPolicy,
             dictationTranscriptionConfiguration: session.dictationTranscriptionConfiguration,
@@ -168,6 +170,7 @@ extension RecordingManager {
             autoDetectMeetingType: false,
             availablePrompts: [],
             postProcessingContext: nil,
+            postProcessingSystemPrompt: nil,
             postProcessingContextItems: session.postProcessingContextItems,
             dictationTextHandlingPolicy: session.dictationTextHandlingPolicy,
             dictationTranscriptionConfiguration: session.dictationTranscriptionConfiguration,

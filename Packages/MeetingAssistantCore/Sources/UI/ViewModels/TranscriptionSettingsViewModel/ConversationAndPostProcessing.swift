@@ -338,6 +338,7 @@ public extension TranscriptionSettingsViewModel {
                 outputLanguageID: mode == .meeting ? settings.meetingSummaryOutputLanguage.rawValue : nil,
             ),
             useStructuredPipeline: useStructuredPipeline,
+            systemPromptOverride: mode == .meeting ? settings.systemPrompt : nil,
         )
 
         if useStructuredPipeline {

@@ -27,12 +27,14 @@ final class TranscribeAudioPostProcessingTests: XCTestCase {
             modelID: "claude-frozen",
             readinessIssue: nil,
         )
+        let requestSystemPrompt = "Frozen system prompt"
         var receivedPrompt: DomainPostProcessingPrompt?
         postProcessingRepository.processTranscriptionStructured_5Handler = { _, request in
             receivedPrompt = request.prompt
             XCTAssertEqual(request.mode, .meeting)
             XCTAssertTrue(request.useStructuredPipeline)
             XCTAssertEqual(request.configuration, requestConfiguration)
+            XCTAssertEqual(request.systemPromptOverride, requestSystemPrompt)
             return DomainPostProcessingResult(
                 processedText: "Processed transcript",
                 canonicalSummary: CanonicalSummary(
@@ -71,6 +73,7 @@ final class TranscribeAudioPostProcessingTests: XCTestCase {
                 registrationID: nil,
             ),
             postProcessingConfiguration: requestConfiguration,
+            postProcessingSystemPrompt: requestSystemPrompt,
         )
 
         XCTAssertEqual(transcription.text, "Processed transcript")

@@ -44,6 +44,7 @@ final class PostProcessingServiceValidationTests: XCTestCase {
             selection: selection,
             configuration: configuration,
             useStructuredPipeline: false,
+            systemPromptOverride: "Frozen system prompt",
         )
         let settings = AppSettingsStore.shared
         let originalSelection = settings.enhancementsDictationAISelection
@@ -72,6 +73,7 @@ final class PostProcessingServiceValidationTests: XCTestCase {
         XCTAssertEqual(captured.configuration.selectedModel, "claude-frozen")
         XCTAssertEqual(captured.outputLanguageID, DictationOutputLanguage.portuguese.rawValue)
         XCTAssertFalse(captured.useStructuredPipeline)
+        XCTAssertEqual(captured.systemPromptOverride, "Frozen system prompt")
     }
 
     func testExplicitServiceUsesRequestReadinessSnapshot() async throws {

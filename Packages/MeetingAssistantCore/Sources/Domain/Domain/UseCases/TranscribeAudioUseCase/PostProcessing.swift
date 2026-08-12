@@ -17,6 +17,7 @@ extension TranscribeAudioUseCase {
         let postProcessingModelID: String?
         let selection: DomainPostProcessingSelection?
         let configuration: DomainPostProcessingConfiguration?
+        let systemPromptOverride: String?
 
         init(
             applyPostProcessing: Bool,
@@ -29,6 +30,7 @@ extension TranscribeAudioUseCase {
             postProcessingModelID: String? = nil,
             selection: DomainPostProcessingSelection? = nil,
             configuration: DomainPostProcessingConfiguration? = nil,
+            systemPromptOverride: String? = nil,
         ) {
             self.applyPostProcessing = applyPostProcessing
             self.postProcessingPrompt = postProcessingPrompt
@@ -40,6 +42,7 @@ extension TranscribeAudioUseCase {
             self.postProcessingModelID = postProcessingModelID
             self.selection = selection
             self.configuration = configuration
+            self.systemPromptOverride = systemPromptOverride
         }
 
         func shouldRunPostProcessing(postProcessingRepository: PostProcessingRepository?) -> Bool {
@@ -171,6 +174,7 @@ extension TranscribeAudioUseCase {
         let selectedModel: String?
         let selection: DomainPostProcessingSelection?
         let configuration: DomainPostProcessingConfiguration
+        let systemPromptOverride: String?
     }
 
     private struct PromptSelection {
@@ -196,6 +200,7 @@ extension TranscribeAudioUseCase {
             selectedModel: config.postProcessingModelID,
             selection: config.selection,
             configuration: config.configuration ?? .unconfigured,
+            systemPromptOverride: config.systemPromptOverride,
         )
     }
 
@@ -233,6 +238,7 @@ extension TranscribeAudioUseCase {
                     selection: context.selection,
                     configuration: context.configuration,
                     useStructuredPipeline: true,
+                    systemPromptOverride: context.systemPromptOverride,
                 ),
             )
             return PostProcessingResult(
@@ -259,6 +265,7 @@ extension TranscribeAudioUseCase {
                 selection: context.selection,
                 configuration: context.configuration,
                 useStructuredPipeline: false,
+                systemPromptOverride: context.systemPromptOverride,
             ),
         )
         return PostProcessingResult(
@@ -322,6 +329,7 @@ extension TranscribeAudioUseCase {
                     selection: context.selection,
                     configuration: context.configuration,
                     useStructuredPipeline: true,
+                    systemPromptOverride: context.systemPromptOverride,
                 ),
             )
             return PostProcessingResult(
@@ -347,6 +355,7 @@ extension TranscribeAudioUseCase {
                 selection: context.selection,
                 configuration: context.configuration,
                 useStructuredPipeline: false,
+                systemPromptOverride: context.systemPromptOverride,
             ),
         )
         return PostProcessingResult(
@@ -389,6 +398,7 @@ extension TranscribeAudioUseCase {
                 selection: context.selection,
                 configuration: context.configuration,
                 useStructuredPipeline: false,
+                systemPromptOverride: context.systemPromptOverride,
             ),
         )
         return parseMeetingType(from: jsonString)

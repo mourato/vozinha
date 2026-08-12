@@ -80,6 +80,7 @@ public final class TranscribeAudioUseCase: Sendable {
         autoDetectMeetingType: Bool = false,
         availablePrompts: [DomainPostProcessingPrompt] = [],
         postProcessingContext: String? = nil,
+        postProcessingSystemPrompt: String? = nil,
         kernelMode: IntelligenceKernelMode = .meeting,
         dictationStructuredPostProcessingEnabled: Bool = false,
         onPhaseChange: PhaseChangeHandler? = nil,
@@ -133,6 +134,7 @@ public final class TranscribeAudioUseCase: Sendable {
                 autoDetectMeetingType: autoDetectMeetingType,
                 availablePrompts: availablePrompts,
                 postProcessingContext: postProcessingContext,
+                postProcessingSystemPrompt: postProcessingSystemPrompt,
                 kernelMode: kernelMode,
                 dictationStructuredPostProcessingEnabled: dictationStructuredPostProcessingEnabled,
                 transcriptionDuration: transcriptionDuration,
@@ -170,6 +172,7 @@ public final class TranscribeAudioUseCase: Sendable {
         autoDetectMeetingType: Bool = false,
         availablePrompts: [DomainPostProcessingPrompt] = [],
         postProcessingContext: String? = nil,
+        postProcessingSystemPrompt: String? = nil,
         kernelMode: IntelligenceKernelMode = .meeting,
         dictationStructuredPostProcessingEnabled: Bool = false,
         transcriptionDuration: Double,
@@ -212,6 +215,7 @@ public final class TranscribeAudioUseCase: Sendable {
                 postProcessingModelID: postProcessingIdentity?.modelID,
                 selection: postProcessingSelection,
                 configuration: postProcessingConfiguration,
+                systemPromptOverride: postProcessingSystemPrompt,
             )
             let shouldAttemptPostProcessing = postProcessingConfig.shouldRunPostProcessing(postProcessingRepository: postProcessingRepository)
 
