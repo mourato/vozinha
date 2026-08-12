@@ -24,6 +24,11 @@ inventing, and do not add machinery for architectural appearance. When a
 refactor is necessary but outside the initial scope, explain it and wait for
 explicit confirmation before starting it.
 
+Implementation worktrees follow the exact contract in
+`core/policies/worktrees.md`: `<repo>/.worktrees/<slug>` on branch `<slug>`,
+with a lowercase-kebab-case slug. Report a harness limitation instead of
+silently adopting another location or naming scheme.
+
 ### Personal desktop and mobile projects
 
 - Treat desktop and mobile applications as personal and local by default, with no
@@ -52,6 +57,16 @@ explicit confirmation before starting it.
   overlays may specialize facts, never weaken safety or integrity rules.
 - Skills own repeatable tool workflows. Keep this file to hard constraints and
   routing only.
+- Choose one primary skill from the user's intent and load only the narrowest
+  complementary skills. Use `core/policies/routing.md` for the workflow matrix
+  and boundaries; do not make every applicable skill an orchestrator.
+- `improve` discovers and prioritizes codebase opportunities; `to-spec`
+  formalizes an already-understood request; `ship-ship` owns end-to-end
+  delivery and uses `implement` for execution.
+- Use `triage` for uncertain external issues or PRs, `codebase-design` as the
+  architecture vocabulary for architecture improvement, `handoff` only for
+  real context transfer, and `wizard` only for procedures the agent cannot
+  perform itself.
 - Classify platform and task before loading specialist skills:
   - Native macOS/AppKit/SwiftUI work: use `apple-design` and the SwiftUI
     skills; use `swiftui-accessibility-audit` for native accessibility. Do not
@@ -77,9 +92,13 @@ explicit confirmation before starting it.
 - `better-accessibility` is web-only: invoke it only for browser-facing
   HTML/CSS/JavaScript/TypeScript interfaces or an explicitly web accessibility
   task. For SwiftUI/AppKit, use the native accessibility skills instead.
-- Keep third-party skills unchanged. Put routing, precedence, and update
-  policy here; put project-specific facts in overlays. Never customize a
-  third-party `SKILL.md` or its metadata in place.
+- Keep third-party skills unchanged. Consult
+  `core/policies/skill-provenance.md` before touching `core/skills/<name>`;
+  `.skill-lock.json` and `make validate` protect recorded trees from local
+  customization. Put routing, precedence, and update policy here;
+  put project-specific facts in overlays. Upstream updates use
+  `npx skills update`, which refreshes the lock; local behavior uses an
+  overlay or a new first-party skill.
 
 ### Secrets and disclosure
 
@@ -103,6 +122,9 @@ explicit confirmation before starting it.
 - Push, force-push, amend, and destructive git ops (`reset --hard`, `clean`,
   broad `restore`) need an explicit user request or an explicitly authorized
   user-invoked workflow. Repo-local rules may define mechanics, not authority.
+- In an explicitly authorized delivery workflow, the orchestrator may remove
+  only the recorded worktree and source branch after merge and push succeed.
+  Implementers leave both intact for review.
 - Before mutating a GitHub issue/PR from a pasted URL, run `git status -sb`.
   If the tree is dirty with unrelated work, report it before changing remotes
   or history.
