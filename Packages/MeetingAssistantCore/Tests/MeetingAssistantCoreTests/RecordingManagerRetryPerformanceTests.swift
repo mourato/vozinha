@@ -30,6 +30,43 @@ extension RecordingManagerTests {
                 $0.attemptKind == .retry && $0.stage == .transcription
             },
         )
+
+        let saved = try XCTUnwrap(mockStorage.savedTranscriptions.last)
+        XCTAssertEqual(saved.executionProvenance?.kernelMode, .meeting)
+        XCTAssertNotNil(saved.executionProvenance?.usedStructuredPostProcessing)
+    }
+
+    func testRetryTranscription_PreservesPersistedAutomaticLanguage() async throws {
+        let manager = try XCTUnwrap(manager)
+        let mockTranscription = try XCTUnwrap(mockTranscription)
+
+        readyRetryProviders = [.groq]
+        let rawURL = FileManager.default.temporaryDirectory.appendingPathComponent("\(UUID().uuidString).wav")
+        try writeRetryTestAudioFile(at: rawURL)
+        defer { try? FileManager.default.removeItem(at: rawURL) }
+
+        let modelID = TranscriptionProvider.groqPresetModelIDs[0]
+        let transcriptionRequest = DomainTranscriptionRequestConfiguration(
+            providerID: TranscriptionProvider.groq.rawValue,
+            modelID: modelID,
+            inputLanguageCode: nil,
+        )
+        let transcription = Transcription(
+            meeting: Meeting(app: .zoom, capturePurpose: .meeting, audioFilePath: rawURL.path),
+            text: "Existing",
+            rawText: "Existing",
+            language: "en",
+            modelName: modelID,
+            executionProvenance: ExecutionProvenance(
+                transcriptionRequest: transcriptionRequest,
+                vocabularySnapshot: .empty,
+                transcriptionModelIdentity: TranscriptionProvider.groq.modelPerformanceIdentity(modelID: modelID),
+            ),
+        )
+
+        await manager.retryTranscription(for: transcription)
+
+        XCTAssertNil(mockTranscription.lastTranscriptionConfiguration?.inputLanguageCode)
     }
 
     private func writeRetryTestAudioFile(at url: URL) throws {

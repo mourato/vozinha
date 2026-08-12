@@ -39,7 +39,7 @@ extension RecordingManagerTests {
             capturePurpose: .dictation,
             startTime: Date(),
         )
-        let session = RecordingManager.TranscriptionSessionSnapshot(
+        var session = RecordingManager.TranscriptionSessionSnapshot(
             id: meetingID,
             meeting: meeting,
             recordingSource: .microphone,
@@ -51,6 +51,7 @@ extension RecordingManagerTests {
             dictationStartBundleIdentifier: nil,
             dictationStartURL: nil,
         )
+        session.useCaseConfig = manager.makeUseCaseConfig(session: session, settings: .shared)
 
         await manager.transcribeRecording(audioURL: audioURL, session: session)
 

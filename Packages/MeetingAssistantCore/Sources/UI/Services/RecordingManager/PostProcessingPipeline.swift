@@ -7,6 +7,20 @@ import MeetingAssistantCoreInfrastructure
 // MARK: - Post Processing Pipeline
 
 extension RecordingManager {
+    struct PostProcessingPromptSnapshot {
+        let availablePrompts: [PostProcessingPrompt]
+        let selectedPrompt: PostProcessingPrompt
+    }
+
+    struct PostProcessingRequestOverrides {
+        let applyPostProcessing: Bool
+        let selection: EnhancementsAISelection
+        let configuration: DomainPostProcessingConfiguration
+        let useStructuredPipeline: Bool
+        let systemPromptOverride: String?
+        let promptSnapshot: PostProcessingPromptSnapshot
+    }
+
     struct PostProcessingResult {
         let processedContent: String?
         let canonicalSummary: CanonicalSummary?
@@ -73,6 +87,7 @@ extension RecordingManager {
         capturePurposeOverride: CapturePurpose? = nil,
         selectionOverride: EnhancementsAISelection? = nil,
         promptIDOverride: UUID? = nil,
+        requestOverrides: PostProcessingRequestOverrides? = nil,
     ) async -> PostProcessingResult {
         transcriptionStatus.updateProgress(phase: .postProcessing, percentage: Constants.postProcessingProgress)
         RecordingIndicatorProcessingStateStore.shared.update(
@@ -88,18 +103,22 @@ extension RecordingManager {
             capturePurposeOverride: capturePurposeOverride,
         )
         let isDictation = kernelMode == .dictation
-        guard isDictation || settings.postProcessingEnabled else {
+        let shouldApplyPostProcessing = requestOverrides?.applyPostProcessing
+            ?? (isDictation || settings.postProcessingEnabled)
+        guard shouldApplyPostProcessing else {
             return PostProcessingResult(failureReason: "Post-processing is disabled globally.")
         }
-        guard !isDictation || (matchingDictationStyleForDictation(settings: settings)?.postProcessingEnabled ?? true) else {
+        guard requestOverrides != nil || !isDictation || (matchingDictationStyleForDictation(settings: settings)?.postProcessingEnabled ?? true) else {
             return PostProcessingResult(failureReason: "Post-processing is disabled for this recording type.")
         }
-        let requestSelectionOverride = selectionOverride ?? (isDictation
+        let requestSelectionOverride = requestOverrides?.selection ?? selectionOverride ?? (isDictation
             ? matchingDictationStyleForDictation(settings: settings)?.enhancementsSelection
             : nil)
-        let readinessIssue = requestSelectionOverride.map {
-            settings.enhancementsInferenceReadinessIssue(for: $0, apiKeyExists: apiKeyExists)
-        } ?? settings.enhancementsInferenceReadinessIssue(for: kernelMode, apiKeyExists: apiKeyExists)
+        let readinessIssue = requestOverrides == nil
+            ? (requestSelectionOverride.map {
+                settings.enhancementsInferenceReadinessIssue(for: $0, apiKeyExists: apiKeyExists)
+            } ?? settings.enhancementsInferenceReadinessIssue(for: kernelMode, apiKeyExists: apiKeyExists))
+            : nil
         setPostProcessingReadinessWarning(issue: readinessIssue, mode: kernelMode)
         if let readinessIssue {
             let reasonCode = readinessIssue.rawValue
@@ -111,6 +130,37 @@ extension RecordingManager {
             return PostProcessingResult(failureReason: "recording_indicator.post_processing_warning.missing_config".localized)
         }
 
+        let requestSelection = requestSelectionOverride ?? settings.enhancementsSelection(for: kernelMode)
+        let requestConfiguration = requestOverrides?.configuration ?? {
+            let configuration = requestSelectionOverride == nil
+                ? settings.resolvedEnhancementsAIConfiguration(for: kernelMode)
+                : settings.resolvedEnhancementsAIConfiguration(for: requestSelection)
+            return DomainPostProcessingConfiguration(
+                providerID: configuration.provider.rawValue,
+                baseURL: configuration.baseURL,
+                modelID: configuration.selectedModel,
+                readinessIssue: readinessIssue?.rawValue,
+                outputLanguageID: kernelMode == .meeting ? settings.meetingSummaryOutputLanguage.rawValue : nil,
+            )
+        }()
+        let useStructuredPipeline = requestOverrides?.useStructuredPipeline
+            ?? (kernelMode == .meeting || settings.dictationStructuredPostProcessingEnabled)
+        let systemPromptOverride = requestOverrides.map(\.systemPromptOverride)
+            ?? (kernelMode == .meeting ? settings.systemPrompt : nil)
+        let promptSnapshot = requestOverrides?.promptSnapshot
+            ?? makePostProcessingPromptSnapshot(isDictation: isDictation, settings: settings)
+        let requestContext = DomainPostProcessingRequest(
+            mode: kernelMode,
+            selection: DomainPostProcessingSelection(
+                providerID: requestSelection.provider.rawValue,
+                modelID: requestSelection.selectedModel,
+                registrationID: requestSelection.registrationID,
+            ),
+            configuration: requestConfiguration,
+            useStructuredPipeline: useStructuredPipeline,
+            systemPromptOverride: systemPromptOverride,
+        )
+
         let type = meeting?.type ?? currentMeeting?.type ?? .general
         if type == .autodetect {
             RecordingIndicatorProcessingStateStore.shared.update(
@@ -120,9 +170,8 @@ extension RecordingManager {
                 ),
             )
         }
-        let availablePrompts = isDictation ? settings.dictationAvailablePrompts : settings.meetingAvailablePrompts
         let prompt = if let promptIDOverride,
-                        let persistedPrompt = availablePrompts.first(where: { $0.id == promptIDOverride })
+                        let persistedPrompt = promptSnapshot.availablePrompts.first(where: { $0.id == promptIDOverride })
         {
             persistedPrompt
         } else {
@@ -130,9 +179,23 @@ extension RecordingManager {
                 rawText: TranscriptionOutputSanitizer.stripPromptMetadata(from: postProcessingInput),
                 isDictation: isDictation,
                 meetingType: type,
-                settings: settings,
+                snapshot: promptSnapshot,
+                request: requestContext,
             )
         }
+
+        let request = DomainPostProcessingRequest(
+            prompt: DomainPostProcessingPrompt(id: prompt.id, title: prompt.title, content: prompt.promptText),
+            mode: kernelMode,
+            selection: DomainPostProcessingSelection(
+                providerID: requestSelection.provider.rawValue,
+                modelID: requestSelection.selectedModel,
+                registrationID: requestSelection.registrationID,
+            ),
+            configuration: requestConfiguration,
+            useStructuredPipeline: useStructuredPipeline,
+            systemPromptOverride: systemPromptOverride,
+        )
 
         transcriptionStatus.updateProgress(phase: .postProcessing, percentage: Constants.aiProcessingProgress)
         RecordingIndicatorProcessingStateStore.shared.update(
@@ -144,56 +207,33 @@ extension RecordingManager {
         return await runPostProcessing(
             postProcessingInput: postProcessingInput,
             prompt: prompt,
-            settings: settings,
+            request: request,
             qualityProfile: qualityProfile,
-            kernelMode: kernelMode,
-            selectionOverride: requestSelectionOverride,
-            dictationStructuredPostProcessingEnabled: settings.dictationStructuredPostProcessingEnabled,
         )
     }
 
     func runPostProcessing(
         postProcessingInput: String,
         prompt: PostProcessingPrompt,
-        settings: AppSettingsStore,
+        request: DomainPostProcessingRequest,
         qualityProfile: TranscriptionQualityProfile?,
-        kernelMode: IntelligenceKernelMode,
-        selectionOverride: EnhancementsAISelection? = nil,
-        dictationStructuredPostProcessingEnabled: Bool,
     ) async -> PostProcessingResult {
-        let requestSelection = selectionOverride ?? settings.enhancementsSelection(for: kernelMode)
-        let requestConfig = settings.resolvedEnhancementsAIConfiguration(for: requestSelection)
-        let readinessIssue = settings.enhancementsInferenceReadinessIssue(for: requestSelection, apiKeyExists: apiKeyExists)
         let (requestSystemPrompt, requestUserPrompt) = buildRequestPrompts(
             prompt: prompt,
             from: prompt.promptText,
             transcription: postProcessingInput,
-            mode: kernelMode,
-            selectedModel: requestConfig.selectedModel,
+            mode: request.mode,
+            selectedModel: request.configuration.modelID,
         )
 
         do {
             let startTime = Date()
-            let useStructuredPipeline = kernelMode == .meeting || dictationStructuredPostProcessingEnabled
-            let request = makePostProcessingRequest(
-                prompt: prompt,
-                mode: kernelMode,
-                selectionOverride: requestSelection,
-                configuration: DomainPostProcessingConfiguration(
-                    providerID: requestConfig.provider.rawValue,
-                    baseURL: requestConfig.baseURL,
-                    modelID: requestConfig.selectedModel,
-                    readinessIssue: readinessIssue?.rawValue,
-                    outputLanguageID: kernelMode == .meeting ? settings.meetingSummaryOutputLanguage.rawValue : nil,
-                ),
-                useStructuredPipeline: useStructuredPipeline,
-            )
             let execution = try await executePostProcessing(
                 input: postProcessingInput,
                 request: request,
-                mode: kernelMode,
+                mode: request.mode,
                 qualityProfile: qualityProfile,
-                useStructuredPipeline: useStructuredPipeline,
+                useStructuredPipeline: request.useStructuredPipeline,
             )
 
             let duration = Date().timeIntervalSince(startTime)
@@ -206,7 +246,7 @@ extension RecordingManager {
                 promptId: prompt.id,
                 promptTitle: prompt.title,
                 duration: duration,
-                model: requestConfig.selectedModel,
+                model: request.configuration.modelID,
                 requestSystemPrompt: requestSystemPrompt,
                 requestUserPrompt: requestUserPrompt,
                 outputState: execution.outputState,
@@ -261,41 +301,19 @@ extension RecordingManager {
         return PostProcessingExecution(processedContent: content, canonicalSummary: nil, outputState: nil)
     }
 
-    private func makePostProcessingRequest(
-        prompt: PostProcessingPrompt,
-        mode: IntelligenceKernelMode,
-        selectionOverride: EnhancementsAISelection?,
-        configuration: DomainPostProcessingConfiguration,
-        useStructuredPipeline: Bool,
-    ) -> DomainPostProcessingRequest {
-        DomainPostProcessingRequest(
-            prompt: DomainPostProcessingPrompt(id: prompt.id, title: prompt.title, content: prompt.promptText),
-            mode: mode,
-            selection: selectionOverride.map {
-                DomainPostProcessingSelection(
-                    providerID: $0.provider.rawValue,
-                    modelID: $0.selectedModel,
-                    registrationID: $0.registrationID,
-                )
-            },
-            configuration: configuration,
-            useStructuredPipeline: useStructuredPipeline,
-            systemPromptOverride: mode == .meeting ? AppSettingsStore.shared.systemPrompt : nil,
-        )
-    }
-
     func resolvePostProcessingPrompt(
         rawText: String,
         isDictation: Bool,
         meetingType: MeetingType,
-        settings: AppSettingsStore,
+        snapshot: PostProcessingPromptSnapshot,
+        request: DomainPostProcessingRequest,
     ) async -> PostProcessingPrompt {
         if isDictation {
-            return settings.selectedDictationPrompt ?? .defaultPrompt
+            return snapshot.selectedPrompt
         }
 
         if meetingType == .autodetect {
-            return await resolveAutodetectPrompt(rawText: rawText, settings: settings)
+            return await resolveAutodetectPrompt(rawText: rawText, snapshot: snapshot, request: request)
         }
 
         if meetingType != .general {
@@ -305,15 +323,32 @@ extension RecordingManager {
             return prompt
         }
 
-        return settings.selectedPrompt ?? PromptService.shared.strategy(for: .general).promptObject()
+        return snapshot.selectedPrompt
     }
 
-    func resolveAutodetectPrompt(rawText: String, settings: AppSettingsStore) async -> PostProcessingPrompt {
-        let fallback = settings.selectedPrompt ?? PromptService.shared.strategy(for: .general).promptObject()
+    func makePostProcessingPromptSnapshot(
+        isDictation: Bool,
+        settings: AppSettingsStore,
+    ) -> PostProcessingPromptSnapshot {
+        let selectedPrompt = if isDictation {
+            settings.selectedDictationPrompt ?? .defaultPrompt
+        } else {
+            settings.selectedPrompt ?? PromptService.shared.strategy(for: .general).promptObject()
+        }
+
+        return PostProcessingPromptSnapshot(
+            availablePrompts: isDictation ? settings.dictationAvailablePrompts : settings.meetingAvailablePrompts,
+            selectedPrompt: selectedPrompt,
+        )
+    }
+
+    func resolveAutodetectPrompt(
+        rawText: String,
+        snapshot: PostProcessingPromptSnapshot,
+        request: DomainPostProcessingRequest,
+    ) async -> PostProcessingPrompt {
+        let fallback = snapshot.selectedPrompt
         let classifierPrompt = makeMeetingTypeClassifierPrompt()
-        let selection = settings.enhancementsSelection(for: .meeting)
-        let configuration = settings.resolvedEnhancementsAIConfiguration(for: selection)
-        let readinessIssue = settings.enhancementsInferenceReadinessIssue(for: selection, apiKeyExists: apiKeyExists)
 
         do {
             let jsonString = try await postProcessingRepository.processTranscription(
@@ -325,20 +360,10 @@ extension RecordingManager {
                         content: classifierPrompt.promptText,
                     ),
                     mode: .meeting,
-                    selection: DomainPostProcessingSelection(
-                        providerID: selection.provider.rawValue,
-                        modelID: selection.selectedModel,
-                        registrationID: selection.registrationID,
-                    ),
-                    configuration: DomainPostProcessingConfiguration(
-                        providerID: configuration.provider.rawValue,
-                        baseURL: configuration.baseURL,
-                        modelID: configuration.selectedModel,
-                        readinessIssue: readinessIssue?.rawValue,
-                        outputLanguageID: settings.meetingSummaryOutputLanguage.rawValue,
-                    ),
+                    selection: request.selection,
+                    configuration: request.configuration,
                     useStructuredPipeline: false,
-                    systemPromptOverride: settings.systemPrompt,
+                    systemPromptOverride: request.systemPromptOverride,
                 ),
             )
             guard let detectedType = parseMeetingType(from: jsonString), detectedType != .general else { return fallback }

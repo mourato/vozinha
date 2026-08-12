@@ -89,6 +89,7 @@ class MockTranscriptionClient: TranscriptionService, TranscriptionServiceFinalDi
     var assignSpeakersCallCount = 0
     var lastTranscribeAudioURL: URL?
     var lastTranscribeSamples: [Float] = []
+    var lastTranscriptionConfiguration: DomainTranscriptionRequestConfiguration?
 
     func healthCheck() async throws -> Bool {
         healthCheckCallCount += 1
@@ -168,16 +169,18 @@ class MockTranscriptionClient: TranscriptionService, TranscriptionServiceFinalDi
         onProgress: (@Sendable (Double) -> Void)?,
         executionMode _: TranscriptionExecutionMode,
         diarizationEnabledOverride _: Bool?,
-        configuration _: DomainTranscriptionRequestConfiguration,
+        configuration: DomainTranscriptionRequestConfiguration,
     ) async throws -> TranscriptionResponse {
-        try await transcribe(audioURL: audioURL, onProgress: onProgress)
+        lastTranscriptionConfiguration = configuration
+        return try await transcribe(audioURL: audioURL, onProgress: onProgress)
     }
 
     func transcribe(
         samples: [Float],
-        configuration _: DomainTranscriptionRequestConfiguration,
+        configuration: DomainTranscriptionRequestConfiguration,
     ) async throws -> TranscriptionResponse {
-        try await transcribe(samples: samples)
+        lastTranscriptionConfiguration = configuration
+        return try await transcribe(samples: samples)
     }
 
     func supportsIncrementalTranscription(selection _: TranscriptionProviderSelection) -> Bool {

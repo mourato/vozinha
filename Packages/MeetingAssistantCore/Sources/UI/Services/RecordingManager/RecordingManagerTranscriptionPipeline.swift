@@ -8,6 +8,7 @@ import MeetingAssistantCoreInfrastructure
 // MARK: - Transcription Pipeline
 
 extension RecordingManager {
+    // swiftlint:disable:next function_body_length
     func transcribeRecording(
         audioURL: URL,
         session: TranscriptionSessionSnapshot,
@@ -68,13 +69,14 @@ extension RecordingManager {
                 transcription: transcription,
                 recordingSource: session.recordingSource,
                 textPolicy: session.dictationTextHandlingPolicy,
+                settings: session.deliverySettings ?? DeliverySettingsSnapshot(),
             )
 
             completeVisibleTranscription(success: true, sessionID: session.id)
             notifySuccess(for: transcription)
             scheduleStatusReset(sessionID: session.id)
 
-            if AppSettingsStore.shared.autoExportSummaries {
+            if session.autoExportSummaries {
                 await exportSummary(transcription: transcription)
             }
         } catch {
@@ -141,13 +143,16 @@ extension RecordingManager {
         audioDuration: Double?,
         transcriptionIDOverride: UUID?,
     ) async throws -> Transcription {
-        let settings = AppSettingsStore.shared
         let transcriptionStart = Date()
         let meetingEntity = makeMeetingEntity(meeting: session.meeting, audioDuration: audioDuration)
-        let config = makeUseCaseConfig(session: session, settings: settings)
+        guard var config = session.useCaseConfig else {
+            throw TranscriptionError.transcriptionFailed("Missing transcription operation configuration.")
+        }
+        config.postProcessingContext = session.postProcessingContext
+        config.postProcessingContextItems = session.postProcessingContextItems
         let transcriptionIdentity = session.transcriptionConfiguration.flatMap { configuration in
             TranscriptionProvider(rawValue: configuration.providerID)?.modelPerformanceIdentity(modelID: configuration.modelID)
-        } ?? resolvedTranscriptionPerformanceIdentity(capturePurpose: session.meeting.capturePurpose)
+        } ?? ModelPerformanceIdentityResolver.unknown()
         let diarizationEnabledOverride = shouldEnableDiarization(
             for: session.meeting,
             capturePurposeOverride: session.meeting.capturePurpose,

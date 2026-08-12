@@ -141,7 +141,7 @@ private extension RecordingManager {
                 try await finishIncrementalMeetingSession(audioURL: audioURL, session: session)
             }
             finishSuccessfulTranscription(transcription, session: session)
-            if AppSettingsStore.shared.autoExportSummaries {
+            if session.autoExportSummaries {
                 await exportSummary(transcription: transcription)
             }
             clearCompletedMeetingState(sessionID: session.id)
@@ -197,7 +197,12 @@ private extension RecordingManager {
         if currentMeeting?.id == session.id {
             currentMeeting?.state = .completed
         }
-        TranscriptionDeliveryService.deliver(transcription: transcription, recordingSource: session.recordingSource, textPolicy: session.dictationTextHandlingPolicy)
+        TranscriptionDeliveryService.deliver(
+            transcription: transcription,
+            recordingSource: session.recordingSource,
+            textPolicy: session.dictationTextHandlingPolicy,
+            settings: session.deliverySettings ?? DeliverySettingsSnapshot(),
+        )
         completeVisibleTranscription(success: true, sessionID: session.id)
         notifySuccess(for: transcription)
         scheduleStatusReset(sessionID: session.id)

@@ -252,13 +252,15 @@ extension RecordingManager {
         audioDuration: Double?,
         transcriptionDuration: Double,
     ) async throws -> Transcription {
-        let settings = AppSettingsStore.shared
         let meetingEntity = makeMeetingEntity(meeting: session.meeting, audioDuration: audioDuration)
-        let config = makeUseCaseConfig(session: session, settings: settings)
-        let transcriptionIdentity = resolvedTranscriptionPerformanceIdentity(
-            capturePurpose: session.meeting.capturePurpose,
-            configuration: session.transcriptionConfiguration,
-        )
+        guard var config = session.useCaseConfig else {
+            throw TranscriptionError.transcriptionFailed("Missing transcription operation configuration.")
+        }
+        config.postProcessingContext = session.postProcessingContext
+        config.postProcessingContextItems = session.postProcessingContextItems
+        let transcriptionIdentity = session.transcriptionConfiguration.flatMap { configuration in
+            TranscriptionProvider(rawValue: configuration.providerID)?.modelPerformanceIdentity(modelID: configuration.modelID)
+        } ?? ModelPerformanceIdentityResolver.unknown()
         let transcriptionCompletedAt = Date()
         let transcriptionStartedAt = transcriptionCompletedAt.addingTimeInterval(-max(0, transcriptionDuration))
 

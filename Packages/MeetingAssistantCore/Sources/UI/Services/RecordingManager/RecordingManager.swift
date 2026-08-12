@@ -130,6 +130,9 @@ public class RecordingManager: ObservableObject, RecordingServiceProtocol {
     var activeDictationStyleSnapshot: DictationStyle?
     var activeTranscriptionConfiguration: DomainTranscriptionRequestConfiguration?
     var activeVocabularySnapshot: VocabularySnapshot?
+    var activeUseCaseConfig: UseCaseConfig?
+    var activeAutoExportSummaries: Bool?
+    var activeDeliverySettings: DeliverySettingsSnapshot?
     var activeTranscriptionSessionIDs = Set<UUID>()
     var foregroundTranscriptionSessionID: UUID?
     var incrementalDictationCoordinator: IncrementalTranscriptionCoordinator?
@@ -170,6 +173,9 @@ public class RecordingManager: ObservableObject, RecordingServiceProtocol {
         let dictationPostProcessingEnabled: Bool?
         let dictationStyle: DictationStyle?
         let vocabularySnapshot: VocabularySnapshot
+        var useCaseConfig: UseCaseConfig?
+        let autoExportSummaries: Bool
+        let deliverySettings: DeliverySettingsSnapshot?
 
         init(
             id: UUID,
@@ -191,6 +197,9 @@ public class RecordingManager: ObservableObject, RecordingServiceProtocol {
             dictationPostProcessingEnabled: Bool? = nil,
             dictationStyle: DictationStyle? = nil,
             vocabularySnapshot: VocabularySnapshot = .empty,
+            useCaseConfig: UseCaseConfig? = nil,
+            autoExportSummaries: Bool = false,
+            deliverySettings: DeliverySettingsSnapshot? = nil,
         ) {
             self.id = id
             self.meeting = meeting
@@ -211,6 +220,9 @@ public class RecordingManager: ObservableObject, RecordingServiceProtocol {
             self.dictationPostProcessingEnabled = dictationPostProcessingEnabled
             self.dictationStyle = dictationStyle
             self.vocabularySnapshot = vocabularySnapshot
+            self.useCaseConfig = useCaseConfig
+            self.autoExportSummaries = autoExportSummaries
+            self.deliverySettings = deliverySettings
         }
     }
 

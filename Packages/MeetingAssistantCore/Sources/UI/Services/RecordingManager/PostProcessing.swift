@@ -11,21 +11,22 @@ extension RecordingManager {
         let kernelMode: IntelligenceKernelMode
         let applyPostProcessing: Bool
         let dictationStructuredPostProcessingEnabled: Bool
-        let postProcessingPrompt: DomainPostProcessingPrompt?
-        let defaultPostProcessingPrompt: DomainPostProcessingPrompt?
+        var postProcessingPrompt: DomainPostProcessingPrompt?
+        var defaultPostProcessingPrompt: DomainPostProcessingPrompt?
         let postProcessingModel: String?
         let postProcessingIdentity: ModelPerformanceModelIdentity?
         let postProcessingConfiguration: DomainPostProcessingConfiguration?
-        let autoDetectMeetingType: Bool
+        var autoDetectMeetingType: Bool
         let availablePrompts: [DomainPostProcessingPrompt]
-        let postProcessingContext: String?
+        var postProcessingContext: String?
         let postProcessingSystemPrompt: String?
-        let postProcessingContextItems: [TranscriptionContextItem]
+        var postProcessingContextItems: [TranscriptionContextItem]
         let dictationTextHandlingPolicy: DictationTextHandlingPolicy?
         let dictationTranscriptionConfiguration: DictationTranscriptionConfiguration?
         let postProcessingSelection: EnhancementsAISelection?
     }
 
+    // swiftlint:disable:next function_body_length
     func makeUseCaseConfig(
         session: TranscriptionSessionSnapshot,
         settings: AppSettingsStore,
@@ -106,7 +107,9 @@ extension RecordingManager {
             }
         }
 
-        let resolvedConfiguration = settings.resolvedEnhancementsAIConfiguration(for: postProcessingSelection)
+        let resolvedConfiguration = isDictation
+            ? settings.resolvedEnhancementsAIConfiguration(for: postProcessingSelection)
+            : settings.resolvedEnhancementsAIConfiguration(for: kernelMode)
 
         return UseCaseConfig(
             kernelMode: kernelMode,
@@ -115,7 +118,7 @@ extension RecordingManager {
             postProcessingPrompt: prompt,
             defaultPostProcessingPrompt: autoDetectMeetingType ? defaultMeetingPrompt : nil,
             postProcessingModel: resolvedConfiguration.selectedModel,
-            postProcessingIdentity: postProcessingSelection.provider.modelPerformanceIdentity(modelID: postProcessingSelection.selectedModel),
+            postProcessingIdentity: resolvedConfiguration.provider.modelPerformanceIdentity(modelID: resolvedConfiguration.selectedModel),
             postProcessingConfiguration: DomainPostProcessingConfiguration(
                 providerID: resolvedConfiguration.provider.rawValue,
                 baseURL: resolvedConfiguration.baseURL,

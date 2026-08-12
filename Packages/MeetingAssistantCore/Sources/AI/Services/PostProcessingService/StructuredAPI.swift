@@ -159,6 +159,7 @@ extension PostProcessingService {
         )
     }
 
+    // swiftlint:disable:next function_body_length
     private func processTranscriptionStructured(
         _ transcription: String,
         with prompt: PostProcessingPrompt,
@@ -169,9 +170,11 @@ extension PostProcessingService {
         useLiveSettings: Bool = true,
     ) async throws -> DomainPostProcessingResult {
         _ = try validateInput(transcription)
-        let readinessIssue = selectionOverride.map {
-            settings.enhancementsInferenceReadinessIssue(for: $0, apiKeyExists: nil)
-        } ?? settings.enhancementsInferenceReadinessIssue(for: mode, apiKeyExists: nil)
+        let readinessIssue = useLiveSettings
+            ? (selectionOverride.map {
+                settings.enhancementsInferenceReadinessIssue(for: $0, apiKeyExists: nil)
+            } ?? settings.enhancementsInferenceReadinessIssue(for: mode, apiKeyExists: nil))
+            : nil
         guard readinessIssue == nil else {
             throw unavailableConfigurationError(
                 mode: mode,
@@ -251,9 +254,15 @@ extension PostProcessingService {
             useLiveSettings: useLiveSettings,
             outputLanguageID: outputLanguageID,
         )
-        let requestConfig = explicitRequestConfig ?? selectionOverride.map {
-            settings.resolvedEnhancementsAIConfiguration(for: $0)
-        } ?? settings.resolvedEnhancementsAIConfiguration(for: mode)
+        let requestConfig: AIConfiguration = if let explicitRequestConfig {
+            explicitRequestConfig
+        } else if useLiveSettings {
+            selectionOverride.map {
+                settings.resolvedEnhancementsAIConfiguration(for: $0)
+            } ?? settings.resolvedEnhancementsAIConfiguration(for: mode)
+        } else {
+            preconditionFailure("Explicit post-processing routes require request configuration")
+        }
         let traceContext = makeTraceContext(
             mode: mode,
             provider: requestConfig.provider,

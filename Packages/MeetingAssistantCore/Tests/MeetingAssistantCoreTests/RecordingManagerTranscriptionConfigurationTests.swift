@@ -74,6 +74,7 @@ extension RecordingManagerTests {
         let manager = try XCTUnwrap(manager)
         let settings = AppSettingsStore.shared
         let originalSelection = settings.enhancementsAISelection
+        let originalPostProcessingEnabled = settings.postProcessingEnabled
         let frozenSelection = EnhancementsAISelection(
             provider: .anthropic,
             selectedModel: "frozen-meeting-model",
@@ -81,9 +82,11 @@ extension RecordingManagerTests {
         )
         defer {
             settings.enhancementsAISelection = originalSelection
+            settings.postProcessingEnabled = originalPostProcessingEnabled
         }
 
         settings.enhancementsAISelection = frozenSelection
+        settings.postProcessingEnabled = true
         await manager.startRecording(source: .all)
         let meeting = try XCTUnwrap(manager.currentMeeting)
         let session = manager.makeTranscriptionSessionSnapshot(meeting)
@@ -92,12 +95,120 @@ extension RecordingManagerTests {
             provider: .openai,
             selectedModel: "mutated-meeting-model",
         )
-        let config = manager.makeUseCaseConfig(session: session, settings: settings)
+        manager.overrideCurrentMeetingType(.standup)
+        let overriddenMeeting = try XCTUnwrap(manager.currentMeeting)
+        let overriddenSession = manager.makeTranscriptionSessionSnapshot(overriddenMeeting)
+        let config = try XCTUnwrap(session.useCaseConfig)
+        let overriddenConfig = try XCTUnwrap(overriddenSession.useCaseConfig)
 
         XCTAssertEqual(session.postProcessingEnhancementsSelection, frozenSelection)
         XCTAssertEqual(config.postProcessingSelection, frozenSelection)
+        XCTAssertEqual(overriddenConfig.postProcessingPrompt?.id, PostProcessingPrompt.standup.id)
+        XCTAssertFalse(overriddenConfig.autoDetectMeetingType)
 
         await manager.cancelRecording()
+    }
+
+    func testPostProcessingPromptSnapshotWinsAfterSettingsMutation() async throws {
+        let manager = try XCTUnwrap(manager)
+        let settings = AppSettingsStore.shared
+        let originalPrompts = settings.meetingPrompts
+        let originalSelectedPromptID = settings.selectedPromptId
+        defer {
+            settings.meetingPrompts = originalPrompts
+            settings.selectedPromptId = originalSelectedPromptID
+        }
+
+        let capturedPrompt = PostProcessingPrompt(title: "Captured", promptText: "Use captured", isActive: true)
+        let mutatedPrompt = PostProcessingPrompt(title: "Mutated", promptText: "Use mutated", isActive: true)
+        settings.meetingPrompts = [capturedPrompt]
+        settings.selectedPromptId = capturedPrompt.id
+        let snapshot = manager.makePostProcessingPromptSnapshot(isDictation: false, settings: settings)
+
+        settings.meetingPrompts = [mutatedPrompt]
+        settings.selectedPromptId = mutatedPrompt.id
+
+        let request = DomainPostProcessingRequest(
+            mode: .meeting,
+            configuration: DomainPostProcessingConfiguration(
+                providerID: AIProvider.openai.rawValue,
+                baseURL: AIProvider.openai.defaultBaseURL,
+                modelID: "captured-model",
+            ),
+            useStructuredPipeline: false,
+        )
+        let resolved = await manager.resolvePostProcessingPrompt(
+            rawText: "meeting transcript",
+            isDictation: false,
+            meetingType: .general,
+            snapshot: snapshot,
+            request: request,
+        )
+
+        XCTAssertEqual(resolved.id, capturedPrompt.id)
+        XCTAssertEqual(resolved.promptText, capturedPrompt.promptText)
+    }
+
+    func testPostProcessingRequestOverridePreservesDisabledOperation() async throws {
+        let manager = try XCTUnwrap(manager)
+        let postProcessing = try XCTUnwrap(mockPostProcessing)
+        let settings = AppSettingsStore.shared
+        let overrides = RecordingManager.PostProcessingRequestOverrides(
+            applyPostProcessing: false,
+            selection: EnhancementsAISelection(provider: .openai, selectedModel: "captured-model"),
+            configuration: DomainPostProcessingConfiguration(
+                providerID: AIProvider.openai.rawValue,
+                baseURL: AIProvider.openai.defaultBaseURL,
+                modelID: "captured-model",
+            ),
+            useStructuredPipeline: true,
+            systemPromptOverride: "captured system prompt",
+            promptSnapshot: manager.makePostProcessingPromptSnapshot(isDictation: false, settings: settings),
+        )
+
+        let result = await manager.applyPostProcessing(
+            postProcessingInput: "meeting transcript",
+            meeting: Meeting(app: .zoom, capturePurpose: .meeting),
+            qualityProfile: nil,
+            requestOverrides: overrides,
+        )
+
+        XCTAssertEqual(result.failureReason, "Post-processing is disabled globally.")
+        XCTAssertEqual(postProcessing.processTranscriptionCallCount, 0)
+    }
+
+    func testPostProcessingUsesModeConfigurationFallback() async throws {
+        let manager = try XCTUnwrap(manager)
+        let postProcessing = try XCTUnwrap(mockPostProcessing)
+        let settings = AppSettingsStore.shared
+        let originalMeetingSelection = settings.enhancementsAISelection
+        let originalDictationSelection = settings.enhancementsDictationAISelection
+        let originalProviderModels = settings.enhancementsProviderSelectedModels
+        let originalPostProcessingEnabled = settings.postProcessingEnabled
+        defer {
+            settings.enhancementsAISelection = originalMeetingSelection
+            settings.enhancementsDictationAISelection = originalDictationSelection
+            settings.enhancementsProviderSelectedModels = originalProviderModels
+            settings.postProcessingEnabled = originalPostProcessingEnabled
+        }
+
+        settings.enhancementsProviderSelectedModels = [:]
+        settings.enhancementsAISelection = EnhancementsAISelection(provider: .custom, selectedModel: "")
+        settings.enhancementsDictationAISelection = EnhancementsAISelection(
+            provider: .anthropic,
+            selectedModel: "sibling-model",
+        )
+        settings.postProcessingEnabled = true
+
+        let result = await manager.applyPostProcessing(
+            postProcessingInput: "meeting transcript",
+            meeting: Meeting(app: .zoom, capturePurpose: .meeting),
+            qualityProfile: nil,
+        )
+
+        XCTAssertNil(result.failureReason)
+        XCTAssertEqual(postProcessing.lastStructuredRequest?.configuration.provider, .anthropic)
+        XCTAssertEqual(postProcessing.lastStructuredRequest?.configuration.selectedModel, "sibling-model")
     }
 }
 

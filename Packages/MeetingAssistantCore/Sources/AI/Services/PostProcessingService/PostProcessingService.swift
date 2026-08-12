@@ -50,6 +50,7 @@ public final class PostProcessingService: ObservableObject, PostProcessingServic
     @Published public internal(set) var isProcessing = false
     @Published public internal(set) var lastError: PostProcessingError?
 
+    /// Compatibility-only source for legacy overloads; explicit requests carry all operation values.
     let settings = AppSettingsStore.shared
 
     let providerHTTPClient = ProviderHTTPClient()
