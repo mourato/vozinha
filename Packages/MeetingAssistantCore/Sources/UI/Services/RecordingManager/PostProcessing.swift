@@ -11,21 +11,22 @@ extension RecordingManager {
         let kernelMode: IntelligenceKernelMode
         let applyPostProcessing: Bool
         let dictationStructuredPostProcessingEnabled: Bool
-        let postProcessingPrompt: DomainPostProcessingPrompt?
-        let defaultPostProcessingPrompt: DomainPostProcessingPrompt?
+        var postProcessingPrompt: DomainPostProcessingPrompt?
+        var defaultPostProcessingPrompt: DomainPostProcessingPrompt?
         let postProcessingModel: String?
         let postProcessingIdentity: ModelPerformanceModelIdentity?
         let postProcessingConfiguration: DomainPostProcessingConfiguration?
-        let autoDetectMeetingType: Bool
+        var autoDetectMeetingType: Bool
         let availablePrompts: [DomainPostProcessingPrompt]
-        let postProcessingContext: String?
+        var postProcessingContext: String?
         let postProcessingSystemPrompt: String?
-        let postProcessingContextItems: [TranscriptionContextItem]
+        var postProcessingContextItems: [TranscriptionContextItem]
         let dictationTextHandlingPolicy: DictationTextHandlingPolicy?
         let dictationTranscriptionConfiguration: DictationTranscriptionConfiguration?
         let postProcessingSelection: EnhancementsAISelection?
     }
 
+    // swiftlint:disable:next function_body_length
     func makeUseCaseConfig(
         session: TranscriptionSessionSnapshot,
         settings: AppSettingsStore,

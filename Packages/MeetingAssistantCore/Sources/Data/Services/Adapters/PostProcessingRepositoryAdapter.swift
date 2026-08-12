@@ -9,6 +9,7 @@ import MeetingAssistantCoreInfrastructure
 @MainActor
 public final class PostProcessingRepositoryAdapter: PostProcessingRepository {
     private let postProcessingService: any PostProcessingServiceProtocol
+    /// Compatibility-only fallback for legacy overloads; explicit requests never use this store.
     private let settings: AppSettingsStore
 
     public init(postProcessingService: any PostProcessingServiceProtocol) {

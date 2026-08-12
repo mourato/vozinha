@@ -252,9 +252,10 @@ extension RecordingManager {
         audioDuration: Double?,
         transcriptionDuration: Double,
     ) async throws -> Transcription {
-        let settings = AppSettingsStore.shared
         let meetingEntity = makeMeetingEntity(meeting: session.meeting, audioDuration: audioDuration)
-        let config = makeUseCaseConfig(session: session, settings: settings)
+        var config = session.useCaseConfig ?? makeUseCaseConfig(session: session, settings: AppSettingsStore.shared)
+        config.postProcessingContext = session.postProcessingContext
+        config.postProcessingContextItems = session.postProcessingContextItems
         let transcriptionIdentity = resolvedTranscriptionPerformanceIdentity(
             capturePurpose: session.meeting.capturePurpose,
             configuration: session.transcriptionConfiguration,

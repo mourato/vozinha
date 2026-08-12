@@ -30,6 +30,10 @@ extension RecordingManagerTests {
                 $0.attemptKind == .retry && $0.stage == .transcription
             },
         )
+
+        let saved = try XCTUnwrap(mockStorage.savedTranscriptions.last)
+        XCTAssertEqual(saved.executionProvenance?.kernelMode, .meeting)
+        XCTAssertNotNil(saved.executionProvenance?.usedStructuredPostProcessing)
     }
 
     private func writeRetryTestAudioFile(at url: URL) throws {

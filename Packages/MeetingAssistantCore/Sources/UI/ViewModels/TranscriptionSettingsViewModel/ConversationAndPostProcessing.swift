@@ -261,6 +261,26 @@ public extension TranscriptionSettingsViewModel {
         let postProcessingSelection = settings.enhancementsSelection(for: mode)
         let postProcessingIdentity = settings.resolvedEnhancementsPerformanceIdentity(for: mode)
         let useStructuredPipeline = mode == .meeting || settings.dictationStructuredPostProcessingEnabled
+        let postProcessingConfiguration = settings.resolvedEnhancementsAIConfiguration(for: postProcessingSelection)
+        let readinessIssue = settings.enhancementsInferenceReadinessIssue(for: postProcessingSelection, apiKeyExists: nil)
+        let request = DomainPostProcessingRequest(
+            prompt: DomainPostProcessingPrompt(id: prompt.id, title: prompt.title, content: prompt.promptText),
+            mode: mode,
+            selection: DomainPostProcessingSelection(
+                providerID: postProcessingSelection.provider.rawValue,
+                modelID: postProcessingSelection.selectedModel,
+                registrationID: postProcessingSelection.registrationID,
+            ),
+            configuration: DomainPostProcessingConfiguration(
+                providerID: postProcessingConfiguration.provider.rawValue,
+                baseURL: postProcessingConfiguration.baseURL,
+                modelID: postProcessingConfiguration.selectedModel,
+                readinessIssue: readinessIssue?.rawValue,
+                outputLanguageID: mode == .meeting ? settings.meetingSummaryOutputLanguage.rawValue : nil,
+            ),
+            useStructuredPipeline: useStructuredPipeline,
+            systemPromptOverride: mode == .meeting ? settings.systemPrompt : nil,
+        )
         let executionProvenance = makeReprocessProvenance(
             transcription: transcription,
             prompt: prompt,
@@ -274,9 +294,8 @@ public extension TranscriptionSettingsViewModel {
 
         do {
             let result = try await runPostProcessing(
-                prompt: prompt,
-                mode: mode,
                 postProcessingInput: postProcessingInput,
+                request: request,
             )
             let duration = Date().timeIntervalSince(startTime)
             let modelUsed = postProcessingSelection.selectedModel
@@ -329,36 +348,10 @@ public extension TranscriptionSettingsViewModel {
     }
 
     private func runPostProcessing(
-        prompt: PostProcessingPrompt,
-        mode: IntelligenceKernelMode,
         postProcessingInput: String,
+        request: DomainPostProcessingRequest,
     ) async throws -> ReprocessPipelineResult {
-        let useStructuredPipeline = mode == .meeting
-            || AppSettingsStore.shared.dictationStructuredPostProcessingEnabled
-        let settings = AppSettingsStore.shared
-        let selection = settings.enhancementsSelection(for: mode)
-        let configuration = settings.resolvedEnhancementsAIConfiguration(for: selection)
-        let readinessIssue = settings.enhancementsInferenceReadinessIssue(for: selection, apiKeyExists: nil)
-        let request = DomainPostProcessingRequest(
-            prompt: DomainPostProcessingPrompt(id: prompt.id, title: prompt.title, content: prompt.promptText),
-            mode: mode,
-            selection: DomainPostProcessingSelection(
-                providerID: selection.provider.rawValue,
-                modelID: selection.selectedModel,
-                registrationID: selection.registrationID,
-            ),
-            configuration: DomainPostProcessingConfiguration(
-                providerID: configuration.provider.rawValue,
-                baseURL: configuration.baseURL,
-                modelID: configuration.selectedModel,
-                readinessIssue: readinessIssue?.rawValue,
-                outputLanguageID: mode == .meeting ? settings.meetingSummaryOutputLanguage.rawValue : nil,
-            ),
-            useStructuredPipeline: useStructuredPipeline,
-            systemPromptOverride: mode == .meeting ? settings.systemPrompt : nil,
-        )
-
-        if useStructuredPipeline {
+        if request.useStructuredPipeline {
             let structuredResult = try await recordingManager.postProcessingRepository.processTranscriptionStructured(
                 postProcessingInput,
                 request: request,

@@ -210,6 +210,11 @@ extension RecordingManager {
             vocabularyHints: vocabularySnapshot.providerHints,
         )
 
+        let operationSnapshot = makeTranscriptionSessionSnapshot(meeting)
+        activeUseCaseConfig = operationSnapshot.useCaseConfig
+        activeAutoExportSummaries = operationSnapshot.autoExportSummaries
+        activeDeliverySettings = operationSnapshot.deliverySettings
+
         let audioURL = storage.createRecordingURL(for: meeting, type: .merged)
         await setMergedAudioURL(audioURL)
         try await prepareIncrementalDictationSessionIfNeeded(
