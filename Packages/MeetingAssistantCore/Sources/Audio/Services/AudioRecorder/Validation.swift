@@ -8,17 +8,33 @@ extension AudioRecorder {
     // MARK: - Validation & Retry
 
     func startValidationTimer(url: URL, source: RecordingSource, retryCount: Int) {
+        let sessionID = UUID()
+        activeValidationSessionID = sessionID
         validationTimer = Timer.scheduledTimer(
             withTimeInterval: Constants.validationInterval, repeats: false,
         ) { @Sendable [weak self] _ in
             Task { @MainActor in
-                await self?.handleValidationTimeout(url: url, source: source, retryCount: retryCount)
+                await self?.handleValidationTimeout(
+                    url: url,
+                    source: source,
+                    retryCount: retryCount,
+                    sessionID: sessionID,
+                )
             }
         }
     }
 
-    func handleValidationTimeout(url: URL, source: RecordingSource, retryCount: Int) async {
+    func handleValidationTimeout(
+        url: URL,
+        source: RecordingSource,
+        retryCount: Int,
+        sessionID: UUID,
+    ) async {
+        guard isCurrentValidationSession(sessionID, url: url, source: source) else { return }
+
         let validationPassed = await worker.getHasReceivedValidBuffer()
+
+        guard isCurrentValidationSession(sessionID, url: url, source: source) else { return }
 
         guard !validationPassed else {
             AppLogger.info("Recording validation successful", category: .recordingManager)
@@ -27,6 +43,8 @@ extension AudioRecorder {
 
         AppLogger.error("Recording validation failed - no valid buffers received", category: .recordingManager)
         _ = await stopRecording()
+
+        guard activeValidationSessionID == sessionID else { return }
 
         if source == .microphone {
             do {
@@ -54,6 +72,13 @@ extension AudioRecorder {
             self.error = error
             onRecordingError?(error)
         }
+    }
+
+    private func isCurrentValidationSession(_ sessionID: UUID, url: URL, source: RecordingSource) -> Bool {
+        activeValidationSessionID == sessionID
+            && isRecording
+            && currentRecordingURL == url
+            && activeRecordingSource == source
     }
 
     func retryRecording(to url: URL, source: RecordingSource, retryCount: Int) async {

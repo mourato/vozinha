@@ -73,4 +73,24 @@ final class AudioRecorderOutputInterruptionTests: XCTestCase {
         XCTAssertEqual(recorder.currentPeakPower, -160)
         XCTAssertTrue(recorder.currentBarPowerLevels.isEmpty)
     }
+
+    func testStaleValidationTimeoutCannotStopCurrentRecording() async {
+        let recorder = AudioRecorder()
+        let currentURL = URL(fileURLWithPath: "/tmp/current-recording.m4a")
+
+        recorder.isRecording = true
+        recorder.currentRecordingURL = currentURL
+        recorder.activeRecordingSource = .microphone
+        recorder.activeValidationSessionID = UUID()
+
+        await recorder.handleValidationTimeout(
+            url: currentURL,
+            source: .microphone,
+            retryCount: 0,
+            sessionID: UUID(),
+        )
+
+        XCTAssertTrue(recorder.isRecording)
+        XCTAssertEqual(recorder.currentRecordingURL, currentURL)
+    }
 }

@@ -122,6 +122,7 @@ public class AudioRecorder: ObservableObject, AudioRecordingService {
     private var fallbackMeterTimer: Timer?
     private var settingsSubscriptions = Set<AnyCancellable>()
     var lastMeterSnapshotDate: Date?
+    var activeValidationSessionID: UUID?
     private let mixedBufferCallbackStorage = MixedBufferCallbackStorage()
     var activeRecordingSource: RecordingSource?
     var inputDeviceRecoveryTask: Task<Void, Never>?
@@ -219,6 +220,8 @@ public class AudioRecorder: ObservableObject, AudioRecordingService {
     ///   - source: The audio source to record.
     ///   - retryCount: Number of retries attempted so far.
     public func startRecording(to outputURL: URL, source: RecordingSource, retryCount: Int = 0) async throws {
+        // Invalidate validation callbacks from any previous attempt before its teardown can yield.
+        activeValidationSessionID = UUID()
         // Stop any existing recording first
         await stopRecording()
         inputDeviceRecoveryTask?.cancel()
