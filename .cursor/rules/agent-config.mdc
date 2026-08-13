@@ -8,6 +8,10 @@ alwaysApply: true
 Be concise. Classify each request before acting. Use the narrowest relevant
 skill and the lowest safe reasoning effort. Keep one objective per task.
 
+Before implementation or delivery, read `core/policies/delivery-contract.md`.
+Use its external-state addendum when the work can persist, synchronize,
+delete, or overwrite state outside the current process.
+
 Analysis and review agents are read-only. Only an explicitly isolated
 implementation workspace may be modified. Preserve unrelated changes, inspect
 the concrete artifact first, and validate the smallest surface that proves the
