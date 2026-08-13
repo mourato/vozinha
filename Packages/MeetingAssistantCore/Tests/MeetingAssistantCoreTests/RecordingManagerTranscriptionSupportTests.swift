@@ -6,6 +6,30 @@ import XCTest
 
 @MainActor
 extension RecordingManagerTests {
+    func testInactiveIncrementalMeetingTeardownPreservesForwarder() throws {
+        let manager = try XCTUnwrap(manager)
+        let forwarder = RecordingManager.IncrementalBufferForwarder { _ in }
+        manager.incrementalBufferForwarder = forwarder
+
+        manager.teardownIncrementalMeetingSession()
+
+        XCTAssertTrue(manager.incrementalBufferForwarder === forwarder)
+        forwarder.stop()
+        manager.incrementalBufferForwarder = nil
+    }
+
+    func testInactiveIncrementalDictationTeardownPreservesForwarder() throws {
+        let manager = try XCTUnwrap(manager)
+        let forwarder = RecordingManager.IncrementalBufferForwarder { _ in }
+        manager.incrementalBufferForwarder = forwarder
+
+        manager.teardownIncrementalDictationSession()
+
+        XCTAssertTrue(manager.incrementalBufferForwarder === forwarder)
+        forwarder.stop()
+        manager.incrementalBufferForwarder = nil
+    }
+
     func testTranscription_FailsWithInvalidURL() async throws {
         // Given
         let mockTranscription = try XCTUnwrap(mockTranscription)

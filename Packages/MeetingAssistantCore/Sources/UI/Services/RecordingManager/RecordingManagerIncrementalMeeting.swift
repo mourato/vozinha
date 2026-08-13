@@ -131,6 +131,7 @@ extension RecordingManager {
     }
 
     func teardownIncrementalMeetingSession() {
+        guard incrementalMeetingCoordinator != nil else { return }
         if let recorder = concreteMicRecorder {
             clearIncrementalBufferForwarder(on: recorder)
         }

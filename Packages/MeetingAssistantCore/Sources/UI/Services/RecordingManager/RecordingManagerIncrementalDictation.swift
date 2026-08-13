@@ -128,6 +128,10 @@ extension RecordingManager {
     }
 
     func teardownIncrementalDictationSession() {
+        guard incrementalDictationCoordinator != nil else {
+            transcriptionStatus.updateLivePreviewText("")
+            return
+        }
         if let recorder = concreteMicRecorder {
             clearIncrementalBufferForwarder(on: recorder)
         }
