@@ -113,6 +113,78 @@ extension RecordingManagerTests {
         await manager.cancelRecording()
     }
 
+    func testStopRecording_DictationRunsPostProcessing() async throws {
+        let manager = try XCTUnwrap(manager)
+        let mockMic = try XCTUnwrap(mockMic)
+        let mockPostProcessing = try XCTUnwrap(mockPostProcessing)
+        let settings = AppSettingsStore.shared
+        let originalPostProcessing = settings.postProcessingEnabled
+        let originalDictationSelection = settings.enhancementsDictationAISelection
+        let originalDictationStyles = settings.dictationStyles
+        let originalDictationPromptID = settings.dictationSelectedPromptId
+        let originalMergeSetting = settings.shouldMergeAudioFiles
+        let originalSilenceSetting = settings.removeSilenceBeforeProcessing
+        let selection = EnhancementsAISelection(provider: .openai, selectedModel: "gpt-4o-mini")
+
+        defer {
+            settings.postProcessingEnabled = originalPostProcessing
+            settings.enhancementsDictationAISelection = originalDictationSelection
+            settings.dictationStyles = originalDictationStyles
+            settings.dictationSelectedPromptId = originalDictationPromptID
+            settings.shouldMergeAudioFiles = originalMergeSetting
+            settings.removeSilenceBeforeProcessing = originalSilenceSetting
+        }
+
+        settings.postProcessingEnabled = true
+        settings.enhancementsDictationAISelection = selection
+        settings.dictationStyles = settings.dictationStyles.map { style in
+            var updated = style
+            updated.enhancementsSelection = selection
+            updated.postProcessingEnabled = true
+            return updated
+        }
+        settings.dictationSelectedPromptId = PostProcessingPrompt.defaultPrompt.id
+        settings.shouldMergeAudioFiles = false
+        settings.removeSilenceBeforeProcessing = false
+
+        await manager.startRecording(source: .microphone)
+        let rawURL = try XCTUnwrap(mockMic.currentRecordingURL)
+        try writeTestAudioFile(at: rawURL)
+
+        await manager.stopRecording()
+
+        XCTAssertGreaterThan(mockPostProcessing.processTranscriptionCallCount, 0)
+        XCTAssertEqual(mockPostProcessing.lastPromptTitle, PostProcessingPrompt.defaultPrompt.title)
+    }
+
+    func testDictationPostProcessingUsesResolvedSelectionWhenStyleHasNoSelection() async throws {
+        let manager = try XCTUnwrap(manager)
+        let settings = AppSettingsStore.shared
+        let originalPostProcessing = settings.postProcessingEnabled
+        let originalDictationSelection = settings.enhancementsDictationAISelection
+        let originalDictationStyles = settings.dictationStyles
+        defer {
+            settings.postProcessingEnabled = originalPostProcessing
+            settings.enhancementsDictationAISelection = originalDictationSelection
+            settings.dictationStyles = originalDictationStyles
+        }
+
+        settings.postProcessingEnabled = false
+        settings.enhancementsDictationAISelection = EnhancementsAISelection(provider: .openai, selectedModel: "gpt-4o-mini")
+        settings.dictationStyles = settings.dictationStyles.map { style in
+            var updated = style
+            updated.enhancementsSelection = nil
+            updated.postProcessingEnabled = true
+            return updated
+        }
+
+        await manager.startRecording(source: .microphone)
+        let configuration = manager.debugResolvePostProcessingConfiguration(meeting: Meeting(app: .unknown), settings: settings)
+        await manager.cancelRecording()
+
+        XCTAssertTrue(configuration.applyPostProcessing)
+    }
+
     func testStopRecording_MeetingUsesMeetingPromptSelection() async throws {
         let manager = try XCTUnwrap(manager)
         let settings = AppSettingsStore.shared

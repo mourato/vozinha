@@ -367,25 +367,18 @@ public class AudioRecorder: ObservableObject, AudioRecordingService {
         validationTimer = nil
 
         if simpleRecorder != nil {
-            _ = stopSimpleMicRecording()
+            let url = stopSimpleMicRecording() ?? currentRecordingURL
             restoreOutputInterruptionIfNeeded()
-            isRecording = false
-            currentAveragePower = -160.0
-            currentPeakPower = -160.0
-            currentBarPowerLevels = []
-            latestMeterSnapshot = nil
-            return currentRecordingURL
+            resetRecordingStateAfterStop()
+            return url
         }
 
         if let recorder = fallbackRecorder {
+            let url = currentRecordingURL
             stopFallbackRecorder(recorder)
             restoreOutputInterruptionIfNeeded()
-            isRecording = false
-            currentAveragePower = -160.0
-            currentPeakPower = -160.0
-            currentBarPowerLevels = []
-            latestMeterSnapshot = nil
-            return currentRecordingURL
+            resetRecordingStateAfterStop()
+            return url
         }
 
         // Stop Engine & System Capture
@@ -399,12 +392,7 @@ public class AudioRecorder: ObservableObject, AudioRecordingService {
         let url = await worker.stop()
 
         // Reset state
-        isRecording = false
-        currentAveragePower = -160.0
-        currentPeakPower = -160.0
-        currentBarPowerLevels = []
-        latestMeterSnapshot = nil
-        lastMeterSnapshotDate = nil
+        resetRecordingStateAfterStop()
 
         // Log dropped frames before clearing (for diagnostics)
         let queueStats = systemAudioQueue.stats

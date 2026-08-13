@@ -226,6 +226,16 @@ extension AudioRecorder {
         }
     }
 
+    func resetRecordingStateAfterStop() {
+        isRecording = false
+        currentRecordingURL = nil
+        currentAveragePower = -160.0
+        currentPeakPower = -160.0
+        currentBarPowerLevels = []
+        latestMeterSnapshot = nil
+        lastMeterSnapshotDate = nil
+    }
+
     var shouldUseRealtimeMicrophonePipeline: Bool {
         onMixedAudioBuffer != nil
     }

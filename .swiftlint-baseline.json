@@ -1637,7 +1637,7 @@
   {
     "text": "public struct TranscriptionCardView: View {",
     "violation": {
-      "reason": "Struct body should span 400 lines or less excluding comments and whitespace: currently spans 571 lines",
+      "reason": "Struct body should span 400 lines or less excluding comments and whitespace: currently spans 565 lines",
       "location": {
         "file": "Packages/MeetingAssistantCore/Sources/UI/components/transcription/TranscriptionCardView.swift",
         "line": 10,
@@ -1654,11 +1654,11 @@
     "violation": {
       "ruleIdentifier": "file_length",
       "ruleName": "File Length",
-      "reason": "File should contain 600 lines or less excluding comments and whitespaces: currently contains 678",
+      "reason": "File should contain 600 lines or less excluding comments and whitespaces: currently contains 672",
       "ruleDescription": "Files should not span too many lines.",
       "severity": "warning",
       "location": {
-        "line": 759,
+        "line": 751,
         "character": 1,
         "file": "Packages/MeetingAssistantCore/Sources/UI/components/transcription/TranscriptionCardView.swift"
       }

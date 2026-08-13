@@ -56,4 +56,21 @@ final class AudioRecorderOutputInterruptionTests: XCTestCase {
 
         XCTAssertEqual(plan, .none)
     }
+
+    func testResetRecordingStateAfterStopClearsStateForNextRecording() {
+        let recorder = AudioRecorder()
+        recorder.isRecording = true
+        recorder.currentRecordingURL = URL(fileURLWithPath: "/tmp/recording.m4a")
+        recorder.currentAveragePower = -12
+        recorder.currentPeakPower = -6
+        recorder.currentBarPowerLevels = [-12, -6]
+
+        recorder.resetRecordingStateAfterStop()
+
+        XCTAssertFalse(recorder.isRecording)
+        XCTAssertNil(recorder.currentRecordingURL)
+        XCTAssertEqual(recorder.currentAveragePower, -160)
+        XCTAssertEqual(recorder.currentPeakPower, -160)
+        XCTAssertTrue(recorder.currentBarPowerLevels.isEmpty)
+    }
 }

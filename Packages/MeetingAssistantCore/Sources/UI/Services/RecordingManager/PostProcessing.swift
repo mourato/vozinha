@@ -34,20 +34,23 @@ extension RecordingManager {
         let meeting = session.meeting
         let kernelMode = session.kernelMode
         let isDictation = kernelMode == .dictation
-        let dictationSelection = isDictation ? session.dictationEnhancementsSelection : nil
         let postProcessingSelection = resolvedPostProcessingSelection(session: session, settings: settings)
         let modePostProcessingEnabled = dictationPostProcessingEnabled(for: session, settings: settings)
         let readinessIssue = modePostProcessingEnabled
-            ? (dictationSelection.map { settings.enhancementsInferenceReadinessIssue(for: $0, apiKeyExists: apiKeyExists) } ?? settings.enhancementsInferenceReadinessIssue(for: kernelMode, apiKeyExists: apiKeyExists))
+            ? (isDictation
+                ? settings.enhancementsInferenceReadinessIssue(for: postProcessingSelection, apiKeyExists: apiKeyExists)
+                : settings.enhancementsInferenceReadinessIssue(for: kernelMode, apiKeyExists: apiKeyExists))
             : nil
         if currentMeeting?.id == session.id {
             setPostProcessingReadinessWarning(issue: readinessIssue, mode: kernelMode)
         }
-        let applyPostProcessing = (dictationSelection.map { settings.enhancementsInferenceReadinessIssue(for: $0, apiKeyExists: apiKeyExists) == nil } ?? Self.shouldApplyEnhancementsPostProcessing(
-            settings: settings,
-            kernelMode: kernelMode,
-            apiKeyExists: apiKeyExists,
-        )) && (!isDictation || modePostProcessingEnabled)
+        let applyPostProcessing = (isDictation
+            ? readinessIssue == nil
+            : Self.shouldApplyEnhancementsPostProcessing(
+                settings: settings,
+                kernelMode: kernelMode,
+                apiKeyExists: apiKeyExists,
+            )) && (!isDictation || modePostProcessingEnabled)
 
         let disabledForRecording = isDictation ? !modePostProcessingEnabled : settings.isMeetingPostProcessingDisabled
         let shouldApplyPostProcessing = applyPostProcessing && !disabledForRecording

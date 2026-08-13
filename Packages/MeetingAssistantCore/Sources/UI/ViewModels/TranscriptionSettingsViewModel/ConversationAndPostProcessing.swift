@@ -209,14 +209,14 @@ public extension TranscriptionSettingsViewModel {
     }
 
     var availablePrompts: [PostProcessingPrompt] {
-        AppSettingsStore.shared.allPrompts
+        settings.allPrompts
     }
 
     func availablePrompts(for metadata: TranscriptionMetadata) -> [PostProcessingPrompt] {
         if !metadata.supportsMeetingConversation {
-            return AppSettingsStore.shared.dictationAvailablePrompts
+            return settings.dictationAvailablePrompts
         }
-        return AppSettingsStore.shared.meetingAvailablePrompts
+        return settings.meetingAvailablePrompts
     }
 
     func availableRetryTranscriptionOptions(for metadata: TranscriptionMetadata) -> [RetryTranscriptionOption] {
@@ -257,7 +257,6 @@ public extension TranscriptionSettingsViewModel {
         markPostProcessingStarted(for: transcriptionID)
         let startTime = Date()
         let mode: IntelligenceKernelMode = transcription.capturePurpose.intelligenceKernelMode
-        let settings = AppSettingsStore.shared
         let postProcessingSelection = settings.enhancementsSelection(for: mode)
         let postProcessingIdentity = settings.resolvedEnhancementsPerformanceIdentity(for: mode)
         let useStructuredPipeline = mode == .meeting || settings.dictationStructuredPostProcessingEnabled

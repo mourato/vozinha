@@ -42,7 +42,6 @@ extension RecordingManager {
         // Sync with audio recorder state
         let callbackGeneration = lifecycleCoordinator.recorderCallbackGeneration
         micRecorder.isRecordingPublisher
-            .receive(on: DispatchQueue.main)
             .sink { [weak self] recorderIsRecording in
                 guard let self else { return }
 
