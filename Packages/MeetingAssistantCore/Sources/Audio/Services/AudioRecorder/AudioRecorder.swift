@@ -371,6 +371,7 @@ public class AudioRecorder: ObservableObject, AudioRecordingService {
 
         if simpleRecorder != nil {
             let url = stopSimpleMicRecording() ?? currentRecordingURL
+            cleanupEngine()
             restoreOutputInterruptionIfNeeded()
             resetRecordingStateAfterStop()
             return url
@@ -379,6 +380,7 @@ public class AudioRecorder: ObservableObject, AudioRecordingService {
         if let recorder = fallbackRecorder {
             let url = currentRecordingURL
             stopFallbackRecorder(recorder)
+            cleanupEngine()
             restoreOutputInterruptionIfNeeded()
             resetRecordingStateAfterStop()
             return url

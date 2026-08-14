@@ -46,16 +46,17 @@ extension RecordingManager {
                 guard let self else { return }
 
                 let generation = callbackGeneration.value
+                let state = RecordingLifecycleCoordinator.RecorderState(
+                    recorderIsRecording: recorderIsRecording,
+                    isRecording: isRecording,
+                    isStarting: isStartingRecording,
+                    isStartOperationInFlight: isStartOperationInFlight,
+                )
                 Task { @MainActor [weak self] in
                     guard let self else { return }
 
                     await lifecycleCoordinator.recorderStateDidChange(
-                        .init(
-                            recorderIsRecording: recorderIsRecording,
-                            isRecording: isRecording,
-                            isStarting: isStartingRecording,
-                            isStartOperationInFlight: isStartOperationInFlight,
-                        ),
+                        state,
                         generation: generation,
                         operations: lifecycleOperations,
                     )

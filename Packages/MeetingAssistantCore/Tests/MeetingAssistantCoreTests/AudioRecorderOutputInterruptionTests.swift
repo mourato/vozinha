@@ -1,3 +1,4 @@
+import AVFoundation
 @testable import MeetingAssistantCore
 @testable import MeetingAssistantCoreAudio
 @testable import MeetingAssistantCoreInfrastructure
@@ -72,6 +73,16 @@ final class AudioRecorderOutputInterruptionTests: XCTestCase {
         XCTAssertEqual(recorder.currentAveragePower, -160)
         XCTAssertEqual(recorder.currentPeakPower, -160)
         XCTAssertTrue(recorder.currentBarPowerLevels.isEmpty)
+    }
+
+    func testCleanupAfterFailedStartClearsEngineResourcesForNextRecording() async {
+        let recorder = AudioRecorder()
+        recorder.audioEngine = AVAudioEngine()
+
+        await recorder.cleanupAfterFailedStart()
+
+        XCTAssertNil(recorder.audioEngine)
+        XCTAssertFalse(recorder.hasPendingStartupResources)
     }
 
     func testStaleValidationTimeoutCannotStopCurrentRecording() async {
