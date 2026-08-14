@@ -27,10 +27,11 @@ Never persist prompts, transcripts, secrets, credentials, or machine state in
 this repository. Keep provider-specific behavior in adapters.
 
 Durable issue publication is external state. A skill may create or update
-issues only under its explicit publication contract and a project overlay that
-identifies the provider, repository, authorization, idempotency key, and
-failure behavior. Keep issue-provider commands out of portable skills; never
-silently fall back from failed publication to repository documents.
+issues only under its explicit publication contract and a resolved provider
+adapter; a project overlay supplies repository exceptions, authorization scope,
+idempotency, or failure behavior when the adapter cannot determine them. Keep
+issue-provider commands out of portable skills; never silently fall back from
+failed publication to repository documents.
 
 ## Code work defaults
 
@@ -83,9 +84,10 @@ silently adopting another location or naming scheme.
   formalizes an already-understood request; `ship-ship` owns end-to-end
   delivery and uses `implement` for execution.
 - `improve --publish` creates or updates durable execution units through the
-  project's issue-provider overlay; `ship-ship` consumes those issue IDs or
-  URLs and records delivery-state comments. Published improve issues are
-  already vetted execution units and do not need a second generic triage pass.
+  resolved issue-provider adapter, using a project overlay only for exceptions;
+  `ship-ship` consumes those issue IDs or URLs and records delivery-state
+  comments. Published improve issues are already vetted execution units and do
+  not need a second generic triage pass.
 - When continuing an existing implementation backlog without a plan path or
   issue ID/URL, follow `core/policies/issue-discovery.md`; do not assume
   `plans/README.md` is the only backlog.
