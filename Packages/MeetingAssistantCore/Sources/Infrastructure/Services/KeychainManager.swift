@@ -151,6 +151,8 @@ public enum KeychainManager {
     private static let legacyServiceIdentifiers = AppIdentity.legacyKeychainServiceIdentifiers
     private static let providerRegistrationAccountPrefix = "ai_api_key_registration_"
     private static let consolidatedAccount = "prisma_consolidated_api_keys_v1"
+    private static let legacyConsolidatedAccount = "prisma_consolidated_api_keys"
+    private static let legacyConsolidatedMigrationKey = "keychain.legacy_consolidated_api_keys.migrated"
 
     // MARK: - Cache
 
@@ -182,7 +184,7 @@ public enum KeychainManager {
 
     // MARK: - Consolidated Storage Model
 
-    struct ConsolidatedAPIKeys: Codable {
+    struct ConsolidatedAPIKeys: Codable, Equatable {
         static let currentVersion = 1
 
         var version: Int = Self.currentVersion
@@ -253,14 +255,15 @@ public enum KeychainManager {
 
         do {
             if let existing = try retrieveConsolidatedBlob() {
-                if existing.version != ConsolidatedAPIKeys.currentVersion {
+                let migrated = try migrateLegacyConsolidatedBlobIfNeeded(into: existing)
+                if migrated.version != ConsolidatedAPIKeys.currentVersion {
                     AppLogger.warning(
-                        "Consolidated API keys version mismatch: \(existing.version) != \(ConsolidatedAPIKeys.currentVersion)",
+                        "Consolidated API keys version mismatch: \(migrated.version) != \(ConsolidatedAPIKeys.currentVersion)",
                         category: .security,
                     )
                 }
-                _consolidatedCache = existing
-                return existing
+                _consolidatedCache = migrated
+                return migrated
             }
         } catch {
             AppLogger.error(
@@ -273,6 +276,71 @@ public enum KeychainManager {
         let migrated = try migrateToConsolidated()
         _consolidatedCache = migrated
         return migrated
+    }
+
+    private static func migrateLegacyConsolidatedBlobIfNeeded(
+        into current: ConsolidatedAPIKeys,
+    ) throws -> ConsolidatedAPIKeys {
+        guard !UserDefaults.standard.bool(forKey: legacyConsolidatedMigrationKey) else {
+            return current
+        }
+
+        let legacy: ConsolidatedAPIKeys?
+        do {
+            legacy = try retrieveConsolidatedBlob(account: legacyConsolidatedAccount)
+        } catch {
+            AppLogger.error(
+                "Failed to decode legacy consolidated API keys blob",
+                category: .security,
+                error: error,
+            )
+            return current
+        }
+
+        guard let legacy else {
+            UserDefaults.standard.set(true, forKey: legacyConsolidatedMigrationKey)
+            return current
+        }
+
+        let merged = Self.mergeMissingValues(from: legacy, into: current)
+        if merged != current {
+            try saveConsolidated(merged)
+            guard let persisted = try retrieveConsolidatedBlob(), persisted == merged else {
+                throw KeychainError.unexpectedStatus(errSecDecode)
+            }
+        }
+
+        UserDefaults.standard.set(true, forKey: legacyConsolidatedMigrationKey)
+        AppLogger.info(
+            "Recovered legacy consolidated API keys",
+            category: .security,
+            extra: [
+                "providerCount": String(merged.providerKeys.count),
+                "transcriptionCount": String(merged.transcriptionKeys.count),
+                "registrationCount": String(merged.registrationKeys.count),
+            ],
+        )
+        return merged
+    }
+
+    static func mergeMissingValues(
+        from legacy: ConsolidatedAPIKeys,
+        into current: ConsolidatedAPIKeys,
+    ) -> ConsolidatedAPIKeys {
+        var merged = current
+        for (key, value) in legacy.providerKeys where merged.providerKeys[key] == nil {
+            merged.providerKeys[key] = value
+        }
+        for (key, value) in legacy.transcriptionKeys where merged.transcriptionKeys[key] == nil {
+            merged.transcriptionKeys[key] = value
+        }
+        for (key, value) in legacy.registrationKeys where merged.registrationKeys[key] == nil {
+            merged.registrationKeys[key] = value
+        }
+        if merged.legacyUnifiedKey == nil {
+            merged.legacyUnifiedKey = legacy.legacyUnifiedKey
+        }
+        return merged
     }
 
     private static func saveConsolidated(_ keys: ConsolidatedAPIKeys) throws {
@@ -305,8 +373,8 @@ public enum KeychainManager {
         return true
     }
 
-    private static func retrieveConsolidatedBlob() throws -> ConsolidatedAPIKeys? {
-        var query = baseQuery(account: consolidatedAccount, serviceIdentifier: serviceIdentifier)
+    private static func retrieveConsolidatedBlob(account: String = consolidatedAccount) throws -> ConsolidatedAPIKeys? {
+        var query = baseQuery(account: account, serviceIdentifier: serviceIdentifier)
         query[kSecReturnData as String] = true
         query[kSecMatchLimit as String] = kSecMatchLimitOne
 
@@ -383,13 +451,27 @@ public enum KeychainManager {
         var keys = ConsolidatedAPIKeys()
         let allServices = [serviceIdentifier] + legacyServiceIdentifiers
 
+        do {
+            if let legacy = try retrieveConsolidatedBlob(account: legacyConsolidatedAccount) {
+                keys = Self.mergeMissingValues(from: legacy, into: keys)
+            }
+        } catch {
+            AppLogger.error(
+                "Failed to decode legacy consolidated API keys blob during migration",
+                category: .security,
+                error: error,
+            )
+        }
+
         for provider in AIProvider.allCases {
             let key = apiKeyKey(for: provider)
             for serviceId in allServices {
                 guard let value = try retrieve(account: key.rawValue, serviceIdentifier: serviceId),
                       !value.isEmpty
                 else { continue }
-                keys.providerKeys[provider.rawValue] = value
+                if keys.providerKeys[provider.rawValue] == nil {
+                    keys.providerKeys[provider.rawValue] = value
+                }
                 break
             }
         }
@@ -398,24 +480,27 @@ public enum KeychainManager {
             guard let value = try retrieve(account: Key.transcriptionAPIKeyElevenLabs.rawValue, serviceIdentifier: serviceId),
                   !value.isEmpty
             else { continue }
-            keys.transcriptionKeys[TranscriptionProvider.elevenLabs.rawValue] = value
+            if keys.transcriptionKeys[TranscriptionProvider.elevenLabs.rawValue] == nil {
+                keys.transcriptionKeys[TranscriptionProvider.elevenLabs.rawValue] = value
+            }
             break
         }
 
-        var hasLegacyKey = false
         for serviceId in allServices {
             if let legacyValue = try retrieve(account: Key.aiAPIKey.rawValue, serviceIdentifier: serviceId),
                !legacyValue.isEmpty
             {
-                keys.legacyUnifiedKey = legacyValue
-                hasLegacyKey = true
+                if keys.legacyUnifiedKey == nil {
+                    keys.legacyUnifiedKey = legacyValue
+                }
                 break
             }
         }
 
-        let hasData = !keys.providerKeys.isEmpty || !keys.transcriptionKeys.isEmpty || hasLegacyKey
+        let hasData = !keys.providerKeys.isEmpty || !keys.transcriptionKeys.isEmpty || keys.legacyUnifiedKey != nil
         if hasData {
             try saveConsolidated(keys)
+            UserDefaults.standard.set(true, forKey: legacyConsolidatedMigrationKey)
 
             // Best-effort cleanup: old individual keys are no longer needed,
             // but failures don't affect correctness since loadConsolidated

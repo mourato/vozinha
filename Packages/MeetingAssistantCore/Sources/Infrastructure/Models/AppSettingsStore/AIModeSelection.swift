@@ -1,4 +1,5 @@
 import Foundation
+import MeetingAssistantCoreCommon
 import MeetingAssistantCoreDomain
 
 public extension AppSettingsStore {
@@ -148,35 +149,82 @@ public extension AppSettingsStore {
 
         for registration in enhancementsProviderRegistrations {
             if registration.provider.usesRegistrationScopedEnhancementsCredential {
-                if KeychainManager.existsAPIKey(for: registration.id) {
-                    continue
-                }
-
-                if registration.id != firstCustomRegistrationID {
-                    continue
-                }
-
-                guard let legacyProviderKey = try? KeychainManager.retrieveAPIKey(for: registration.provider) else {
-                    continue
-                }
-
-                let apiKey = legacyProviderKey.trimmingCharacters(in: .whitespacesAndNewlines)
-                guard !apiKey.isEmpty else { continue }
-
-                try? KeychainManager.storeAPIKey(apiKey, for: registration.id)
+                migrateRegistrationScopedCredential(
+                    registration,
+                    firstCustomRegistrationID: firstCustomRegistrationID,
+                )
                 continue
             }
 
-            let registrationKey = (try? KeychainManager.retrieveAPIKey(for: registration.id))?
-                .trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
-            guard !registrationKey.isEmpty else { continue }
+            migrateProviderScopedCredential(registration)
+        }
+    }
 
-            if !KeychainManager.existsAPIKey(for: registration.provider) {
-                let providerKey = KeychainManager.apiKeyKey(for: registration.provider)
-                try? KeychainManager.store(registrationKey, for: providerKey)
+    private func migrateRegistrationScopedCredential(
+        _ registration: EnhancementsProviderRegistration,
+        firstCustomRegistrationID: UUID?,
+    ) {
+        guard !KeychainManager.existsAPIKey(for: registration.id),
+              registration.id == firstCustomRegistrationID
+        else { return }
+
+        let legacyProviderKey: String?
+        do {
+            legacyProviderKey = try KeychainManager.retrieveAPIKey(for: registration.provider)
+        } catch {
+            AppLogger.warning(
+                "Could not read legacy provider credential during migration",
+                category: .security,
+                extra: [
+                    "provider": registration.provider.rawValue,
+                    "registrationID": registration.id.uuidString,
+                ],
+            )
+            return
+        }
+
+        guard let legacyProviderKey else { return }
+        let apiKey = legacyProviderKey.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !apiKey.isEmpty else { return }
+
+        do {
+            try KeychainManager.storeAPIKey(apiKey, for: registration.id)
+        } catch {
+            AppLogger.error(
+                "Could not migrate provider credential to registration scope",
+                category: .security,
+                error: error,
+                extra: ["registrationID": registration.id.uuidString],
+            )
+        }
+    }
+
+    private func migrateProviderScopedCredential(_ registration: EnhancementsProviderRegistration) {
+        let registrationKey = (try? KeychainManager.retrieveAPIKey(for: registration.id))?
+            .trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        guard !registrationKey.isEmpty else { return }
+
+        if !KeychainManager.existsAPIKey(for: registration.provider) {
+            do {
+                try KeychainManager.store(registrationKey, for: KeychainManager.apiKeyKey(for: registration.provider))
+            } catch {
+                AppLogger.error(
+                    "Could not migrate registration credential to provider scope",
+                    category: .security,
+                    error: error,
+                    extra: ["provider": registration.provider.rawValue],
+                )
             }
+        }
 
-            try? KeychainManager.deleteAPIKey(for: registration.id)
+        do {
+            try KeychainManager.deleteAPIKey(for: registration.id)
+        } catch {
+            AppLogger.warning(
+                "Could not remove legacy registration credential after migration",
+                category: .security,
+                extra: ["registrationID": registration.id.uuidString],
+            )
         }
     }
 

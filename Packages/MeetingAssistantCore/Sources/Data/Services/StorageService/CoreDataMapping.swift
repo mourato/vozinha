@@ -87,6 +87,7 @@ extension FileSystemStorageService {
             wordCount: wordCount,
             language: mo.language,
             isPostProcessed: mo.processedContent != nil,
+            postProcessingFailureReason: mo.postProcessingFailureReason,
             duration: mo.meeting.endTime?.timeIntervalSince(mo.meeting.startTime) ?? 0,
             audioFilePath: mo.meeting.audioFilePath,
             inputSource: mo.inputSource,

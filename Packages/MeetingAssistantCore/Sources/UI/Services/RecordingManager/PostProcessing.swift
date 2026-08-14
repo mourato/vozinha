@@ -16,6 +16,7 @@ extension RecordingManager {
         let postProcessingModel: String?
         let postProcessingIdentity: ModelPerformanceModelIdentity?
         let postProcessingConfiguration: DomainPostProcessingConfiguration?
+        let postProcessingFailureReason: String?
         var autoDetectMeetingType: Bool
         let availablePrompts: [DomainPostProcessingPrompt]
         var postProcessingContext: String?
@@ -129,6 +130,7 @@ extension RecordingManager {
                 readinessIssue: readinessIssue?.rawValue,
                 outputLanguageID: kernelMode == .meeting ? settings.meetingSummaryOutputLanguage.rawValue : nil,
             ),
+            postProcessingFailureReason: nil,
             autoDetectMeetingType: autoDetectMeetingType,
             availablePrompts: availablePrompts,
             postProcessingContext: session.postProcessingContext,
@@ -174,6 +176,7 @@ extension RecordingManager {
             postProcessingModel: nil,
             postProcessingIdentity: nil,
             postProcessingConfiguration: nil,
+            postProcessingFailureReason: readinessIssue.map(postProcessingFailureReason(for:)),
             autoDetectMeetingType: false,
             availablePrompts: [],
             postProcessingContext: nil,
@@ -183,6 +186,17 @@ extension RecordingManager {
             dictationTranscriptionConfiguration: session.dictationTranscriptionConfiguration,
             postProcessingSelection: postProcessingSelection,
         )
+    }
+
+    func postProcessingFailureReason(for issue: EnhancementsInferenceReadinessIssue) -> String {
+        switch issue {
+        case .missingAPIKey:
+            "transcription.post_processing.missing_api_key".localized
+        case .missingModel:
+            "transcription.post_processing.missing_model".localized
+        case .invalidBaseURL:
+            "transcription.post_processing.invalid_base_url".localized
+        }
     }
 
     private func resolvedPostProcessingSelection(
@@ -254,9 +268,27 @@ extension RecordingManager {
         apiKeyExists: ((AIProvider) -> Bool)? = nil,
     ) {
         let resolvedAPIKeyExists = apiKeyExists ?? self.apiKeyExists
-        let issue = settings.postProcessingEnabled
-            ? settings.enhancementsInferenceReadinessIssue(for: kernelMode, apiKeyExists: resolvedAPIKeyExists)
-            : nil
+        let postProcessingEnabled: Bool = switch kernelMode {
+        case .dictation:
+            !isPostProcessingDisabled(isDictation: true, settings: settings)
+        case .meeting, .assistant:
+            settings.postProcessingEnabled
+        }
+        let issue: EnhancementsInferenceReadinessIssue?
+        if postProcessingEnabled {
+            if kernelMode == .dictation {
+                let selection = matchingDictationStyleForDictation(settings: settings)?.enhancementsSelection
+                    ?? settings.enhancementsSelection(for: .dictation)
+                issue = settings.enhancementsInferenceReadinessIssue(
+                    for: selection,
+                    apiKeyExists: resolvedAPIKeyExists,
+                )
+            } else {
+                issue = settings.enhancementsInferenceReadinessIssue(for: kernelMode, apiKeyExists: resolvedAPIKeyExists)
+            }
+        } else {
+            issue = nil
+        }
         setPostProcessingReadinessWarning(issue: issue, mode: kernelMode)
     }
 

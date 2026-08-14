@@ -127,7 +127,7 @@ extension RecordingManager {
                 category: .recordingManager,
                 extra: ["reasonCode": reasonCode],
             )
-            return PostProcessingResult(failureReason: "recording_indicator.post_processing_warning.missing_config".localized)
+            return PostProcessingResult(failureReason: postProcessingFailureReason(for: readinessIssue))
         }
 
         let requestSelection = requestSelectionOverride ?? settings.enhancementsSelection(for: kernelMode)

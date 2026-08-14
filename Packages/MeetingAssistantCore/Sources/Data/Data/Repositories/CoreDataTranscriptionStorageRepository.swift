@@ -114,6 +114,7 @@ public final class CoreDataTranscriptionStorageRepository: TranscriptionStorageR
                     previewText: String(mo.text.prefix(100)),
                     language: mo.language,
                     isPostProcessed: mo.processedContent != nil,
+                    postProcessingFailureReason: mo.postProcessingFailureReason,
                     duration: mo.meeting.endTime?.timeIntervalSince(mo.meeting.startTime) ?? 0,
                     audioFilePath: mo.meeting.audioFilePath,
                     lifecycleState: TranscriptionLifecycleState(rawValue: mo.lifecycleStateRawValue) ?? .completed,

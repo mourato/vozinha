@@ -78,6 +78,7 @@ public final class TranscribeAudioUseCase: Sendable {
         postProcessingIdentity: ModelPerformanceModelIdentity? = nil,
         postProcessingSelection: DomainPostProcessingSelection? = nil,
         postProcessingConfiguration: DomainPostProcessingConfiguration? = nil,
+        postProcessingFailureReason: String? = nil,
         autoDetectMeetingType: Bool = false,
         availablePrompts: [DomainPostProcessingPrompt] = [],
         postProcessingContext: String? = nil,
@@ -116,7 +117,6 @@ public final class TranscribeAudioUseCase: Sendable {
                 throw DomainTranscriptionError.transcriptionFailed(error.localizedDescription)
             }
             let transcriptionCompletedAt = Date()
-            let transcriptionDuration = transcriptionCompletedAt.timeIntervalSince(transcriptionStartTime)
 
             return try await finalizePreparedResponse(
                 response: response,
@@ -132,14 +132,16 @@ public final class TranscribeAudioUseCase: Sendable {
                 postProcessingPrompt: postProcessingPrompt,
                 defaultPostProcessingPrompt: defaultPostProcessingPrompt,
                 postProcessingIdentity: postProcessingIdentity,
+                postProcessingSelection: postProcessingSelection,
                 postProcessingConfiguration: postProcessingConfiguration,
+                postProcessingFailureReason: postProcessingFailureReason,
                 autoDetectMeetingType: autoDetectMeetingType,
                 availablePrompts: availablePrompts,
                 postProcessingContext: postProcessingContext,
                 postProcessingSystemPrompt: postProcessingSystemPrompt,
                 kernelMode: kernelMode,
                 dictationStructuredPostProcessingEnabled: dictationStructuredPostProcessingEnabled,
-                transcriptionDuration: transcriptionDuration,
+                transcriptionDuration: transcriptionCompletedAt.timeIntervalSince(transcriptionStartTime),
                 transcriptionStartedAt: transcriptionStartTime,
                 transcriptionCompletedAt: transcriptionCompletedAt,
                 onPhaseChange: onPhaseChange,
@@ -173,6 +175,7 @@ public final class TranscribeAudioUseCase: Sendable {
         postProcessingIdentity: ModelPerformanceModelIdentity? = nil,
         postProcessingSelection: DomainPostProcessingSelection? = nil,
         postProcessingConfiguration: DomainPostProcessingConfiguration? = nil,
+        postProcessingFailureReason: String? = nil,
         autoDetectMeetingType: Bool = false,
         availablePrompts: [DomainPostProcessingPrompt] = [],
         postProcessingContext: String? = nil,
@@ -220,6 +223,7 @@ public final class TranscribeAudioUseCase: Sendable {
                 selection: postProcessingSelection,
                 configuration: postProcessingConfiguration,
                 systemPromptOverride: postProcessingSystemPrompt,
+                failureReason: postProcessingFailureReason,
             )
             let shouldAttemptPostProcessing = postProcessingConfig.shouldRunPostProcessing(postProcessingRepository: postProcessingRepository)
 

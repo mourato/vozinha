@@ -165,7 +165,6 @@ extension RecordingManager {
         }
 
         let vocabularySnapshot = session.vocabularySnapshot
-        let transcriptionConfiguration = session.transcriptionConfiguration
 
         let transcriptionEntity = try await transcribeAudioUseCase.execute(
             audioURL: audioURL,
@@ -177,7 +176,7 @@ extension RecordingManager {
             vocabularyReplacementRules: vocabularySnapshot.replacementRules,
             vocabularyTerms: vocabularySnapshot.terms,
             diarizationEnabledOverride: diarizationEnabledOverride,
-            transcriptionConfiguration: transcriptionConfiguration,
+            transcriptionConfiguration: session.transcriptionConfiguration,
             applyPostProcessing: config.applyPostProcessing,
             postProcessingPrompt: config.postProcessingPrompt,
             defaultPostProcessingPrompt: config.defaultPostProcessingPrompt,
@@ -186,6 +185,7 @@ extension RecordingManager {
                 DomainPostProcessingSelection(providerID: $0.provider.rawValue, modelID: $0.selectedModel, registrationID: $0.registrationID)
             },
             postProcessingConfiguration: config.postProcessingConfiguration,
+            postProcessingFailureReason: config.postProcessingFailureReason,
             autoDetectMeetingType: config.autoDetectMeetingType,
             availablePrompts: config.availablePrompts,
             postProcessingContext: config.postProcessingContext,

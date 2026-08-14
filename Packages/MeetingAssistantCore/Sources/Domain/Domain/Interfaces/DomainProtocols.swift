@@ -530,6 +530,7 @@ public struct DomainTranscriptionMetadata: Identifiable, Codable, Hashable, Send
     public let previewText: String
     public let language: String
     public let isPostProcessed: Bool
+    public let postProcessingFailureReason: String?
     public let duration: Double
     public let audioFilePath: String?
     public let lifecycleState: TranscriptionLifecycleState
@@ -554,6 +555,7 @@ public struct DomainTranscriptionMetadata: Identifiable, Codable, Hashable, Send
         previewText: String,
         language: String,
         isPostProcessed: Bool,
+        postProcessingFailureReason: String? = nil,
         duration: Double,
         audioFilePath: String?,
         lifecycleState: TranscriptionLifecycleState = .completed,
@@ -577,6 +579,7 @@ public struct DomainTranscriptionMetadata: Identifiable, Codable, Hashable, Send
         self.previewText = previewText
         self.language = language
         self.isPostProcessed = isPostProcessed
+        self.postProcessingFailureReason = postProcessingFailureReason
         self.duration = duration
         self.audioFilePath = audioFilePath
         self.lifecycleState = lifecycleState

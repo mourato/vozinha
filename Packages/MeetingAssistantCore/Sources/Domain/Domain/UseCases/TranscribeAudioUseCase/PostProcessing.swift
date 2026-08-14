@@ -18,6 +18,7 @@ extension TranscribeAudioUseCase {
         let selection: DomainPostProcessingSelection?
         let configuration: DomainPostProcessingConfiguration?
         let systemPromptOverride: String?
+        let failureReason: String?
 
         init(
             applyPostProcessing: Bool,
@@ -31,6 +32,7 @@ extension TranscribeAudioUseCase {
             selection: DomainPostProcessingSelection? = nil,
             configuration: DomainPostProcessingConfiguration? = nil,
             systemPromptOverride: String? = nil,
+            failureReason: String? = nil,
         ) {
             self.applyPostProcessing = applyPostProcessing
             self.postProcessingPrompt = postProcessingPrompt
@@ -43,6 +45,7 @@ extension TranscribeAudioUseCase {
             self.selection = selection
             self.configuration = configuration
             self.systemPromptOverride = systemPromptOverride
+            self.failureReason = failureReason
         }
 
         func shouldRunPostProcessing(postProcessingRepository: PostProcessingRepository?) -> Bool {
@@ -99,7 +102,7 @@ extension TranscribeAudioUseCase {
                 meetingType: nil,
                 requestSystemPrompt: nil,
                 requestUserPrompt: nil,
-                failureReason: nil,
+                failureReason: config.failureReason,
             )
         }
 

@@ -144,6 +144,10 @@ public struct TranscriptionCardView: View {
                 .foregroundStyle(.primary)
                 .frame(maxWidth: .infinity, alignment: .leading)
 
+            if let failureMessage = persistedPostProcessingFailureMessage {
+                postProcessingFailureLabel(failureMessage)
+            }
+
             sourceLabel(text: sourceDisplayName)
         }
     }
@@ -185,13 +189,7 @@ public struct TranscriptionCardView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
 
             if let error = inlinePostProcessingErrorMessage {
-                HStack(spacing: 6) {
-                    Image(systemName: "exclamationmark.triangle.fill")
-                        .foregroundStyle(AppDesignSystem.Colors.error)
-                    Text(error)
-                        .font(.caption)
-                        .foregroundStyle(AppDesignSystem.Colors.error)
-                }
+                postProcessingFailureLabel(error)
             }
 
             HStack(alignment: .center, spacing: 12) {
@@ -457,10 +455,30 @@ public struct TranscriptionCardView: View {
     }
 
     private var inlinePostProcessingErrorMessage: String? {
-        guard let postProcessingErrorMessage else { return nil }
+        guard let postProcessingErrorMessage else {
+            return persistedPostProcessingFailureMessage
+        }
         let trimmed = postProcessingErrorMessage.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return nil }
         return trimmed
+    }
+
+    private var persistedPostProcessingFailureMessage: String? {
+        let trimmed = transcription.postProcessingFailureReason?
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        guard let trimmed, !trimmed.isEmpty else { return nil }
+        return trimmed
+    }
+
+    private func postProcessingFailureLabel(_ message: String) -> some View {
+        HStack(alignment: .top, spacing: 6) {
+            Image(systemName: "exclamationmark.triangle.fill")
+                .foregroundStyle(AppDesignSystem.Colors.error)
+            Text(message)
+                .font(.caption)
+                .foregroundStyle(AppDesignSystem.Colors.error)
+                .multilineTextAlignment(.leading)
+        }
     }
 
     private func sortedSegments(_ segments: [Transcription.Segment]) -> [Transcription.Segment] {

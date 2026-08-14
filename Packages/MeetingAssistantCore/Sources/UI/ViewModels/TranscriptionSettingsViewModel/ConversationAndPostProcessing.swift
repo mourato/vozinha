@@ -436,6 +436,15 @@ public extension TranscriptionSettingsViewModel {
                 executionProvenance: executionProvenance,
             ),
         )
+        var failedTranscription = transcription
+        failedTranscription.postProcessingFailureReason = message
+        do {
+            try await storage.saveTranscription(failedTranscription)
+        } catch {
+            logger.error("Failed to persist post-processing failure on transcription: \(error.localizedDescription)")
+        }
+        selectedTranscription = failedTranscription
+        await loadTranscriptions()
         postProcessingErrorByTranscriptionID[transcriptionID] = message
         operationErrorMessage = message
     }

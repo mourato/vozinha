@@ -1207,7 +1207,10 @@
 "transcription.content.show_all" = "Ver tudo";
 "transcription.content.show_less" = "Ver menos";
 "transcription.post_processing.error" = "Falha no pós-processamento. Tente novamente.";
-"transcription.post_processing.skipped_configuration" = "Pós-processamento ignorado: configuração de IA não está pronta para %@. Verifique suas configurações.";
+"transcription.post_processing.skipped_configuration" = "Pós-processamento não realizado para %@. Verifique a configuração de Inteligência.";
+"transcription.post_processing.missing_api_key" = "Pós-processamento não realizado: falta uma chave de API. Abra Inteligência para corrigir.";
+"transcription.post_processing.missing_model" = "Pós-processamento não realizado: nenhum modelo foi selecionado. Abra Inteligência para corrigir.";
+"transcription.post_processing.invalid_base_url" = "Pós-processamento não realizado: a URL do provedor é inválida. Abra Inteligência para corrigir.";
 "transcription.speaker.rename.error" = "Falha ao renomear speaker.";
 "transcription.meeting_notes.error" = "Falha ao atualizar anotações da reunião.";
 "transcription.qa.tab.chat" = "Chat";

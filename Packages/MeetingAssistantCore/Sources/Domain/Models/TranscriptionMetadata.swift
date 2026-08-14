@@ -15,6 +15,7 @@ public struct TranscriptionMetadata: Identifiable, Codable, Hashable, Sendable {
     public let wordCount: Int
     public let language: String
     public let isPostProcessed: Bool
+    public let postProcessingFailureReason: String?
     public let duration: TimeInterval
     public let audioFilePath: String?
     public let inputSource: String?
@@ -50,6 +51,7 @@ public struct TranscriptionMetadata: Identifiable, Codable, Hashable, Sendable {
         case wordCount
         case language
         case isPostProcessed
+        case postProcessingFailureReason
         case duration
         case audioFilePath
         case inputSource
@@ -77,6 +79,7 @@ public struct TranscriptionMetadata: Identifiable, Codable, Hashable, Sendable {
         wordCount: Int,
         language: String,
         isPostProcessed: Bool,
+        postProcessingFailureReason: String? = nil,
         duration: TimeInterval,
         audioFilePath: String?,
         inputSource: String?,
@@ -103,6 +106,7 @@ public struct TranscriptionMetadata: Identifiable, Codable, Hashable, Sendable {
         self.wordCount = wordCount
         self.language = language
         self.isPostProcessed = isPostProcessed
+        self.postProcessingFailureReason = postProcessingFailureReason
         self.duration = duration
         self.audioFilePath = audioFilePath
         self.inputSource = inputSource
@@ -132,6 +136,7 @@ public struct TranscriptionMetadata: Identifiable, Codable, Hashable, Sendable {
         let wordCount = try container.decodeIfPresent(Int.self, forKey: .wordCount) ?? 0
         let language = try container.decode(String.self, forKey: .language)
         let isPostProcessed = try container.decode(Bool.self, forKey: .isPostProcessed)
+        let postProcessingFailureReason = try container.decodeIfPresent(String.self, forKey: .postProcessingFailureReason)
         let duration = try container.decode(TimeInterval.self, forKey: .duration)
         let audioFilePath = try container.decodeIfPresent(String.self, forKey: .audioFilePath)
         let inputSource = try container.decodeIfPresent(String.self, forKey: .inputSource)
@@ -158,6 +163,7 @@ public struct TranscriptionMetadata: Identifiable, Codable, Hashable, Sendable {
             wordCount: wordCount,
             language: language,
             isPostProcessed: isPostProcessed,
+            postProcessingFailureReason: postProcessingFailureReason,
             duration: duration,
             audioFilePath: audioFilePath,
             inputSource: inputSource,

@@ -1206,7 +1206,10 @@
 "transcription.content.show_all" = "Show all";
 "transcription.content.show_less" = "Show less";
 "transcription.post_processing.error" = "Post-processing failed. Please try again.";
-"transcription.post_processing.skipped_configuration" = "Post-processing skipped: AI configuration not ready for %@. Check your settings.";
+"transcription.post_processing.skipped_configuration" = "Post-processing was not performed for %@. Check your Intelligence settings.";
+"transcription.post_processing.missing_api_key" = "Post-processing was not performed: an API key is missing. Open Intelligence to fix it.";
+"transcription.post_processing.missing_model" = "Post-processing was not performed: no model is selected. Open Intelligence to fix it.";
+"transcription.post_processing.invalid_base_url" = "Post-processing was not performed: the provider URL is invalid. Open Intelligence to fix it.";
 "transcription.speaker.rename.error" = "Failed to rename speaker.";
 "transcription.meeting_notes.error" = "Failed to update meeting notes.";
 "transcription.qa.tab.chat" = "Chat";

@@ -290,6 +290,7 @@ extension RecordingManager {
                 )
             },
             postProcessingConfiguration: config.postProcessingConfiguration,
+            postProcessingFailureReason: config.postProcessingFailureReason,
             autoDetectMeetingType: config.autoDetectMeetingType,
             availablePrompts: config.availablePrompts,
             postProcessingContext: config.postProcessingContext,
