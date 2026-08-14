@@ -15,13 +15,22 @@ or overwrite state outside the current process.
 Before running any build, test, lint, validation, or release command, load the
 repository's delivery-workflow overlay when one exists.
 
-Analysis and review agents are read-only. Only an explicitly isolated
-implementation workspace may be modified. Preserve unrelated changes, inspect
-the concrete artifact first, and validate the smallest surface that proves the
-result.
+Analysis and review agents do not modify product source or configuration. An
+advisor may write only the requested planning artifacts under `plans/` or
+`advisor-plans/` when local persistence is explicitly selected; otherwise
+planning artifacts are transient or published through the configured issue
+provider. Implementation writes happen only in an explicitly isolated
+worktree. Preserve unrelated changes, inspect the concrete artifact first, and
+validate the smallest surface that proves the result.
 
 Never persist prompts, transcripts, secrets, credentials, or machine state in
 this repository. Keep provider-specific behavior in adapters.
+
+Durable issue publication is external state. A skill may create or update
+issues only under its explicit publication contract and a project overlay that
+identifies the provider, repository, authorization, idempotency key, and
+failure behavior. Keep issue-provider commands out of portable skills; never
+silently fall back from failed publication to repository documents.
 
 ## Code work defaults
 
@@ -67,9 +76,26 @@ silently adopting another location or naming scheme.
 - Choose one primary skill from the user's intent and load only the narrowest
   complementary skills. Use `core/policies/routing.md` for the workflow matrix
   and boundaries; do not make every applicable skill an orchestrator.
+- Third-party skills remain immutable. When their generic instructions conflict
+  with this file, the global contract, worktree, validation, and authorization
+  rules win; adapt their use through routing, profiles, or first-party skills.
 - `improve` discovers and prioritizes codebase opportunities; `to-spec`
   formalizes an already-understood request; `ship-ship` owns end-to-end
   delivery and uses `implement` for execution.
+- `improve --publish` creates or updates durable execution units through the
+  project's issue-provider overlay; `ship-ship` consumes those issue IDs or
+  URLs and records delivery-state comments. Published improve issues are
+  already vetted execution units and do not need a second generic triage pass.
+- When continuing an existing implementation backlog without a plan path or
+  issue ID/URL, follow `core/policies/issue-discovery.md`; do not assume
+  `plans/README.md` is the only backlog.
+- When migrating legacy plan files, load `core/policies/plan-migration.md`.
+  Inventory and publication are separate from the destructive purge; never
+  delete local plans merely because an issue was created.
+- `implement` executes only inside the delivery contract and an isolated
+  worktree. Its generic third-party guidance does not authorize the shared
+  branch, a full suite by default, or a second review; `ship-ship` owns review,
+  remediation, integration, and delivery.
 - Use `triage` for uncertain external issues or PRs, `codebase-design` as the
   architecture vocabulary for architecture improvement, `handoff` only for
   real context transfer, and `wizard` only for procedures the agent cannot
@@ -87,15 +113,12 @@ silently adopting another location or naming scheme.
   - Interface copy: use `ux-writing` for standalone copy work. In a holistic
     interface review, use `better-writing` as the copy domain and do not run a
     second independent copy review.
-  - General code review: use `code-review` for standards/spec and
-    `thermo-nuclear-code-quality-review` for risk and maintainability.
-- When a review task handled by `code-review` or
-  `thermo-nuclear-code-quality-review` includes interface changes, invoke
-  `interface-review` as the mandatory interface lane in addition to both
-  review lanes. Consolidate overlapping findings instead of producing three
-  copies of the same report. For an implementation task that changes UI,
-  apply the same review gate before handoff when review is requested or
-  required by the project workflow.
+- General code review: choose one primary lane by intent — `code-review` for
+  standards/spec, `thermo-nuclear-code-quality-review` for risk/maintainability.
+  Add `interface-review` only when the changed surface is an interface, and
+  add other specialist lanes only for a concrete risk. Consolidate overlapping
+  findings instead of producing duplicate reports. Reviews happen before
+  protected-branch integration.
 - `better-accessibility` is web-only: invoke it only for browser-facing
   HTML/CSS/JavaScript/TypeScript interfaces or an explicitly web accessibility
   task. For SwiftUI/AppKit, use the native accessibility skills instead.
@@ -124,11 +147,16 @@ silently adopting another location or naming scheme.
   before integration, but user-testing readiness requires its changes to be
   merged into the local `main` branch and validated there. Report implementation
   completion, merge status, and `main` validation separately.
-- Merge into `main` only after explicit user authorization. Preserve unrelated
-  changes when integrating the implementation branch.
+- Use the delivery status tuple `IMPLEMENTED`, `REVIEWED`, `MERGED_LOCAL`,
+  `PUSHED`, and `MAIN_VALIDATED` as applicable; do not infer one state from
+  another.
+- Merge into `main` only after review/remediation and explicit user
+  authorization. Preserve unrelated changes when integrating the implementation
+  branch.
 - Push, force-push, amend, and destructive git ops (`reset --hard`, `clean`,
   broad `restore`) need an explicit user request or an explicitly authorized
-  user-invoked workflow. Repo-local rules may define mechanics, not authority.
+  user-invoked workflow. A request to implement alone does not authorize merge
+  or push. Repo-local rules may define mechanics, not authority.
 - In an explicitly authorized delivery workflow, the orchestrator may remove
   only the recorded worktree and source branch after merge and push succeed.
   Implementers leave both intact for review.
