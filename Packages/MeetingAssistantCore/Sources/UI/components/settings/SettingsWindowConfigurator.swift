@@ -10,18 +10,18 @@ struct SettingsWindowConfigurator: NSViewRepresentable {
     func makeNSView(context: Context) -> NSView {
         let view = NSView(frame: .zero)
         DispatchQueue.main.async {
-            configure(window: view.window)
+            configure(window: view.window, orderFront: true)
         }
         return view
     }
 
     func updateNSView(_ view: NSView, context: Context) {
         DispatchQueue.main.async {
-            configure(window: view.window)
+            configure(window: view.window, orderFront: false)
         }
     }
 
-    private func configure(window: NSWindow?) {
+    private func configure(window: NSWindow?, orderFront: Bool) {
         guard let window else { return }
 
         let requiredStyleMask: NSWindow.StyleMask = [
@@ -39,5 +39,9 @@ struct SettingsWindowConfigurator: NSViewRepresentable {
         window.isMovableByWindowBackground = false
         window.minSize = Layout.minimumSize
         window.setFrameAutosaveName(AppIdentity.settingsWindowAutosaveName)
+
+        if orderFront {
+            window.makeKeyAndOrderFront(nil)
+        }
     }
 }

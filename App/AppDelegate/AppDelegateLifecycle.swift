@@ -177,8 +177,9 @@ extension AppDelegate {
     }
 
     func promoteAppForWindowPresentation() {
-        guard NSApp.activationPolicy() != .regular else { return }
-        NSApp.setActivationPolicy(.regular)
+        if NSApp.activationPolicy() != .regular {
+            NSApp.setActivationPolicy(.regular)
+        }
         NSApp.activate(ignoringOtherApps: true)
     }
 

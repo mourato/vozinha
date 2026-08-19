@@ -25,7 +25,7 @@ public final class NavigationService {
         hasPendingOpenSettingsRequest = false
 
         DispatchQueue.main.async {
-            handler()
+            Self.presentSettings(using: handler)
         }
     }
 
@@ -37,13 +37,45 @@ public final class NavigationService {
     /// Opens the settings/dashboard window.
     public func openSettings() {
         if let openSettingsHandler {
-            openSettingsHandler()
+            Self.presentSettings(using: openSettingsHandler)
             return
         }
 
         // The SwiftUI settings window opener may register after AppDelegate launch work.
         // Queue one pending request instead of falling back to the legacy Settings scene API.
         hasPendingOpenSettingsRequest = true
+    }
+
+    /// Menu-bar / accessory apps do not steal focus on `openWindow` alone.
+    /// Always activate, then order the settings window front after it exists.
+    private static func presentSettings(using open: @MainActor () -> Void) {
+        if let app = NSApp {
+            if app.activationPolicy() != .regular {
+                app.setActivationPolicy(.regular)
+            }
+            app.activate(ignoringOtherApps: true)
+        }
+        open()
+        DispatchQueue.main.async {
+            orderSettingsWindowFront()
+        }
+    }
+
+    private static func orderSettingsWindowFront() {
+        guard let app = NSApp else { return }
+
+        let autosaveName = AppIdentity.settingsWindowAutosaveName
+        if let window = app.windows.first(where: { $0.frameAutosaveName == autosaveName }) {
+            window.makeKeyAndOrderFront(nil)
+            return
+        }
+
+        // First open: autosave name may not be applied until the configurator runs.
+        if let window = app.windows.first(where: {
+            $0.isVisible && $0.canBecomeKey && !($0 is NSPanel)
+        }) {
+            window.makeKeyAndOrderFront(nil)
+        }
     }
 
     /// Opens the settings window and requests a specific section.
