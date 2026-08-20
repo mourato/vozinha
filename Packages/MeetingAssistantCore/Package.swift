@@ -12,11 +12,6 @@ let package = Package(
     ],
     products: [
         .library(
-            name: "MeetingAssistantCoreUI",
-            type: .dynamic,
-            targets: ["MeetingAssistantCoreUI"],
-        ),
-        .library(
             name: "MeetingAssistantCore",
             targets: ["MeetingAssistantCore"],
         ),
@@ -77,7 +72,6 @@ let package = Package(
             name: "MeetingAssistantCoreAI",
             dependencies: [
                 "MeetingAssistantCoreCommon",
-                "MeetingAssistantCoreData",
                 "MeetingAssistantCoreDomain",
                 "MeetingAssistantCoreInfrastructure",
                 .product(name: "FluidAudio", package: "FluidAudio"),
