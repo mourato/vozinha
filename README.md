@@ -43,6 +43,24 @@ make dmg
 
 Use `make help` to print the current target list from the `Makefile`.
 
+The `Makefile` is the command source of truth. The script entrypoints behind
+the common targets are:
+
+| Purpose | Make target | Script |
+|---------|-------------|--------|
+| Debug build | `make build` | `scripts/run-build.sh --configuration Debug` |
+| Release build | `make build-release` | `scripts/run-build.sh --configuration Release` |
+| SwiftPM tests | `make test`, `make test-full`, or a suite target | `scripts/run-tests.sh` |
+| Xcode parity tests | `make test-parity` | `scripts/run-tests-xcode.sh` |
+| Scoped validation | `make scope-check` | `scripts/scope-check.sh` |
+| Automatic validation lane | `make validate-agent` | `scripts/validate-agent.sh` |
+| Preflight gates | `make preflight` or a preflight variant | `scripts/preflight.sh` |
+| Debug/Release run flow | `make build-and-run` | `scripts/build-and-run.sh` |
+
+Agent targets keep their `-agent` names for compact output and shared log
+handling. The old aliases `build-debug`, `test-swift`, `install-app`,
+`install-release`, and `ci-test` were removed; use the canonical targets above.
+
 ### Agent delivery loop
 
 For compact, auditable iteration:
@@ -62,8 +80,7 @@ The pre-commit hook applies SwiftFormat and SwiftLint autofix to staged Swift fi
 
 | Target | Description |
 |--------|-------------|
-| `make build` | Alias for `make build-debug`. |
-| `make build-debug` | Build the app in Debug configuration. |
+| `make build` | Build the app in Debug configuration. |
 | `make build-release` | Build the app in Release configuration. |
 | `make build-agent` | Build Debug with compact agent-oriented output. |
 | `make build-test` | Run the standard build and test sequence. |
@@ -75,7 +92,7 @@ The pre-commit hook applies SwiftFormat and SwiftLint autofix to staged Swift fi
 |--------|-------------|
 | `make test` | Run the fast local development test suite. |
 | `make test-agent` | Run tests with compact agent-oriented output. |
-| `make test-swift` | Run tests with `swift test` for a faster non-Xcode path. |
+| `make test-full` | Run the broad SwiftPM test suite. |
 | `make test-verbose` | Run tests with verbose output. |
 | `make test-strict` | Run tests with strict concurrency checking enabled. |
 | `make test-ci-strict` | Run the strict Xcode parity gate. |
@@ -107,7 +124,6 @@ The pre-commit hook applies SwiftFormat and SwiftLint autofix to staged Swift fi
 | `make run` | Build Debug and open the app. |
 | `make run-release` | Build Release and open the app. |
 | `make build-and-run` | Interactively choose Debug or Release; Release installs transactionally into `/Applications/Vozinha.app`. |
-| `make install-app` | Interactively build, sign, validate, replace, and launch `/Applications/Vozinha.app` (Release and clean build default to yes); use `ARGS=--skip-launch` for verification only. |
 | `make dmg` | Build Release and create `dist/Vozinha.dmg`, prompting for automatic, self-signed, or ad-hoc signing. |
 | `make setup-self-signed-cert` | Create or import the local self-signed signing certificate. |
 | `make new-release` | Create a GitHub release interactively with generated notes. |
@@ -130,7 +146,6 @@ The pre-commit hook applies SwiftFormat and SwiftLint autofix to staged Swift fi
 | `make clean` | Remove build and distribution artifacts. |
 | `make setup` | Install local development dependencies (SwiftLint, SwiftFormat) and configure Git hooks. |
 | `make ci-build` | Run the CI build sequence: architecture checks, lint, tests, and release build. |
-| `make ci-test` | Run the CI test path. |
 | `make deliverable-gate` | Run `build-test` and `lint` together. |
 
 #### Documentation

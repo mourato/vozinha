@@ -5,7 +5,7 @@
 # with CI/CD pipelines and headless environments.
 # =============================================================================
 
-.PHONY: help build build-debug build-release build-agent build-test build-test-strict xcodebuild-safe test test-agent test-full test-full-agent test-smoke test-perf test-sensitive test-appkit test-parity test-parity-agent test-swift test-verbose test-strict test-ci-strict scope-check scope-check-agent validate-agent workflow-test benchmark-summary benchmark-summary-agent lint lint-agent lint-report lint-strict lint-strict-agent lint-fix arch-check preview-check localization-check guidance-check preflight preflight-fast preflight-agent preflight-agent-fast agent-artifacts-report agent-artifacts-dry-run agent-artifacts-clean clean run run-release build-and-run install-app install-release dmg setup-self-signed-cert setup format health ci-build ci-test deliverable-gate docs docs-preview docs-clean profile profile-report profile-cpu profile-memory profile-animation profile-animation-report
+.PHONY: help build build-release build-agent build-test build-test-strict xcodebuild-safe test test-agent test-full test-full-agent test-smoke test-perf test-sensitive test-appkit test-parity test-parity-agent test-verbose test-strict test-ci-strict scope-check scope-check-agent validate-agent workflow-test benchmark-summary benchmark-summary-agent lint lint-agent lint-report lint-strict lint-strict-agent lint-fix arch-check preview-check localization-check guidance-check preflight preflight-fast preflight-agent preflight-agent-fast agent-artifacts-report agent-artifacts-dry-run agent-artifacts-clean clean run run-release build-and-run dmg setup-self-signed-cert setup format health ci-build deliverable-gate docs docs-preview docs-clean profile profile-report profile-cpu profile-memory profile-animation profile-animation-report
 
 # Default target
 help:
@@ -14,7 +14,6 @@ help:
 	@echo ""
 	@echo "Build Commands:"
 	@echo "  make build          - Build debug version (default)"
-	@echo "  make build-debug    - Build debug version explicitly"
 	@echo "  make build-release  - Build release version"
 	@echo "  make build-agent    - Build debug with compact machine-readable output"
 	@echo "  make build-test     - Run build + tests in sequence (fast default, strict in CI)"
@@ -32,7 +31,6 @@ help:
 	@echo "  make test-appkit    - Run isolated AppKit lifecycle tests"
 	@echo "  make test-parity    - Run xcodebuild parity tests"
 	@echo "  make test-parity-agent - Run xcodebuild parity tests in compact mode"
-	@echo "  make test-swift     - Alias of make test-full"
 	@echo "  make test-verbose   - Run tests with verbose output"
 	@echo "  make test-strict    - Run tests with strict concurrency checking"
 	@echo "  make test-ci-strict - Run strict xcodebuild parity gate"
@@ -64,7 +62,6 @@ help:
 	@echo "  make run            - Build and run debug version"
 	@echo "  make run-release    - Build and run release version"
 	@echo "  make build-and-run ARGS=... - Interactive Debug/Release build workflow"
-	@echo "  make install-app ARGS=... - Interactively build, sign, replace, validate, and launch Vozinha.app"
 	@echo ""
 	@echo "Distribution:"
 	@echo "  make dmg            - Create DMG installer (prompts for auto/self-signed/adhoc at start)"
@@ -88,7 +85,6 @@ help:
 	@echo ""
 	@echo "CI/CD Commands:"
 	@echo "  make ci-build       - Full CI build (lint + test + build-release)"
-	@echo "  make ci-test        - CI test run (no user interaction)"
 	@echo "  make deliverable-gate - Run build-test + lint"
 	@echo ""
 	@echo "Documentation:"
@@ -107,6 +103,7 @@ DERIVED_DATA = $(PROJECT_DIR)/.xcode-build
 DIST_DIR = $(PROJECT_DIR)/dist
 AGENT_LOG_DIR ?= /tmp/ma-agent
 ARTIFACT_RETENTION_DAYS ?= 7
+AGENT_ENV = MA_AGENT_MODE=1 MA_AGENT_LOG_DIR="$(AGENT_LOG_DIR)"
 
 # Colors for output
 RED = \033[0;31m
@@ -116,22 +113,20 @@ BLUE = \033[0;34m
 NC = \033[0m
 
 # Build Commands
-build: build-debug
-
-build-debug:
+build:
 	@./scripts/run-build.sh --configuration Debug
 
 build-release:
 	@./scripts/run-build.sh --configuration Release
 
 build-agent:
-	@MA_AGENT_MODE=1 MA_AGENT_LOG_DIR="$(AGENT_LOG_DIR)" ./scripts/run-build.sh --configuration Debug --agent
+	@$(AGENT_ENV) ./scripts/run-build.sh --configuration Debug --agent
 
 build-test:
-	@MA_AGENT_MODE=1 MA_AGENT_LOG_DIR="$(AGENT_LOG_DIR)" ./scripts/run-build-and-test.sh
+	@$(AGENT_ENV) ./scripts/run-build-and-test.sh
 
 build-test-strict:
-	@MA_AGENT_MODE=1 MA_AGENT_LOG_DIR="$(AGENT_LOG_DIR)" MA_BUILD_TEST_STRICT_XCODE=1 ./scripts/run-build-and-test.sh
+	@$(AGENT_ENV) MA_BUILD_TEST_STRICT_XCODE=1 ./scripts/run-build-and-test.sh
 
 xcodebuild-safe:
 	@./scripts/xcodebuild-safe.sh
@@ -141,13 +136,13 @@ test:
 	@./scripts/run-tests.sh --suite dev
 
 test-agent:
-	@MA_AGENT_MODE=1 MA_AGENT_LOG_DIR="$(AGENT_LOG_DIR)" ./scripts/run-tests.sh --suite dev --agent
+	@$(AGENT_ENV) ./scripts/run-tests.sh --suite dev --agent
 
 test-full:
 	@./scripts/run-tests.sh --suite full
 
 test-full-agent:
-	@MA_AGENT_MODE=1 MA_AGENT_LOG_DIR="$(AGENT_LOG_DIR)" ./scripts/run-tests.sh --suite full --agent
+	@$(AGENT_ENV) ./scripts/run-tests.sh --suite full --agent
 
 test-smoke:
 	@./scripts/run-tests.sh --suite smoke
@@ -165,11 +160,7 @@ test-parity:
 	@./scripts/run-tests-xcode.sh
 
 test-parity-agent:
-	@MA_AGENT_MODE=1 MA_AGENT_LOG_DIR="$(AGENT_LOG_DIR)" ./scripts/run-tests-xcode.sh --agent
-
-test-swift:
-	@echo -e "$(BLUE)Running tests (swift test)...$(NC)"
-	@./scripts/run-tests.sh --suite full
+	@$(AGENT_ENV) ./scripts/run-tests-xcode.sh --agent
 
 test-verbose:
 	@echo -e "$(BLUE)Running tests (verbose)...$(NC)"
@@ -186,10 +177,10 @@ scope-check:
 	@./scripts/scope-check.sh $(ARGS)
 
 scope-check-agent:
-	@MA_AGENT_MODE=1 MA_AGENT_LOG_DIR="$(AGENT_LOG_DIR)" ./scripts/scope-check.sh --agent $(ARGS)
+	@$(AGENT_ENV) ./scripts/scope-check.sh --agent $(ARGS)
 
 validate-agent:
-	@MA_AGENT_MODE=1 MA_AGENT_LOG_DIR="$(AGENT_LOG_DIR)" ./scripts/validate-agent.sh $(ARGS)
+	@$(AGENT_ENV) ./scripts/validate-agent.sh $(ARGS)
 
 workflow-test:
 	@./scripts/tests/workflow-test.sh
@@ -198,7 +189,7 @@ benchmark-summary:
 	@./scripts/run-summary-benchmark.sh --report-only
 
 benchmark-summary-agent:
-	@MA_AGENT_MODE=1 MA_AGENT_LOG_DIR="$(AGENT_LOG_DIR)" ./scripts/run-summary-benchmark.sh --report-only --agent
+	@$(AGENT_ENV) ./scripts/run-summary-benchmark.sh --report-only --agent
 
 # Code Quality
 lint:
@@ -211,7 +202,7 @@ lint:
 	fi
 
 lint-agent:
-	@MA_AGENT_MODE=1 MA_AGENT_LOG_DIR="$(AGENT_LOG_DIR)" ./scripts/lint.sh --agent $(if $(FILES),--files "$(FILES)")
+	@$(AGENT_ENV) ./scripts/lint.sh --agent $(if $(FILES),--files "$(FILES)")
 
 lint-report:
 	@STRICT_LINT=0 ./scripts/lint.sh $(if $(FILES),--files "$(FILES)")
@@ -253,10 +244,10 @@ preflight-fast:
 	@./scripts/preflight.sh --fast
 
 preflight-agent:
-	@MA_AGENT_MODE=1 MA_AGENT_LOG_DIR="$(AGENT_LOG_DIR)" ./scripts/preflight.sh --agent
+	@$(AGENT_ENV) ./scripts/preflight.sh --agent
 
 preflight-agent-fast:
-	@MA_AGENT_MODE=1 MA_AGENT_LOG_DIR="$(AGENT_LOG_DIR)" ./scripts/preflight.sh --agent --fast
+	@$(AGENT_ENV) ./scripts/preflight.sh --agent --fast
 
 format:
 	@echo -e "$(BLUE)Running SwiftFormat...$(NC)"
@@ -272,7 +263,7 @@ health:
 	@./scripts/code-health-check.sh
 
 # Run Commands
-run: build-debug
+run: build
 	@echo -e "$(YELLOW)Launching $(APP_PRODUCT_NAME) (Debug)...$(NC)"
 	@open "$(DERIVED_DATA)/Build/Products/Debug/$(APP_PRODUCT_NAME).app"
 
@@ -282,12 +273,6 @@ run-release: build-release
 
 build-and-run:
 	@./scripts/build-and-run.sh $(ARGS)
-
-install-app:
-	@./scripts/build-and-run.sh $(ARGS)
-
-install-release: install-app
-	@:
 
 # Distribution
 new-release:
@@ -331,27 +316,27 @@ setup:
 	@./scripts/setup-dev-environment.sh
 
 # Profiling Commands
-profile: build-debug
+profile: build
 	@echo -e "$(BLUE)Running performance profiling (all)...$(NC)"
 	@./scripts/profile-performance.sh --all
 
-profile-report: build-debug
+profile-report: build
 	@echo -e "$(BLUE)Running performance profiling with report extraction...$(NC)"
 	@./scripts/profile-performance.sh --all --report
 
-profile-cpu: build-debug
+profile-cpu: build
 	@echo -e "$(BLUE)Running CPU profiling...$(NC)"
 	@./scripts/profile-performance.sh --cpu
 
-profile-memory: build-debug
+profile-memory: build
 	@echo -e "$(BLUE)Running memory profiling...$(NC)"
 	@./scripts/profile-performance.sh --memory
 
-profile-animation: build-debug
+profile-animation: build
 	@echo -e "$(BLUE)Running animation profiling...$(NC)"
 	@./scripts/profile-performance.sh --animation
 
-profile-animation-report: build-debug
+profile-animation-report: build
 	@echo -e "$(BLUE)Running animation profiling with report extraction...$(NC)"
 	@./scripts/profile-performance.sh --animation --report
 
@@ -359,9 +344,6 @@ profile-animation-report: build-debug
 # CI/CD Commands
 ci-build: arch-check lint test build-release
 	@echo -e "$(GREEN)✓ CI build completed successfully$(NC)"
-
-ci-test: test
-	@echo -e "$(GREEN)✓ CI tests completed$(NC)"
 
 deliverable-gate:
 	@$(MAKE) lint

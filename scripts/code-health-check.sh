@@ -155,7 +155,7 @@ fi
 # 9. Build Check
 echo ""
 echo "7️⃣  Checking build..."
-if make build-debug >/dev/null 2>&1; then
+if make build >/dev/null 2>&1; then
     check_result "Build" "PASS" "Project builds successfully"
 else
     check_result "Build" "FAIL" "Project fails to build"

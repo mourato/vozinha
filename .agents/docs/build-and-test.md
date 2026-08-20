@@ -63,7 +63,6 @@ make preflight-fast     # Lint + Build + Test (skips benchmark, faster feedback)
 make deliverable-gate   # build-test + lint
 make run                # Run app in debug mode
 make build-and-run      # Interactive Debug/Release workflow
-make install-app        # Interactive signed Release install and launch (Release/clean default to yes)
 make format             # Auto-format with SwiftFormat
 make lint               # Run SwiftLint checks
 ```
@@ -75,8 +74,8 @@ make dmg                # Create DMG installer (auto-detect self-signed identity
 make setup-self-signed-cert # Bootstrap local self-signed code-signing cert
 ```
 
-`make build-and-run` and `make install-app` never install Debug into `/Applications`. Release
-consumes the signed `dist/Vozinha.app`, validates it, and transactionally
+`make build-and-run` never installs Debug into `/Applications`. Release consumes
+the signed `dist/Vozinha.app`, validates it, and transactionally
 replaces only `/Applications/Vozinha.app`, restoring the previous bundle on
 failure. `--force-terminate` is an explicit fallback after the graceful
 `vozinha://internal/quit` request times out. `make dmg` remains the packaging
@@ -207,6 +206,24 @@ For agent planning, preview the decision without running checks:
 make validate-agent ARGS="--lane auto --dry-run --base main"
 ```
 
+The Makefile is the command source of truth. Use `make build`, an explicit
+`make test`/`make test-full`/suite target, `make test-parity`,
+`make scope-check`, `make validate-agent`, or an explicit preflight target
+rather than invoking a removed alias. The canonical script mapping is:
+
+| Purpose | Target | Script |
+|---------|--------|--------|
+| Debug build | `make build` | `scripts/run-build.sh --configuration Debug` |
+| SwiftPM tests | `make test`, `make test-full`, or a suite target | `scripts/run-tests.sh` |
+| Xcode parity | `make test-parity` | `scripts/run-tests-xcode.sh` |
+| Scoped validation | `make scope-check` | `scripts/scope-check.sh` |
+| Automatic lane | `make validate-agent` | `scripts/validate-agent.sh` |
+| Preflight | `make preflight` or a preflight variant | `scripts/preflight.sh` |
+| Debug/Release run | `make build-and-run` | `scripts/build-and-run.sh` |
+
+The retired aliases are `build-debug`, `test-swift`, `install-app`,
+`install-release`, and `ci-test`.
+
 Escalate early to `make build-test` when touching build/test/release infrastructure, cross-module/public APIs, or high-risk paths (audio, persistence, concurrency, security), or when scoped checks are flaky/inconclusive.
 
 Useful options for the script:
@@ -220,7 +237,6 @@ Useful options for the script:
 
 ### CI-style local checks
 ```bash
-make ci-test             # XCTest output compatible with CI systems
 make ci-build            # Includes arch-check
 ```
 
@@ -293,7 +309,7 @@ Agents automatically capture build/test output and diagnostics.
 
 **Log directory:**
 - Default: `/tmp/ma-agent/`
-- Override: `MA_AGENT_LOG_DIR=/custom/path make build-agent`
+- Override: `AGENT_LOG_DIR=/custom/path make build-agent`
 - Each invocation creates an immutable `run-*` directory below that root. Nested
   commands inherit `MA_AGENT_RUN_DIR`, so concurrent worktrees cannot truncate
   one another's logs or result files.

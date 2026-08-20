@@ -106,7 +106,7 @@ echo ""
 # Check if app exists
 if [ ! -d "${APP_PATH}" ]; then
     echo -e "${RED}Error: App not found at ${APP_PATH}${NC}"
-    echo -e "${YELLOW}Run 'make build-debug' first to build the app.${NC}"
+    echo -e "${YELLOW}Run 'make build' first to build the app.${NC}"
     exit 1
 fi
 

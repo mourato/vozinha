@@ -71,6 +71,41 @@ fi
 
 cd "${PROJECT_ROOT}"
 
+run_parallel_lint_and_build() {
+    local lint_target="$1"
+    local build_target="$2"
+    local lint_status=0
+    local build_status=0
+
+    if [ "${AGENT_MODE}" -eq 0 ]; then
+        echo "[1/3] make ${lint_target} (parallel)"
+    fi
+    make "${lint_target}" &
+    local lint_pid=$!
+
+    if [ "${AGENT_MODE}" -eq 0 ]; then
+        echo "[2/3] make ${build_target} (parallel)"
+    fi
+    make "${build_target}" &
+    local build_pid=$!
+
+    wait "${lint_pid}" || lint_status=$?
+    wait "${build_pid}" || build_status=$?
+
+    if [ "${AGENT_MODE}" -eq 1 ]; then
+        if [ "${lint_status}" -ne 0 ]; then
+            emit_preflight_failure "lint" "Preflight failed during lint"
+        fi
+        if [ "${build_status}" -ne 0 ]; then
+            emit_preflight_failure "build" "Preflight failed during build"
+        fi
+    elif [ "${lint_status}" -ne 0 ] || [ "${build_status}" -ne 0 ]; then
+        return 1
+    fi
+
+    return 0
+}
+
 if [ "${AGENT_MODE}" -eq 0 ]; then
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     if [ "${FAST_MODE}" -eq 1 ]; then
@@ -96,47 +131,19 @@ if [ "${AGENT_MODE}" -eq 0 ]; then
     fi
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
-    run_tests() {
-        make test-full
-    }
-
-    run_parallel_build_and_lint() {
-        local lint_status=0
-        local build_status=0
-
-        echo "[1/3] make lint (parallel)"
-        make lint &
-        local lint_pid=$!
-
-        echo "[2/3] make build (parallel)"
-        make build &
-        local build_pid=$!
-
-        wait "${lint_pid}" || lint_status=$?
-        wait "${build_pid}" || build_status=$?
-
-        if [ "${lint_status}" -ne 0 ] || [ "${build_status}" -ne 0 ]; then
-            return 1
-        fi
-
-        return 0
-    }
+    run_parallel_lint_and_build "lint" "build"
 
     if [ "${FAST_MODE}" -eq 1 ]; then
-        run_parallel_build_and_lint
-
         echo "[3/3] make test"
-        run_tests
+        make test-full
 
         if [ "${STRICT_CONCURRENCY}" -eq 1 ]; then
             echo "[4/4] make test-strict"
             make test-strict
         fi
     else
-        run_parallel_build_and_lint
-
         echo "[3/4] make test"
-        run_tests
+        make test-full
 
         if [ "${STRICT_CONCURRENCY}" -eq 1 ]; then
             echo "[4/5] make test-strict"
@@ -174,45 +181,13 @@ emit_preflight_failure() {
     exit 1
 }
 
-run_test_agent() {
-    make test-full-agent
-}
+run_parallel_lint_and_build "lint-agent" "build-agent"
 
-run_parallel_lint_and_build_agent() {
-    local lint_status=0
-    local build_status=0
-
-    make lint-agent &
-    local lint_pid=$!
-    make build-agent &
-    local build_pid=$!
-
-    wait "${lint_pid}" || lint_status=$?
-    wait "${build_pid}" || build_status=$?
-
-    if [ "${lint_status}" -ne 0 ]; then
-        emit_preflight_failure "lint" "Preflight failed during lint"
-    fi
-
-    if [ "${build_status}" -ne 0 ]; then
-        emit_preflight_failure "build" "Preflight failed during build"
-    fi
-}
-
-run_parallel_lint_and_build_agent
-
-if ! run_test_agent; then
+if ! make test-full-agent; then
     emit_preflight_failure "test" "Preflight failed during test"
 fi
 
-if [ "${FAST_MODE}" -eq 0 ] && [ "${STRICT_CONCURRENCY}" -eq 1 ]; then
-    echo "AGENT_NOTE=running strict concurrency gate"
-    if ! MA_AGENT_MODE=1 ./scripts/run-tests.sh --strict --agent; then
-        emit_preflight_failure "strict-concurrency" "Preflight failed during strict concurrency test"
-    fi
-fi
-
-if [ "${FAST_MODE}" -eq 1 ] && [ "${STRICT_CONCURRENCY}" -eq 1 ]; then
+if [ "${STRICT_CONCURRENCY}" -eq 1 ]; then
     echo "AGENT_NOTE=running strict concurrency gate"
     if ! MA_AGENT_MODE=1 ./scripts/run-tests.sh --strict --agent; then
         emit_preflight_failure "strict-concurrency" "Preflight failed during strict concurrency test"
