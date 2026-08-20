@@ -2,154 +2,13 @@ import Foundation
 import MeetingAssistantCoreCommon
 import Security
 
-/// Secure storage for sensitive data using macOS Keychain.
-/// Provides type-safe API for storing and retrieving secrets.
-public protocol KeychainProvider: Sendable {
-    func store(_ value: String, for key: KeychainManager.Key) throws
-    func retrieve(for key: KeychainManager.Key) throws -> String?
-    func delete(for key: KeychainManager.Key) throws
-    func exists(for key: KeychainManager.Key) -> Bool
-    func retrieveAPIKey(for provider: AIProvider) throws -> String?
-    func retrieveAPIKeys(for providers: [AIProvider]) throws -> [AIProvider: String]
-    func existsAPIKey(for provider: AIProvider) -> Bool
-    func storeAPIKey(_ value: String, for registrationID: UUID) throws
-    func retrieveAPIKey(for registrationID: UUID) throws -> String?
-    func retrieveAPIKeys(for registrationIDs: [UUID]) throws -> [UUID: String]
-    func existsAPIKey(for registrationID: UUID) -> Bool
-    func deleteAPIKey(for registrationID: UUID) throws
-    func storeTranscriptionAPIKey(_ value: String, for provider: TranscriptionProvider) throws
-    func retrieveTranscriptionAPIKey(for provider: TranscriptionProvider) throws -> String?
-    func existsTranscriptionAPIKey(for provider: TranscriptionProvider) -> Bool
-    func deleteTranscriptionAPIKey(for provider: TranscriptionProvider) throws
-}
-
-public extension KeychainProvider {
-    func retrieveAPIKeys(for providers: [AIProvider]) throws -> [AIProvider: String] {
-        var valuesByProvider: [AIProvider: String] = [:]
-
-        for provider in providers {
-            guard let apiKey = try retrieveAPIKey(for: provider)?.trimmingCharacters(in: .whitespacesAndNewlines),
-                  !apiKey.isEmpty
-            else {
-                continue
-            }
-            valuesByProvider[provider] = apiKey
-        }
-
-        return valuesByProvider
-    }
-
-    func storeAPIKey(_ value: String, for registrationID: UUID) throws {
-        try KeychainManager.storeAPIKey(value, for: registrationID)
-    }
-
-    func retrieveAPIKey(for registrationID: UUID) throws -> String? {
-        try KeychainManager.retrieveAPIKey(for: registrationID)
-    }
-
-    func retrieveAPIKeys(for registrationIDs: [UUID]) throws -> [UUID: String] {
-        try KeychainManager.retrieveAPIKeys(for: registrationIDs)
-    }
-
-    func existsAPIKey(for registrationID: UUID) -> Bool {
-        KeychainManager.existsAPIKey(for: registrationID)
-    }
-
-    func deleteAPIKey(for registrationID: UUID) throws {
-        try KeychainManager.deleteAPIKey(for: registrationID)
-    }
-
-    func storeTranscriptionAPIKey(_ value: String, for provider: TranscriptionProvider) throws {
-        try KeychainManager.storeTranscriptionAPIKey(value, for: provider)
-    }
-
-    func retrieveTranscriptionAPIKey(for provider: TranscriptionProvider) throws -> String? {
-        try KeychainManager.retrieveTranscriptionAPIKey(for: provider)
-    }
-
-    func existsTranscriptionAPIKey(for provider: TranscriptionProvider) -> Bool {
-        KeychainManager.existsTranscriptionAPIKey(for: provider)
-    }
-
-    func deleteTranscriptionAPIKey(for provider: TranscriptionProvider) throws {
-        try KeychainManager.deleteTranscriptionAPIKey(for: provider)
-    }
-}
-
-public struct DefaultKeychainProvider: KeychainProvider {
-    public init() {}
-    public func store(_ value: String, for key: KeychainManager.Key) throws {
-        try KeychainManager.store(value, for: key)
-    }
-
-    public func retrieve(for key: KeychainManager.Key) throws -> String? {
-        try KeychainManager.retrieve(for: key)
-    }
-
-    public func delete(for key: KeychainManager.Key) throws {
-        try KeychainManager.delete(for: key)
-    }
-
-    public func exists(for key: KeychainManager.Key) -> Bool {
-        KeychainManager.exists(for: key)
-    }
-
-    public func retrieveAPIKey(for provider: AIProvider) throws -> String? {
-        try KeychainManager.retrieveAPIKey(for: provider)
-    }
-
-    public func retrieveAPIKeys(for providers: [AIProvider]) throws -> [AIProvider: String] {
-        try KeychainManager.retrieveAPIKeys(for: providers)
-    }
-
-    public func existsAPIKey(for provider: AIProvider) -> Bool {
-        KeychainManager.existsAPIKey(for: provider)
-    }
-
-    public func storeAPIKey(_ value: String, for registrationID: UUID) throws {
-        try KeychainManager.storeAPIKey(value, for: registrationID)
-    }
-
-    public func retrieveAPIKey(for registrationID: UUID) throws -> String? {
-        try KeychainManager.retrieveAPIKey(for: registrationID)
-    }
-
-    public func retrieveAPIKeys(for registrationIDs: [UUID]) throws -> [UUID: String] {
-        try KeychainManager.retrieveAPIKeys(for: registrationIDs)
-    }
-
-    public func existsAPIKey(for registrationID: UUID) -> Bool {
-        KeychainManager.existsAPIKey(for: registrationID)
-    }
-
-    public func deleteAPIKey(for registrationID: UUID) throws {
-        try KeychainManager.deleteAPIKey(for: registrationID)
-    }
-
-    public func storeTranscriptionAPIKey(_ value: String, for provider: TranscriptionProvider) throws {
-        try KeychainManager.storeTranscriptionAPIKey(value, for: provider)
-    }
-
-    public func retrieveTranscriptionAPIKey(for provider: TranscriptionProvider) throws -> String? {
-        try KeychainManager.retrieveTranscriptionAPIKey(for: provider)
-    }
-
-    public func existsTranscriptionAPIKey(for provider: TranscriptionProvider) -> Bool {
-        KeychainManager.existsTranscriptionAPIKey(for: provider)
-    }
-
-    public func deleteTranscriptionAPIKey(for provider: TranscriptionProvider) throws {
-        try KeychainManager.deleteTranscriptionAPIKey(for: provider)
-    }
-}
-
 public enum KeychainManager {
 
     // MARK: - Constants
 
-    private static let serviceIdentifier = AppIdentity.keychainServiceIdentifier
-    private static let legacyServiceIdentifiers = AppIdentity.legacyKeychainServiceIdentifiers
-    private static let providerRegistrationAccountPrefix = "ai_api_key_registration_"
+    static let serviceIdentifier = AppIdentity.keychainServiceIdentifier
+    static let legacyServiceIdentifiers = AppIdentity.legacyKeychainServiceIdentifiers
+    static let providerRegistrationAccountPrefix = "ai_api_key_registration_"
     private static let consolidatedAccount = "prisma_consolidated_api_keys_v1"
     private static let legacyConsolidatedAccount = "prisma_consolidated_api_keys"
     private static let legacyConsolidatedMigrationKey = "keychain.legacy_consolidated_api_keys.migrated"
@@ -238,7 +97,7 @@ public enum KeychainManager {
 
     // MARK: - Consolidated Storage
 
-    private static func loadConsolidated() throws -> ConsolidatedAPIKeys {
+    static func loadConsolidated() throws -> ConsolidatedAPIKeys {
         cacheLock.lock()
         defer { cacheLock.unlock() }
 
@@ -359,7 +218,7 @@ public enum KeychainManager {
     }
 
     @discardableResult
-    private static func mutateConsolidated(
+    static func mutateConsolidated(
         _ mutation: (inout ConsolidatedAPIKeys) throws -> Bool,
     ) throws -> Bool {
         cacheLock.lock()
@@ -516,7 +375,7 @@ public enum KeychainManager {
         return keys
     }
 
-    private static func keyValue(in consolidated: ConsolidatedAPIKeys, for key: Key) -> String? {
+    static func keyValue(in consolidated: ConsolidatedAPIKeys, for key: Key) -> String? {
         switch key {
         case .aiAPIKey:
             consolidated.legacyUnifiedKey
@@ -535,7 +394,7 @@ public enum KeychainManager {
         }
     }
 
-    private static func setValue(_ value: String?, in consolidated: inout ConsolidatedAPIKeys, for key: Key) {
+    static func setValue(_ value: String?, in consolidated: inout ConsolidatedAPIKeys, for key: Key) {
         switch key {
         case .aiAPIKey:
             consolidated.legacyUnifiedKey = value
@@ -554,342 +413,11 @@ public enum KeychainManager {
         }
     }
 
-    // MARK: - Public API
-
-    /// Store a string securely in the Keychain.
-    /// - Parameters:
-    ///   - value: The string value to store.
-    ///   - key: The key to store the value under.
-    /// - Throws: `KeychainError` if storage fails.
-    static func store(_ value: String, for key: Key) throws {
-        try mutateConsolidated { consolidated in
-            guard keyValue(in: consolidated, for: key) != value else { return false }
-            setValue(value, in: &consolidated, for: key)
-            return true
-        }
-    }
-
-    /// Retrieve a string from the Keychain.
-    /// - Parameter key: The key to retrieve the value for.
-    /// - Returns: The stored string value, or `nil` if not found.
-    /// - Throws: `KeychainError` if retrieval fails for reasons other than item not found.
-    static func retrieve(for key: Key) throws -> String? {
-        let consolidated = try loadConsolidated()
-
-        if let value = keyValue(in: consolidated, for: key) {
-            return value
-        }
-
-        let allServices = [serviceIdentifier] + legacyServiceIdentifiers
-        for serviceId in allServices {
-            guard let legacyValue = try retrieve(account: key.rawValue, serviceIdentifier: serviceId),
-                  !legacyValue.isEmpty
-            else { continue }
-
-            try mutateConsolidated { mutableConsolidated in
-                setValue(legacyValue, in: &mutableConsolidated, for: key)
-                return true
-            }
-            try delete(account: key.rawValue, serviceIdentifier: serviceId)
-            return legacyValue
-        }
-
-        return nil
-    }
-
-    /// Delete a value from the Keychain.
-    /// - Parameter key: The key to delete.
-    /// - Throws: `KeychainError` if deletion fails.
-    static func delete(for key: Key) throws {
-        try mutateConsolidated { consolidated in
-            guard keyValue(in: consolidated, for: key) != nil else { return false }
-            setValue(nil, in: &consolidated, for: key)
-            return true
-        }
-    }
-
-    /// Check if a value exists in the Keychain.
-    /// - Parameter key: The key to check.
-    /// - Returns: `true` if the key exists, `false` otherwise.
-    static func exists(for key: Key) -> Bool {
-        do {
-            let consolidated = try loadConsolidated()
-            if keyValue(in: consolidated, for: key) != nil {
-                return true
-            }
-
-            let allServices = [serviceIdentifier] + legacyServiceIdentifiers
-            return allServices.contains { exists(account: key.rawValue, serviceIdentifier: $0) }
-        } catch {
-            return false
-        }
-    }
-
-    // MARK: - Provider-specific helpers
-
-    public static func apiKeyKey(for provider: AIProvider) -> Key {
-        switch provider {
-        case .openai:
-            .aiAPIKeyOpenAI
-        case .anthropic:
-            .aiAPIKeyAnthropic
-        case .groq:
-            .aiAPIKeyGroq
-        case .google:
-            .aiAPIKeyGoogle
-        case .custom:
-            .aiAPIKeyCustom
-        }
-    }
-
-    public static func retrieveAPIKey(for provider: AIProvider) throws -> String? {
-        let providerKey = apiKeyKey(for: provider)
-        if let value = try retrieve(for: providerKey), !value.isEmpty {
-            return value
-        }
-
-        // Legacy unified key fallback: migrate to provider-specific slot and
-        // delete the old individual entry so the fallback in retrieve(for:)
-        // won't re-migrate it on subsequent calls for other providers.
-        if let legacyValue = try retrieve(for: .aiAPIKey), !legacyValue.isEmpty {
-            try mutateConsolidated { consolidated in
-                setValue(legacyValue, in: &consolidated, for: providerKey)
-                setValue(nil, in: &consolidated, for: .aiAPIKey)
-                return true
-            }
-
-            let allServices = [serviceIdentifier] + legacyServiceIdentifiers
-            for serviceId in allServices {
-                try? delete(account: Key.aiAPIKey.rawValue, serviceIdentifier: serviceId)
-            }
-
-            return legacyValue
-        }
-
-        return nil
-    }
-
-    public static func retrieveAPIKeys(for providers: [AIProvider]) throws -> [AIProvider: String] {
-        var valuesByProvider: [AIProvider: String] = [:]
-
-        for provider in providers {
-            let normalizedAPIKey = try retrieveAPIKey(for: provider)?
-                .trimmingCharacters(in: .whitespacesAndNewlines)
-            guard
-                let apiKey = normalizedAPIKey,
-                !apiKey.isEmpty
-            else {
-                continue
-            }
-            valuesByProvider[provider] = apiKey
-        }
-
-        return valuesByProvider
-    }
-
-    public static func existsAPIKey(for provider: AIProvider) -> Bool {
-        let providerKey = apiKeyKey(for: provider)
-        let allServices = [serviceIdentifier] + legacyServiceIdentifiers
-
-        do {
-            let consolidated = try loadConsolidated()
-            if keyValue(in: consolidated, for: providerKey) != nil {
-                return true
-            }
-            if keyValue(in: consolidated, for: .aiAPIKey) != nil {
-                return true
-            }
-        } catch {
-            return allServices.contains { exists(account: providerKey.rawValue, serviceIdentifier: $0) }
-                || allServices.contains { exists(account: Key.aiAPIKey.rawValue, serviceIdentifier: $0) }
-        }
-
-        return allServices.contains { exists(account: providerKey.rawValue, serviceIdentifier: $0) }
-            || allServices.contains { exists(account: Key.aiAPIKey.rawValue, serviceIdentifier: $0) }
-    }
-
-    public static func transcriptionAPIKeyKey(for provider: TranscriptionProvider) -> Key? {
-        switch provider {
-        case .local:
-            nil
-        case .groq:
-            .aiAPIKeyGroq
-        case .elevenLabs:
-            .transcriptionAPIKeyElevenLabs
-        }
-    }
-
-    public static func storeTranscriptionAPIKey(_ value: String, for provider: TranscriptionProvider) throws {
-        guard let key = transcriptionAPIKeyKey(for: provider) else { return }
-        try store(value, for: key)
-    }
-
-    public static func retrieveTranscriptionAPIKey(for provider: TranscriptionProvider) throws -> String? {
-        guard let key = transcriptionAPIKeyKey(for: provider) else { return nil }
-        return key == .aiAPIKeyGroq ? try retrieveAPIKey(for: .groq) : try retrieve(for: key)
-    }
-
-    public static func existsTranscriptionAPIKey(for provider: TranscriptionProvider) -> Bool {
-        guard let key = transcriptionAPIKeyKey(for: provider) else { return true }
-        return key == .aiAPIKeyGroq ? existsAPIKey(for: .groq) : exists(for: key)
-    }
-
-    public static func deleteTranscriptionAPIKey(for provider: TranscriptionProvider) throws {
-        guard let key = transcriptionAPIKeyKey(for: provider) else { return }
-        try delete(for: key)
-    }
-
-    public static func registrationAPIKeyAccount(for registrationID: UUID) -> String {
-        "\(providerRegistrationAccountPrefix)\(registrationID.uuidString.lowercased())"
-    }
-
-    public static func storeAPIKey(_ value: String, for registrationID: UUID) throws {
-        let account = registrationAPIKeyAccount(for: registrationID)
-        try mutateConsolidated { consolidated in
-            guard consolidated.registrationKeys[account] != value else { return false }
-            consolidated.registrationKeys[account] = value
-            return true
-        }
-
-        for serviceId in [serviceIdentifier] + legacyServiceIdentifiers {
-            try? delete(account: account, serviceIdentifier: serviceId)
-        }
-    }
-
-    public static func retrieveAPIKey(for registrationID: UUID) throws -> String? {
-        let account = registrationAPIKeyAccount(for: registrationID)
-
-        let consolidated = try loadConsolidated()
-        if let value = consolidated.registrationKeys[account], !value.isEmpty {
-            return value
-        }
-
-        for serviceId in [serviceIdentifier] + legacyServiceIdentifiers {
-            guard let legacyValue = try retrieve(account: account, serviceIdentifier: serviceId),
-                  !legacyValue.isEmpty
-            else {
-                continue
-            }
-
-            try mutateConsolidated { mutableConsolidated in
-                mutableConsolidated.registrationKeys[account] = legacyValue
-                return true
-            }
-            try? delete(account: account, serviceIdentifier: serviceId)
-            return legacyValue
-        }
-
-        return nil
-    }
-
-    public static func retrieveAPIKeys(for registrationIDs: [UUID]) throws -> [UUID: String] {
-        let consolidated = try loadConsolidated()
-        var mutableConsolidated = consolidated
-        var valuesByRegistrationID: [UUID: String] = [:]
-        var migratedAccounts: [(account: String, serviceIdentifier: String)] = []
-
-        for registrationID in registrationIDs {
-            let account = registrationAPIKeyAccount(for: registrationID)
-            let consolidatedValue = mutableConsolidated.registrationKeys[account]
-            let legacyValue: String?
-
-            if consolidatedValue == nil {
-                legacyValue = try legacyRegistrationAPIKey(for: account, migratedAccounts: &migratedAccounts)
-                if let legacyValue, !legacyValue.isEmpty {
-                    mutableConsolidated.registrationKeys[account] = legacyValue
-                }
-            } else {
-                legacyValue = nil
-            }
-
-            let normalizedAPIKey = (consolidatedValue ?? legacyValue)?
-                .trimmingCharacters(in: .whitespacesAndNewlines)
-            guard
-                let apiKey = normalizedAPIKey,
-                !apiKey.isEmpty
-            else {
-                continue
-            }
-            valuesByRegistrationID[registrationID] = apiKey
-        }
-
-        if mutableConsolidated.registrationKeys != consolidated.registrationKeys {
-            try mutateConsolidated { consolidated in
-                for migratedAccount in migratedAccounts {
-                    consolidated.registrationKeys[migratedAccount.account] =
-                        mutableConsolidated.registrationKeys[migratedAccount.account]
-                }
-                return true
-            }
-            for migratedAccount in migratedAccounts {
-                try? delete(account: migratedAccount.account, serviceIdentifier: migratedAccount.serviceIdentifier)
-            }
-        }
-
-        return valuesByRegistrationID
-    }
-
-    public static func existsAPIKey(for registrationID: UUID) -> Bool {
-        let account = registrationAPIKeyAccount(for: registrationID)
-        do {
-            let consolidated = try loadConsolidated()
-            if consolidated.registrationKeys[account] != nil {
-                return true
-            }
-        } catch {
-            return exists(account: account, serviceIdentifier: serviceIdentifier)
-                || legacyServiceIdentifiers.contains {
-                    exists(account: account, serviceIdentifier: $0)
-                }
-        }
-
-        if exists(account: account, serviceIdentifier: serviceIdentifier) {
-            return true
-        }
-        return legacyServiceIdentifiers.contains {
-            exists(account: account, serviceIdentifier: $0)
-        }
-    }
-
-    public static func deleteAPIKey(for registrationID: UUID) throws {
-        let account = registrationAPIKeyAccount(for: registrationID)
-        try mutateConsolidated { consolidated in
-            consolidated.registrationKeys.removeValue(forKey: account) != nil
-        }
-
-        if AppIdentity.isRunningTests {
-            return
-        }
-
-        try delete(account: account, serviceIdentifier: serviceIdentifier)
-        for legacyServiceIdentifier in legacyServiceIdentifiers {
-            try delete(account: account, serviceIdentifier: legacyServiceIdentifier)
-        }
-    }
-
-    private static func legacyRegistrationAPIKey(
-        for account: String,
-        migratedAccounts: inout [(account: String, serviceIdentifier: String)],
-    ) throws -> String? {
-        for serviceId in [serviceIdentifier] + legacyServiceIdentifiers {
-            guard let legacyValue = try retrieve(account: account, serviceIdentifier: serviceId),
-                  !legacyValue.isEmpty
-            else {
-                continue
-            }
-
-            migratedAccounts.append((account, serviceId))
-            return legacyValue
-        }
-
-        return nil
-    }
-
     private static func retrieve(for key: Key, serviceIdentifier: String) throws -> String? {
         try retrieve(account: key.rawValue, serviceIdentifier: serviceIdentifier)
     }
 
-    private static func retrieve(account: String, serviceIdentifier: String) throws -> String? {
+    static func retrieve(account: String, serviceIdentifier: String) throws -> String? {
         var query = baseQuery(account: account, serviceIdentifier: serviceIdentifier)
         query[kSecReturnData as String] = true
         query[kSecMatchLimit as String] = kSecMatchLimitOne
@@ -916,7 +444,7 @@ public enum KeychainManager {
         try delete(account: key.rawValue, serviceIdentifier: serviceIdentifier)
     }
 
-    private static func delete(account: String, serviceIdentifier: String) throws {
+    static func delete(account: String, serviceIdentifier: String) throws {
         let query = baseQuery(account: account, serviceIdentifier: serviceIdentifier)
         let status = SecItemDelete(query as CFDictionary)
 
@@ -930,7 +458,7 @@ public enum KeychainManager {
         exists(account: key.rawValue, serviceIdentifier: serviceIdentifier)
     }
 
-    private static func exists(account: String, serviceIdentifier: String) -> Bool {
+    static func exists(account: String, serviceIdentifier: String) -> Bool {
         var query = baseQuery(account: account, serviceIdentifier: serviceIdentifier)
         query[kSecReturnData as String] = false
         let status = SecItemCopyMatching(query as CFDictionary, nil)
@@ -949,50 +477,4 @@ public enum KeychainManager {
         ]
     }
 
-}
-
-public extension KeychainManager {
-    @available(*, deprecated, message: "Use retrieveAPIKeys(for:) or retrieveAPIKeysMap(allowedProviders:) instead")
-    static func mapAPIKeyItems(
-        _ items: [[String: Any]],
-        allowedProviders: [AIProvider],
-    ) -> [AIProvider: String] {
-        let accountToProvider = Dictionary(uniqueKeysWithValues: allowedProviders.map {
-            (apiKeyKey(for: $0).rawValue, $0)
-        })
-        var valuesByProvider: [AIProvider: String] = [:]
-
-        for item in items {
-            guard let account = item[kSecAttrAccount as String] as? String,
-                  let provider = accountToProvider[account],
-                  let rawData = item[kSecValueData as String] as? Data,
-                  let rawValue = String(data: rawData, encoding: .utf8)
-            else {
-                continue
-            }
-
-            let apiKey = rawValue.trimmingCharacters(in: .whitespacesAndNewlines)
-            guard !apiKey.isEmpty else { continue }
-            valuesByProvider[provider] = apiKey
-        }
-
-        return valuesByProvider
-    }
-
-    /// Reads API keys from consolidated storage for the given providers.
-    /// This is the consolidated-aware replacement for `mapAPIKeyItems(allowedProviders:)`.
-    static func retrieveAPIKeysMap(allowedProviders: [AIProvider]) throws -> [AIProvider: String] {
-        let consolidated = try loadConsolidated()
-        var valuesByProvider: [AIProvider: String] = [:]
-
-        for provider in allowedProviders {
-            let key = apiKeyKey(for: provider)
-            let apiKey = keyValue(in: consolidated, for: key)?
-                .trimmingCharacters(in: .whitespacesAndNewlines)
-            guard let apiKey, !apiKey.isEmpty else { continue }
-            valuesByProvider[provider] = apiKey
-        }
-
-        return valuesByProvider
-    }
 }
