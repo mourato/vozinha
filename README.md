@@ -1,22 +1,22 @@
 # Vozinha for macOS
 
-A native macOS app that detects video-call meetings, captures system audio, and transcribes locally using on-device AI models via the [FluidAudio SDK](https://github.com/FluidInference/FluidAudio).
+A native, local-first macOS app for meeting capture, dictation, transcription, and AI-assisted notes. Vozinha can detect supported meeting contexts, capture system and microphone audio, transcribe with on-device models via the [FluidAudio SDK](https://github.com/FluidInference/FluidAudio), and keep recordings and transcription history on the Mac.
 
 ## Key features
 
-- System audio capture via ScreenCaptureKit (macOS 15+)
-- Auto-detection for Google Meet, Microsoft Teams, Slack, Zoom
-- Local transcription with Apple Neural Engine acceleration (Apple Silicon recommended)
-- Configurable global shortcut to start/stop recording
-- Optional AI post-processing (Settings)
+- System and microphone audio capture via ScreenCaptureKit and Core Audio (macOS 15+)
+- Meeting detection for Google Meet, Microsoft Teams, Slack, and Zoom
+- Separate meeting and dictation workflows with configurable global shortcuts
+- On-device transcription through FluidAudio on Apple Silicon; optional remote transcription providers
+- Optional AI post-processing for summaries, decisions, action items, and custom prompts
 - File import (mp3, m4a, wav)
-- Centralized logging with `os.log`
+- Local transcription history, audio playback, and export
 
 ## Requirements
 
 - macOS 15.0+ (Sequoia or later)
-- Apple Silicon (recommended)
-- Xcode 16.0+ (development)
+- Apple Silicon (required for on-device FluidAudio transcription)
+- Xcode 26.6 (development; Swift 6.2)
 - Xcode command line tools selected (`xcode-select -p`)
 - Homebrew (for `make setup`)
 
@@ -28,7 +28,7 @@ A native macOS app that detects video-call meetings, captures system audio, and 
 
 ## Development
 
-This project is **CLI-first** (for parity with CI), with Xcode supported for debugging and UI iteration.
+This project is **CLI-first**, with Xcode supported for debugging and UI iteration. The default transcription path is local; remote providers and AI services are optional and require explicit configuration.
 
 ```bash
 git clone https://github.com/mourato/vozinha.git
@@ -205,14 +205,12 @@ Guideline: import only required modules in each file, and expose cross-module AP
 - Code comments are maintained in English.
 - UI strings must use localization keys (`"key".localized`), not hardcoded literals.
 
-### Branch workflow (mandatory)
+### Branch and worktree workflow (mandatory)
 
-All changes (code or docs) must be done in a dedicated Git branch in the current checkout.
+All changes (code or docs) must be made in a dedicated branch and isolated worktree.
 
 ```bash
-git checkout main
-git pull --ff-only
-git checkout -b <branch-name>
+git worktree add -b <branch-name> .worktrees/<branch-name> main
 ```
 
 See `AGENTS.md` for the full workflow and project standards.
