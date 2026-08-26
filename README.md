@@ -126,7 +126,7 @@ The pre-commit hook applies SwiftFormat and SwiftLint autofix to staged Swift fi
 | `make build-and-run` | Interactively choose Debug or Release; Release installs transactionally into `/Applications/Vozinha.app`. |
 | `make dmg` | Build Release and create `dist/Vozinha.dmg`, prompting for automatic, self-signed, or ad-hoc signing. |
 | `make setup-self-signed-cert` | Create or import the local self-signed signing certificate. |
-| `make new-release` | Create a GitHub release interactively with generated notes. |
+| `make new-release` | Build a signed update archive and create a GitHub release with generated notes. |
 
 #### Profiling
 
@@ -252,6 +252,18 @@ Notes:
 - `make dmg` now prompts for signing mode. The default choice is automatic detection: if the exact configured identity is found in keychain, the DMG is self-signed; otherwise it falls back to unsigned/ad-hoc.
 - Use `MA_RELEASE_SIGNING_MODE=adhoc make dmg` or `MA_RELEASE_SIGNING_MODE=self-signed make dmg` to skip the prompt and force a specific mode.
 - Install by replacing the existing app in `/Applications` to maximize permission persistence.
+
+AppUpdater releases need a signed ZIP asset named `Vozinha-<version>.zip`.
+`scripts/build-release.sh` creates this archive beside the app. `make new-release`
+builds it and uploads it automatically, and requires the stable self-signed
+mode so the updater can compare the code-signing identity between versions.
+The release tag must match the app version in `App/Info.plist`.
+
+The main app must remain non-sandboxed for AppUpdater to replace its bundle:
+`App/MeetingAssistant.entitlements` is intentionally empty. The sandboxed
+`MeetingAssistantAI` XPC target keeps its separate entitlements and is not the
+target that performs updates. Do not add App Sandbox to the main app without
+replacing this updater flow with a sandbox-compatible installer.
 
 ## Troubleshooting
 

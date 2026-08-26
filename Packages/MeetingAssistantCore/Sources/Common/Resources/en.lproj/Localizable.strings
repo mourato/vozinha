@@ -22,6 +22,7 @@
 "settings.activity.more_insights.subtitle" = "Explore calendar, app, and activity analytics.";
 "settings.section.intelligence" = "Intelligence";
 "settings.section.settings" = "Settings";
+"settings.section.updates" = "Updates";
 "settings.system.description" = "Manage app behavior, interface options, storage, and required permissions.";
 "settings.system.permissions.accessibility_hint" = "Opens permission status and setup guidance.";
 
@@ -97,6 +98,10 @@
 
 /* General Settings */
 "settings.general.title" = "General";
+"settings.updates.title" = "Software Updates";
+"settings.updates.description" = "Check GitHub for a newer version of Vozinha.";
+"settings.updates.check" = "Check for Updates";
+"settings.updates.check_hint" = "Checks the Vozinha GitHub releases for a newer version.";
 "settings.general.recording" = "Recording";
 "settings.general.auto_start" = "Automatically start recording when meeting is detected";
 "settings.general.auto_start_confirmation_delay" = "Confirmation delay";

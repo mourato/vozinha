@@ -21,6 +21,7 @@ private enum LayoutConstants {
 /// Settings view for app configuration.
 /// Custom HStack sidebar + detail shell (no NavigationSplitView / SwiftUI toolbar).
 public struct SettingsView: View {
+    private let updatesView: AnyView?
     private let settingsStore = AppSettingsStore.shared
     @State private var selectedSection: SettingsSection = .activity
     @State private var settingsSearchText = ""
@@ -36,7 +37,8 @@ public struct SettingsView: View {
     @Environment(\.settingsReduceTransparencyPreview) private var reduceTransparencyPreview
 
     @MainActor
-    public init() {
+    public init(updatesView: AnyView? = nil) {
+        self.updatesView = updatesView
         _isSidebarVisible = State(initialValue: AppSettingsStore.shared.isSettingsSidebarVisible)
     }
 
@@ -80,6 +82,7 @@ public struct SettingsView: View {
             SettingsSidebarView(
                 selectedSection: $selectedSection,
                 searchText: $settingsSearchText,
+                showsUpdates: updatesView != nil,
                 onSelectDestination: selectDestination,
             )
             .padding(.top, LayoutConstants.titlebarClearance)
@@ -229,6 +232,8 @@ private extension SettingsView {
                 route: $systemRoute,
                 expandProtectedApps: $expandProtectedApps,
             )
+        case .updates:
+            updatesView ?? AnyView(EmptyView())
         }
     }
 

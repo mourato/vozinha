@@ -1,4 +1,5 @@
 import AppKit
+import AppUpdater
 import Combine
 import KeyboardShortcuts
 import MeetingAssistantCore
@@ -21,7 +22,12 @@ struct MeetingAssistantApp: App {
 
     var body: some Scene {
         Window("settings.title".localized, id: WindowID.settings) {
-            SettingsView()
+            SettingsView(
+                updatesView: AnyView(
+                    AppUpdateSettingsView()
+                        .environmentObject(AppUpdaterContainer.shared),
+                ),
+            )
         }
         .defaultLaunchBehavior(.suppressed)
         .windowResizability(.contentSize)
@@ -29,6 +35,44 @@ struct MeetingAssistantApp: App {
         .windowStyle(.hiddenTitleBar)
         .commands {
             MeetingAssistantCommands()
+        }
+    }
+}
+
+@MainActor
+enum AppUpdaterContainer {
+    static let shared = AppUpdater(
+        owner: "mourato",
+        repo: "vozinha",
+        releasePrefix: "Vozinha",
+    )
+}
+
+struct AppUpdateSettingsView: View {
+    @EnvironmentObject private var updater: AppUpdater
+
+    var body: some View {
+        VStack(spacing: 0) {
+            HStack(alignment: .top, spacing: AppDesignSystem.Layout.spacing12) {
+                VStack(alignment: .leading, spacing: AppDesignSystem.Layout.spacing4) {
+                    Text("settings.updates.title".localized)
+                        .font(AppTypography.settingsSectionTitle)
+                    Text("settings.updates.description".localized)
+                        .font(AppTypography.settingsSectionDescription)
+                        .foregroundStyle(.secondary)
+                }
+
+                Spacer(minLength: 0)
+
+                Button("settings.updates.check".localized) {
+                    updater.check()
+                }
+                .accessibilityHint("settings.updates.check_hint".localized)
+            }
+            .padding(.horizontal, AppDesignSystem.Layout.spacing20)
+            .padding(.top, AppDesignSystem.Layout.spacing20)
+
+            AppUpdateSettings()
         }
     }
 }

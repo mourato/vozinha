@@ -43,6 +43,7 @@ public enum SettingsSection: String, CaseIterable, Identifiable, Sendable {
     case activity
     case intelligence
     case system
+    case updates
 
     public var id: String {
         rawValue
@@ -54,6 +55,7 @@ public enum SettingsSection: String, CaseIterable, Identifiable, Sendable {
         .meetings,
         .history,
         .dictionary,
+        .updates,
     ]
 
     public static let settingsSections: [SettingsSection] = [
@@ -67,6 +69,7 @@ public enum SettingsSection: String, CaseIterable, Identifiable, Sendable {
             .meetings,
             .history,
             .dictionary,
+            .updates,
             .system,
         ]
     }
@@ -75,7 +78,7 @@ public enum SettingsSection: String, CaseIterable, Identifiable, Sendable {
         switch self {
         case .metrics, .transcriptions, .models, .enhancements, .vocabulary, .permissions, .general, .intelligence, .audio, .dictation, .assistant, .integrations:
             true
-        case .activity, .modes, .meetings, .history, .dictionary, .system:
+        case .activity, .modes, .meetings, .history, .dictionary, .system, .updates:
             false
         }
     }
@@ -113,7 +116,7 @@ public enum SettingsSection: String, CaseIterable, Identifiable, Sendable {
             SettingsDestination(section: .modes, modesSubroute: .assistant)
         case .integrations:
             SettingsDestination(section: .modes, modesSubroute: .integrations)
-        case .activity, .modes, .meetings, .history, .system:
+        case .activity, .modes, .meetings, .history, .system, .updates:
             SettingsDestination(section: self)
         }
     }
@@ -145,6 +148,7 @@ public enum SettingsSection: String, CaseIterable, Identifiable, Sendable {
         case .activity: "settings.section.activity".localized
         case .intelligence: "settings.section.intelligence".localized
         case .system: "settings.section.settings".localized
+        case .updates: "settings.section.updates".localized
         }
     }
 
@@ -167,6 +171,7 @@ public enum SettingsSection: String, CaseIterable, Identifiable, Sendable {
         case .activity: "chart.pie"
         case .intelligence: "sparkles"
         case .system: "gearshape.2"
+        case .updates: "arrow.down.circle"
         }
     }
 
@@ -179,6 +184,7 @@ public enum SettingsSection: String, CaseIterable, Identifiable, Sendable {
         case .history: "clock.fill"
         case .dictionary: "character.book.closed.fill"
         case .system: "gearshape.2.fill"
+        case .updates: "arrow.down.circle.fill"
         default: icon
         }
     }

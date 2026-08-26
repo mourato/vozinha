@@ -51,7 +51,7 @@ fi
 mkdir -p "${DIST_DIR}"
 
 # Build Release
-echo -e "${YELLOW}[1/3]${NC} Building with canonical build entrypoint (Release)..."
+echo -e "${YELLOW}[1/4]${NC} Building with canonical build entrypoint (Release)..."
 "${PROJECT_DIR}/scripts/run-build.sh" --configuration Release
 
 # Check build result
@@ -63,13 +63,13 @@ fi
 echo -e "${GREEN}✓ Build completed${NC}"
 
 # Copy to dist
-echo -e "${YELLOW}[2/3]${NC} Copying to dist/..."
+echo -e "${YELLOW}[2/4]${NC} Copying to dist/..."
 rm -rf "${DIST_DIR}/${APP_PRODUCT_NAME}.app"
 cp -R "${BUILD_DIR}/${APP_PRODUCT_NAME}.app" "${DIST_DIR}/"
 echo -e "${GREEN}✓ App copied to dist/${NC}"
 
 # Code sign
-echo -e "${YELLOW}[3/3]${NC} Code signing..."
+echo -e "${YELLOW}[3/4]${NC} Code signing..."
 if [ "${MA_RELEASE_SIGNING_MODE}" = "self-signed" ]; then
     codesign --force --deep --keychain "${HOME}/Library/Keychains/login.keychain-db" --timestamp=none --sign "${MA_RELEASE_CODE_SIGN_IDENTITY}" "${DIST_DIR}/${APP_PRODUCT_NAME}.app"
 else
@@ -78,6 +78,13 @@ fi
 codesign --verify --deep --strict --verbose=2 "${DIST_DIR}/${APP_PRODUCT_NAME}.app"
 echo -e "${GREEN}✓ Code signing completed${NC}"
 
+APP_VERSION="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' "${DIST_DIR}/${APP_PRODUCT_NAME}.app/Contents/Info.plist")"
+UPDATE_ARCHIVE="${DIST_DIR}/${APP_PRODUCT_NAME}-${APP_VERSION}.zip"
+echo -e "${YELLOW}[4/4]${NC} Creating update archive..."
+rm -f "${UPDATE_ARCHIVE}"
+ditto -c -k --keepParent "${DIST_DIR}/${APP_PRODUCT_NAME}.app" "${UPDATE_ARCHIVE}"
+echo -e "${GREEN}✓ Update archive created${NC}"
+
 echo ""
 echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 echo -e "${GREEN}✓ Build completed successfully!${NC}"
@@ -85,6 +92,8 @@ echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━�
 echo ""
 echo -e "App bundle location:"
 echo -e "  ${YELLOW}${DIST_DIR}/${APP_PRODUCT_NAME}.app${NC}"
+echo -e "Update archive location:"
+echo -e "  ${YELLOW}${UPDATE_ARCHIVE}${NC}"
 echo ""
 echo -e "To run the app:"
 echo -e "  ${YELLOW}open \"${DIST_DIR}/${APP_PRODUCT_NAME}.app\"${NC}"

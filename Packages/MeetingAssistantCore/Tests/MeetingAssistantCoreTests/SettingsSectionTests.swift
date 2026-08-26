@@ -5,7 +5,7 @@ final class SettingsSectionTests: XCTestCase {
     func testPrimarySections_OrderStartsWithCaptureWorkflows() {
         XCTAssertEqual(
             SettingsSection.primarySections,
-            [.activity, .modes, .meetings, .history, .dictionary],
+            [.activity, .modes, .meetings, .history, .dictionary, .updates],
         )
     }
 
@@ -19,7 +19,7 @@ final class SettingsSectionTests: XCTestCase {
     func testVisibleSections_OrderMatchesProductConcepts() {
         XCTAssertEqual(
             SettingsSection.visibleSections,
-            [.activity, .modes, .meetings, .history, .dictionary, .system],
+            [.activity, .modes, .meetings, .history, .dictionary, .updates, .system],
         )
     }
 
@@ -67,6 +67,8 @@ final class SettingsSectionTests: XCTestCase {
         XCTAssertEqual(SettingsSection.dictionary.selectedSidebarIcon, "character.book.closed.fill")
         XCTAssertEqual(SettingsSection.system.icon, "gearshape.2")
         XCTAssertEqual(SettingsSection.system.selectedSidebarIcon, "gearshape.2.fill")
+        XCTAssertEqual(SettingsSection.updates.icon, "arrow.down.circle")
+        XCTAssertEqual(SettingsSection.updates.selectedSidebarIcon, "arrow.down.circle.fill")
     }
 
     func testResolvedVisibleSection_ParsesOldRawValues() {
@@ -173,5 +175,6 @@ final class SettingsSectionTests: XCTestCase {
         XCTAssertEqual(SettingsSection(rawValue: "history"), .history)
         XCTAssertEqual(SettingsSection(rawValue: "intelligence"), .intelligence)
         XCTAssertEqual(SettingsSection(rawValue: "system"), .system)
+        XCTAssertEqual(SettingsSection(rawValue: "updates"), .updates)
     }
 }

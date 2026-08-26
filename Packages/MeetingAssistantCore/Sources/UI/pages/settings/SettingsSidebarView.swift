@@ -6,6 +6,7 @@ import SwiftUI
 struct SettingsSidebarView: View {
     @Binding var selectedSection: SettingsSection
     @Binding var searchText: String
+    let showsUpdates: Bool
     let onSelectDestination: (SettingsDestination) -> Void
     @ScaledMetric(relativeTo: .body) private var sidebarIconSize: CGFloat = 24
     @ScaledMetric(relativeTo: .caption) private var searchResultIconSize: CGFloat = 18
@@ -42,7 +43,7 @@ struct SettingsSidebarView: View {
     private var sectionsList: some View {
         VStack(spacing: 0) {
             VStack(spacing: 3) {
-                ForEach(SettingsSection.primarySections) { section in
+                ForEach(SettingsSection.primarySections.filter { $0 != .updates || showsUpdates }) { section in
                     sidebarNavigationButton(for: section)
                 }
             }

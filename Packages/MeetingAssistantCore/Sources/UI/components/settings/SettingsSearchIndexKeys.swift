@@ -4,6 +4,7 @@ extension SettingsSearchIndex {
     static let explicitlyUnroutedKeys: Set<String> = []
 
     static let searchableKeys: [String] = [
+        "settings.section.updates",
         "metrics.activity.legend.most",
         "metrics.activity.legend.none",
         "metrics.activity.subtitle",

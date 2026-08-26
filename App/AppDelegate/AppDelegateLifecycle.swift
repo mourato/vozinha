@@ -10,6 +10,7 @@ extension AppDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
         ProcessInfo.processInfo.disableAutomaticTermination("Vozinha menu bar app must remain resident")
         ProcessInfo.processInfo.disableSuddenTermination()
+        AppUpdaterContainer.shared.check()
 
         // Initialize Monitoring Services
         CrashReporter.shared.setup()
@@ -63,11 +64,18 @@ extension AppDelegate {
     }
 
     func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
-        guard isPerformingExplicitQuit else {
+        guard isPerformingExplicitQuit || isInstallingUpdate else {
             return .terminateCancel
         }
 
         return .terminateNow
+    }
+
+    private var isInstallingUpdate: Bool {
+        if case .downloaded = AppUpdaterContainer.shared.state {
+            return true
+        }
+        return false
     }
 
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {

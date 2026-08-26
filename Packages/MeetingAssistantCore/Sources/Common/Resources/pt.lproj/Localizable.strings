@@ -22,6 +22,7 @@
 "settings.activity.more_insights.subtitle" = "Explore análises de calendário, apps e atividade.";
 "settings.section.intelligence" = "Inteligência";
 "settings.section.settings" = "Ajustes";
+"settings.section.updates" = "Atualizações";
 "settings.system.description" = "Gerencie comportamento do app, opções de interface, armazenamento e permissões obrigatórias.";
 "settings.system.permissions.accessibility_hint" = "Abre status de permissões e orientações de configuração.";
 
@@ -98,6 +99,10 @@
 
 /* General Settings */
 "settings.general.title" = "Geral";
+"settings.updates.title" = "Atualizações do app";
+"settings.updates.description" = "Verifique no GitHub se há uma nova versão do Vozinha.";
+"settings.updates.check" = "Verificar atualizações";
+"settings.updates.check_hint" = "Verifica nos releases do Vozinha no GitHub se há uma nova versão.";
 "settings.general.recording" = "Gravação";
 "settings.general.auto_start" = "Iniciar gravação automaticamente ao detectar reunião";
 "settings.general.auto_start_confirmation_delay" = "Atraso de confirmação";

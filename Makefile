@@ -66,7 +66,7 @@ help:
 	@echo "Distribution:"
 	@echo "  make dmg            - Create DMG installer (prompts for auto/self-signed/adhoc at start)"
 	@echo "  make setup-self-signed-cert - Create/import local code-signing cert"
-	@echo "  make new-release    - Create a new GitHub release interactively"
+	@echo "  make new-release    - Build and publish a signed GitHub release"
 	@echo ""
 	@echo "Performance Profiling:"
 	@echo "  make profile        - Run all performance profiling (CPU, Memory, Animation)"
@@ -283,9 +283,31 @@ new-release:
 		echo -e "$(RED)Error: Version cannot be empty.$(NC)"; \
 		exit 1; \
 	fi; \
+	semantic_version="$${version#v}"; \
+	if ! printf '%s\n' "$$semantic_version" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$$'; then \
+		echo -e "$(RED)Error: Version must use semantic versioning, for example v1.0.1.$(NC)"; \
+		exit 1; \
+	fi; \
+	app_version="$$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' App/Info.plist)"; \
+	if [ "$$app_version" != "$$semantic_version" ]; then \
+		echo -e "$(RED)Error: App version is $$app_version, but release tag is $$version. Run scripts/bump-version.sh first.$(NC)"; \
+		exit 1; \
+	fi; \
+	release_signing_mode="$${MA_RELEASE_SIGNING_MODE:-adhoc}"; \
+	if [ "$$release_signing_mode" != "self-signed" ]; then \
+		echo -e "$(RED)Error: AppUpdater releases must use MA_RELEASE_SIGNING_MODE=self-signed.$(NC)"; \
+		exit 1; \
+	fi; \
 	echo ""; \
+	echo -e "$(YELLOW)Building signed release $$version...$(NC)"; \
+	MA_RELEASE_SIGNING_MODE="$$release_signing_mode" ./scripts/build-release.sh --no-interactive; \
+	archive="$(DIST_DIR)/$(APP_PRODUCT_NAME)-$$semantic_version.zip"; \
+	if [ ! -f "$$archive" ]; then \
+		echo -e "$(RED)Error: Update archive not found at $$archive.$(NC)"; \
+		exit 1; \
+	fi; \
 	echo -e "$(YELLOW)Creating release $$version with auto-generated notes...$(NC)"; \
-	gh release create "$$version" --generate-notes; \
+	gh release create "$$version" "$$archive" --generate-notes; \
 	echo -e "$(GREEN)✓ Successfully created release $$version!$(NC)"
 
 dmg:

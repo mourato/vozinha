@@ -22,6 +22,14 @@ public enum AppTypography {
         .caption.weight(.medium)
     }
 
+    public static var settingsSectionTitle: Font {
+        .headline
+    }
+
+    public static var settingsSectionDescription: Font {
+        .caption
+    }
+
     public static var indicatorCaption: Font {
         .caption2.weight(.semibold)
     }
