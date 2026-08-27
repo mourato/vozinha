@@ -8,8 +8,6 @@ import SwiftUI
 extension AppDelegate {
 
     func applicationDidFinishLaunching(_ notification: Notification) {
-        ProcessInfo.processInfo.disableAutomaticTermination("Vozinha menu bar app must remain resident")
-        ProcessInfo.processInfo.disableSuddenTermination()
         AppUpdaterContainer.shared.check()
 
         // Initialize Monitoring Services
@@ -51,35 +49,50 @@ extension AppDelegate {
         scheduleLaunchVisibilityRecovery()
     }
 
-    func application(_ application: NSApplication, open urls: [URL]) {
-        guard urls.contains(where: { $0.scheme == "vozinha" && $0.host == "internal" && $0.path == "/quit" && $0.query == nil }) else {
-            return
-        }
-        quitApp()
-    }
-
     func applicationWillTerminate(_ notification: Notification) {
         localModelResidencyCoordinator.stopMonitoring()
         recordingCancelShortcutController.stop()
+        PerformanceMonitor.shared.stopMonitoring()
+        CrashReporter.shared.cleanup()
     }
 
     func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
-        guard isPerformingExplicitQuit || isInstallingUpdate else {
-            return .terminateCancel
+        guard isCaptureActive else {
+            return .terminateNow
         }
 
-        return .terminateNow
+        guard terminationTask == nil else {
+            return .terminateLater
+        }
+
+        terminationTask = Task { @MainActor [weak self] in
+            await self?.stopActiveCaptureForTermination()
+            self?.terminationTask = nil
+            NSApp.reply(toApplicationShouldTerminate: true)
+        }
+        return .terminateLater
     }
 
-    private var isInstallingUpdate: Bool {
-        if case .downloaded = AppUpdaterContainer.shared.state {
-            return true
-        }
-        return false
+    private var isCaptureActive: Bool {
+        recordingManager.isRecording
+            || recordingManager.isStartingRecording
+            || assistantVoiceCommandService.isRecording
     }
 
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
         false
+    }
+
+    private func stopActiveCaptureForTermination() async {
+        if recordingManager.isRecording {
+            await recordingManager.stopRecording(transcribe: false)
+        } else if recordingManager.isStartingRecording {
+            await recordingManager.cancelRecording()
+        }
+
+        if assistantVoiceCommandService.isRecording {
+            await assistantVoiceCommandService.cancelRecording()
+        }
     }
 
     // MARK: - Onboarding

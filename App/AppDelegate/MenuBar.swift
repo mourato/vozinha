@@ -464,30 +464,9 @@ extension AppDelegate {
     }
 
     @objc func quitApp() {
-        performAfterMenuDismissal { [weak self] in
-            self?.isPerformingExplicitQuit = true
-            Task { @MainActor in
-                await self?.performGracefulShutdown()
-            }
+        performAfterMenuDismissal {
+            NSApp.terminate(nil)
         }
-    }
-
-    private func performGracefulShutdown() async {
-        AppLogger.info("Starting graceful shutdown...", category: .recordingManager)
-
-        // 1. Stop any active recording without triggering transcription
-        if recordingManager.isRecording {
-            await recordingManager.stopRecording(transcribe: false)
-            // Brief delay to ensure file finalization completes
-            try? await Task.sleep(nanoseconds: 100_000_000) // 100ms
-        }
-
-        // 2. Stop monitoring services
-        PerformanceMonitor.shared.stopMonitoring()
-        CrashReporter.shared.cleanup()
-
-        // 3. Terminate application
-        NSApp.terminate(nil)
     }
 
     func performCleanup() async {

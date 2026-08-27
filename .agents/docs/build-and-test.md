@@ -77,9 +77,8 @@ make setup-self-signed-cert # Bootstrap local self-signed code-signing cert
 `make build-and-run` never installs Debug into `/Applications`. Release consumes
 the signed `dist/Vozinha.app`, validates it, and transactionally
 replaces only `/Applications/Vozinha.app`, restoring the previous bundle on
-failure. `--force-terminate` is an explicit fallback after the graceful
-`vozinha://internal/quit` request times out. `make dmg` remains the packaging
-flow.
+failure. `--force-terminate` is an explicit fallback after the standard
+application quit request times out. `make dmg` remains the packaging flow.
 
 DMG signing mode selection:
 

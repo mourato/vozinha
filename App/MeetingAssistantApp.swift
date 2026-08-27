@@ -572,5 +572,5 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     var isContextMenuOpen = false
     var hasPendingCommandMenuSync = false
     var hasPendingContextMenuRefresh = false
-    var isPerformingExplicitQuit = false
+    var terminationTask: Task<Void, Never>?
 }

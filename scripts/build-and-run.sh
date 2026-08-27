@@ -88,7 +88,7 @@ wait_for_app_binary() {
 }
 
 stop_running_apps() {
-    local pids pid reply
+    local pids pid
     pids="$(app_process_pids)"
     [ -z "$pids" ] && return 0
     echo "Requesting graceful shutdown for existing ${APP_PRODUCT_NAME} process(es)..."
