@@ -114,6 +114,7 @@ public class RecordingManager: ObservableObject, RecordingServiceProtocol {
     var cancellables = Set<AnyCancellable>()
     var automaticMeetingRecordingCancellable: AnyCancellable?
     var automaticMeetingRecordingConfirmationTask: Task<Void, Never>?
+    var automaticMeetingRecordingStopTask: Task<Void, Never>?
     var statusCheckTask: Task<Void, Never>?
     var isStartOperationInFlight = false
     var postStartContextCaptureTask: Task<Void, Never>?

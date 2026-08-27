@@ -1,7 +1,13 @@
 import Combine
 import Foundation
+import MeetingAssistantCoreCommon
 import MeetingAssistantCoreDomain
 import MeetingAssistantCoreInfrastructure
+
+private enum AutomaticMeetingRecordingConstants {
+    // ponytail: fixed grace period; make it configurable only if real usage needs tuning.
+    static let lostActivityGracePeriod: Duration = .seconds(30)
+}
 
 public struct AutomaticMeetingRecordingConfirmation: Sendable, Equatable {
     public let id: UUID
@@ -35,6 +41,19 @@ func isIdleForAutomaticMeetingStart(
 ) -> Bool {
     guard !isRecording, !isStartingRecording else { return false }
     return currentCapturePurpose == nil
+}
+
+func isAutomaticMeetingRecordingStopEligible(
+    currentCapturePurpose: CapturePurpose?,
+    isRecording: Bool,
+    isStartingRecording: Bool,
+    detectedContext: ResolvedCaptureContext?,
+    mediaActivity: MeetingMediaActivity,
+) -> Bool {
+    currentCapturePurpose == .meeting
+        && (isRecording || isStartingRecording)
+        && detectedContext == nil
+        && !mediaActivity.isActive
 }
 
 public extension RecordingManager {
@@ -75,11 +94,12 @@ extension RecordingManager {
                     guard let detectedContext else {
                         self.cancelAutomaticMeetingRecordingConfirmation()
                         if isMeetingCaptureActive {
-                            await self.stopRecording()
+                            self.scheduleAutomaticMeetingRecordingStop()
                         }
                         return
                     }
 
+                    self.cancelAutomaticMeetingRecordingStop()
                     if isIdleForAutomaticMeetingStart(
                         currentCapturePurpose: self.currentCapturePurpose,
                         isRecording: self.isRecording,
@@ -95,7 +115,48 @@ extension RecordingManager {
         automaticMeetingRecordingCancellable?.cancel()
         automaticMeetingRecordingCancellable = nil
         cancelAutomaticMeetingRecordingConfirmation()
+        cancelAutomaticMeetingRecordingStop()
         meetingDetector.stopMonitoring()
+    }
+
+    private func scheduleAutomaticMeetingRecordingStop() {
+        guard automaticMeetingRecordingStopTask == nil else { return }
+
+        automaticMeetingRecordingStopTask = Task { @MainActor [weak self] in
+            try? await Task.sleep(for: AutomaticMeetingRecordingConstants.lostActivityGracePeriod)
+            guard !Task.isCancelled, let self else { return }
+
+            automaticMeetingRecordingStopTask = nil
+            let mediaActivity = meetingDetector.refreshMediaActivity()
+            let shouldStop = isAutomaticMeetingRecordingStopEligible(
+                currentCapturePurpose: currentCapturePurpose,
+                isRecording: isRecording,
+                isStartingRecording: isStartingRecording,
+                detectedContext: meetingDetector.detectedContext,
+                mediaActivity: mediaActivity,
+            )
+            guard shouldStop else {
+                if currentCapturePurpose == .meeting,
+                   isRecording || isStartingRecording,
+                   meetingDetector.detectedContext == nil
+                {
+                    scheduleAutomaticMeetingRecordingStop()
+                }
+                return
+            }
+
+            AppLogger.info(
+                "Stopping automatic meeting recording after meeting activity was lost",
+                category: .recordingManager,
+                extra: ["reason": "meeting_candidate_and_media_lost"],
+            )
+            await stopRecording()
+        }
+    }
+
+    func cancelAutomaticMeetingRecordingStop() {
+        automaticMeetingRecordingStopTask?.cancel()
+        automaticMeetingRecordingStopTask = nil
     }
 
     func scheduleAutomaticMeetingRecordingConfirmation(for detectedContext: ResolvedCaptureContext) {

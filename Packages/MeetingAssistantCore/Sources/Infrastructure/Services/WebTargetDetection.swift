@@ -16,7 +16,6 @@ public enum WebTargetDetection {
         targets: [T],
         fallbackBrowserBundleIdentifiers: [String] = [],
     ) -> T? {
-        let urlString = url.absoluteString.lowercased()
         let normalizedBundleId = normalizeBundleIdentifier(bundleIdentifier)
         let normalizedFallbackBrowsers = Set(
             fallbackBrowserBundleIdentifiers
@@ -28,10 +27,33 @@ public enum WebTargetDetection {
             guard targetSupportsBundle(target, normalizedBundleId: normalizedBundleId, normalizedFallbackBrowsers: normalizedFallbackBrowsers) else {
                 return false
             }
-            return target.urlPatterns.contains { pattern in
-                urlString.contains(pattern.lowercased())
-            }
+            return target.urlPatterns.contains { urlMatchesPattern(for: url, pattern: $0) }
         }
+    }
+
+    public static func urlMatchesPattern(for url: URL, pattern: String) -> Bool {
+        let normalizedPattern = pattern
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .lowercased()
+        guard !normalizedPattern.isEmpty, let host = url.host?.lowercased() else { return false }
+
+        let patternURLString = normalizedPattern.hasPrefix("http://") || normalizedPattern.hasPrefix("https://")
+            ? normalizedPattern
+            : "https://\(normalizedPattern)"
+        guard let patternURL = URL(string: patternURLString), let patternHost = patternURL.host?.lowercased() else {
+            return false
+        }
+
+        guard host == patternHost || host.hasSuffix(".\(patternHost)") else { return false }
+        if let patternPort = patternURL.port, url.port != patternPort {
+            return false
+        }
+
+        let patternPath = patternURL.path.trimmingCharacters(in: CharacterSet(charactersIn: "/"))
+        guard !patternPath.isEmpty else { return true }
+
+        let urlPath = url.path.trimmingCharacters(in: CharacterSet(charactersIn: "/"))
+        return urlPath == patternPath || urlPath.hasPrefix("\(patternPath)/")
     }
 
     public static func matchTargetByWindowTitle<T: WebTargetPattern>(

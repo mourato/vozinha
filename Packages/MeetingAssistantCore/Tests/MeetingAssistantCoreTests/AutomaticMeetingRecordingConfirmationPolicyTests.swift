@@ -1,4 +1,5 @@
 import MeetingAssistantCoreDomain
+import MeetingAssistantCoreInfrastructure
 @testable import MeetingAssistantCoreUI
 import XCTest
 
@@ -34,6 +35,30 @@ final class AutoMeetingConfirmationPolicyTests: XCTestCase {
                 currentCapturePurpose: .dictation,
                 isRecording: false,
                 isStartingRecording: false,
+            ),
+        )
+    }
+
+    func testLostDetectionDoesNotStopWhileAnotherAppUsesMeetingMedia() {
+        XCTAssertFalse(
+            isAutomaticMeetingRecordingStopEligible(
+                currentCapturePurpose: .meeting,
+                isRecording: true,
+                isStartingRecording: false,
+                detectedContext: nil,
+                mediaActivity: MeetingMediaActivity(microphoneInUseByAnotherApplication: true),
+            ),
+        )
+    }
+
+    func testLostDetectionStopsOnlyAfterMediaAlsoDisappears() {
+        XCTAssertTrue(
+            isAutomaticMeetingRecordingStopEligible(
+                currentCapturePurpose: .meeting,
+                isRecording: true,
+                isStartingRecording: false,
+                detectedContext: nil,
+                mediaActivity: MeetingMediaActivity(),
             ),
         )
     }

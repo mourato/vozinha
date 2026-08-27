@@ -48,10 +48,15 @@ public final class CaptureContextResolver: CaptureContextResolving {
 
     private let settings: AppSettingsStore
     private var browserProviders: [String: BrowserActiveTabURLProviding]
+    private let mediaActivityProvider: any MeetingMediaActivityProviding
 
-    public init(settings: AppSettingsStore = .shared) {
+    public init(
+        settings: AppSettingsStore = .shared,
+        mediaActivityProvider: any MeetingMediaActivityProviding = SystemMeetingMediaActivityProvider(),
+    ) {
         self.settings = settings
         browserProviders = BrowserProviderRegistry.defaultProviders()
+        self.mediaActivityProvider = mediaActivityProvider
     }
 
     public func resolveContext(for purpose: CapturePurpose, activeContext: ActiveAppContext?) -> ResolvedCaptureContext {
@@ -96,7 +101,8 @@ public final class CaptureContextResolver: CaptureContextResolving {
             }
 
             if let normalizedBundleIdentifier,
-               let meetingApp = meetingApp(for: normalizedBundleIdentifier)
+               let meetingApp = meetingApp(for: normalizedBundleIdentifier),
+               meetingApp != .googleMeet
             {
                 return ResolvedCaptureContext(
                     purpose: purpose,
@@ -109,7 +115,8 @@ public final class CaptureContextResolver: CaptureContextResolving {
             }
 
             if let normalizedBundleIdentifier,
-               monitoredMeetingBundleIdentifiers().contains(normalizedBundleIdentifier)
+               monitoredMeetingBundleIdentifiers().contains(normalizedBundleIdentifier),
+               !BrowserProviderRegistry.isLikelyBrowserBundleIdentifier(normalizedBundleIdentifier)
             {
                 return ResolvedCaptureContext(
                     purpose: purpose,
@@ -130,6 +137,8 @@ public final class CaptureContextResolver: CaptureContextResolving {
     }
 
     public func detectMeetingCandidate(in runningApps: [NSRunningApplication]) -> ResolvedCaptureContext? {
+        guard mediaActivityProvider.currentActivity().isActive else { return nil }
+
         let monitoredBundleIdentifiers = monitoredMeetingBundleIdentifiers()
 
         if let webMatch = detectWebMeeting(in: runningApps, monitoredBundleIdentifiers: monitoredBundleIdentifiers) {
@@ -172,15 +181,13 @@ public final class CaptureContextResolver: CaptureContextResolving {
         let webTargets = settings.markdownWebTargets
         guard !webTargets.isEmpty else { return nil }
 
-        if let activeURL,
-           let target = WebTargetDetection.matchTarget(
-               for: activeURL,
-               bundleIdentifier: bundleIdentifier,
-               targets: webTargets,
-               fallbackBrowserBundleIdentifiers: settings.effectiveWebTargetBrowserBundleIdentifiers,
-           )
-        {
-            return target
+        if let activeURL {
+            return WebTargetDetection.matchTarget(
+                for: activeURL,
+                bundleIdentifier: bundleIdentifier,
+                targets: webTargets,
+                fallbackBrowserBundleIdentifiers: settings.effectiveWebTargetBrowserBundleIdentifiers,
+            )
         }
 
         return WebTargetDetection.matchTargetByWindowTitle(
@@ -192,26 +199,13 @@ public final class CaptureContextResolver: CaptureContextResolving {
 
     private func matchWebMeetingTarget(bundleIdentifier: String, activeURL: URL?) -> WebMeetingTarget? {
         let meetingTargets = settings.webMeetingTargets
-        guard !meetingTargets.isEmpty else { return nil }
+        guard !meetingTargets.isEmpty, let activeURL else { return nil }
 
-        if let activeURL,
-           let target = WebTargetDetection.matchTarget(
-               for: activeURL,
-               bundleIdentifier: bundleIdentifier,
-               targets: meetingTargets,
-               fallbackBrowserBundleIdentifiers: settings.effectiveWebTargetBrowserBundleIdentifiers,
-           )
-        {
-            return target
-        }
-
-        return WebTargetDetection.matchTargetByWindowTitle(
+        return WebTargetDetection.matchTarget(
+            for: activeURL,
             bundleIdentifier: bundleIdentifier,
             targets: meetingTargets,
             fallbackBrowserBundleIdentifiers: settings.effectiveWebTargetBrowserBundleIdentifiers,
-            patternProvider: { target in
-                target.urlPatterns + target.app.windowTitlePatterns
-            },
         )
     }
 
@@ -270,38 +264,6 @@ public final class CaptureContextResolver: CaptureContextResolving {
                 )
             }
 
-            if let match = WebTargetDetection.matchTargetByWindowTitle(
-                bundleIdentifier: normalizedBundleId,
-                targets: meetingTargets,
-                fallbackBrowserBundleIdentifiers: fallbackBrowsers,
-                patternProvider: { target in
-                    target.urlPatterns + target.app.windowTitlePatterns
-                },
-            ) {
-                return ResolvedCaptureContext(
-                    purpose: .meeting,
-                    meetingApp: match.app,
-                    appBundleIdentifier: bundleId,
-                    appDisplayName: runningApp.localizedName,
-                    activeBrowserURL: activeURL,
-                    matchedWebMeetingTargetID: match.id,
-                    isKnownMeetingCandidate: true,
-                )
-            }
-
-            if WebTargetDetection.matchTargetByWindowTitle(
-                bundleIdentifier: normalizedBundleId,
-                targets: autoStartTargets,
-                fallbackBrowserBundleIdentifiers: fallbackBrowsers,
-            ) != nil {
-                return ResolvedCaptureContext(
-                    purpose: .meeting,
-                    appBundleIdentifier: bundleId,
-                    appDisplayName: runningApp.localizedName,
-                    activeBrowserURL: activeURL,
-                    isKnownMeetingCandidate: true,
-                )
-            }
         }
 
         return nil
@@ -350,7 +312,7 @@ public final class CaptureContextResolver: CaptureContextResolving {
         guard let runningApp = matchingApps.first else { return nil }
 
         if app == .googleMeet {
-            return WebTargetDetection.checkBrowserWindowTitles(for: app.windowTitlePatterns) ? runningApp : nil
+            return nil
         }
 
         return runningApp
@@ -364,6 +326,7 @@ public final class CaptureContextResolver: CaptureContextResolving {
             guard let bundleId = runningApp.bundleIdentifier else { continue }
             let normalizedBundleId = WebTargetDetection.normalizeBundleIdentifier(bundleId)
             guard monitoredBundleIdentifiers.contains(normalizedBundleId) else { continue }
+            guard !BrowserProviderRegistry.isLikelyBrowserBundleIdentifier(normalizedBundleId) else { continue }
             if meetingApp(for: normalizedBundleId) == nil {
                 return runningApp
             }

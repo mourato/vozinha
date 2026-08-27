@@ -5,17 +5,18 @@ import MeetingAssistantCoreCommon
 import MeetingAssistantCoreDomain
 import os.log
 
-/// Service for detecting active meetings from supported apps.
-/// Monitors running applications and window titles.
+/// Service for detecting active meetings from supported apps and media activity.
 @MainActor
 public class MeetingDetector: ObservableObject {
     public static let shared = MeetingDetector()
 
     private let logger = Logger(subsystem: AppIdentity.logSubsystem, category: "MeetingDetector")
     private let captureContextResolver: any CaptureContextResolving
+    private let mediaActivityProvider: any MeetingMediaActivityProviding
 
     @Published public private(set) var detectedMeeting: MeetingApp?
     @Published public private(set) var detectedContext: ResolvedCaptureContext?
+    @Published public private(set) var mediaActivity = MeetingMediaActivity()
     @Published private(set) var isMonitoring = false
 
     private var monitoringTimer: Timer?
@@ -25,10 +26,13 @@ public class MeetingDetector: ObservableObject {
     private let pollInterval: TimeInterval = 10.0
     private let pollTimerTolerance: TimeInterval = 2.0
 
-    private init(
+    public init(
         captureContextResolver: any CaptureContextResolving = CaptureContextResolver.shared,
+        mediaActivityProvider: any MeetingMediaActivityProviding = SystemMeetingMediaActivityProvider(),
     ) {
         self.captureContextResolver = captureContextResolver
+        self.mediaActivityProvider = mediaActivityProvider
+        mediaActivity = mediaActivityProvider.currentActivity()
         setupAppNotifications()
     }
 
@@ -66,6 +70,7 @@ public class MeetingDetector: ObservableObject {
 
     /// Check currently running apps for active meetings.
     private func checkForMeetings() {
+        refreshMediaActivity()
         let runningApps = NSWorkspace.shared.runningApplications
         let resolvedContext = captureContextResolver.detectMeetingCandidate(in: runningApps)
 
@@ -87,6 +92,18 @@ public class MeetingDetector: ObservableObject {
             detectedMeeting = nil
             detectedContext = nil
         }
+    }
+
+    @discardableResult
+    public func refreshMediaActivity() -> MeetingMediaActivity {
+        let activity = mediaActivityProvider.currentActivity()
+        if mediaActivity != activity {
+            logger.debug(
+                "Meeting media activity changed: microphone=\(activity.microphoneInUseByAnotherApplication), camera=\(activity.cameraInUseByAnotherApplication)",
+            )
+            mediaActivity = activity
+        }
+        return activity
     }
 
     /// Setup notifications for app launches/terminations.
