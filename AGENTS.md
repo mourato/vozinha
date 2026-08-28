@@ -38,8 +38,9 @@ security, cross-module architecture, and release infrastructure.
 
 ## Agent Validation Loop
 
-`make validate-agent` is the project validation gate. Run `make lint` for any
-Swift delta, then the affected-module validation when behavior changes.
+`make validate` is the project validation entry and selects the automatic lane
+through `validate-agent`. Run `make lint` for any Swift delta, then the
+affected-module validation when behavior changes.
 `make guidance-check` covers guidance-only changes; merge review remains
 separate. Swift 6.2/toolchain details live in
 `.agents/docs/swift-6-2-agent-baseline.md`.
@@ -57,6 +58,7 @@ Apply least privilege to entitlements and integrations. Validate external input 
 
 ## Completion
 
-Completion requires the relevant `make lint` / `make validate-agent ARGS="--lane auto"`
-gates, or `make guidance-check` for guidance-only changes. The handoff records
+Completion requires the relevant `make lint` / `make validate` gates, or
+`make guidance-check` for guidance-only changes. Use `make validate-agent` when
+an explicit lane is needed. The handoff records
 commands, results, assumptions, manual gates, and known baseline failures.
