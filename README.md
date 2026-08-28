@@ -20,6 +20,23 @@ A native, local-first macOS app for meeting capture, dictation, transcription, a
 - Xcode command line tools selected (`xcode-select -p`)
 - Homebrew (for `make setup`)
 
+## Installation
+
+### First launch
+
+Builds that are not notarized may be blocked by macOS Gatekeeper. If you
+downloaded the app from a source you trust, either Control-click
+`Vozinha.app`, choose **Open**, and confirm, or remove the quarantine
+attribute before opening it:
+
+```bash
+xattr -dr com.apple.quarantine "/Applications/Vozinha.app"
+```
+
+This is expected for unsigned, ad-hoc, or self-signed builds. Notarization
+requires membership in the paid Apple Developer Program; a free Apple ID is
+not sufficient. After approving the app once, open it normally.
+
 ## Documentation
 
 - Architecture and operational standards: `AGENTS.md` + `.agents/skills/architecture/SKILL.md`
