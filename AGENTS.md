@@ -36,6 +36,14 @@ Prisma/Vozinha facts and hard constraints only.
 Vozinha-specific high-risk surfaces are audio, concurrency, persistence,
 security, cross-module architecture, and release infrastructure.
 
+## Delivery lifecycle
+
+The global `core/policies/worktrees.md` is authoritative for isolation and
+delivery order: `create → work → commit → review → remediation → merge →
+validate → push → cleanup`. This file supplies Prisma/Vozinha facts only.
+Obtain the global worktree write-gate `PASS` before editing and keep
+implementation writes in the canonical isolated worktree.
+
 ## Agent Validation Loop
 
 `make validate` is the project validation entry and selects the automatic lane
