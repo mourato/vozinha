@@ -27,44 +27,14 @@ Module ownership: `Common`, `Domain`, `Infrastructure`, `Data`, `Audio`, `AI`, `
 - Prefer files ≤600 lines; split by owning type and concern.
 - Prefer structured concurrency and `Task.sleep(for:)`; justify `Task.detached` and `DispatchQueue` use.
 
-## Policy Precedence
+## Agent workflow
 
-When guidance conflicts, apply this order:
+Use global routing, worktree, `agent-ops`, and `delivery-workflow` policies.
+Load the matching project overlay after its global skill; this file supplies
+Prisma/Vozinha facts and hard constraints only.
 
-1. This `AGENTS.md`.
-2. The relevant project skill in `.agents/skills/` or global skill plus the project overlay named here.
-3. Reference documents, examples, and inline comments.
-
-Global macOS skills use repository-local companion overlays. Load the global
-skill first, then the matching overlay; the overlay supplies Prisma/Vozinha
-facts only and never replaces global safety, privacy, or repository-integrity
-rules.
-
-| Global skill | Project overlay |
-|---|---|
-| `swiftui-accessibility-audit` | `.agents/overlays/swiftui-accessibility-audit.md` |
-| `apple-design` | `.agents/overlays/apple-design.md` |
-| `benchmarking` | `.agents/overlays/benchmarking.md` |
-| `code-quality` | `.agents/overlays/code-quality.md` |
-| `delivery-workflow` | `.agents/overlays/delivery-workflow.md` |
-| `macos-app-engineering` | `.agents/overlays/macos-app-engineering.md` |
-| `swift-conventions` | `.agents/overlays/swift-conventions.md` |
-
-Clients without deterministic overlay composition must still read the overlay
-as ordinary Markdown after loading its named global skill.
-
-Project facts and hard constraints here override convenience preferences. Use the
-global safety and repository-integrity rules for conflicts outside this file.
-
-Use `delivery-workflow` for risk, lanes, validation, Git, and handoff evidence.
 Vozinha-specific high-risk surfaces are audio, concurrency, persistence,
 security, cross-module architecture, and release infrastructure.
-
-## Delegation
-
-Use global `agent-ops` for delegation and execution profiles. Keep simple or
-serial work in the root session; any writing agent needs an isolated worktree.
-Reclassify the execution profile against the live scope before implementation.
 
 ## Agent Validation Loop
 
@@ -87,9 +57,6 @@ Apply least privilege to entitlements and integrations. Validate external input 
 
 ## Completion
 
-A task is complete when:
-
-- The changed surface, risk/lane, and `reuse → extend → create` decision are recorded.
-- Swift changes pass `make lint` and behavior changes pass `make validate-agent ARGS="--lane auto"`; guidance changes pass `make guidance-check`.
-- The change stays within its module boundary and satisfies the relevant security/privacy constraints.
-- The handoff records commands and results, assumptions, manual gates, and known baseline failures.
+Completion requires the relevant `make lint` / `make validate-agent ARGS="--lane auto"`
+gates, or `make guidance-check` for guidance-only changes. The handoff records
+commands, results, assumptions, manual gates, and known baseline failures.
