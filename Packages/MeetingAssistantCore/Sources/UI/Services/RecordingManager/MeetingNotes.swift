@@ -11,15 +11,10 @@ extension RecordingManager {
     }
 
     public func toggleMeetingNotesPanel() {
-        guard currentCapturePurpose == .meeting else { return }
         isMeetingNotesPanelVisible.toggle()
     }
 
     public func setMeetingNotesPanelVisible(_ isVisible: Bool) {
-        guard currentCapturePurpose == .meeting else {
-            isMeetingNotesPanelVisible = false
-            return
-        }
         isMeetingNotesPanelVisible = isVisible
     }
 

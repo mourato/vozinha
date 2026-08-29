@@ -534,7 +534,13 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     let settingsStore = AppSettingsStore.shared
     let localModelResidencyCoordinator = LocalModelResidencyCoordinator.shared
     lazy var floatingIndicatorController = FloatingRecordingIndicatorController()
-    lazy var meetingNotesPanelController = MeetingNotesFloatingPanelController()
+    lazy var meetingNotesPaneController = MeetingNotesPaneController()
+    lazy var meetingNotesPaneShortcutController = MeetingNotesPaneShortcutController(
+        paneController: meetingNotesPaneController,
+    )
+    lazy var meetingNotesPanelController = MeetingNotesFloatingPanelController(
+        paneController: meetingNotesPaneController,
+    )
     lazy var globalShortcutController = GlobalShortcutController(recordingManager: RecordingManager.shared)
     lazy var assistantVoiceCommandService = AssistantVoiceCommandService(
         indicator: floatingIndicatorController,

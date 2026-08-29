@@ -539,6 +539,62 @@ public class AppSettingsStore: ObservableObject {
         }
     }
 
+    /// Enables the global hotkey that summons the meeting notes pane.
+    @Published public var meetingNotesHotkeyEnabled: Bool {
+        didSet { UserDefaults.standard.set(meetingNotesHotkeyEnabled, forKey: Keys.meetingNotesHotkeyEnabled) }
+    }
+
+    /// Uses translucent material for the floating notes pane.
+    @Published public var meetingNotesTranslucentPanel: Bool {
+        didSet { UserDefaults.standard.set(meetingNotesTranslucentPanel, forKey: Keys.meetingNotesTranslucentPanel) }
+    }
+
+    /// Shows the notes pane on all Spaces and over full-screen apps.
+    @Published public var meetingNotesShowOnAllSpaces: Bool {
+        didSet { UserDefaults.standard.set(meetingNotesShowOnAllSpaces, forKey: Keys.meetingNotesShowOnAllSpaces) }
+    }
+
+    /// Hides the notes pane from screen capture and sharing.
+    @Published public var meetingNotesHideFromScreenCapture: Bool {
+        didSet { UserDefaults.standard.set(meetingNotesHideFromScreenCapture, forKey: Keys.meetingNotesHideFromScreenCapture) }
+    }
+
+    /// Automatically resizes pane height to fit note content.
+    @Published public var meetingNotesAutoSizeHeight: Bool {
+        didSet { UserDefaults.standard.set(meetingNotesAutoSizeHeight, forKey: Keys.meetingNotesAutoSizeHeight) }
+    }
+
+    /// Optional CSS theme name for the web notes editor.
+    @Published public var meetingNotesEditorTheme: String {
+        didSet { UserDefaults.standard.set(meetingNotesEditorTheme, forKey: Keys.meetingNotesEditorTheme) }
+    }
+
+    /// Base text size passed to the web notes editor.
+    @Published public var meetingNotesTextSize: Int {
+        didSet {
+            let normalized = Self.normalizedMeetingNotesTextSize(meetingNotesTextSize)
+            if normalized != meetingNotesTextSize {
+                meetingNotesTextSize = normalized
+                return
+            }
+            UserDefaults.standard.set(normalized, forKey: Keys.meetingNotesTextSize)
+        }
+    }
+
+    /// Last calendar event whose notes were edited; used for idle summon scope.
+    @Published public var meetingNotesLastEditedCalendarEventIdentifier: String? {
+        didSet {
+            if let meetingNotesLastEditedCalendarEventIdentifier {
+                UserDefaults.standard.set(
+                    meetingNotesLastEditedCalendarEventIdentifier,
+                    forKey: Keys.meetingNotesLastEditedCalendarEventIdentifier,
+                )
+            } else {
+                UserDefaults.standard.removeObject(forKey: Keys.meetingNotesLastEditedCalendarEventIdentifier)
+            }
+        }
+    }
+
     /// Enables grounded single-turn Q&A in transcription detail.
     @Published public var meetingQnAEnabled: Bool {
         didSet { UserDefaults.standard.set(meetingQnAEnabled, forKey: Keys.meetingQnAEnabled) }
@@ -882,6 +938,14 @@ public class AppSettingsStore: ObservableObject {
             meeting.meetingNotesFontSize,
             meeting.meetingQnAEnabled,
         )
+        meetingNotesHotkeyEnabled = meeting.meetingNotesHotkeyEnabled
+        meetingNotesTranslucentPanel = meeting.meetingNotesTranslucentPanel
+        meetingNotesShowOnAllSpaces = meeting.meetingNotesShowOnAllSpaces
+        meetingNotesHideFromScreenCapture = meeting.meetingNotesHideFromScreenCapture
+        meetingNotesAutoSizeHeight = meeting.meetingNotesAutoSizeHeight
+        meetingNotesEditorTheme = meeting.meetingNotesEditorTheme
+        meetingNotesTextSize = meeting.meetingNotesTextSize
+        meetingNotesLastEditedCalendarEventIdentifier = meeting.meetingNotesLastEditedCalendarEventIdentifier
         meetingRemindersEnabled = meeting.meetingRemindersEnabled
         meetingReminderLeadMinutes = meeting.meetingReminderLeadMinutes
         meetingReminderOverlayLeadSeconds = meeting.meetingReminderOverlayLeadSeconds

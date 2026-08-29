@@ -26,6 +26,7 @@ extension AppDelegate {
         verifyPrimaryInterfaceAfterLaunch()
         setupContextMenu()
         globalShortcutController.start()
+        meetingNotesPaneShortcutController.start()
         recordingCancelShortcutController.start()
         setupCapabilityObservation()
 
@@ -47,7 +48,10 @@ extension AppDelegate {
 
         openSettingsOnLaunchIfEnabled()
         scheduleLaunchVisibilityRecovery()
-        MeetingReminderCoordinator.shared.attach()
+        meetingNotesPaneController.setVisibilityHandler { [weak self] isVisible in
+            self?.recordingManager.setMeetingNotesPanelVisible(isVisible)
+        }
+        MeetingReminderCoordinator.shared.attach(meetingNotesPaneController: meetingNotesPaneController)
     }
 
     func applicationWillTerminate(_ notification: Notification) {
@@ -159,6 +163,7 @@ extension AppDelegate {
         verifyPrimaryInterfaceAfterLaunch()
         setupContextMenu()
         globalShortcutController.start()
+        meetingNotesPaneShortcutController.start()
         recordingCancelShortcutController.start()
         setupCapabilityObservation()
 

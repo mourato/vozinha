@@ -123,6 +123,9 @@ build-release:
 build-agent:
 	@$(AGENT_ENV) ./scripts/run-build.sh --configuration Debug --agent
 
+build-meeting-notes-editor:
+	@./Scripts/build-meeting-notes-editor.sh
+
 build-test:
 	@$(AGENT_ENV) ./scripts/run-build-and-test.sh
 

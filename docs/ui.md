@@ -68,6 +68,23 @@ hierarchy and feedback in every fallback.
   padding. Reduce Transparency falls back to opaque backdrop/card surfaces;
   Reduce Motion freezes mesh animation and pulsing status dots.
 
+## Meeting notes pane
+
+- The summonable notes surface is `MeetingNotesPaneController` with a
+  borderless glass `MeetingNotesPanePanel` (14pt corner radius, optional
+  translucency via `SettingsWindowBackground`).
+- Summon via global hotkey (`⌃⌥N` default), recording-indicator notes button,
+  or Plan 126 reminder overlay; one controller handles calendar, session, and
+  transcription scopes via `NotesScope`.
+- The pane becomes key for editing but must not call `NSApp.activate` on
+  summon; dismiss flushes pending saves and deactivates the app only if it
+  became active.
+- Frame position autosaves per display; optional `sharingType = .none` hides the
+  panel from screen capture when enabled in Meeting settings.
+- Phase A embeds `MeetingNotesMarkdownEditor`; Phase B swaps the panel path to
+  `MeetingNotesEditorWebView` (WKWebView + bundled editor) without changing
+  persistence (`MeetingNotesMarkdownDocumentStore`).
+
 ## Review checklist
 
 - [ ] Reuse `AppDesignSystem`, `AppTypography`, `AppleMotion`, and existing

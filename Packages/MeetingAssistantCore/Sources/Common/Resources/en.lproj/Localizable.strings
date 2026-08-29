@@ -1339,6 +1339,15 @@
 "settings.meetings.notes_typography.font_family" = "Font family";
 "settings.meetings.notes_typography.font_size" = "Font size";
 "settings.meetings.notes_typography.font_system" = "System";
+"settings.meetings.notes_panel.title" = "Notes panel";
+"settings.meetings.notes_panel.desc" = "Summon a floating notes sheet from anywhere with a global shortcut. The panel stays over other apps without switching focus away from your meeting.";
+"settings.meetings.notes_panel.hotkey_enabled" = "Enable notes hotkey";
+"settings.meetings.notes_panel.shortcut" = "Notes shortcut";
+"settings.meetings.notes_panel.translucent" = "Translucent panel";
+"settings.meetings.notes_panel.all_spaces" = "Show on all Spaces";
+"settings.meetings.notes_panel.hide_from_capture" = "Hide from screen capture";
+"settings.meetings.notes_panel.auto_height" = "Auto-size height";
+"settings.meetings.notes_panel.text_size" = "Editor text size";
 
 /* Meeting reminders */
 "settings.meetings.reminders.title" = "Reminders";

@@ -89,6 +89,14 @@ public extension AppSettingsStore {
         summaryExportSafetyPolicyLevel = .standard
         meetingNotesFontFamilyKey = MeetingNotesTypographyDefaults.systemFontFamilyKey
         meetingNotesFontSize = MeetingNotesTypographyDefaults.defaultFontSize
+        meetingNotesHotkeyEnabled = true
+        meetingNotesTranslucentPanel = true
+        meetingNotesShowOnAllSpaces = true
+        meetingNotesHideFromScreenCapture = false
+        meetingNotesAutoSizeHeight = true
+        meetingNotesEditorTheme = ""
+        meetingNotesTextSize = Self.defaultMeetingNotesTextSize
+        meetingNotesLastEditedCalendarEventIdentifier = nil
         meetingQnAEnabled = true
         resetMeetingReminderDefaults()
         markdownTargetBundleIdentifiers = Self.defaultMarkdownTargetBundleIdentifiers

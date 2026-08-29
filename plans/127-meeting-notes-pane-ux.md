@@ -1,6 +1,6 @@
 # Plan 127: Meeting notes Pane-style UX
 
-**Status:** TODO  
+**Status:** IN PROGRESS (worktree `plan-127-meeting-notes-pane`)  
 **Priority:** P1  
 **Effort:** L  
 **Depends on:** Plan 126 slice 4b (calendar-event notes panel scaffold) recommended, not blocking slice 0  
@@ -97,27 +97,27 @@ only if **different files** — prefer serial to avoid panel controller conflict
 
 ### Slice 0 — Scope model + settings (S)
 
-- [ ] ADR 002 accepted (lands with this plan).
-- [ ] `NotesScope` enum + resolution rules (which note to open on summon).
-- [ ] Settings keys + Meeting tab section “Notes panel”.
-- [ ] Register hotkey via existing `KeyboardShortcuts` infrastructure.
+- [x] ADR 002 accepted (lands with this plan).
+- [x] `NotesScope` enum + resolution rules (which note to open on summon).
+- [x] Settings keys + Meeting tab section “Notes panel”.
+- [x] Register hotkey via existing `KeyboardShortcuts` infrastructure.
 
 **Gate:** `make lint`; settings unit tests.
 
 ### Slice 1 — Panel chrome Phase A (L)
 
-- [ ] `MeetingNotesPanePanel`: borderless, material, radius 14, drag regions,
+- [x] `MeetingNotesPanePanel`: borderless, material, radius 14, drag regions,
       frame autosave per display (`PanePanel` / `PanelGeometry` ideas).
-- [ ] `MeetingNotesPaneController.summon()` / `dismiss()`:
+- [x] `MeetingNotesPaneController.summon()` / `dismiss()`:
       - Summon on screen under mouse pointer.
       - Do not activate app; `makeKeyAndOrderFront` + editor focus async fix
         (Pane menu-bar summon bug).
       - Dismiss: flush pending save, `NSApp.deactivate()` if we became active.
-- [ ] Embed **existing** `MeetingNotesMarkdownEditor` initially.
-- [ ] Wire hotkey toggle; deprecate direct use of
+- [x] Embed **existing** `MeetingNotesMarkdownEditor` initially.
+- [x] Wire hotkey toggle; deprecate direct use of
       `MeetingNotesFloatingPanelController` from `RecordingUI` (adapter calls
       pane controller with `.meetingSession` scope).
-- [ ] Auto-height: measure SwiftUI editor height or fixed min until WebKit reports
+- [x] Auto-height: measure SwiftUI editor height or fixed min until WebKit reports
       height in slice 4.
 
 **Gate:** manual — summon over fullscreen app, type without app switch, dismiss
@@ -125,24 +125,24 @@ returns focus; `MeetingNotesFloatingPanelControllerTests` updated or replaced.
 
 ### Slice 2 — Decouple visibility from recording (M)
 
-- [ ] `updateMeetingNotesPanel` logic: show pane for `.meetingSession` when
+- [x] `updateMeetingNotesPanel` logic: show pane for `.meetingSession` when
       recording **or** when user toggled panel open.
-- [ ] On summon with no session: open `.calendarEvent` for imminent linked event
+- [x] On summon with no session: open `.calendarEvent` for imminent linked event
       (next 30 min from `CalendarEventService`) or last edited calendar notes.
-- [ ] Merge Plan 126 `CalendarEventNotesPanelController` into pane controller if
+- [x] Merge Plan 126 `CalendarEventNotesPanelController` into pane controller if
       126 already shipped; else implement calendar scope here.
 
 **Gate:** manual pre-meeting notes without recording; tests for scope resolution.
 
 ### Slice 3 — Editor bundle scaffold (M)
 
-- [ ] Add `Editor/` package (TypeScript + CodeMirror 6) — fork minimal subset
+- [x] Add `Editor/` package (TypeScript + CodeMirror 6) — fork minimal subset
       from Pane: `main.ts`, `live-preview.ts`, `markdown.css`, `tokens.css`,
       `pane.css` (rename to `meeting-notes.css`).
-- [ ] `Scripts/build-meeting-notes-editor.sh` → copy to
+- [x] `Scripts/build-meeting-notes-editor.sh` → copy to
       `MeetingNotesEditor/dist/index.html` in app bundle Resources.
 - [ ] Xcode build phase or `make` target to build editor before app compile.
-- [ ] `MeetingNotesEditorWebView`: nonPersistent store, message handler
+- [x] `MeetingNotesEditorWebView`: nonPersistent store, message handler
       `vozinhaNotes`, load file URL from bundle.
 
 **Gate:** CI builds bundle; smoke test loads web view in debug harness or unit
@@ -150,33 +150,33 @@ test with injected bundle URL.
 
 ### Slice 4 — Editor bridge + swap (L)
 
-- [ ] Typed `MeetingNotesEditorMessage` enum (edited, ready, contentHeight,
+- [x] Typed `MeetingNotesEditorMessage` enum (edited, ready, contentHeight,
       caret, close) — mirror Pane `PaneMessage` subset.
-- [ ] Load note: `loadNote(documentId, markdown, caretOffset)`.
-- [ ] Debounced save: 500 ms after typing stop + immediate on dismiss/blur
+- [x] Load note: `loadNote(documentId, markdown, caretOffset)`.
+- [x] Debounced save: 500 ms after typing stop + immediate on dismiss/blur
       (Pane decision 10).
 - [ ] Replace editor host content from SwiftUI markdown editor to WebView in
       `MeetingNotesPaneController`.
-- [ ] Pass theme CSS + text size from settings via `applySettings` bridge.
+- [x] Pass theme CSS + text size from settings via `applySettings` bridge.
 
 **Gate:** round-trip persistence through `MeetingNotesMarkdownDocumentStore`;
 manual live preview typing; special chars in markdown do not break bridge JSON.
 
 ### Slice 5 — Vozinha integration hardening (M)
 
-- [ ] Session scope: sync pane buffer ↔ `RecordingManager.currentMeetingNotes*`
+- [x] Session scope: sync pane buffer ↔ `RecordingManager.currentMeetingNotes*`
       on recording start/stop.
-- [ ] Transcription context: unchanged path via `meetingNotesContextItem`.
-- [ ] Hide from screen capture (`sharingType = .none`).
-- [ ] Plan 126 overlay Notes → `MeetingNotesPaneController.summon(scope: .calendarEvent)`.
-- [ ] Recording indicator notes button → same controller.
+- [x] Transcription context: unchanged path via `meetingNotesContextItem`.
+- [x] Hide from screen capture (`sharingType = .none`).
+- [x] Plan 126 overlay Notes → `MeetingNotesPaneController.summon(scope: .calendarEvent)`.
+- [x] Recording indicator notes button → same controller.
 
 **Gate:** end-to-end recording with notes in AI summary; screen capture hide manual test.
 
 ### Slice 6 — Closeout (S)
 
-- [ ] Update `docs/ui.md` (pane invariants, non-activating summon, editor host).
-- [ ] Remove or thin `MeetingNotesFloatingPanelController` if fully migrated.
+- [x] Update `docs/ui.md` (pane invariants, non-activating summon, editor host).
+- [x] Remove or thin `MeetingNotesFloatingPanelController` if fully migrated.
 - [ ] Review + `make validate`.
 
 ## Acceptance criteria

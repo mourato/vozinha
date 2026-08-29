@@ -127,32 +127,24 @@ extension AppDelegate {
     }
 
     func updateMeetingNotesPanel(isRecording: Bool, capturePurpose: CapturePurpose?) {
-        guard isRecording, capturePurpose == .meeting else {
-            meetingNotesPanelController.hide()
-            if recordingManager.isMeetingNotesPanelVisible {
-                recordingManager.setMeetingNotesPanelVisible(false)
+        let hasMeetingSession = isRecording && capturePurpose == .meeting
+        let wantsPanel = recordingManager.isMeetingNotesPanelVisible || meetingNotesPaneController.isUserOpened
+
+        guard wantsPanel else {
+            if meetingNotesPaneController.isVisible {
+                meetingNotesPaneController.dismiss()
             }
             return
         }
 
-        guard recordingManager.isMeetingNotesPanelVisible else {
-            meetingNotesPanelController.hide()
+        if hasMeetingSession, let meetingID = recordingManager.currentMeeting?.id {
+            meetingNotesPaneController.summon(scope: .meetingSession(meetingID: meetingID))
             return
         }
 
-        meetingNotesPanelController.show(
-            content: MeetingNotesContent(
-                plainText: recordingManager.currentMeetingNotesText,
-                richTextRTFData: recordingManager.currentMeetingNotesRichTextData,
-            ),
-            documentId: recordingManager.currentMeeting.map { "meeting-panel-\($0.id.uuidString)" } ?? "meeting-panel",
-            onTextChange: { [weak self] content in
-                self?.recordingManager.updateMeetingNotes(content)
-            },
-            onClose: { [weak self] in
-                self?.recordingManager.setMeetingNotesPanelVisible(false)
-            },
-        )
+        if recordingManager.isMeetingNotesPanelVisible || meetingNotesPaneController.isVisible {
+            meetingNotesPaneController.summon()
+        }
     }
 
     private func indicatorRenderState(

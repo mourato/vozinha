@@ -13,7 +13,7 @@ public final class MeetingReminderCoordinator {
     private let notificationService: NotificationService
     public let scheduler: MeetingReminderScheduler
     public let overlayController: MeetingReminderOverlayController
-    public let calendarNotesPanelController: CalendarEventNotesPanelController
+    private var meetingNotesPaneController: MeetingNotesPaneController
     public private(set) var actionHandler: MeetingReminderActionHandler?
 
     private var pollTimer: Timer?
@@ -27,7 +27,7 @@ public final class MeetingReminderCoordinator {
         notificationService: NotificationService = .shared,
         scheduler: MeetingReminderScheduler? = nil,
         overlayController: MeetingReminderOverlayController? = nil,
-        calendarNotesPanelController: CalendarEventNotesPanelController? = nil,
+        meetingNotesPaneController: MeetingNotesPaneController? = nil,
     ) {
         self.calendarEventService = calendarEventService
         self.settingsStore = settingsStore
@@ -36,15 +36,19 @@ public final class MeetingReminderCoordinator {
             dismissedOccurrenceKeys: settingsStore.meetingReminderDismissedOccurrenceKeys(),
         )
         self.overlayController = overlayController ?? MeetingReminderOverlayController()
-        self.calendarNotesPanelController = calendarNotesPanelController ?? CalendarEventNotesPanelController()
+        self.meetingNotesPaneController = meetingNotesPaneController ?? MeetingNotesPaneController()
     }
 
-    public func attach() {
+    public func attach(meetingNotesPaneController: MeetingNotesPaneController? = nil) {
         guard !attached else { return }
         attached = true
 
+        if let meetingNotesPaneController {
+            self.meetingNotesPaneController = meetingNotesPaneController
+        }
+
         actionHandler = MeetingReminderActionHandler(
-            calendarNotesPanelController: calendarNotesPanelController,
+            meetingNotesPaneController: self.meetingNotesPaneController,
             overlayController: overlayController,
             scheduler: scheduler,
             upcomingEventsProvider: { [weak self] in

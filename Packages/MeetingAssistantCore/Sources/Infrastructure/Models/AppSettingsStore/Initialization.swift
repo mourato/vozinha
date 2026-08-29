@@ -234,6 +234,14 @@ extension AppSettingsStore {
         let summaryExportSafetyPolicyLevel: SummaryExportSafetyPolicyLevel
         let meetingNotesFontFamilyKey: String
         let meetingNotesFontSize: Double
+        let meetingNotesHotkeyEnabled: Bool
+        let meetingNotesTranslucentPanel: Bool
+        let meetingNotesShowOnAllSpaces: Bool
+        let meetingNotesHideFromScreenCapture: Bool
+        let meetingNotesAutoSizeHeight: Bool
+        let meetingNotesEditorTheme: String
+        let meetingNotesTextSize: Int
+        let meetingNotesLastEditedCalendarEventIdentifier: String?
         let meetingQnAEnabled: Bool
         let meetingRemindersEnabled: Bool
         let meetingReminderLeadMinutes: Int
@@ -266,6 +274,18 @@ extension AppSettingsStore {
             ),
             meetingNotesFontSize: MeetingNotesTypographyDefaults.normalizedFontSize(
                 UserDefaults.standard.object(forKey: Keys.meetingNotesFontSize) as? Double ?? MeetingNotesTypographyDefaults.defaultFontSize,
+            ),
+            meetingNotesHotkeyEnabled: loadBoolDefaultIfUnset(forKey: Keys.meetingNotesHotkeyEnabled, defaultValue: true),
+            meetingNotesTranslucentPanel: loadBoolDefaultIfUnset(forKey: Keys.meetingNotesTranslucentPanel, defaultValue: true),
+            meetingNotesShowOnAllSpaces: loadBoolDefaultIfUnset(forKey: Keys.meetingNotesShowOnAllSpaces, defaultValue: true),
+            meetingNotesHideFromScreenCapture: UserDefaults.standard.bool(forKey: Keys.meetingNotesHideFromScreenCapture),
+            meetingNotesAutoSizeHeight: loadBoolDefaultIfUnset(forKey: Keys.meetingNotesAutoSizeHeight, defaultValue: true),
+            meetingNotesEditorTheme: UserDefaults.standard.string(forKey: Keys.meetingNotesEditorTheme) ?? "",
+            meetingNotesTextSize: AppSettingsStore.normalizedMeetingNotesTextSize(
+                UserDefaults.standard.object(forKey: Keys.meetingNotesTextSize) as? Int ?? AppSettingsStore.defaultMeetingNotesTextSize,
+            ),
+            meetingNotesLastEditedCalendarEventIdentifier: UserDefaults.standard.string(
+                forKey: Keys.meetingNotesLastEditedCalendarEventIdentifier,
             ),
             meetingQnAEnabled: loadBoolDefaultIfUnset(forKey: Keys.meetingQnAEnabled, defaultValue: true),
             meetingRemindersEnabled: loadBoolDefaultIfUnset(forKey: Keys.meetingRemindersEnabled, defaultValue: true),

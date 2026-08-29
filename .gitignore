@@ -85,6 +85,8 @@ default.profraw
 
 # Build artifacts
 dist/
+!Packages/MeetingAssistantCore/Sources/UI/Resources/MeetingNotesEditor/dist/
+!Packages/MeetingAssistantCore/Sources/UI/Resources/MeetingNotesEditor/dist/**
 .xcode-build/
 .xcode-build-ci-parity/
 .xcode-build-tests/

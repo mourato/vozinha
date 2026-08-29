@@ -19,7 +19,7 @@ public protocol MeetingReminderActionHandling: AnyObject {
 public final class MeetingReminderActionHandler: MeetingReminderActionHandling {
     private let recordingManager: RecordingManager
     private let settingsStore: AppSettingsStore
-    private let calendarNotesPanelController: CalendarEventNotesPanelController
+    private let meetingNotesPaneController: MeetingNotesPaneController
     private let overlayController: MeetingReminderOverlayController
     private let scheduler: MeetingReminderScheduler
     private let upcomingEventsProvider: () -> [MeetingCalendarEventSnapshot]
@@ -28,7 +28,7 @@ public final class MeetingReminderActionHandler: MeetingReminderActionHandling {
     public init(
         recordingManager: RecordingManager = .shared,
         settingsStore: AppSettingsStore = .shared,
-        calendarNotesPanelController: CalendarEventNotesPanelController,
+        meetingNotesPaneController: MeetingNotesPaneController,
         overlayController: MeetingReminderOverlayController,
         scheduler: MeetingReminderScheduler,
         upcomingEventsProvider: @escaping () -> [MeetingCalendarEventSnapshot],
@@ -36,7 +36,7 @@ public final class MeetingReminderActionHandler: MeetingReminderActionHandling {
     ) {
         self.recordingManager = recordingManager
         self.settingsStore = settingsStore
-        self.calendarNotesPanelController = calendarNotesPanelController
+        self.meetingNotesPaneController = meetingNotesPaneController
         self.overlayController = overlayController
         self.scheduler = scheduler
         self.upcomingEventsProvider = upcomingEventsProvider
@@ -58,15 +58,7 @@ public final class MeetingReminderActionHandler: MeetingReminderActionHandling {
     }
 
     public func openNotes(for event: MeetingCalendarEventSnapshot) {
-        calendarNotesPanelController.show(
-            eventIdentifier: event.eventIdentifier,
-            loadContent: { [recordingManager] in
-                recordingManager.loadCalendarEventNotesContent(for: event.eventIdentifier)
-            },
-            onTextChange: { [recordingManager] content in
-                recordingManager.updateCalendarEventNotes(content, for: event.eventIdentifier)
-            },
-        )
+        meetingNotesPaneController.summon(scope: .calendarEvent(eventIdentifier: event.eventIdentifier))
         overlayController.hide()
     }
 

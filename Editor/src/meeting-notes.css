@@ -1,0 +1,22 @@
+:root {
+  color-scheme: light dark;
+  --notes-font-size: 15px;
+  --notes-font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+}
+
+html,
+body,
+#editor-root {
+  margin: 0;
+  height: 100%;
+}
+
+body {
+  background: transparent;
+  font-family: var(--notes-font-family);
+  font-size: var(--notes-font-size);
+}
+
+textarea {
+  outline: none;
+}

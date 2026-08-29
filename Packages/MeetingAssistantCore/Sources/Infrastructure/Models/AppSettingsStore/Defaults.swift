@@ -82,4 +82,10 @@ public extension AppSettingsStore {
     static let defaultShortcutDoubleTapIntervalMilliseconds: Double = 350
     static let shortcutDoubleTapIntervalRangeMilliseconds: ClosedRange<Double> = 150...1_000
     static let defaultAudioDuckingLevelPercent: Int = 30
+    static let defaultMeetingNotesTextSize = 15
+    static let meetingNotesTextSizeRange = 12...24
+
+    static func normalizedMeetingNotesTextSize(_ value: Int) -> Int {
+        min(max(value, meetingNotesTextSizeRange.lowerBound), meetingNotesTextSizeRange.upperBound)
+    }
 }

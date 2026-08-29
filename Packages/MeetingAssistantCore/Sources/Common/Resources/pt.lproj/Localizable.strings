@@ -1341,6 +1341,15 @@
 "settings.meetings.notes_typography.font_family" = "Família da fonte";
 "settings.meetings.notes_typography.font_size" = "Tamanho da fonte";
 "settings.meetings.notes_typography.font_system" = "Sistema";
+"settings.meetings.notes_panel.title" = "Painel de anotações";
+"settings.meetings.notes_panel.desc" = "Abra uma folha flutuante de anotações de qualquer lugar com um atalho global. O painel fica sobre outros apps sem tirar o foco da reunião.";
+"settings.meetings.notes_panel.hotkey_enabled" = "Ativar atalho de anotações";
+"settings.meetings.notes_panel.shortcut" = "Atalho de anotações";
+"settings.meetings.notes_panel.translucent" = "Painel translúcido";
+"settings.meetings.notes_panel.all_spaces" = "Mostrar em todos os Spaces";
+"settings.meetings.notes_panel.hide_from_capture" = "Ocultar da captura de tela";
+"settings.meetings.notes_panel.auto_height" = "Ajustar altura automaticamente";
+"settings.meetings.notes_panel.text_size" = "Tamanho do texto no editor";
 
 /* Meeting reminders */
 "settings.meetings.reminders.title" = "Lembretes";

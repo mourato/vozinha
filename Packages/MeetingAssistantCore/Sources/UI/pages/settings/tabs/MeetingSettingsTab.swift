@@ -210,6 +210,8 @@ public struct MeetingSettingsTab: View {
                 } header: {
                     SettingsFormSectionHeader(title: "settings.meetings.notes_typography.title".localized, icon: "textformat.size")
                 }
+
+                MeetingNotesPanelSettingsSection(settings: meetingViewModel.settings)
             }
             .disabled(!meetingViewModel.settings.isMeetingTranscriptionEnabled)
             .opacity(meetingViewModel.settings.isMeetingTranscriptionEnabled ? 1 : CapabilityLayout.disabledOpacity)
