@@ -86,6 +86,7 @@ final class SummaryExportSafetyServicesTests: XCTestCase {
         let tempRoot = FileManager.default.temporaryDirectory
             .appendingPathComponent("summary-export-audit-tests-\(UUID().uuidString)", isDirectory: true)
         try FileManager.default.createDirectory(at: tempRoot, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: tempRoot) }
 
         let writer = SummaryExportAuditTrailWriter(
             rootDirectoryURL: tempRoot,

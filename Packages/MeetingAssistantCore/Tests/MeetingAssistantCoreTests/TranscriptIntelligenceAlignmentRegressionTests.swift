@@ -285,8 +285,10 @@ final class TranscriptAlignmentRegressionTests: XCTestCase {
             storage: storage,
         )
 
-        let audioURL = URL(fileURLWithPath: "/tmp/retry-transcription-quality.wav")
+        let audioURL = FileManager.default.temporaryDirectory
+            .appendingPathComponent("retry-transcription-quality-\(UUID().uuidString).wav")
         FileManager.default.createFile(atPath: audioURL.path, contents: Data([0x00]))
+        defer { try? FileManager.default.removeItem(at: audioURL) }
 
         let meeting = Meeting(
             app: .googleMeet,

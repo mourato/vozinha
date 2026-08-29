@@ -154,22 +154,22 @@ fi
 suite_skip_regex=""
 suite_filter_regex=""
 suite_allows_parallel=0
+# ponytail: keep functional suites serial while they share process-wide
+# UserDefaults and Keychain state; revisit with per-test isolation if runtime
+# becomes material. Explicit --parallel remains available for deliberate runs.
 
 case "${SUITE}" in
     dev)
         suite_skip_regex="${TEST_SUITE_DEV_SKIP_REGEX}"
-        suite_allows_parallel=1
         export MA_SKIP_OVERLAY_LIFECYCLE_TESTS=1
         ;;
     full)
         suite_skip_regex="${TEST_SUITE_FULL_SKIP_REGEX}"
-        suite_allows_parallel=1
         export MA_SKIP_OVERLAY_LIFECYCLE_TESTS=1
         ;;
     smoke)
         suite_filter_regex="${TEST_SUITE_SMOKE_FILTER_REGEX}"
         suite_skip_regex="${TEST_SUITE_SMOKE_SKIP_REGEX}"
-        suite_allows_parallel=1
         export MA_SKIP_OVERLAY_LIFECYCLE_TESTS=1
         ;;
     perf)

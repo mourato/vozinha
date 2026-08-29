@@ -19,5 +19,5 @@ TEST_SUITE_BENCHMARK_FILTER_REGEX='SummaryBenchmarkRegressionTests'
 TEST_SUITE_APPKIT_FILTER_REGEX='AssistantOverlayLifecycleTests|DictionaryQuickAddPanelControllerTests'
 TEST_SUITE_SENSITIVE_FILTER_REGEX='AudioSystemTests|AudioRecorderTests|AudioRecordingWorkerTests|RecordingManagerTests|ConcurrencyTests|CoreDataRepositoryTests|StorageServiceSecurityTests|KeychainManager.*Tests'
 
-# Parallel workers for suites that benefit from broad execution.
+# Worker count for deliberate --parallel executions.
 TEST_SUITE_PARALLEL_WORKERS="${MA_TEST_WORKERS:-4}"

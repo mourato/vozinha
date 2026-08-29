@@ -6,6 +6,9 @@ SCRIPT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 TMP_ROOT="$(mktemp -d "${TMPDIR:-/tmp}/prisma-rust-audio-staging-test.XXXXXX")"
 trap 'rm -rf "${TMP_ROOT}"' EXIT
 
+# shellcheck source=scripts/config/app_identity.sh
+source "${SCRIPT_ROOT}/scripts/config/app_identity.sh"
+
 fail() {
     echo "FAIL: $*" >&2
     exit 1
@@ -23,11 +26,17 @@ fi
 
 fake_target_dir="${TMP_ROOT}/redirected-cargo-target"
 mkdir -p "${fake_target_dir}"
+derived_data_dir="${TMP_ROOT}/derived-data"
+app_bundle="${derived_data_dir}/Build/Products/Debug/${APP_PRODUCT_NAME}.app"
+mkdir -p "${app_bundle}/Contents"
 
 output="$(
     cd "${SCRIPT_ROOT}" && \
         CARGO_TARGET_DIR="${fake_target_dir}" \
-        ./scripts/stage-rust-audio-kernels.sh --mode on --configuration Debug 2>&1
+        ./scripts/stage-rust-audio-kernels.sh \
+            --mode on \
+            --configuration Debug \
+            --derived-data "${derived_data_dir}" 2>&1
 )" || fail "staging failed with redirected CARGO_TARGET_DIR: ${output}"
 
 if printf '%s\n' "${output}" | grep -Fq '[rust-audio] expected artifact not found'; then
@@ -36,6 +45,7 @@ fi
 
 artifact="${SCRIPT_ROOT}/Native/AudioKernelsRust/target/debug/libaudio_kernels_rust.dylib"
 [ -f "${artifact}" ] || fail "expected dylib at ${artifact}"
+[ -f "${app_bundle}/Contents/Frameworks/libaudio_kernels_rust.dylib" ] || fail "expected dylib staged into temporary app bundle"
 
 if [ -f "${fake_target_dir}/debug/libaudio_kernels_rust.dylib" ]; then
     fail "dylib was built under redirected CARGO_TARGET_DIR"

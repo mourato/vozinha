@@ -11,22 +11,33 @@ final class SystemAudioMuteControllerTests: XCTestCase {
         sut = SystemAudioMuteController.shared
     }
 
-    func testMuteToggle() {
-        let originalMuteState = sut.isMuted()
+    func testMuteToggle() throws {
+        try XCTSkipUnless(
+            ProcessInfo.processInfo.environment["MA_ENABLE_AUDIO_HARDWARE_TESTS"] == "1",
+            "Opt-in hardware test. Set MA_ENABLE_AUDIO_HARDWARE_TESTS=1 to run.",
+        )
 
-        // Try to toggle and then restore
+        let originalMuteState = sut.isMuted()
+        var didToggle = false
+        defer {
+            if didToggle {
+                do {
+                    try sut.setMuted(originalMuteState)
+                    XCTAssertEqual(sut.isMuted(), originalMuteState)
+                } catch {
+                    XCTFail("Failed to restore the original mute state: \(error)")
+                }
+            }
+        }
+
         do {
             try sut.setMuted(!originalMuteState)
-            XCTAssertEqual(sut.isMuted(), !originalMuteState)
-
-            // Restore
-            try sut.setMuted(originalMuteState)
-            XCTAssertEqual(sut.isMuted(), originalMuteState)
+            didToggle = true
         } catch {
-            // It's possible that setting mute fails if no output device is found in CI
-            // or if permissions are missing, so we log but don't necessarily fail if the error is CoreAudio -50 (paramErr)
-            print("Mute toggle test skipped or failed due to environment: \(error)")
+            throw XCTSkip("Audio mute is unavailable in this environment: \(error)")
         }
+
+        XCTAssertEqual(sut.isMuted(), !originalMuteState)
     }
 
     func testMakeOutputVolumeStatePrefersVirtualMainVolume() {

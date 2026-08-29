@@ -38,6 +38,7 @@ final class AssistantRecordingOrchestratorTests: XCTestCase {
         let tempURL = FileManager.default.temporaryDirectory
             .appendingPathComponent("assistant-orchestrator-\(UUID().uuidString).m4a")
         FileManager.default.createFile(atPath: tempURL.path, contents: Data("test".utf8))
+        defer { try? FileManager.default.removeItem(at: tempURL) }
         XCTAssertTrue(FileManager.default.fileExists(atPath: tempURL.path))
 
         let acquiredBeforeCancel = await RecordingExclusivityCoordinator.shared.beginAssistant()

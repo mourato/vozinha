@@ -4,6 +4,9 @@ import XCTest
 
 @MainActor
 final class AssistantOverlayLifecycleTests: XCTestCase {
+    // Exception: these tests prove the AppKit surface itself. Run explicitly
+    // with `make test-appkit`; normal suites skip them and every controller is
+    // hidden in defer, including when an assertion or await fails.
     private func skipIfOverlayLifecycleDisabled() throws {
         if ProcessInfo.processInfo.environment["MA_SKIP_OVERLAY_LIFECYCLE_TESTS"] == "1" {
             throw XCTSkip("Overlay lifecycle tests disabled for current runner")
@@ -18,6 +21,7 @@ final class AssistantOverlayLifecycleTests: XCTestCase {
         }
 
         let controller = FloatingRecordingIndicatorController()
+        defer { controller.hide() }
 
         for _ in 0..<20 {
             controller.show(mode: .recording)
@@ -40,6 +44,7 @@ final class AssistantOverlayLifecycleTests: XCTestCase {
         }
 
         let controller = FloatingRecordingIndicatorController()
+        defer { controller.hide() }
         let meetingState = RecordingIndicatorRenderState(mode: .recording, kind: .meeting, meetingType: .standup)
         let processingState = meetingState.with(mode: .processing)
 
@@ -60,6 +65,7 @@ final class AssistantOverlayLifecycleTests: XCTestCase {
         }
 
         let controller = FloatingRecordingIndicatorController()
+        defer { controller.hide() }
         let integrationID = UUID()
         let recordingState = RecordingIndicatorRenderState(
             mode: .recording,
@@ -85,6 +91,7 @@ final class AssistantOverlayLifecycleTests: XCTestCase {
         }
 
         let controller = AssistantScreenBorderController()
+        defer { controller.hide() }
 
         for _ in 0..<20 {
             controller.show()

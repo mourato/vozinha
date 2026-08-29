@@ -120,6 +120,7 @@ final class CoreDataRepositoryTests: XCTestCase {
     func testSanitizeMeetingOnlyPresentationDataIfNeeded_CleansLegacyNonMeetingRows() async throws {
         let checkpointKey = "coredata.tests.non_meeting_sanitizer.\(UUID().uuidString)"
         UserDefaults.standard.removeObject(forKey: checkpointKey)
+        defer { UserDefaults.standard.removeObject(forKey: checkpointKey) }
 
         let meetingID = UUID()
         try await stack.performBackgroundTask { context in
@@ -158,6 +159,7 @@ final class CoreDataRepositoryTests: XCTestCase {
     func testSanitizeMockTranscriptionArtifactsIfNeeded_RemovesPersistedMockRows() async throws {
         let checkpointKey = "coredata.tests.mock_artifact_sanitizer.\(UUID().uuidString)"
         UserDefaults.standard.removeObject(forKey: checkpointKey)
+        defer { UserDefaults.standard.removeObject(forKey: checkpointKey) }
 
         let meeting = MeetingEntity(app: .unknown, capturePurpose: .dictation)
         try await meetingRepo.saveMeeting(meeting)
@@ -393,6 +395,7 @@ final class CoreDataRepositoryTests: XCTestCase {
     func testFetchModelPerformanceAttempts_BackfillsSyntheticAttemptsFromLegacySnapshot() async throws {
         let checkpointKey = "coredata.tests.model_performance_backfill.\(UUID().uuidString)"
         UserDefaults.standard.removeObject(forKey: checkpointKey)
+        defer { UserDefaults.standard.removeObject(forKey: checkpointKey) }
 
         let meeting = MeetingEntity(app: .unknown, capturePurpose: .dictation)
         try await meetingRepo.saveMeeting(meeting)

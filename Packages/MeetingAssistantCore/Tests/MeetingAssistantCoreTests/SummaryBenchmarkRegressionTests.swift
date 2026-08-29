@@ -47,6 +47,7 @@ final class SummaryBenchmarkRegressionTests: XCTestCase {
 
     func testFixtureVersionValidationRejectsUnsupportedVersion() throws {
         let tempURL = temporaryURL(named: "summary-benchmark-fixtures-invalid-version.json")
+        defer { try? FileManager.default.removeItem(at: tempURL.deletingLastPathComponent()) }
         let payload = """
         {
           "schemaVersion": 3,
@@ -142,6 +143,7 @@ final class SummaryBenchmarkRegressionTests: XCTestCase {
         let baseline = runner.makeBaseline(metrics: result.metrics, source: "round-trip-test")
 
         let tempURL = temporaryURL(named: "summary-benchmark-baseline-roundtrip.json")
+        defer { try? FileManager.default.removeItem(at: tempURL.deletingLastPathComponent()) }
         try runner.writeBaseline(baseline, to: tempURL)
         let loadedBaseline = try runner.loadBaseline(from: tempURL)
 
