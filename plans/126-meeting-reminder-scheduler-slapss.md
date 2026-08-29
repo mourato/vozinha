@@ -1,6 +1,6 @@
 # Plan 126: Meeting reminder scheduler (Slapss-inspired)
 
-**Status:** DONE (`350fe349` compile fix, `TBD` visual polish + closeout)  
+**Status:** DONE (`ea44eeb7`, `350fe349`, `c186e626`)  
 **Priority:** P1  
 **Effort:** L  
 **Depends on:** — (reuses existing calendar + recording surfaces)  
