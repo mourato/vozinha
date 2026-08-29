@@ -60,9 +60,13 @@ hierarchy and feedback in every fallback.
   and restores the previous frontmost app on dismiss.
 - Optional mirror-all-screens mode builds one overlay window per connected
   display; dismissing on any screen dismisses all instances.
-- Visual treatment uses `AppDesignSystem` semantic overlay colors and native
-  materials; Reduce Transparency falls back to opaque backdrop/card surfaces.
-- Reduce Motion disables decorative pulse on the countdown status pill.
+- Visual treatment uses a Slapss-inspired wide-hero layout: animated mesh
+  backdrop (fixed warm palette), glass card at 880pt max width, 56pt title,
+  two-column metadata/actions, and inline snooze dropdown (not a system menu,
+  which is unreliable at `.screenSaver` level). Primary CTAs use 16pt semibold
+  labels with 20×18pt padding; secondary actions use 14pt medium with 16×14pt
+  padding. Reduce Transparency falls back to opaque backdrop/card surfaces;
+  Reduce Motion freezes mesh animation and pulsing status dots.
 
 ## Review checklist
 

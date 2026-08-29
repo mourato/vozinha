@@ -1,6 +1,6 @@
 # Plan 126: Meeting reminder scheduler (Slapss-inspired)
 
-**Status:** IMPLEMENTED (branch `plan-126-meeting-reminders`, pending merge)
+**Status:** DONE (`350fe349` compile fix, `TBD` visual polish + closeout)  
 **Priority:** P1  
 **Effort:** L  
 **Depends on:** — (reuses existing calendar + recording surfaces)  
@@ -125,51 +125,51 @@ validate each slice before the next.
 
 ### Slice 0 — Scaffold + settings (S)
 
-- [ ] Add ADR 001 (this plan assumes it lands together).
-- [ ] Add settings keys, defaults, localization keys (en + pt-BR if project
+- [x] Add ADR 001 (this plan assumes it lands together).
+- [x] Add settings keys, defaults, localization keys (en + pt-BR if project
       convention requires both for new UI).
-- [ ] Add Meeting settings section “Reminders” with toggles/steppers.
-- [ ] Unit tests: settings round-trip defaults.
+- [x] Add Meeting settings section “Reminders” with toggles/steppers.
+- [x] Unit tests: settings round-trip defaults.
 
 **Gate:** `make guidance-check` if guidance-only; else `make lint` on touched
 Swift files.
 
 ### Slice 1 — Scheduler core (M)
 
-- [ ] `MeetingReminderScheduler` with:
+- [x] `MeetingReminderScheduler` with:
   - `reschedule(events:now:)` from Slapss `AlertScheduler` (timers, cache, dropped
     event cleanup, missed-fire catch-up, pending queue skeleton).
   - App Nap token `ProcessInfo.beginActivity(.userInitiated)`.
   - Watchdog 20s on `RunLoop.main` `.common`.
   - `NSWorkspace.didWakeNotification` cache bust.
-- [ ] `MeetingReminderCoordinator` polls `CalendarEventService` every 30s when
+- [x] `MeetingReminderCoordinator` polls `CalendarEventService` every 30s when
   enabled + authorized.
-- [ ] Respect `ignoredCalendarEventIdentifiers` and master enable flag.
-- [ ] No overlay yet — log `fireMeetingStart` at debug level.
+- [x] Respect `ignoredCalendarEventIdentifiers` and master enable flag.
+- [x] No overlay yet — log `fireMeetingStart` at debug level.
 
 **Gate:** unit tests with injected clock/fake events for schedule, snooze,
 dismiss, missed-fire catch-up.
 
 ### Slice 2 — Lead notifications (M)
 
-- [ ] Extend `NotificationService`:
+- [x] Extend `NotificationService`:
   - Register categories: plain + join action.
   - `scheduleMeetingLeadNotification(identifier:at:title:body:joinURL:)`.
   - `cancelMeetingLeadNotification(identifier:)`.
   - `UNUserNotificationCenterDelegate` handling join action → open URL.
-- [ ] Wire scheduler lead path; cancel on dismiss/snooze/event drop.
-- [ ] Request authorization on first enable (reuse existing request path).
+- [x] Wire scheduler lead path; cancel on dismiss/snooze/event drop.
+- [x] Request authorization on first enable (reuse existing request path).
 
 **Gate:** unit tests for identifier namespacing; manual: notification fires at
 lead time in Debug app bundle.
 
 ### Slice 3 — Overlay UI (L)
 
-- [ ] `MeetingReminderOverlayController` (multi-screen optional).
-- [ ] `MeetingReminderAlertView` SwiftUI + countdown states.
-- [ ] Wire scheduler `fireMeetingStart` → overlay; queue if already visible.
-- [ ] Snooze/dismiss callbacks back into scheduler.
-- [ ] Sound: `NSSound.beep()` when setting enabled.
+- [x] `MeetingReminderOverlayController` (multi-screen optional).
+- [x] `MeetingReminderAlertView` SwiftUI + countdown states.
+- [x] Wire scheduler `fireMeetingStart` → overlay; queue if already visible.
+- [x] Snooze/dismiss callbacks back into scheduler.
+- [x] Sound: `NSSound.beep()` when setting enabled.
 
 **Gate:** manual test-hygiene checklist — overlay above fullscreen browser,
 Esc/Return, Reduce Motion/Transparency; no test launches visible window in CI
@@ -177,22 +177,22 @@ without hygiene guards.
 
 ### Slice 4a — Join + Record actions (M)
 
-- [ ] `MeetingReminderActionHandler`:
+- [x] `MeetingReminderActionHandler`:
   - Join: `NSWorkspace.shared.open(url)`.
   - Record: **immediate** `RecordingManager.startCapture(purpose: .meeting)` +
     `linkCurrentMeeting(to: event)` when not already recording — skip
     `AutomaticMeetingRecordingConfirmation` countdown.
-- [ ] Dismiss overlay after action (Slapss behavior).
+- [x] Dismiss overlay after action (Slapss behavior).
 
 **Gate:** `RecordingManagerTests` or focused handler tests with mocks; manual
 join + record from overlay.
 
 ### Slice 4b — Notes action (M)
 
-- [ ] Add `CalendarEventNotesPanelController` (calendar-event scope only).
-- [ ] Notes button on overlay opens panel for `event.eventIdentifier`; load via
+- [x] Add `CalendarEventNotesPanelController` (calendar-event scope only).
+- [x] Notes button on overlay opens panel for `event.eventIdentifier`; load via
       `loadCalendarEventNotesContent`, persist via `updateCalendarEventNotes`.
-- [ ] Panel summonable without active recording; no change to in-session
+- [x] Panel summonable without active recording; no change to in-session
       `MeetingNotesFloatingPanelController` behavior yet.
 
 **Gate:** existing `MeetingNotes*` tests updated; manual pre-meeting edit
@@ -200,17 +200,17 @@ survives app restart.
 
 ### Slice 5 — Lifecycle integration (S)
 
-- [ ] Attach coordinator in `AppDelegate` / app launch (idempotent `.attach()`).
-- [ ] Stop scheduler when calendar permission revoked.
-- [ ] Settings changes bust scheduler cache (lead minutes / overlay offset).
+- [x] Attach coordinator in `AppDelegate` / app launch (idempotent `.attach()`).
+- [x] Stop scheduler when calendar permission revoked.
+- [x] Settings changes bust scheduler cache (lead minutes / overlay offset).
 
 **Gate:** `make validate` changed-surface lane for UI + Infrastructure modules.
 
 ### Slice 6 — Closeout (S)
 
-- [ ] Update `docs/ui.md` with overlay invariants (window level, activation).
-- [ ] Update plan ledger status → DONE with commit SHAs and validation output.
-- [ ] Review: defect-first pass on scheduling + permission paths.
+- [x] Update `docs/ui.md` with overlay invariants (window level, activation).
+- [x] Update plan ledger status → DONE with commit SHAs and validation output.
+- [x] Review: defect-first pass on scheduling + permission paths.
 
 ## Acceptance criteria
 
@@ -259,7 +259,7 @@ Record manual gates in closeout:
 
 | Question | Decision |
 |----------|----------|
-| Visual design | `AppDesignSystem` + native materials only; no Slapss mesh themes in v1 |
+| Visual design | `AppDesignSystem` + Slapss wide-hero metrics; fixed warm mesh backdrop (no theme picker in v1) |
 | Record action | Immediate capture; overlay is the confirmation |
 | Notes (4b) | `CalendarEventNotesPanelController` for calendar events only; Plan 127 unifies UX |
 
@@ -276,3 +276,23 @@ Record manual gates in closeout:
 | 5–6 | S | L |
 
 Total: **L** (one serial workstream, ~6–10 focused dev days with review/remediation).
+
+## Closeout
+
+**Commits**
+
+- `ea44eeb7` — feature: scheduler, overlay, notifications, settings, tests
+- `350fe349` — fix: `@Published` properties must live in `AppSettingsStore` body
+- _(visual polish commit on main)_
+
+**Validation**
+
+- `make build-release` — pass
+- `MeetingReminder*` unit tests — 9/9 pass (prior slices)
+- Manual gates — lead notification, overlay above fullscreen, Record + linked event (user-owned)
+
+**Deferred follow-ups**
+
+- Optional `EKEventStoreChanged` refresh hook (30s poll + wake/watchdog cover most cases)
+- Slapss theme picker / mesh palette variants
+- Plan 127 notes pane UX unification

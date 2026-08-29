@@ -62,8 +62,9 @@ but integrated with existing Vozinha capabilities:
 
 ## Resolved product decisions (2026-08-29)
 
-1. **Visual design:** use `AppDesignSystem` tokens and native materials only in
-   v1. Slapss-style mesh theme variants are deferred.
+1. **Visual design:** Slapss wide-hero layout and metric scale (56pt title,
+   two-column card, glass treatment, inline snooze). Fixed warm mesh backdrop;
+   no user theme picker in v1.
 2. **Record action:** immediate `startCapture(purpose: .meeting)` when the user
    taps Record on the overlay — the overlay itself is the confirmation.
 3. **Notes action (Plan 126 slice 4b):** minimal decouple — introduce
