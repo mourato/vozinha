@@ -1,6 +1,6 @@
 # Implementation Plans
 
-This is the active plan ledger. The next available plan number is 126.
+This is the active plan ledger. The next available plan number is 128.
 
 ## Execution rules
 
@@ -43,6 +43,8 @@ Status values: `TODO` | `IN PROGRESS` | `DONE` | `BLOCKED` | `REJECTED`.
 | [123](123-centralize-post-processing-request-seam.md) | Centralize post-processing behind one explicit request seam | P1 | L | 122 | DONE (merged in `8a5907e9`) |
 | [124](124-persist-execution-provenance.md) | Persist execution provenance for transcription and post-processing | P1 | L | 123 | DONE (merged in `35e8fefb`; review remediation `0c80c993`) |
 | [125](125-reduce-settings-singleton-coupling.md) | Reduce operation-time coupling to AppSettingsStore.shared | P1 | M | 122, 123, 124 | DONE (merged in `49d83d6a`) |
+| [126](126-meeting-reminder-scheduler-slapss.md) | Proactive meeting reminders with full-screen overlay (Slapss-inspired) | P1 | L | ADR 001 | TODO |
+| [127](127-meeting-notes-pane-ux.md) | Raycast-style meeting notes panel with WebKit editor (Pane-inspired) | P1 | L | ADR 002; 126 slice 4b recommended | TODO |
 
 ## Dependency order
 
@@ -94,6 +96,18 @@ tests. The only formal gate failure is the unchanged four-violation strict-lint
 baseline. Plan 125 is complete: its settings-boundary cleanup is merged into
 local `main` at `49d83d6a`, with the remaining singleton reads documented by
 semantic allowlist. No separate reminder mechanism is required.
+
+Plan 126 adds proactive calendar reminders (lead notification + full-screen
+overlay). It reuses `CalendarEventService` and recording/calendar-note surfaces;
+see [ADR 001](../docs/adr/001-meeting-reminder-overlay.md). It is independent of
+the completed architecture batch (121–125) and should run as one serial
+high-risk workstream.
+
+Plan 127 delivers Pane-inspired meeting notes (hotkey glass panel + CodeMirror
+live preview). See [ADR 002](../docs/adr/002-meeting-notes-pane-ux.md). Recommended
+order: **126 complete, then 127**. Slice 126-4b (`CalendarEventNotesPanelController`)
+merges into Plan 127 slice 2. Plan 127 slice 0–1 can start early only in a
+separate worktree with no overlapping panel files.
 
 ## Archives
 

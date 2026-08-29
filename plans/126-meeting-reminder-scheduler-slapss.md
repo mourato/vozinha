@@ -283,7 +283,7 @@ Total: **L** (one serial workstream, ~6–10 focused dev days with review/remedi
 
 - `ea44eeb7` — feature: scheduler, overlay, notifications, settings, tests
 - `350fe349` — fix: `@Published` properties must live in `AppSettingsStore` body
-- _(visual polish commit on main)_
+- `c186e626` — polish: Slapss wide-hero overlay layout + Plan 126 closeout
 
 **Validation**
 
