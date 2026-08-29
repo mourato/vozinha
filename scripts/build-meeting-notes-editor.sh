@@ -17,7 +17,7 @@ fi
 
 mkdir -p "$OUTPUT_DIR"
 pushd "$EDITOR_DIR" >/dev/null
-npm ci
+npm install
 npm run build
 popd >/dev/null
 

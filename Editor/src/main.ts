@@ -1,10 +1,24 @@
+import { defaultKeymap, history, historyKeymap } from "@codemirror/commands";
+import { markdown, markdownLanguage } from "@codemirror/lang-markdown";
+import { EditorState, type Extension } from "@codemirror/state";
+import {
+  EditorView,
+  drawSelection,
+  keymap,
+  placeholder,
+} from "@codemirror/view";
+
+import { livePreview } from "./live-preview";
+
 const handler = window.webkit?.messageHandlers?.vozinhaNotes;
 
 function post(type: string, payload: Record<string, unknown> = {}) {
   handler?.postMessage({ type, payload });
 }
 
-let editor: HTMLTextAreaElement | null = null;
+let view: EditorView | null = null;
+let currentDocumentId = "";
+let editTimer: ReturnType<typeof setTimeout> | null = null;
 
 function applyTheme(themeCSS: string) {
   let style = document.getElementById("vozinha-theme") as HTMLStyleElement | null;
@@ -16,62 +30,119 @@ function applyTheme(themeCSS: string) {
   style.textContent = themeCSS || "";
 }
 
-function ensureEditor(initialText = ""): HTMLTextAreaElement {
-  if (editor) {
-    return editor;
-  }
+function applyTextSize(textSize: number) {
+  document.documentElement.style.setProperty("--notes-text-size", `${textSize || 15}px`);
+}
 
+function reportContentHeight() {
+  if (!view) {
+    return;
+  }
+  const height = Math.ceil(view.scrollDOM.getBoundingClientRect().height);
+  post("contentHeight", { height });
+}
+
+function scheduleEdited() {
+  if (!view) {
+    return;
+  }
+  if (editTimer) {
+    clearTimeout(editTimer);
+  }
+  editTimer = setTimeout(() => {
+    if (!view) {
+      return;
+    }
+    post("edited", {
+      markdown: view.state.doc.toString(),
+      caretOffset: view.state.selection.main.head,
+    });
+    reportContentHeight();
+  }, 120);
+}
+
+function createEditor(initialText: string): EditorView {
   const root = document.getElementById("editor-root");
   if (!root) {
     throw new Error("Missing #editor-root");
   }
 
-  const textarea = document.createElement("textarea");
-  textarea.value = initialText;
-  textarea.style.width = "100%";
-  textarea.style.height = "100%";
-  textarea.style.border = "0";
-  textarea.style.resize = "none";
-  textarea.style.background = "transparent";
-  textarea.style.color = "CanvasText";
-  textarea.style.font = "inherit";
-  textarea.style.padding = "12px";
-  textarea.addEventListener("input", () => {
-    post("edited", { markdown: textarea.value });
-    post("contentHeight", { height: root.scrollHeight });
+  const extensions: Extension[] = [
+    history(),
+    drawSelection(),
+    placeholder(""),
+    markdown({ base: markdownLanguage }),
+    livePreview(),
+    keymap.of([...defaultKeymap, ...historyKeymap]),
+    EditorView.lineWrapping,
+    EditorView.updateListener.of((update) => {
+      if (update.docChanged) {
+        scheduleEdited();
+      }
+      if (update.docChanged || update.geometryChanged) {
+        reportContentHeight();
+      }
+    }),
+    EditorView.theme({
+      "&": { height: "100%", backgroundColor: "transparent" },
+      ".cm-scroller": { overflow: "auto" },
+    }),
+  ];
+
+  const state = EditorState.create({
+    doc: initialText,
+    extensions,
   });
-  root.replaceChildren(textarea);
-  editor = textarea;
-  return editor;
+
+  view = new EditorView({
+    state,
+    parent: root,
+  });
+
+  reportContentHeight();
+  return view;
 }
 
-declare global {
-  interface Window {
-    vozinhaNotesLoadNote: (payload: {
-      documentId?: string;
-      markdown?: string;
-      textSize?: number;
-      themeCSS?: string;
-    }) => void;
-    vozinhaNotesApplySettings: (payload: {
-      textSize?: number;
-      themeCSS?: string;
-    }) => void;
+function ensureEditor(initialText = ""): EditorView {
+  if (view) {
+    return view;
   }
+  return createEditor(initialText);
 }
 
 window.vozinhaNotesLoadNote = (payload) => {
-  document.documentElement.style.setProperty("--notes-font-size", `${payload.textSize || 15}px`);
+  currentDocumentId = payload.documentId || "";
+  applyTextSize(payload.textSize || 15);
   applyTheme(payload.themeCSS || "");
-  const instance = ensureEditor(payload.markdown || "");
-  instance.value = payload.markdown || "";
-  const root = document.getElementById("editor-root");
-  post("contentHeight", { height: root?.scrollHeight ?? 0 });
+
+  const markdownText = payload.markdown || "";
+  const editor = ensureEditor(markdownText);
+
+  if (editor.state.doc.toString() !== markdownText) {
+    editor.dispatch({
+      changes: {
+        from: 0,
+        to: editor.state.doc.length,
+        insert: markdownText,
+      },
+    });
+  }
+
+  const caret = payload.caretOffset;
+  if (typeof caret === "number" && caret >= 0 && caret <= markdownText.length) {
+    editor.dispatch({
+      selection: { anchor: caret },
+    });
+  }
+
+  editor.focus();
+  reportContentHeight();
 };
 
 window.vozinhaNotesApplySettings = (payload) => {
-  document.documentElement.style.setProperty("--notes-font-size", `${payload.textSize || 15}px`);
+  applyTextSize(payload.textSize || 15);
   applyTheme(payload.themeCSS || "");
+  reportContentHeight();
 };
 
 post("ready");

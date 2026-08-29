@@ -1,39 +1,15 @@
-:root {
-  color-scheme: light dark;
-  --notes-font-size: 15px;
-  --notes-font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
-}
-
 html,
 body,
 #editor-root {
   margin: 0;
   height: 100%;
+  background: transparent;
 }
 
 body {
-  background: transparent;
-  font-family: var(--notes-font-family);
-  font-size: var(--notes-font-size);
+  overflow: hidden;
 }
 
-.cm-editor {
-  height: 100%;
-}
-
-.cm-scroller {
-  font-family: inherit;
-  line-height: 1.5;
-}
-
-.cm-content {
-  padding: 12px;
-}
-
-.cm-line {
-  padding: 0;
-}
-
-.preview-hidden {
-  display: none;
+#editor-root .cm-editor {
+  outline: none;
 }

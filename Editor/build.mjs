@@ -16,7 +16,7 @@ await build({
   sourcemap: false,
 });
 
-for (const asset of ["index.html", "meeting-notes.css"]) {
+for (const asset of ["index.html", "meeting-notes.css", "markdown.css", "tokens.css"]) {
   cpSync(join(root, "src", asset), join(dist, asset));
 }
 

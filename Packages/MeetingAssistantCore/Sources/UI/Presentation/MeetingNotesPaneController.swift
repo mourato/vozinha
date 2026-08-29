@@ -155,6 +155,10 @@ public final class MeetingNotesPaneController {
             onContentChange: { [weak self] updated in
                 self?.scheduleSave(updated, for: scope)
             },
+            onContentHeightChange: { [weak self] height in
+                guard let self, let panel = self.panel else { return }
+                resizePanel(panel, contentHeight: height + 72)
+            },
         )
 
         if let hostingView {
@@ -341,6 +345,7 @@ private struct MeetingNotesPaneEditorView: View {
     let editorHost: MeetingNotesPaneController.EditorHost
     let settingsStore: AppSettingsStore
     let onContentChange: (MeetingNotesContent) -> Void
+    let onContentHeightChange: ((CGFloat) -> Void)?
 
     init(
         scope: NotesScope,
@@ -348,12 +353,14 @@ private struct MeetingNotesPaneEditorView: View {
         editorHost: MeetingNotesPaneController.EditorHost,
         settingsStore: AppSettingsStore,
         onContentChange: @escaping (MeetingNotesContent) -> Void,
+        onContentHeightChange: ((CGFloat) -> Void)? = nil,
     ) {
         self.scope = scope
         _content = State(initialValue: content)
         self.editorHost = editorHost
         self.settingsStore = settingsStore
         self.onContentChange = onContentChange
+        self.onContentHeightChange = onContentHeightChange
     }
 
     var body: some View {
@@ -392,6 +399,9 @@ private struct MeetingNotesPaneEditorView: View {
                 themeCSS: settingsStore.meetingNotesEditorTheme,
                 onContentChange: { updated in
                     content = updated
+                },
+                onContentHeightChange: { height in
+                    onContentHeightChange?(height)
                 },
             )
         }

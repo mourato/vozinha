@@ -1,0 +1,22 @@
+:root {
+  color-scheme: light dark;
+  --notes-text-size: 15px;
+  --notes-line-height: 1.35;
+  --notes-font-ui: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif;
+  --notes-font-mono: "SF Mono", ui-monospace, Menlo, monospace;
+  --notes-text-primary: #1d1d1f;
+  --notes-text-secondary: #3a3a3e;
+  --notes-text-faint: #86868b;
+  --notes-fill-code: rgba(0, 0, 0, 0.045);
+  --notes-rule: rgba(0, 0, 0, 0.1);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --notes-text-primary: #e8e8ea;
+    --notes-text-secondary: #d4d4d8;
+    --notes-text-faint: #98989f;
+    --notes-fill-code: rgba(255, 255, 255, 0.06);
+    --notes-rule: rgba(255, 255, 255, 0.12);
+  }
+}
