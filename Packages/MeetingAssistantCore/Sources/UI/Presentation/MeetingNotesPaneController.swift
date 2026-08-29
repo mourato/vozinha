@@ -396,7 +396,9 @@ private struct MeetingNotesPaneEditorView: View {
                 documentId: scope.documentId,
                 content: content,
                 textSize: settingsStore.meetingNotesTextSize,
-                themeCSS: settingsStore.meetingNotesEditorTheme,
+                themeCSS: MeetingNotesEditorThemeResolver.css(
+                    forThemeName: settingsStore.meetingNotesEditorTheme,
+                ),
                 onContentChange: { updated in
                     content = updated
                 },

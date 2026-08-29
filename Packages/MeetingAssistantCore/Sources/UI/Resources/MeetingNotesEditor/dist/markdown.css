@@ -1,88 +1,475 @@
+/*
+ * How rendered markdown looks inside a pane.
+ *
+ * Design frames 1a (prose, ordered and nested unordered lists, rule), 1b (task checkboxes, fenced
+ * code, active-line raw source), 1d (monospace body), 1f (dark).
+ *
+ * These are live-preview *decorations* over a markdown buffer, not the output of a renderer
+ * (decision 5). Nothing here may change what the document contains — every rule is presentational,
+ * and the buffer underneath stays byte-for-byte what was typed.
+ */
+
 .cm-editor {
-  height: 100%;
-  background: transparent;
-  color: var(--notes-text-primary);
-  font-family: var(--notes-font-ui);
-  font-size: var(--notes-text-size);
-  line-height: var(--notes-line-height);
+ font-size: var(--text-size);
+ line-height: var(--line-height);
+ color: var(--text-primary);
 }
 
-.cm-scroller {
-  font-family: inherit;
-  line-height: inherit;
+.cm-editor.cm-focused {
+ outline: none; /* the pane has its own focus story; a focus ring inside it is noise */
 }
 
-.cm-content {
-  padding: 12px;
-  caret-color: var(--notes-text-primary);
+/* The gutters and the trailing space belong to the scrolled document, not to the box around it.
+ * On `.pane__scroll` the 40px bottom was dead space *below* the scroller, so the last line stopped
+ * clear of the fade instead of running under it.
+ *
+ * Selector deliberately `.cm-editor .cm-content`, not bare `.cm-content`: CodeMirror injects its own
+ * base theme into at runtime, and at equal specificity the later rule wins. A bare selector
+ * silently loses, which takes the left gutter to zero and — because list items carry a negative
+ * text-indent for their hanging indent — drags every list marker off the left edge of the pane. */
+.cm-editor .cm-content {
+ padding: var(--content-padding);
+ font-family: var(--font-ui);
+ /* No `caret-color` here. `drawSelection` draws its own cursor element and hides the native caret
+ * with `caret-color: transparent !important`, so a value here is unreachable — it was set to the
+ * accent and computed transparent for as long as it existed. The caret below is the real one. */
 }
 
 .cm-line {
-  padding: 0;
+ padding: 0;
 }
 
-.cm-cursor {
-  border-left-color: var(--notes-text-primary);
+/* ---- Caret -----------------------------------------------------------------------------------
+ * 2px, accent. The one place accent appears constantly, because it is the single most interactive
+ * thing on screen — and the reference tints its caret for the same reason.
+ *
+ * **Qualified with `.cm-editor`, and that is the whole fix.** These two declarations existed from
+ * the first commit and never once applied: CodeMirror's base theme carries
+ * `.ͼ1 .cm-cursor, .ͼ1 .cm-dropCursor { border-left: 1.2px solid black }`, which is (0,2,0) against
+ * the bare selector's (0,1,0), so the caret rendered 1px black in every build that ever shipped.
+ * Measured in a WKWebView, not reasoned about: computed `border-left-color: rgb(0, 0, 0)`,
+ * `border-left-width: 1px`. Same class of defect as decisions 47 and 49 — written down, never run.
+ * At (0,2,0) this ties the base theme and wins on order, because this stylesheet is in the document
+ * and CodeMirror's is injected ahead of it.
+ *
+ * The blink belongs to CodeMirror. It animates `.cm-cursorLayer` and restarts that animation on
+ * every keystroke, which is what keeps the caret solid while you type; a second `opacity` animation
+ * here on a 1.1s period against its 1.2s one gave two blinks beating against each other, and ours
+ * had no way to restart. Reduced motion is honoured by stopping its animation rather than by
+ * running a different one — same selector shape as its own, so it wins on order.
+ */
+
+.cm-editor .cm-cursor,
+.cm-editor .cm-dropCursor {
+ border-left: 2px solid var(--accent);
 }
 
-.notes-line-h1 {
-  font-size: calc(var(--notes-text-size) * 1.65);
-  font-weight: 650;
-  line-height: 1.25;
+@media (prefers-reduced-motion: reduce) {
+ .cm-editor.cm-focused > .cm-scroller > .cm-cursorLayer {
+ animation: none;
+ }
 }
 
-.notes-line-h2 {
-  font-size: calc(var(--notes-text-size) * 1.35);
-  font-weight: 600;
-  line-height: 1.3;
+/* The empty note's prompt.
+ *
+ * Qualified with `.cm-editor` for the reason the caret above is: CodeMirror's base theme carries
+ * `.ͼ1 .cm-placeholder { color: #888 }` at (0,2,0), which a bare `.cm-placeholder` loses to. At
+ * (0,2,0) this ties and wins on order. `#888` is not one of this app's greys — it reads darker than
+ * the word count beside it and heavier than a prompt should.
+ */
+.cm-editor .cm-placeholder {
+ color: var(--text-faint);
 }
 
-.notes-line-h3 {
-  font-size: calc(var(--notes-text-size) * 1.15);
-  font-weight: 600;
+/* ---- Selection --------------------------------------------------------------------------------
+ * Amber, like the caret above and for the same reason — and, like the caret, this **never rendered**
+ * until it was qualified. `.cm-selectionBackground` on its own is (0,1,0) and CodeMirror's base
+ * theme carries two rules that beat it outright:
+ *
+ * &light .cm-selectionBackground → (0,2,0) #d9d9d9
+ * &light.cm-focused > .cm-scroller > .cm-selectionLayer .cm-selectionBackground → (0,4,0) #d7d4f0
+ *
+ * `&` is the generated theme class on `.cm-editor`, so the focused one is four classes deep and no
+ * amount of source order reaches it. Every selection this app has ever drawn was CodeMirror's
+ * lavender `#d7d4f0` — which is what a select-all looks like in a screenshot, and the third time
+ * this exact defect has cost something in this file (see the caret, and decision 42's `font-size`).
+ *
+ * So both states are matched at the specificity they need, and win on order from there. The
+ * unfocused one matters as much as the focused: a pane you have clicked away from keeps its
+ * selection on screen.
+ */
+/* The selection is the **native** one, and the caret is still CodeMirror's drawn one.
+ *
+ * `drawSelection()` gives us both a 2px caret we can colour (decision 53) and a selection drawn as
+ * one rectangle per line — which runs the full width of the pane past the end of the text, puts a
+ * block in the left margin, and covers the gaps between blocks. Side by side with the reference,
+ * which highlights only the text runs, ours reads as a wash over the whole note.
+ *
+ * `drawSelection` is five extensions, and the two we want pull in opposite directions: `cursorLayer`
+ * (keep) and `selectionLayer` + `hideNativeSelection` (do not). They are not separately exported, so
+ * rather than lose the caret this hides what `selectionLayer` draws and puts the browser's own
+ * selection back — which hugs text runs by construction, in every language and every wrap.
+ *
+ * `!important` and (0,2,0) are both needed: `hideNativeSelection` is `Prec.highest` and sets
+ * `background-color: transparent !important` on `.ͼ1 .cm-line ::selection`. This ties its
+ * specificity and wins on order, because style-mod injects CodeMirror's sheet as the *first* child
+ * of ` ` and ours is parsed after it.
+ */
+.cm-editor .cm-selectionBackground,
+.cm-editor.cm-focused > .cm-scroller > .cm-selectionLayer .cm-selectionBackground {
+ background: transparent;
 }
 
-.notes-line-code {
-  font-family: var(--notes-font-mono);
-  font-size: calc(var(--notes-text-size) * 0.92);
-  background: var(--notes-fill-code);
-  border-radius: 6px;
+.cm-editor .cm-line ::selection,
+.cm-editor .cm-line::selection,
+.cm-editor .cm-content ::selection {
+ background: color-mix(in oklab, var(--accent) 30%, transparent) !important;
 }
 
-.notes-line-quote {
-  border-left: 3px solid var(--notes-rule);
-  padding-left: 10px;
-  color: var(--notes-text-secondary);
+/* A collapsed blank line takes no highlight.
+ *
+ * A blank line between two blocks is drawn as an 8px strip (decision 55), and selecting across one
+ * painted that strip too — which butts against the line below and reads as that block's highlight
+ * being taller than its neighbours. It is not content: the height is a rendering choice, so the
+ * selection should not draw it either. The line is still in the buffer and still selected; only the
+ * strip stops being painted. */
+.cm-editor .cm-line.notes-line-blank::selection,
+.cm-editor .cm-line.notes-line-blank ::selection {
+ background: transparent !important;
 }
 
-.notes-strong {
-  font-weight: 650;
+/* ---- Block layout -----------------------------------------------------------------------------
+ * These are LINE decorations (see live-preview.ts). Margins and indents only work because the class
+ * lands on CodeMirror's `.cm-line`, which is a block box — a mark decoration wraps an inline span
+ * and silently ignores all of this.
+ *
+ * ONE DELIBERATE DEPARTURE FROM THE DESIGN. Frame 1a gives paragraphs and list items bottom margins
+ * (12px, 10px, 8px). Those are not applied here, and the reason is that the design is *rendered
+ * markdown* while this is *live preview over the source*. In rendered HTML the blank line between
+ * two paragraphs disappears and the margin replaces it. In this editor the blank line is still in
+ * the buffer and still occupies a line box, because the user typed it and can put the caret in it.
+ * Applying the margins as well would double every gap. The blank source line IS the rhythm here.
+ * Headings keep a margin, because a heading is usually not preceded by a blank line.
+ *
+ * REVISED, after comparing the same note side by side with the reference. "The blank source line is
+ * the rhythm" was right about *where* the spacing comes from and wrong about *how much*: a full
+ * 22px line box plus a heading's margin put roughly twice the reference's air between every pair of
+ * blocks, and the document read as a draft rather than as a note. The blank line now gets a shorter
+ * box (see `.notes-line-blank`), which is the same trick as rendering `**bold**` bold — the newline
+ * is untouched on disk and the caret still goes in it; only its height is a rendering choice.
+ */
+
+/* Every selector below is qualified with `.cm-line`, for the same reason `.cm-content` is qualified
+ * above: CodeMirror's injected base theme sets `.cm-line { padding: 0 2px 0 6px }`, and at equal
+ * specificity the later rule wins. Unqualified, all of this loses silently and every line renders at
+ * a flat 6px indent. */
+
+/* An empty source line, at a fraction of a full line box. This is the single biggest lever on how
+ * the document reads — see the revision note above. Tuned against the reference: enough that the
+ * caret is a comfortable target and a paragraph break is unmistakable, far short of a whole line. */
+.cm-line.notes-line-blank {
+ height: var(--blank-line-height);
+ line-height: var(--blank-line-height);
 }
 
-.notes-em {
-  font-style: italic;
+/* The space between two blocks with no blank line between them — decision 55, applied by
+ * live-preview.ts to the line that opens the block.
+ *
+ * Padding rather than margin for the reason spelled out on the headings above: CodeMirror measures
+ * a line's height from its bounding rect, which margins are not part of, so a margin here would be
+ * invisible to every height decision the pane makes (decisions 40 and 44). */
+.cm-line.notes-line-gap {
+ padding-top: var(--block-gap);
+}
+
+/* A fenced block's ``` lines, collapsed into the block's own padding.
+ *
+ * Pane ships no syntax highlighting and no language picker, so the `python` after the backticks is a
+ * word that changes nothing and only has to be read. Kept as a real line at a real height, so the
+ * caret can still be put in it and the fence is still exactly three backticks on disk — decision 5's
+ * bar is what lands in the file, not what is drawn over it.
+ *
+ * The backticks are hidden by DECORATIONS (CodeMark and CodeInfo are in live-preview.ts's
+ * MARKER_NODES), not by anything here. This rule used to also carry `font-size: 0` and a comment
+ * claiming that was the mechanism — it never applied. `.cm-line.notes-line-code` below sets
+ * `font-size` at the same specificity and is declared later, so it won every time; the computed size
+ * on a fence line measured 13.5px, not 0. It was removed rather than made to win: with the marks
+ * already gone the line is empty, and the only thing keeping it at 10px is the height pair below.
+ *
+ * The class is applied only while the caret is elsewhere — see the note in live-preview.ts. On the
+ * caret's line the fence is an ordinary code line, which is what stops it from being a 10px strip
+ * that silently eats the keystroke you meant for the blank line next to it. */
+.cm-line.notes-line-fence {
+ height: var(--blank-line-height);
+ line-height: var(--blank-line-height);
+}
+
+.cm-line.notes-line-h1,
+.cm-line.notes-line-h2,
+.cm-line.notes-line-h3 {
+ font-weight: 700;
+ letter-spacing: -0.02em;
+ /* The design's h1 inherits the content block's 1.55; tightened here because a two-line heading at
+ * 1.55 looks unset next to 15px body. */
+ line-height: 1.25;
+ /* No margin and no padding of its own any more. A heading is spaced like every other block now:
+ * the blank line under it if the user typed one, `--block-gap` if they did not (decision 55), so
+ * both cases land at the same 8px and a heading cannot drift from the rhythm around it.
+ *
+ * The 4px bottom margin this used to carry was also a 4px lie per heading. CodeMirror measures a
+ * line by its `getBoundingClientRect()`, which excludes margins: measured, a 10px top margin on
+ * every line grew the DOM by 410px and left `view.contentHeight` unchanged, so the pane reports a
+ * height short of the note it is drawing. Anything spatial on a `.cm-line` has to be padding. */
+}
+
+.cm-line.notes-line-h1 { font-size: var(--size-h1); }
+.cm-line.notes-line-h2 { font-size: calc(var(--size-h1) * 0.78); }
+.cm-line.notes-line-h3 { font-size: calc(var(--size-h1) * 0.66); }
+
+/* Indentation comes from the nesting depth, not from the literal spaces in the buffer — rendering
+ * those in a proportional font gives about 4px a level where the design draws 22-26px.
+ *
+ * The negative text-indent is a hanging indent: a list item that wraps lines up under its own text
+ * rather than back under its bullet. Each level's padding carries that 16px back.
+ *
+ * The *step* between levels was always right — 22px, and the reference measures 22 too. What was
+ * wrong was where the first level starts: our level-1 marker sat 18px right of the paragraph margin
+ * against the reference's 6.5, so the whole list was pushed across the pane and every level after it
+ * inherited the offset. Measured on the same note at the same width, marker/text: ours 46/60,
+ * 68/82, 90/104; the reference's 31/47, 54/68, 76/91. Twelve points came off each level. */
+/* The hanging indent lives on the *marker*, not on the line.
+ *
+ * It was `text-indent: -16px` on the line, which pulls the first line's content left and assumes
+ * the marker is exactly 16px wide. It is not: a bullet glyph is about 10, a checkbox 20 with its
+ * space, and only `1.` happened to land near 16 — which is why the numbered list looked aligned and
+ * the other three did not. The text after a bullet started at 20 while its own continuation line
+ * started at 26, so a ⇧⏎ inside a bullet sat further right than the line it continues.
+ *
+ * A fixed 16px box with a -16px margin puts every marker at 10 and every following character at 26,
+ * for bullets, numbers and checkboxes alike — and a continuation line needs no rule of its own,
+ * because 26 is simply where its padding already puts it. Decision 55's measured marker/text of
+ * 32/48 (absolute, with the content padding) is unchanged. */
+.notes-list-marker,
+.notes-list-number {
+ display: inline-block;
+ width: 16px;
+ margin-left: -16px;
+}
+
+/* A rendered marker takes no selection highlight, and the reason is geometry rather than taste.
+ *
+ * An `inline-block` is an atomic inline box, so a selection crossing it paints **two** rectangles:
+ * the box itself, whose height is its `line-height`, and the text inside it. Measured at 15px text:
+ * the box is 20.0 tall at y=47 while the body text beside it is 18.0 tall at y=48, so every list
+ * line's highlight was a pair of mismatched rectangles a pixel out of step — reported as the
+ * selection looking jagged, and worse on a task, where the checkbox is 13.0 tall at y=162.6 against
+ * text at 160.
+ *
+ * Matching the heights is not available: 18 is the font's own painted height at this size, not a
+ * number this stylesheet gets to set, and pinning it would be decision 82's class exactly — a
+ * constant tuned against one text size that goes wrong at the next one.
+ *
+ * So the markers step out of the selection instead, which is also what Typora, Obsidian and Bear
+ * do. They are rendered chrome: the `-` or `1.` in the file is replaced by a widget, and a widget
+ * is not the thing you are selecting. Nothing is lost — copy reads the document rather than the DOM
+ * selection, so ⇧⌘C still carries the markers, and the **raw** marker under the caret is real text
+ * with no rule here, so it highlights like any other character. */
+.notes-list-marker,
+.notes-list-number,
+.notes-task {
+ -webkit-user-select: none;
+ user-select: none;
+}
+
+/* A revealed marker sits in the same box the rendered one does, or the line jumps 16px right the
+ * moment the caret arrives on it — see `rawListMark` in live-preview.ts. `min-width` rather than
+ * `width`, because `1. ` is wider than `- ` and neither may be clipped. */
+.notes-syntax-listmark {
+ display: inline-block;
+ min-width: 16px;
+ margin-left: -16px;
+}
+
+.cm-line.notes-line-li-1 { padding-left: 26px; } /* 10 + 16 */
+.cm-line.notes-line-li-2 { padding-left: 48px; } /* 32 + 16 */
+.cm-line.notes-line-li-3 { padding-left: 70px; } /* 54 + 16 */
+.cm-line.notes-line-li-4 { padding-left: 92px; } /* 76 + 16 */
+
+/* The padding a collapsed fence was standing in for — see `fenceOpenRaw` in live-preview.ts. Only
+ * while the fence is showing its backticks; the rest of the time the 8px fence line *is* this. */
+.cm-line.notes-line-fence-open-raw { padding-top: var(--blank-line-height); }
+.cm-line.notes-line-fence-close-raw { padding-bottom: var(--blank-line-height); }
+
+.cm-line.notes-line-code {
+ font-family: var(--font-mono);
+ font-size: var(--size-code);
+ color: var(--text-secondary);
+ background: var(--fill-code);
+ padding-left: 12px;
+ padding-right: 12px;
+}
+
+.cm-line.notes-line-quote {
+ border-left: 2px solid var(--rule);
+ padding-left: 12px;
+ color: var(--text-secondary);
+}
+
+/* ---- Inline ------------------------------------------------------------------------------------ */
+
+.notes-strong { font-weight: 700; color: var(--text-strong); }
+.notes-em { font-style: italic; }
+
+/* `==highlight==` and ` underline ` — decision 61. The highlight is the accent at a wash
+ * rather than a yellow: this is the one colour the pane already owns, and a felt-tip yellow over a
+ * neutral note is somebody else's design. */
+.notes-mark {
+ background: color-mix(in oklab, var(--accent) 26%, transparent);
+ border-radius: 2px;
+ padding: 1px 0;
+}
+
+.notes-underline {
+ text-decoration: underline;
+ text-underline-offset: 2px;
 }
 
 .notes-strike {
-  text-decoration: line-through;
-  color: var(--notes-text-faint);
+ text-decoration: line-through;
+ color: var(--text-quaternary);
 }
 
 .notes-code {
-  font-family: var(--notes-font-mono);
-  font-size: calc(var(--notes-text-size) * 0.92);
-  background: var(--notes-fill-code);
-  border-radius: 4px;
-  padding: 0 0.2em;
+ font-family: var(--font-mono);
+ font-size: var(--size-code);
+ color: var(--text-secondary);
+ background: var(--fill-code);
+ border-radius: 3px;
+ padding: 0 3px;
 }
 
 .notes-link {
-  color: #007aff;
-  text-decoration: underline;
+ color: var(--accent);
+ text-decoration: none;
 }
 
-@media (prefers-color-scheme: dark) {
-  .notes-link {
-    color: #409cff;
-  }
+.notes-link:hover {
+ text-decoration: underline;
+}
+
+/* ---- Blocks ------------------------------------------------------------------------------------ */
+
+.cm-line.notes-rule {
+ /* Drawn on the line box rather than as an, because the line still holds the literal "---"
+ * the user typed and must stay selectable and editable. */
+ border-bottom: 1px solid var(--rule);
+ height: 0;
+ overflow: hidden;
+ color: transparent;
+}
+
+/* ---- Lists -------------------------------------------------------------------------------------
+ * Markers carry the accent.
+ *
+ * This REVERSES the second half of decision 22, which reserved accent for interactive state and said
+ * bullets and numbers stay neutral. The argument was that accent means "you can interact with this".
+ * In use that reads as under-designed rather than disciplined: the reference this product is measured
+ * against tints every marker, and a marker is not chrome — it is the one piece of a list that tells
+ * you, at a glance and without reading, what kind of list you are looking at. Neutral markers make a
+ * numbered list and a bulleted list look like the same grey texture.
+ *
+ * What survives from decision 22 is the part that was actually load-bearing: accent never lands on
+ * body text, and the format bar's active button still uses a pressed fill rather than the accent.
+ */
+
+.notes-list-marker,
+.notes-list-number {
+ color: var(--accent);
+}
+
+/* The blockquote bar too — same argument, and it is the only thing distinguishing a quote from
+ * indented text at a glance. */
+.cm-line.notes-line-quote {
+ border-left-color: color-mix(in oklab, var(--accent) 55%, transparent);
+}
+
+/* The bullet glyphs themselves are set by `BulletWidget` in live-preview.ts, not here. Two
+ * `.notes-bullet-N::before` rules used to sit at this spot naming the characters; nothing has ever
+ * carried those classes, so they were a second, silent statement of the same thing — and they said
+ * two levels where the widget now draws three. */
+
+/* ---- Task checkboxes ---------------------------------------------------------------------------
+ * 15px rounded square. Checked: accent fill, white tick, and the text greys out and strikes through.
+ * Unchecked: a 1.5px hairline box.
+ *
+ * The checkbox is a widget decoration standing in for the literal "- [x] " in the buffer. Clicking
+ * it edits those characters; it does not toggle a hidden model.
+ */
+
+.notes-task {
+ display: inline-flex;
+ align-items: center;
+ justify-content: center;
+ /* 13px inside a 16px slot leaves 3px of air before the text. At 15 it sat 1px away and read as
+ * touching the word — aligned, and too close to look aligned. */
+ --checkbox-size: 13px;
+ width: var(--checkbox-size);
+ height: var(--checkbox-size);
+ flex: none;
+ /* The same 16px slot every other marker gets: 15px of box and 1px of gap, pulled left so the
+ * text after it starts at 26 like a bullet's and a number's. The literal spaces around it are
+ * hidden by live preview — two sources for one gap is one too many, which is the rule the
+ * leading indentation already follows. */
+ margin-left: -16px;
+ margin-right: 3px;
+ border-radius: 4px;
+ /* Centred in the line box, computed rather than tuned.
+ *
+ * It was `translateY(2px)`, a constant picked when the box was 15px — so shrinking it to 13 left
+ * the box 1.5px high against text and bullets that both centre at 10. A constant was always going
+ * to drift anyway: text size is a setting (10–32px), and a checkbox nailed 2px from the top of a
+ * 20px line sits nowhere in particular in a 43px one. */
+ transform: translateY(
+ calc((var(--text-size) * var(--line-height) - var(--checkbox-size)) / 2)
+ );
+ font-size: 10px;
+ line-height: 1;
+ cursor: pointer;
+ vertical-align: top;
+}
+
+.notes-task--done {
+ background: var(--accent);
+ color: #fff;
+ border: none;
+}
+
+.notes-task--todo {
+ border: 1.5px solid var(--checkbox-border);
+ background: transparent;
+}
+
+.notes-task-done-text {
+ color: var(--text-quaternary);
+ text-decoration: line-through;
+}
+
+/* ---- Active line ------------------------------------------------------------------------------
+ * The line holding the caret shows its raw source: "**byte-for-byte**" stays literal while every
+ * other line renders. This is the whole live-preview contract, and the reason the buffer can be
+ * written back untouched.
+ *
+ * Marked with a class rather than by removing decorations so that the transition is a repaint, not a
+ * relayout — a line that changes height when the caret enters it is the cursor instability the brief
+ * warns about.
+ */
+
+.notes-raw .notes-code,
+.notes-raw .notes-codeblock {
+ background: transparent;
+ padding: 0;
+}
+
+.notes-syntax {
+ color: var(--text-faint);
 }

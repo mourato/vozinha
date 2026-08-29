@@ -24773,7 +24773,6 @@ var pasteURLAsLink = /* @__PURE__ */ EditorView.domEventHandlers({
 });
 
 // src/live-preview.ts
-var hide = Decoration.replace({});
 var BLOCK_LINE = {
   ATXHeading1: "notes-line-h1",
   ATXHeading2: "notes-line-h2",
@@ -24804,59 +24803,358 @@ var MARKER_NODES = /* @__PURE__ */ new Set([
   "URL",
   "CodeInfo"
 ]);
-function activeLineNumber(view2) {
-  return view2.state.doc.lineAt(view2.state.selection.main.head).number;
+var hide = Decoration.replace({});
+var ruleLine = Decoration.line({ class: "notes-rule" });
+var blankLine2 = Decoration.line({ class: "notes-line-blank" });
+var gapLine = Decoration.line({ class: "notes-line-gap" });
+var fenceLine = Decoration.line({ class: "notes-line-fence" });
+var fenceOpenRaw = Decoration.line({ class: "notes-line-fence-open-raw" });
+var fenceCloseRaw = Decoration.line({ class: "notes-line-fence-close-raw" });
+var syntaxMark = Decoration.mark({ class: "notes-syntax" });
+var rawListMark = Decoration.mark({ class: "notes-syntax notes-syntax-listmark" });
+var doneTaskText = Decoration.mark({ class: "notes-task-done-text" });
+var TEXT_CONSTRUCTS = [
+  // No space just inside the delimiters, the same rule `**bold**` follows — without it a line like
+  // "a total of == two == equals" was a highlight containing the word "two".
+  { pattern: /==(?!\s)([^=\n]+?)(?<!\s)==/g, open: 2, close: 2, class: "notes-mark" },
+  { pattern: /<u>(.+?)<\/u>/g, open: 3, close: 4, class: "notes-underline" }
+];
+function insideCode(view2, pos) {
+  let node = syntaxTree(view2.state).resolveInner(pos, 1);
+  while (node.parent) {
+    if (node.name === "InlineCode" || node.name === "FencedCode" || node.name === "CodeBlock") {
+      return true;
+    }
+    node = node.parent;
+  }
+  return false;
+}
+var numberMark = Decoration.mark({ class: "notes-list-number" });
+var TaskWidget = class extends WidgetType {
+  constructor(done, pos) {
+    super();
+    this.done = done;
+    this.pos = pos;
+  }
+  eq(other) {
+    return other.done === this.done && other.pos === this.pos;
+  }
+  toDOM() {
+    const box = document.createElement("span");
+    box.className = `notes-task ${this.done ? "notes-task--done" : "notes-task--todo"}`;
+    box.textContent = this.done ? "\u2713" : "";
+    box.dataset.paneTask = String(this.pos);
+    box.setAttribute("role", "checkbox");
+    box.setAttribute("aria-checked", String(this.done));
+    return box;
+  }
+  ignoreEvent() {
+    return false;
+  }
+};
+var BulletWidget = class extends WidgetType {
+  constructor(depth) {
+    super();
+    this.depth = depth;
+  }
+  eq(other) {
+    return other.depth === this.depth;
+  }
+  toDOM() {
+    const dot2 = document.createElement("span");
+    dot2.className = "notes-list-marker";
+    dot2.textContent = ["\u2022", "\u25E6", "\u25AA"][Math.min(this.depth, 3) - 1] ?? "\u2022";
+    return dot2;
+  }
+};
+function caretLines(view2) {
+  const lines = /* @__PURE__ */ new Set();
+  if (!view2.hasFocus) return lines;
+  for (const range of view2.state.selection.ranges) {
+    if (range.empty) lines.add(view2.state.doc.lineAt(range.head).number);
+  }
+  return lines;
+}
+var caretArrivedByEdit = false;
+function activeLines(view2) {
+  const lines = /* @__PURE__ */ new Set();
+  if (!view2.hasFocus) return lines;
+  const doc2 = view2.state.doc;
+  for (const range of view2.state.selection.ranges) {
+    const first = doc2.lineAt(range.from).number;
+    const last = doc2.lineAt(range.to).number;
+    for (let n = first; n <= last; n++) lines.add(n);
+  }
+  return lines;
+}
+var LEAF_BLOCKS = /* @__PURE__ */ new Set([
+  "Paragraph",
+  "ATXHeading1",
+  "ATXHeading2",
+  "ATXHeading3",
+  "ATXHeading4",
+  "ATXHeading5",
+  "ATXHeading6",
+  "SetextHeading1",
+  "SetextHeading2",
+  "FencedCode",
+  "CodeBlock",
+  "HorizontalRule",
+  "Table"
+]);
+function listDepth(view2, pos) {
+  let depth = 0;
+  let node = syntaxTree(view2.state).resolveInner(pos, 1);
+  while (node.parent) {
+    if (node.name === "BulletList" || node.name === "OrderedList") depth++;
+    node = node.parent;
+  }
+  return depth;
 }
 function buildDecorations(view2) {
-  const builder = new RangeSetBuilder();
-  const activeLine = activeLineNumber(view2);
-  const decoratedLines = /* @__PURE__ */ new Set();
+  const decorations2 = [];
+  const doc2 = view2.state.doc;
+  const active = activeLines(view2);
+  const caret = caretLines(view2);
+  const tree = syntaxTree(view2.state);
+  const selections = view2.hasFocus ? view2.state.selection.ranges : [];
+  const touches = (from, to) => selections.some((range) => range.from <= to && range.to >= from);
+  const inlineRanges = [];
+  const codeLines = /* @__PURE__ */ new Set();
+  const blockStarts = /* @__PURE__ */ new Set();
+  const hideSpaceAfter = (at) => {
+    const line = doc2.lineAt(at);
+    let end = at;
+    while (end < line.to && doc2.sliceString(end, end + 1) === " ") end++;
+    if (end > at) decorations2.push(hide.range(at, end));
+  };
   for (const { from, to } of view2.visibleRanges) {
-    syntaxTree(view2.state).iterate({
+    tree.iterate({
       from,
       to,
-      enter(node) {
-        const line = view2.state.doc.lineAt(node.from).number;
-        const onActiveLine = line === activeLine;
-        if (MARKER_NODES.has(node.name)) {
-          if (!onActiveLine) {
-            builder.add(node.from, node.to, hide);
+      enter: (node) => {
+        const name2 = node.name;
+        const lineNumber = doc2.lineAt(node.from).number;
+        const isActive = active.has(lineNumber);
+        if (LEAF_BLOCKS.has(name2) || name2 === "ListItem") blockStarts.add(lineNumber);
+        if (name2 === "HorizontalRule") {
+          if (!caret.has(lineNumber)) {
+            decorations2.push(ruleLine.range(doc2.lineAt(node.from).from));
           }
           return;
         }
-        if (onActiveLine) {
+        const blockClass = BLOCK_LINE[name2];
+        if (blockClass) {
+          const deco = Decoration.line({ class: blockClass });
+          const first = doc2.lineAt(node.from).number;
+          const last = doc2.lineAt(node.to).number;
+          for (let n = first; n <= last; n++) {
+            decorations2.push(deco.range(doc2.line(n).from));
+            if (blockClass === "notes-line-code") codeLines.add(n);
+          }
+          if (name2 === "FencedCode") {
+            if (caret.has(first)) {
+              decorations2.push(fenceOpenRaw.range(doc2.line(first).from));
+            } else {
+              decorations2.push(fenceLine.range(doc2.line(first).from));
+            }
+            if (last > first) {
+              if (caret.has(last)) {
+                decorations2.push(fenceCloseRaw.range(doc2.line(last).from));
+              } else {
+                decorations2.push(fenceLine.range(doc2.line(last).from));
+              }
+            }
+          }
           return;
         }
-        const blockClass = BLOCK_LINE[node.name];
-        if (blockClass && !decoratedLines.has(line)) {
-          decoratedLines.add(line);
-          const lineStart = view2.state.doc.lineAt(node.from).from;
-          builder.add(lineStart, lineStart, Decoration.line({ class: blockClass }));
+        if (name2 === "ListItem") {
+          const depth = Math.min(listDepth(view2, node.from), 4);
+          const itemFirst = doc2.lineAt(node.from);
+          decorations2.push(
+            Decoration.line({ class: `notes-line-li-${depth}` }).range(itemFirst.from)
+          );
+          const itemLast = doc2.lineAt(Math.min(node.to, doc2.length));
+          for (let n = itemFirst.number + 1; n <= itemLast.number; n++) {
+            const line = doc2.line(n);
+            if (line.length === 0) continue;
+            decorations2.push(
+              Decoration.line({ class: `notes-line-li-${depth}` }).range(line.from)
+            );
+            const spaces2 = /^ +/.exec(line.text)?.[0].length ?? 0;
+            if (spaces2 > 0) decorations2.push(hide.range(line.from, line.from + spaces2));
+          }
+          return;
         }
-        const inlineClass = INLINE_STYLE[node.name];
+        const inlineClass = INLINE_STYLE[name2];
         if (inlineClass) {
-          builder.add(node.from, node.to, Decoration.mark({ class: inlineClass }));
+          const revealed = touches(node.from, node.to);
+          inlineRanges.push({ from: node.from, to: node.to, revealed });
+          if (!revealed) {
+            decorations2.push(Decoration.mark({ class: inlineClass }).range(node.from, node.to));
+          }
+          return;
+        }
+        if (name2 === "TaskMarker") {
+          if (isActive) return;
+          const text = doc2.sliceString(node.from, node.to);
+          const done = /x/i.test(text);
+          decorations2.push(
+            Decoration.replace({ widget: new TaskWidget(done, node.from) }).range(node.from, node.to)
+          );
+          if (doc2.sliceString(node.to, node.to + 1) === " ") {
+            decorations2.push(hide.range(node.to, node.to + 1));
+          }
+          if (done) {
+            const line = doc2.lineAt(node.from);
+            if (node.to < line.to) {
+              decorations2.push(doneTaskText.range(node.to, line.to));
+            }
+          }
+          return;
+        }
+        if (name2 === "ListMark") {
+          const lineStart = doc2.lineAt(node.from);
+          if (node.from > lineStart.from) {
+            decorations2.push(hide.range(lineStart.from, node.from));
+          }
+          const text = doc2.sliceString(node.from, node.to);
+          const ordered = /\d/.test(text);
+          if (!isActive && /^\s*\[[ xX]\]/.test(doc2.sliceString(node.to, Math.min(node.to + 6, doc2.length)))) {
+            decorations2.push(hide.range(node.from, node.to));
+            hideSpaceAfter(node.to);
+            return;
+          }
+          if (isActive) {
+            const after = doc2.sliceString(node.to, Math.min(node.to + 1, doc2.length));
+            decorations2.push(rawListMark.range(node.from, node.to + (after === " " ? 1 : 0)));
+          } else if (ordered) {
+            decorations2.push(numberMark.range(node.from, node.to));
+            hideSpaceAfter(node.to);
+          } else {
+            decorations2.push(
+              Decoration.replace({ widget: new BulletWidget(listDepth(view2, node.from)) }).range(
+                node.from,
+                node.to
+              )
+            );
+            hideSpaceAfter(node.to);
+          }
+          return;
+        }
+        if (MARKER_NODES.has(name2)) {
+          const owner = inlineRanges.find((r) => r.from <= node.from && r.to >= node.to);
+          if (owner ? owner.revealed : isActive) {
+            decorations2.push(syntaxMark.range(node.from, node.to));
+          } else if (node.to > node.from) {
+            decorations2.push(hide.range(node.from, node.to));
+            if (name2 === "QuoteMark") hideSpaceAfter(node.to);
+          }
         }
       }
     });
   }
-  return builder.finish();
-}
-function livePreview() {
-  return ViewPlugin.fromClass(
-    class {
-      decorations;
-      constructor(view2) {
-        this.decorations = buildDecorations(view2);
+  for (const { from, to } of view2.visibleRanges) {
+    const first = doc2.lineAt(from).number;
+    const last = doc2.lineAt(to).number;
+    for (let n = first; n <= last; n++) {
+      const line = doc2.line(n);
+      const exempt = caret.has(n) && caretArrivedByEdit;
+      if (doc2.length > 0 && line.length === 0 && !codeLines.has(n) && !exempt) {
+        decorations2.push(blankLine2.range(line.from));
+        continue;
       }
-      update(update) {
-        if (update.docChanged || update.selectionSet || update.viewportChanged) {
-          this.decorations = buildDecorations(update.view);
+      if (!codeLines.has(n)) {
+        for (const construct of TEXT_CONSTRUCTS) {
+          construct.pattern.lastIndex = 0;
+          let match;
+          while ((match = construct.pattern.exec(line.text)) !== null) {
+            const from2 = line.from + match.index;
+            const to2 = from2 + match[0].length;
+            if (insideCode(view2, from2 + 1)) continue;
+            const inner = { from: from2 + construct.open, to: to2 - construct.close };
+            if (touches(from2, to2)) {
+              decorations2.push(syntaxMark.range(from2, inner.from));
+              decorations2.push(syntaxMark.range(inner.to, to2));
+            } else {
+              decorations2.push(hide.range(from2, inner.from));
+              decorations2.push(
+                Decoration.mark({ class: construct.class }).range(inner.from, inner.to)
+              );
+              decorations2.push(hide.range(inner.to, to2));
+            }
+          }
         }
       }
-    },
-    { decorations: (plugin) => plugin.decorations }
-  );
+      if (n > 1 && doc2.line(n - 1).length > 0 && blockStarts.has(n)) {
+        decorations2.push(gapLine.range(line.from));
+      }
+    }
+  }
+  return Decoration.set(decorations2, true);
+}
+var livePreviewPlugin = ViewPlugin.fromClass(
+  class {
+    decorations;
+    constructor(view2) {
+      this.decorations = buildDecorations(view2);
+    }
+    update(update) {
+      const restored = update.transactions.some(
+        (tr) => tr.annotation(Transaction.addToHistory) === false
+      );
+      if (restored) caretArrivedByEdit = false;
+      else if (update.docChanged) caretArrivedByEdit = true;
+      else if (update.selectionSet) caretArrivedByEdit = false;
+      if (update.docChanged || update.selectionSet || update.viewportChanged || // Focus is in the list because losing it renders the whole document — see `activeLines`.
+      // Without this the raw line simply stayed raw, because nothing else about the state changed.
+      update.focusChanged || syntaxTree(update.startState) !== syntaxTree(update.state)) {
+        this.decorations = buildDecorations(update.view);
+      }
+    }
+  },
+  {
+    decorations: (v) => v.decorations,
+    // Hidden markers must not swallow the caret. Without this, arrowing across a hidden `**` leaves
+    // the caret in a position the user cannot see, and every subsequent keystroke lands somewhere
+    // surprising — the classic live-preview cursor bug.
+    provide: (plugin) => EditorView.atomicRanges.of((view2) => view2.plugin(plugin)?.decorations ?? RangeSet.empty)
+  }
+);
+var blankLineClickHandler = EditorView.domEventHandlers({
+  mousedown(event, view2) {
+    if (!view2.hasFocus) return false;
+    const pos = view2.posAtCoords({ x: event.clientX, y: event.clientY });
+    if (pos === null) return false;
+    const doc2 = view2.state.doc;
+    const line = doc2.lineAt(pos);
+    if (line.length !== 0) return false;
+    if (line.number <= 1 || line.number >= doc2.lines) return false;
+    if (doc2.line(line.number - 1).length === 0) return false;
+    if (doc2.line(line.number + 1).length === 0) return false;
+    for (let node = syntaxTree(view2.state).resolveInner(line.from, 1); node.parent; node = node.parent) {
+      if (node.name === "FencedCode" || node.name === "CodeBlock") return false;
+    }
+    event.preventDefault();
+    return true;
+  }
+});
+var taskClickHandler = EditorView.domEventHandlers({
+  mousedown(event, view2) {
+    const target = event.target;
+    const marker = target?.closest?.("[data-notes-task]");
+    if (!marker) return false;
+    const pos = Number(marker.dataset.paneTask);
+    if (!Number.isFinite(pos)) return false;
+    const current = view2.state.doc.sliceString(pos, pos + 3);
+    const next = /\[[xX]\]/.test(current) ? "[ ]" : "[x]";
+    view2.dispatch({ changes: { from: pos, to: pos + 3, insert: next } });
+    event.preventDefault();
+    return true;
+  }
+});
+function livePreview() {
+  return [livePreviewPlugin, blankLineClickHandler, taskClickHandler];
 }
 
 // src/main.ts
@@ -24877,7 +25175,7 @@ function applyTheme(themeCSS) {
   style.textContent = themeCSS || "";
 }
 function applyTextSize(textSize) {
-  document.documentElement.style.setProperty("--notes-text-size", `${textSize || 15}px`);
+  document.documentElement.style.setProperty("--text-size", `${textSize || 15}px`);
 }
 function reportContentHeight() {
   if (!view) {
@@ -24914,7 +25212,7 @@ function createEditor(initialText) {
     drawSelection(),
     placeholder(""),
     markdown({ base: markdownLanguage }),
-    livePreview(),
+    ...livePreview(),
     keymap.of([...defaultKeymap, ...historyKeymap]),
     EditorView.lineWrapping,
     EditorView.updateListener.of((update) => {
@@ -24959,13 +25257,15 @@ window.vozinhaNotesLoadNote = (payload) => {
         from: 0,
         to: editor.state.doc.length,
         insert: markdownText
-      }
+      },
+      annotations: Transaction.addToHistory.of(false)
     });
   }
   const caret = payload.caretOffset;
   if (typeof caret === "number" && caret >= 0 && caret <= markdownText.length) {
     editor.dispatch({
-      selection: { anchor: caret }
+      selection: { anchor: caret },
+      annotations: Transaction.addToHistory.of(false)
     });
   }
   editor.focus();

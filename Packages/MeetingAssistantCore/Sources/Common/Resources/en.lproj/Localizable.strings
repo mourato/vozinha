@@ -1348,6 +1348,9 @@
 "settings.meetings.notes_panel.hide_from_capture" = "Hide from screen capture";
 "settings.meetings.notes_panel.auto_height" = "Auto-size height";
 "settings.meetings.notes_panel.text_size" = "Editor text size";
+"settings.meetings.notes_panel.theme" = "Editor theme";
+"settings.meetings.notes_panel.theme_default" = "Built-in";
+"settings.meetings.notes_panel.theme_footer" = "Drop CSS files into Application Support → MeetingNotes → Themes to add themes.";
 
 /* Meeting reminders */
 "settings.meetings.reminders.title" = "Reminders";

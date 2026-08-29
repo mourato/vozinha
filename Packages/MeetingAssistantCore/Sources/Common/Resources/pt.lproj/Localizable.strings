@@ -1350,6 +1350,9 @@
 "settings.meetings.notes_panel.hide_from_capture" = "Ocultar da captura de tela";
 "settings.meetings.notes_panel.auto_height" = "Ajustar altura automaticamente";
 "settings.meetings.notes_panel.text_size" = "Tamanho do texto no editor";
+"settings.meetings.notes_panel.theme" = "Tema do editor";
+"settings.meetings.notes_panel.theme_default" = "Padrão";
+"settings.meetings.notes_panel.theme_footer" = "Coloque arquivos CSS em Application Support → MeetingNotes → Themes para adicionar temas.";
 
 /* Meeting reminders */
 "settings.meetings.reminders.title" = "Lembretes";

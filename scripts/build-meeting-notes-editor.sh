@@ -11,8 +11,8 @@ if [[ ! -d "$EDITOR_DIR" ]]; then
 fi
 
 if ! command -v npm >/dev/null 2>&1; then
-  echo "npm is required to build the meeting notes editor bundle." >&2
-  exit 1
+  echo "npm not found; using committed MeetingNotesEditor dist bundle." >&2
+  exit 0
 fi
 
 mkdir -p "$OUTPUT_DIR"

@@ -1,6 +1,6 @@
 import { defaultKeymap, history, historyKeymap } from "@codemirror/commands";
 import { markdown, markdownLanguage } from "@codemirror/lang-markdown";
-import { EditorState, type Extension } from "@codemirror/state";
+import { EditorState, Transaction, type Extension } from "@codemirror/state";
 import {
   EditorView,
   drawSelection,
@@ -31,7 +31,7 @@ function applyTheme(themeCSS: string) {
 }
 
 function applyTextSize(textSize: number) {
-  document.documentElement.style.setProperty("--notes-text-size", `${textSize || 15}px`);
+  document.documentElement.style.setProperty("--text-size", `${textSize || 15}px`);
 }
 
 function reportContentHeight() {
@@ -72,7 +72,7 @@ function createEditor(initialText: string): EditorView {
     drawSelection(),
     placeholder(""),
     markdown({ base: markdownLanguage }),
-    livePreview(),
+    ...livePreview(),
     keymap.of([...defaultKeymap, ...historyKeymap]),
     EditorView.lineWrapping,
     EditorView.updateListener.of((update) => {
@@ -125,6 +125,7 @@ window.vozinhaNotesLoadNote = (payload) => {
         to: editor.state.doc.length,
         insert: markdownText,
       },
+      annotations: Transaction.addToHistory.of(false),
     });
   }
 
@@ -132,6 +133,7 @@ window.vozinhaNotesLoadNote = (payload) => {
   if (typeof caret === "number" && caret >= 0 && caret <= markdownText.length) {
     editor.dispatch({
       selection: { anchor: caret },
+      annotations: Transaction.addToHistory.of(false),
     });
   }
 

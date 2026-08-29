@@ -5,6 +5,7 @@ import SwiftUI
 
 struct MeetingNotesPanelSettingsSection: View {
     @ObservedObject var settings: AppSettingsStore
+    @State private var availableThemes: [String] = []
 
     var body: some View {
         Section {
@@ -32,12 +33,27 @@ struct MeetingNotesPanelSettingsSection: View {
                 }
             }
             .pickerStyle(.menu)
+
+            Picker("settings.meetings.notes_panel.theme".localized, selection: $settings.meetingNotesEditorTheme) {
+                Text("settings.meetings.notes_panel.theme_default".localized).tag("")
+                ForEach(availableThemes, id: \.self) { theme in
+                    Text(theme).tag(theme)
+                }
+            }
+            .pickerStyle(.menu)
         } header: {
             SettingsFormSectionHeader(title: "settings.meetings.notes_panel.title".localized, icon: "note.text")
         } footer: {
-            Text("settings.meetings.notes_panel.desc".localized)
-                .font(.caption)
-                .foregroundStyle(.secondary)
+            VStack(alignment: .leading, spacing: 4) {
+                Text("settings.meetings.notes_panel.desc".localized)
+                Text("settings.meetings.notes_panel.theme_footer".localized)
+            }
+            .font(.caption)
+            .foregroundStyle(.secondary)
+        }
+        .onAppear {
+            MeetingNotesEditorThemeResolver.ensureThemesDirectoryExists()
+            availableThemes = MeetingNotesEditorThemeResolver.availableThemeNames()
         }
     }
 }
