@@ -4,6 +4,7 @@ import MeetingAssistantCoreDomain
 
 public extension AppSettingsStore {
     /// Reset all settings to defaults.
+    // swiftlint:disable:next function_body_length
     func resetToDefaults() {
         aiConfiguration = .default
         enhancementsAISelection = .default
@@ -89,6 +90,7 @@ public extension AppSettingsStore {
         meetingNotesFontFamilyKey = MeetingNotesTypographyDefaults.systemFontFamilyKey
         meetingNotesFontSize = MeetingNotesTypographyDefaults.defaultFontSize
         meetingQnAEnabled = true
+        resetMeetingReminderDefaults()
         markdownTargetBundleIdentifiers = Self.defaultMarkdownTargetBundleIdentifiers
         dictationAppRules = Self.defaultDictationAppRules
         dictationStyles = [defaultDictationStyle()]

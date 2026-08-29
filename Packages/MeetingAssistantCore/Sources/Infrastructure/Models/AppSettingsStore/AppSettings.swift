@@ -4,11 +4,12 @@ import MeetingAssistantCoreCommon
 import MeetingAssistantCoreDomain
 import SwiftUI
 
+// swiftlint:disable file_length type_body_length
+
 // MARK: - App Settings Store
 
 /// Centralized settings manager using UserDefaults.
 @MainActor
-// swiftlint:disable:next type_body_length
 public class AppSettingsStore: ObservableObject {
     public static let shared = AppSettingsStore()
 
@@ -851,6 +852,12 @@ public class AppSettingsStore: ObservableObject {
             meeting.meetingNotesFontSize,
             meeting.meetingQnAEnabled,
         )
+        meetingRemindersEnabled = meeting.meetingRemindersEnabled
+        meetingReminderLeadMinutes = meeting.meetingReminderLeadMinutes
+        meetingReminderOverlayLeadSeconds = meeting.meetingReminderOverlayLeadSeconds
+        meetingReminderOverlayEnabled = meeting.meetingReminderOverlayEnabled
+        meetingReminderAlertSoundEnabled = meeting.meetingReminderAlertSoundEnabled
+        meetingReminderMirrorAllScreens = meeting.meetingReminderMirrorAllScreens
 
         let ctx = values.contextAwareness
         contextAwarenessEnabled = ctx.contextAwarenessEnabled

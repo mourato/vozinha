@@ -235,6 +235,12 @@ extension AppSettingsStore {
         let meetingNotesFontFamilyKey: String
         let meetingNotesFontSize: Double
         let meetingQnAEnabled: Bool
+        let meetingRemindersEnabled: Bool
+        let meetingReminderLeadMinutes: Int
+        let meetingReminderOverlayLeadSeconds: Int
+        let meetingReminderOverlayEnabled: Bool
+        let meetingReminderAlertSoundEnabled: Bool
+        let meetingReminderMirrorAllScreens: Bool
     }
 
     /// Loads meeting summary settings.
@@ -262,6 +268,12 @@ extension AppSettingsStore {
                 UserDefaults.standard.object(forKey: Keys.meetingNotesFontSize) as? Double ?? MeetingNotesTypographyDefaults.defaultFontSize,
             ),
             meetingQnAEnabled: loadBoolDefaultIfUnset(forKey: Keys.meetingQnAEnabled, defaultValue: true),
+            meetingRemindersEnabled: loadBoolDefaultIfUnset(forKey: Keys.meetingRemindersEnabled, defaultValue: true),
+            meetingReminderLeadMinutes: UserDefaults.standard.object(forKey: Keys.meetingReminderLeadMinutes) as? Int ?? 15,
+            meetingReminderOverlayLeadSeconds: UserDefaults.standard.object(forKey: Keys.meetingReminderOverlayLeadSeconds) as? Int ?? 0,
+            meetingReminderOverlayEnabled: loadBoolDefaultIfUnset(forKey: Keys.meetingReminderOverlayEnabled, defaultValue: true),
+            meetingReminderAlertSoundEnabled: UserDefaults.standard.bool(forKey: Keys.meetingReminderAlertSoundEnabled),
+            meetingReminderMirrorAllScreens: UserDefaults.standard.bool(forKey: Keys.meetingReminderMirrorAllScreens),
         )
     }
 

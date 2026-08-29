@@ -10,6 +10,7 @@ import SwiftUI
 // MARK: - Meeting Settings Tab
 
 /// Tab for meeting-specific settings like app monitoring and automation.
+// swiftlint:disable:next type_body_length
 public struct MeetingSettingsTab: View {
     private enum CapabilityLayout {
         static let disabledOpacity = 0.58
@@ -216,7 +217,13 @@ public struct MeetingSettingsTab: View {
                 SettingsMotion.sectionAnimation(reduceMotion: reduceMotion),
                 value: meetingViewModel.settings.isMeetingTranscriptionEnabled,
             )
+
+            meetingRemindersSection
         }
+    }
+
+    private var meetingRemindersSection: some View {
+        MeetingSettingsRemindersSection(settings: meetingViewModel.settings)
     }
 
     private var meetingIntelligenceSection: some View {

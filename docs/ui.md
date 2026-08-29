@@ -50,6 +50,20 @@ shared; disclosure is 0.2 seconds and Reduce Motion uses a short fade or no
 motion. Respect Reduce Transparency and increased contrast, preserving content
 hierarchy and feedback in every fallback.
 
+## Meeting reminder overlay
+
+- Full-screen meeting reminders use an AppKit-hosted SwiftUI overlay at
+  `.screenSaver` level with `fullScreenAuxiliary` collection behavior so the
+  alert appears above fullscreen apps and across Spaces.
+- The overlay window must become key (`canBecomeKey`) so Esc dismisses and
+  Return triggers the primary action; the app activates briefly when presenting
+  and restores the previous frontmost app on dismiss.
+- Optional mirror-all-screens mode builds one overlay window per connected
+  display; dismissing on any screen dismisses all instances.
+- Visual treatment uses `AppDesignSystem` semantic overlay colors and native
+  materials; Reduce Transparency falls back to opaque backdrop/card surfaces.
+- Reduce Motion disables decorative pulse on the countdown status pill.
+
 ## Review checklist
 
 - [ ] Reuse `AppDesignSystem`, `AppTypography`, `AppleMotion`, and existing

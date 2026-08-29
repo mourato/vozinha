@@ -47,6 +47,7 @@ extension AppDelegate {
 
         openSettingsOnLaunchIfEnabled()
         scheduleLaunchVisibilityRecovery()
+        MeetingReminderCoordinator.shared.attach()
     }
 
     func applicationWillTerminate(_ notification: Notification) {
@@ -54,6 +55,7 @@ extension AppDelegate {
         recordingCancelShortcutController.stop()
         PerformanceMonitor.shared.stopMonitoring()
         CrashReporter.shared.cleanup()
+        MeetingReminderCoordinator.shared.detach()
     }
 
     func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
@@ -178,6 +180,7 @@ extension AppDelegate {
 
         openSettingsOnLaunchIfEnabled()
         scheduleLaunchVisibilityRecovery()
+        MeetingReminderCoordinator.shared.attach()
     }
 
     private func openSettingsOnLaunchIfEnabled() {

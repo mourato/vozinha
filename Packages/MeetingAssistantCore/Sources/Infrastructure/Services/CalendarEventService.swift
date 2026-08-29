@@ -170,7 +170,7 @@ public final class CalendarEventService: CalendarEventServiceProtocol {
     }
 
     static func hasDetectedCallLink(in searchableValues: [String]) -> Bool {
-        searchableValues.contains(where: containsKnownMeetingLink)
+        searchableValues.contains(where: MeetingCallLinkDetector.containsKnownMeetingLink)
     }
 
     private func isMeetingEligible(_ event: EKEvent) -> Bool {
@@ -191,21 +191,6 @@ public final class CalendarEventService: CalendarEventServiceProtocol {
     }
 
     static func containsKnownMeetingLink(_ value: String) -> Bool {
-        let normalized = value.lowercased()
-        let knownCallDomains = [
-            "meet.google.com",
-            "zoom.us",
-            "teams.microsoft.com",
-            "webex.com",
-            "whereby.com",
-            "jitsi",
-            "bluejeans.com",
-            "gotomeeting.com",
-            "join.me",
-            "discord.com",
-            "discord.gg",
-        ]
-
-        return knownCallDomains.contains(where: normalized.contains)
+        MeetingCallLinkDetector.containsKnownMeetingLink(value)
     }
 }
