@@ -54,35 +54,3 @@ public extension AppSettingsStore {
         clearMeetingReminderDismissedOccurrenceKeys()
     }
 }
-
-public extension AppSettingsStore {
-    /// Master switch for proactive meeting reminders (lead notification + overlay).
-    @Published var meetingRemindersEnabled: Bool {
-        didSet { UserDefaults.standard.set(meetingRemindersEnabled, forKey: Keys.meetingRemindersEnabled) }
-    }
-
-    /// Minutes before meeting start to deliver a lead-time notification (0 = off).
-    @Published var meetingReminderLeadMinutes: Int {
-        didSet { UserDefaults.standard.set(meetingReminderLeadMinutes, forKey: Keys.meetingReminderLeadMinutes) }
-    }
-
-    /// Seconds before meeting start to fire the full-screen overlay.
-    @Published var meetingReminderOverlayLeadSeconds: Int {
-        didSet { UserDefaults.standard.set(meetingReminderOverlayLeadSeconds, forKey: Keys.meetingReminderOverlayLeadSeconds) }
-    }
-
-    /// Whether the full-screen overlay is shown at meeting start.
-    @Published var meetingReminderOverlayEnabled: Bool {
-        didSet { UserDefaults.standard.set(meetingReminderOverlayEnabled, forKey: Keys.meetingReminderOverlayEnabled) }
-    }
-
-    /// Plays the system alert sound when the overlay appears.
-    @Published var meetingReminderAlertSoundEnabled: Bool {
-        didSet { UserDefaults.standard.set(meetingReminderAlertSoundEnabled, forKey: Keys.meetingReminderAlertSoundEnabled) }
-    }
-
-    /// Mirrors the overlay on every connected display.
-    @Published var meetingReminderMirrorAllScreens: Bool {
-        didSet { UserDefaults.standard.set(meetingReminderMirrorAllScreens, forKey: Keys.meetingReminderMirrorAllScreens) }
-    }
-}

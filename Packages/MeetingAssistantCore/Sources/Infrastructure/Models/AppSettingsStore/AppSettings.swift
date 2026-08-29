@@ -544,6 +544,36 @@ public class AppSettingsStore: ObservableObject {
         didSet { UserDefaults.standard.set(meetingQnAEnabled, forKey: Keys.meetingQnAEnabled) }
     }
 
+    /// Master switch for proactive meeting reminders (lead notification + overlay).
+    @Published public var meetingRemindersEnabled: Bool {
+        didSet { UserDefaults.standard.set(meetingRemindersEnabled, forKey: Keys.meetingRemindersEnabled) }
+    }
+
+    /// Minutes before meeting start to deliver a lead-time notification (0 = off).
+    @Published public var meetingReminderLeadMinutes: Int {
+        didSet { UserDefaults.standard.set(meetingReminderLeadMinutes, forKey: Keys.meetingReminderLeadMinutes) }
+    }
+
+    /// Seconds before meeting start to fire the full-screen overlay.
+    @Published public var meetingReminderOverlayLeadSeconds: Int {
+        didSet { UserDefaults.standard.set(meetingReminderOverlayLeadSeconds, forKey: Keys.meetingReminderOverlayLeadSeconds) }
+    }
+
+    /// Whether the full-screen overlay is shown at meeting start.
+    @Published public var meetingReminderOverlayEnabled: Bool {
+        didSet { UserDefaults.standard.set(meetingReminderOverlayEnabled, forKey: Keys.meetingReminderOverlayEnabled) }
+    }
+
+    /// Plays the system alert sound when the overlay appears.
+    @Published public var meetingReminderAlertSoundEnabled: Bool {
+        didSet { UserDefaults.standard.set(meetingReminderAlertSoundEnabled, forKey: Keys.meetingReminderAlertSoundEnabled) }
+    }
+
+    /// Mirrors the overlay on every connected display.
+    @Published public var meetingReminderMirrorAllScreens: Bool {
+        didSet { UserDefaults.standard.set(meetingReminderMirrorAllScreens, forKey: Keys.meetingReminderMirrorAllScreens) }
+    }
+
     /// Enables Context Awareness to enrich AI post-processing with active app context.
     @Published public var contextAwarenessEnabled: Bool {
         didSet {
