@@ -146,7 +146,7 @@ App builds do not run `npm`. After editing `Editor/`, run
 |--------|-------------|
 | `make run` | Build Debug and open the app. |
 | `make run-release` | Build Release and open the app. |
-| `make build-and-run` | Interactively choose Debug or Release; Release installs transactionally into `/Applications/Vozinha.app`. |
+| `make build-and-run` | Interactively choose Debug or Release; keeps `.xcode-build` by default (`ARGS="--clean"` to wipe cache). |
 | `make dmg` | Build Release and create `dist/Vozinha.dmg`, prompting for automatic, self-signed, or ad-hoc signing. |
 | `make setup-self-signed-cert` | Create or import the local self-signed signing certificate. |
 | `make new-release` | Build a signed update archive and create a GitHub release with generated notes. |

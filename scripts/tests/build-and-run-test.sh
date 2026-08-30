@@ -8,6 +8,7 @@ printf '%s\n' "$help_output" | grep -Fq -- '--no-interactive'
 printf '%s\n' "$help_output" | grep -Fq -- '--force-terminate'
 printf '%s\n' "$help_output" | grep -Fq -- 'Debug'
 printf '%s\n' "$help_output" | grep -Fq -- 'Release'
+printf '%s\n' "$help_output" | grep -Fq -- 'default: keep cache'
 
 set +e
 noninteractive_output="$(${SCRIPT_ROOT}/scripts/build-and-run.sh --no-interactive 2>&1)"

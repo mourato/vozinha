@@ -14,7 +14,7 @@ Usage: scripts/build-and-run.sh [options]
 Build Debug for local iteration or build/sign/install Release into the exact Vozinha.app target.
 Options:
   --configuration Debug|Release  Select a deterministic build mode.
-  --clean                       Remove this repository's .xcode-build first.
+  --clean                       Remove .xcode-build before building (default: keep cache).
   --no-interactive              Never read stdin; requires --configuration.
   --force-terminate             Allow exact-process TERM fallback after graceful timeout.
   --skip-launch                 Verify Release installation without relaunching it.
@@ -30,11 +30,6 @@ confirm_default_yes() {
     local reply
     read -r -p "$1 [Y/n]: " reply < /dev/tty || reply=""
     case "$reply" in ""|y|Y|yes|YES) return 0 ;; *) return 1 ;; esac
-}
-prompt_clean() {
-    if confirm_default_yes "Clean build artifacts first?"; then
-        CLEAN=1
-    fi
 }
 require_positive_integer() { [[ "$1" =~ ^[1-9][0-9]*$ ]] || fail "timeout must be a positive integer: $1"; }
 validate_applications_dir() {
@@ -172,7 +167,6 @@ elif [ -z "$CONFIGURATION" ]; then
     [ -t 0 ] && [ -t 1 ] || fail "interactive selection requires a TTY; pass --no-interactive --configuration ..."
     printf '%s\n' '1) Debug' '2) Release (default)' '3) Exit'; read -r -p "Choose [1/2/3] [2]: " choice
     case "$choice" in 1) CONFIGURATION=Debug ;; 2|'') CONFIGURATION=Release ;; 3) exit 0 ;; *) fail "invalid choice: $choice" ;; esac
-    prompt_clean
 fi
 case "$CONFIGURATION" in Debug) ;; Release) APPLICATIONS_DIR="$(validate_applications_dir "$APPLICATIONS_DIR")" ;; *) fail "configuration must be Debug or Release" ;; esac
 run_selected
