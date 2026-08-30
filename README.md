@@ -67,6 +67,7 @@ the common targets are:
 |---------|-------------|--------|
 | Debug build | `make build` | `scripts/run-build.sh --configuration Debug` |
 | Release build | `make build-release` | `scripts/run-build.sh --configuration Release` |
+| Meeting notes editor bundle | `make build-meeting-notes-editor` | `scripts/build-meeting-notes-editor.sh` |
 | SwiftPM tests | `make test`, `make test-full`, or a suite target | `scripts/run-tests.sh` |
 | Xcode parity tests | `make test-parity` | `scripts/run-tests-xcode.sh` |
 | Scoped validation | `make scope-check` | `scripts/scope-check.sh` |
@@ -101,7 +102,12 @@ The pre-commit hook applies SwiftFormat and SwiftLint autofix to staged Swift fi
 | `make build-release` | Build the app in Release configuration. |
 | `make build-agent` | Build Debug with compact agent-oriented output. |
 | `make build-test` | Run the standard build and test sequence. |
+| `make build-meeting-notes-editor` | Rebuild the CM6 meeting-notes web bundle into `Packages/.../MeetingNotesEditor/dist/` when `Editor/` changed. |
 | `make xcodebuild-safe` | Run the canonical wrapped `xcodebuild` command for this repo. |
+
+The meeting notes editor bundle is committed and consumed by Xcode as a resource.
+App builds do not run `npm`. After editing `Editor/`, run
+`make build-meeting-notes-editor` before `make build` or tests that load the pane.
 
 #### Test and benchmarks
 

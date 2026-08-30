@@ -6,7 +6,8 @@
 ## Objective
 
 Close the remaining Pane writing-feel and build-pipeline gaps: full live-preview
-constructs, user theme CSS from Application Support, and Xcode editor bundle build.
+constructs, user theme CSS from Application Support, and an out-of-band editor
+bundle build (`make build-meeting-notes-editor`).
 
 ## Slices
 
@@ -22,10 +23,10 @@ constructs, user theme CSS from Application Support, and Xcode editor bundle bui
 - [x] Settings theme picker; `meetingNotesEditorTheme` stores theme basename
 - [x] WebView receives resolved CSS via bridge
 
-### Slice 2 — Xcode build phase (S)
+### Slice 2 — Editor bundle build (S)
 
-- [x] Run `scripts/build-meeting-notes-editor.sh` before app compile when `npm` available
-- [x] Document `make build-meeting-notes-editor` fallback
+- [x] `scripts/build-meeting-notes-editor.sh` rebuilds bundle when `Editor/` changed
+- [x] Document `make build-meeting-notes-editor`; Xcode uses committed `dist/` only
 
 ## Out of scope
 
@@ -36,4 +37,4 @@ constructs, user theme CSS from Application Support, and Xcode editor bundle bui
 
 1. Task lists, bullet glyphs, block gaps, and fence collapse match Pane behaviour.
 2. Dropping `dark.css` into Themes folder and selecting it changes editor colours.
-3. Xcode build runs editor bundle script when npm is present.
+3. App builds use the committed editor bundle; `make build-meeting-notes-editor` refreshes it after `Editor/` edits.

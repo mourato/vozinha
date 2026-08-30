@@ -240,7 +240,6 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 9A03346E76FD2E307EEE752E /* Build configuration list for PBXNativeTarget "MeetingAssistant" */;
 			buildPhases = (
-				C127C0A1B2C3D4E5F607182 /* Build Meeting Notes Editor */,
 				39619CA28397798BF02CF90D /* Sources */,
 				4406995276713BCE01038784 /* Resources */,
 				A4D2B8E82669F299E248DA81 /* Embed XPC Services */,
@@ -333,28 +332,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
-
-/* Begin PBXShellScriptBuildPhase section */
-		C127C0A1B2C3D4E5F607182 /* Build Meeting Notes Editor */ = {
-			isa = PBXShellScriptBuildPhase;
-			alwaysOutOfDate = 1;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-			);
-			name = "Build Meeting Notes Editor";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "if command -v npm >/dev/null 2>&1; then\n  \"${SRCROOT}/scripts/build-meeting-notes-editor.sh\"\nelse\n  echo \"warning: npm not found; using committed MeetingNotesEditor dist bundle\"\nfi\n";
-		};
-/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		108933264B27C8F5BA545296 /* Sources */ = {

@@ -213,6 +213,7 @@ rather than invoking a removed alias. The canonical script mapping is:
 | Purpose | Target | Script |
 |---------|--------|--------|
 | Debug build | `make build` | `scripts/run-build.sh --configuration Debug` |
+| Meeting notes editor bundle | `make build-meeting-notes-editor` | `scripts/build-meeting-notes-editor.sh` |
 | SwiftPM tests | `make test`, `make test-full`, or a suite target | `scripts/run-tests.sh` |
 | Xcode parity | `make test-parity` | `scripts/run-tests-xcode.sh` |
 | Scoped validation | `make scope-check` | `scripts/scope-check.sh` |
@@ -262,9 +263,15 @@ The `find` command must print nothing. Stale copies under `.git/hooks/` (for exa
 Pre-push acknowledges the push range and enforces basic ref safety; it does not
 run `validate-agent`, build, or tests. Complete end-of-task
 `validate-agent --lane auto` (or Full when required) during development before
-pushing. Rust audio staging uses a crate-local Cargo target directory even when
-`CARGO_TARGET_DIR` is set in the environment. `MA_RUST_AUDIO_KERNELS_BUILD=off`
-is an emergency bypass only, not a routine workaround.
+pushing.
+
+### Meeting notes editor bundle
+
+The CM6 editor bundle is committed under
+`Packages/MeetingAssistantCore/Sources/UI/Resources/MeetingNotesEditor/dist/`.
+Xcode does not rebuild it during app compilation. When you change files under
+`Editor/`, run `make build-meeting-notes-editor` before building or testing the
+app so the committed bundle stays in sync.
 
 ## Script Support Surface
 

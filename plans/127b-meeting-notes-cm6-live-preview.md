@@ -13,7 +13,7 @@ WebKit editor path — the main writing-feel gap vs Pane.
 - `@codemirror/*` bundle with `live-preview.ts` (caret line raw, other lines rendered)
 - Tokens + markdown CSS subset adapted from Pane
 - Content-height reporting drives pane auto-size
-- `make build-meeting-notes-editor` / `Scripts/build-meeting-notes-editor.sh`
+- `make build-meeting-notes-editor` / `scripts/build-meeting-notes-editor.sh`
 
 ## Still not Pane 1:1
 
@@ -25,4 +25,4 @@ WebKit editor path — the main writing-feel gap vs Pane.
 
 - Port remaining live-preview constructs from Pane (tasks, lists, gaps, fences)
 - Load theme CSS from Application Support `MeetingNotes/Themes/*.css`
-- Xcode build phase for editor bundle
+- Editor bundle built via `make build-meeting-notes-editor` (outside Xcode)

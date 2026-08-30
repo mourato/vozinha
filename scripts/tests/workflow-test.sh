@@ -860,7 +860,7 @@ test_pre_push_protocol
 source "${SCRIPT_ROOT}/scripts/tests/scope-classification-test.sh"
 "${SCRIPT_ROOT}/scripts/tests/guidance-validation-test.sh"
 "${SCRIPT_ROOT}/scripts/tests/hooks-setup-test.sh"
-"${SCRIPT_ROOT}/scripts/tests/rust-audio-staging-test.sh"
+"${SCRIPT_ROOT}/scripts/tests/meeting-notes-editor-build-test.sh"
 "${SCRIPT_ROOT}/scripts/tests/preview-check-test.sh"
 "${SCRIPT_ROOT}/scripts/tests/localization-check-test.sh"
 "${SCRIPT_ROOT}/scripts/tests/swiftpm-resolution-test.sh"

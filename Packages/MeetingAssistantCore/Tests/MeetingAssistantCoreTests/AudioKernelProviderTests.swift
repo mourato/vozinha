@@ -12,24 +12,11 @@ final class AudioKernelProviderTests: XCTestCase {
         XCTAssertTrue((produced as AnyObject) === (voiceKernel as AnyObject))
     }
 
-    func testForFeatureFlags_WhenDisabled_UsesSwiftBackend() {
-        let provider = AudioKernelProvider.forFeatureFlags(enableRustAudioMathKernels: false)
+    func testLive_UsesSwiftVoiceActivityKernel() {
+        let provider = AudioKernelProvider.live
+        let kernel = provider.makeVoiceActivityKernel()
 
-        XCTAssertEqual(provider.backend, .swift)
-    }
-
-    func testForFeatureFlags_WhenEnabled_UsesRustPilotBackend() {
-        let provider = AudioKernelProvider.forFeatureFlags(enableRustAudioMathKernels: true)
-
-        XCTAssertEqual(provider.backend, .rustPilot)
-    }
-
-    func testForFeatureFlags_WhenSelectionToggles_BackendValueRemainsDeterministic() {
-        let swiftProvider = AudioKernelProvider.forFeatureFlags(enableRustAudioMathKernels: false)
-        let rustProvider = AudioKernelProvider.forFeatureFlags(enableRustAudioMathKernels: true)
-
-        XCTAssertEqual(swiftProvider.backend, .swift)
-        XCTAssertEqual(rustProvider.backend, .rustPilot)
+        XCTAssertTrue(kernel is RealtimeVoiceActivityWindowAssembler)
     }
 }
 

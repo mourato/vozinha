@@ -72,7 +72,7 @@ MeetingNotesPaneController (@MainActor)
 | `MeetingNotesEditorWebView` | `UI/components/meeting-notes/` |
 | `MeetingNotesEditorBridge` | `UI/components/meeting-notes/` (Swift ↔ JS messages) |
 | `Editor/` web bundle | repo root or `Packages/MeetingAssistantCore/Resources/MeetingNotesEditor/` |
-| `Scripts/build-meeting-notes-editor.sh` | build CM6 bundle into Resources |
+| `scripts/build-meeting-notes-editor.sh` | build CM6 bundle into Resources |
 
 ## Settings (v1)
 
@@ -139,9 +139,9 @@ returns focus; `MeetingNotesFloatingPanelControllerTests` updated or replaced.
 - [x] Add `Editor/` package (TypeScript + CodeMirror 6) — fork minimal subset
       from Pane: `main.ts`, `live-preview.ts`, `markdown.css`, `tokens.css`,
       `pane.css` (rename to `meeting-notes.css`).
-- [x] `Scripts/build-meeting-notes-editor.sh` → copy to
+- [x] `scripts/build-meeting-notes-editor.sh` → copy to
       `MeetingNotesEditor/dist/index.html` in app bundle Resources.
-- [ ] Xcode build phase or `make` target to build editor before app compile.
+- [x] `make build-meeting-notes-editor` rebuilds bundle outside Xcode when `Editor/` changed.
 - [x] `MeetingNotesEditorWebView`: nonPersistent store, message handler
       `vozinhaNotes`, load file URL from bundle.
 
@@ -192,7 +192,7 @@ manual live preview typing; special chars in markdown do not break bridge JSON.
 ## Validation
 
 ```bash
-Scripts/build-meeting-notes-editor.sh
+make build-meeting-notes-editor   # when Editor/ changed
 make lint
 swift test --filter MeetingNotes
 make validate-agent MODULE=MeetingAssistantCore

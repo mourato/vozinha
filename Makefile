@@ -15,6 +15,7 @@ help:
 	@echo "Build Commands:"
 	@echo "  make build          - Build debug version (default)"
 	@echo "  make build-release  - Build release version"
+	@echo "  make build-meeting-notes-editor - Rebuild CM6 meeting-notes web bundle (when Editor/ changed)"
 	@echo "  make build-agent    - Build debug with compact machine-readable output"
 	@echo "  make build-test     - Run build + tests in sequence (fast default, strict in CI)"
 	@echo "  make build-test-strict - Run build + tests in strict xcode mode"
@@ -124,7 +125,7 @@ build-agent:
 	@$(AGENT_ENV) ./scripts/run-build.sh --configuration Debug --agent
 
 build-meeting-notes-editor:
-	@./Scripts/build-meeting-notes-editor.sh
+	@./scripts/build-meeting-notes-editor.sh
 
 build-test:
 	@$(AGENT_ENV) ./scripts/run-build-and-test.sh
