@@ -79,8 +79,9 @@ the signed `dist/Vozinha.app`, validates it, and transactionally
 replaces only `/Applications/Vozinha.app`, restoring the previous bundle on
 failure. `--force-terminate` is an explicit fallback after the standard
 application quit request times out. `make dmg` remains the packaging flow.
-By default, `build-and-run` keeps `.xcode-build` for incremental builds; pass
-`ARGS="--clean"` when you need a clean rebuild.
+By default, `build-and-run` keeps `.xcode-build` for incremental builds. The
+interactive flow asks whether to clean first (default: no); pass `ARGS="--clean"`
+to wipe the cache without prompting.
 
 DMG signing mode selection:
 
