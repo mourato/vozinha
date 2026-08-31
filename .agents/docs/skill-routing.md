@@ -249,18 +249,18 @@ Use `thermo-nuclear-code-quality-review` for review output, semaforo severity, a
 
 ---
 
-### Reference Projects and Benchmarking
+### Reference Projects and Study
 
-**Primary:** global `benchmarking` + `.agents/overlays/benchmarking.md`
+**Primary:** global `reference-apps` + `.agents/overlays/reference-apps.md`
 - Shared reference process and clone policy
 - Prisma catalog (VoiceInk, FluidVoice, TypeWhisper, StenoAI)
 - StenoAI is a **strong** UI/UX + same-domain bar (meeting record → note → summary); TypeScript/Electron stack — aesthetic/flow inspiration only; adapt via Apple HIG / SwiftUI–AppKit (`apple-design`, `macos-app-engineering`)
 
 **Complementary:** `macos-app-engineering`, `apple-design`, `architecture`, `audio-realtime`
 
-**Example:** "Compare dictation mode UX with VoiceInk" → `benchmarking` + overlay
+**Example:** "Compare dictation mode UX with VoiceInk" → `reference-apps` + overlay
 
-**Example:** "Raise meeting-note UX toward StenoAI" → `benchmarking` + overlay, then `apple-design` / `macos-app-engineering` for native adaptation
+**Example:** "Raise meeting-note UX toward StenoAI" → `reference-apps` + overlay, then `apple-design` / `macos-app-engineering` for native adaptation
 
 ---
 

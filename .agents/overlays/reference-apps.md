@@ -1,6 +1,6 @@
 ---
 kind: project-overlay
-extends: benchmarking
+extends: reference-apps
 project: vozinha
 precedence: project
 ---

@@ -91,7 +91,7 @@ honor its STOP conditions, and update your row when done.
 ## 2026-07-10 Code Review Skill Consolidation Scope
 
 - Effort: plan-focused follow-up for making the stricter thermo review style the default Prisma code-review flow.
-- Audited: `code-review`, `thermo-nuclear-code-quality-review`, `code-quality`, `task-lifecycle`, `quality-assurance`, `git-workflow`, `project-standards`, `benchmarking`, `.agents/SKILLS_INDEX.md`, `.agents/skills/SKILLS_TAXONOMY.md`, `.agents/docs/skill-routing.md`, and `AGENTS.md`.
+- Audited: `code-review`, `thermo-nuclear-code-quality-review`, `code-quality`, `task-lifecycle`, `quality-assurance`, `git-workflow`, `project-standards`, `reference-apps`, `.agents/SKILLS_INDEX.md`, `.agents/skills/SKILLS_TAXONOMY.md`, `.agents/docs/skill-routing.md`, and `AGENTS.md`.
 - Not audited: source-code implementation, runtime app behavior, Swift tests, CI internals, release/build infra, and domain-specialist review checklists beyond routing references.
 - Reuse decision: absorb the useful findings-format, severity, technical checklist, and semaforo output contract from `code-review` into `thermo-nuclear-code-quality-review`, then remove `code-review` as a separate skill. Keep `code-quality`, `task-lifecycle`, and `quality-assurance` separate.
 
