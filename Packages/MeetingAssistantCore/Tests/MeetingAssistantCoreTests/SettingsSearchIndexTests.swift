@@ -25,8 +25,14 @@ final class SettingsSearchIndexTests: XCTestCase {
         XCTAssertTrue(results.allSatisfy { !$0.title.isEmpty && !$0.detail.isEmpty })
     }
 
-    func testQueryUpdatesRoutesToUpdatesSection() {
-        assertLocalizedQuery("settings.section.updates", routesTo: .updates)
+    func testQueryUpdatesRoutesToSystemSection() {
+        assertLocalizedQuery("settings.section.updates", routesTo: .system)
+    }
+
+    func testUpdatesDestinationRoutesToSystemUpdatesSubroute() {
+        let destination = SettingsSearchIndex.destination(forLocalizationKey: "settings.section.updates")
+
+        XCTAssertEqual(destination, SettingsDestination(section: .system, systemRoute: .updates))
     }
 
     func testSectionMappingRoutesIntegrationKeysToIntegrationsSection() {

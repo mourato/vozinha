@@ -55,7 +55,6 @@ public enum SettingsSection: String, CaseIterable, Identifiable, Sendable {
         .meetings,
         .history,
         .dictionary,
-        .updates,
     ]
 
     public static let settingsSections: [SettingsSection] = [
@@ -69,16 +68,15 @@ public enum SettingsSection: String, CaseIterable, Identifiable, Sendable {
             .meetings,
             .history,
             .dictionary,
-            .updates,
             .system,
         ]
     }
 
     public var isLegacyRedirect: Bool {
         switch self {
-        case .metrics, .transcriptions, .models, .enhancements, .vocabulary, .permissions, .general, .intelligence, .audio, .dictation, .assistant, .integrations:
+        case .metrics, .transcriptions, .models, .enhancements, .vocabulary, .permissions, .general, .intelligence, .audio, .dictation, .assistant, .integrations, .updates:
             true
-        case .activity, .modes, .meetings, .history, .dictionary, .system, .updates:
+        case .activity, .modes, .meetings, .history, .dictionary, .system:
             false
         }
     }
@@ -116,7 +114,9 @@ public enum SettingsSection: String, CaseIterable, Identifiable, Sendable {
             SettingsDestination(section: .modes, modesSubroute: .assistant)
         case .integrations:
             SettingsDestination(section: .modes, modesSubroute: .integrations)
-        case .activity, .modes, .meetings, .history, .system, .updates:
+        case .updates:
+            SettingsDestination(section: .system, systemRoute: .updates)
+        case .activity, .modes, .meetings, .history, .system:
             SettingsDestination(section: self)
         }
     }

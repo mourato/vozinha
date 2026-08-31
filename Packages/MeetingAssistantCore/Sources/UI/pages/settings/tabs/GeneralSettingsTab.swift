@@ -21,7 +21,8 @@ public struct GeneralSettingsTab: View {
     private let headerDescriptionKey: String
     private let openModels: (() -> Void)?
     private let openSound: (() -> Void)?
-    private let onCheckForUpdates: (() -> Void)?
+    private let openUpdates: (() -> Void)?
+    private let showsUpdateAvailable: Bool
     @Binding private var expandProtectedApps: Bool
 
     public init(
@@ -31,14 +32,16 @@ public struct GeneralSettingsTab: View {
         openModels: (() -> Void)? = nil,
         openSound: (() -> Void)? = nil,
         expandProtectedApps: Binding<Bool> = .constant(false),
-        onCheckForUpdates: (() -> Void)? = nil,
+        openUpdates: (() -> Void)? = nil,
+        showsUpdateAvailable: Bool = false,
     ) {
         self.showsHeader = showsHeader
         self.headerTitleKey = headerTitleKey
         self.headerDescriptionKey = headerDescriptionKey
         self.openModels = openModels
         self.openSound = openSound
-        self.onCheckForUpdates = onCheckForUpdates
+        self.openUpdates = openUpdates
+        self.showsUpdateAvailable = showsUpdateAvailable
         _expandProtectedApps = expandProtectedApps
     }
 
@@ -301,21 +304,21 @@ public struct GeneralSettingsTab: View {
 
     @ViewBuilder
     private var softwareUpdatesSection: some View {
-        if let onCheckForUpdates {
+        if let openUpdates {
             Section {
                 LabeledContent("settings.system.version".localized) {
                     Text(AppVersion.full)
                         .foregroundStyle(.secondary)
                 }
 
-                HStack {
-                    Button("settings.updates.check".localized) {
-                        onCheckForUpdates()
-                    }
-                    .accessibilityHint("settings.updates.check_hint".localized)
-
-                    Spacer(minLength: 0)
-                }
+                SettingsListDrillDownButtonRow(
+                    title: showsUpdateAvailable
+                        ? "settings.system.update_available".localized
+                        : "settings.system.open_updates".localized,
+                    subtitle: "settings.updates.description".localized,
+                    accessibilityHint: "settings.system.open_updates_hint".localized,
+                    action: openUpdates,
+                )
             } header: {
                 SettingsFormSectionHeader(title: "settings.updates.title".localized, icon: "arrow.down.circle")
             }

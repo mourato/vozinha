@@ -6,7 +6,7 @@ import SwiftUI
 struct SettingsSidebarView: View {
     @Binding var selectedSection: SettingsSection
     @Binding var searchText: String
-    let showsUpdates: Bool
+    let showsSystemSettingsBadge: Bool
     let onSelectDestination: (SettingsDestination) -> Void
     @ScaledMetric(relativeTo: .body) private var sidebarIconSize: CGFloat = 24
     @ScaledMetric(relativeTo: .caption) private var searchResultIconSize: CGFloat = 18
@@ -43,7 +43,7 @@ struct SettingsSidebarView: View {
     private var sectionsList: some View {
         VStack(spacing: 0) {
             VStack(spacing: 3) {
-                ForEach(SettingsSection.primarySections.filter { $0 != .updates || showsUpdates }) { section in
+                ForEach(SettingsSection.primarySections) { section in
                     sidebarNavigationButton(for: section)
                 }
             }
@@ -82,6 +82,14 @@ struct SettingsSidebarView: View {
                 )
         }
         .accessibilityAddTraits(selectedSection == section ? .isSelected : [])
+        .accessibilityLabel(sidebarAccessibilityLabel(for: section))
+    }
+
+    private func sidebarAccessibilityLabel(for section: SettingsSection) -> String {
+        guard section == .system, showsSystemSettingsBadge else {
+            return section.title
+        }
+        return "\(section.title), \("settings.system.update_available".localized)"
     }
 
     private func sidebarButtonBackground(for section: SettingsSection) -> some ShapeStyle {
@@ -146,6 +154,15 @@ struct SettingsSidebarView: View {
             Text(section.title)
                 .font(AppTypography.sidebarLabel)
                 .lineLimit(1)
+
+            if section == .system, showsSystemSettingsBadge {
+                Circle()
+                    .fill(AppDesignSystem.Colors.accent)
+                    .frame(width: 8, height: 8)
+                    .accessibilityHidden(true)
+            }
+
+            Spacer(minLength: 0)
         }
     }
 

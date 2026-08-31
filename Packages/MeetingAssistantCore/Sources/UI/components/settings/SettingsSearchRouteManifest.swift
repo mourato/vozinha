@@ -75,6 +75,7 @@ enum SettingsSearchRouteManifest {
         .init(prefix: "settings.shortcuts.health.", section: .system),
         .init(prefix: "settings.storage.", section: .system),
         .init(prefix: "settings.section.updates", section: .updates),
+        .init(prefix: "settings.updates.", section: .updates),
     ]
 
     static func destination(for key: String) -> SettingsDestination? {

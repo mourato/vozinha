@@ -5,7 +5,7 @@ final class SettingsSectionTests: XCTestCase {
     func testPrimarySections_OrderStartsWithCaptureWorkflows() {
         XCTAssertEqual(
             SettingsSection.primarySections,
-            [.activity, .modes, .meetings, .history, .dictionary, .updates],
+            [.activity, .modes, .meetings, .history, .dictionary],
         )
     }
 
@@ -19,7 +19,7 @@ final class SettingsSectionTests: XCTestCase {
     func testVisibleSections_OrderMatchesProductConcepts() {
         XCTAssertEqual(
             SettingsSection.visibleSections,
-            [.activity, .modes, .meetings, .history, .dictionary, .updates, .system],
+            [.activity, .modes, .meetings, .history, .dictionary, .system],
         )
     }
 
@@ -93,6 +93,15 @@ final class SettingsSectionTests: XCTestCase {
         XCTAssertEqual(
             SettingsSection.resolvedDestination(for: "transcriptions"),
             SettingsDestination(section: .history),
+        )
+    }
+
+    func testLegacyRedirect_UpdatesMapsToSystemUpdatesSubroute() {
+        XCTAssertEqual(SettingsSection.updates.visibleSection, .system)
+        XCTAssertTrue(SettingsSection.updates.isLegacyRedirect)
+        XCTAssertEqual(
+            SettingsSection.resolvedDestination(for: "updates"),
+            SettingsDestination(section: .system, systemRoute: .updates),
         )
     }
 

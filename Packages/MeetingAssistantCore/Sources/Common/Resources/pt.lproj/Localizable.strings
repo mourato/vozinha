@@ -25,6 +25,9 @@
 "settings.section.updates" = "Atualizações";
 "settings.system.description" = "Gerencie comportamento do app, opções de interface, armazenamento e permissões obrigatórias.";
 "settings.system.version" = "Versão";
+"settings.system.open_updates" = "Atualizações do app";
+"settings.system.open_updates_hint" = "Abre atualizações, notas de versão e opções de instalação.";
+"settings.system.update_available" = "Atualização disponível";
 "settings.system.permissions.accessibility_hint" = "Abre status de permissões e orientações de configuração.";
 
 /* Metrics Dashboard */

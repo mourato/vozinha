@@ -22,13 +22,7 @@ struct MeetingAssistantApp: App {
 
     var body: some Scene {
         Window("settings.title".localized, id: WindowID.settings) {
-            SettingsView(
-                updatesView: AnyView(
-                    AppUpdateSettingsView()
-                        .environmentObject(AppUpdaterContainer.shared),
-                ),
-                onCheckForUpdates: AppUpdaterContainer.checkForUpdates,
-            )
+            SettingsWindowContent()
         }
         .defaultLaunchBehavior(.suppressed)
         .windowResizability(.contentSize)
@@ -51,6 +45,29 @@ enum AppUpdaterContainer {
     static func checkForUpdates() {
         NavigationService.shared.openUpdates()
         shared.check()
+    }
+}
+
+private struct SettingsWindowContent: View {
+    @ObservedObject private var updater = AppUpdaterContainer.shared
+
+    private var showsSystemSettingsBadge: Bool {
+        switch updater.state {
+        case .none:
+            false
+        default:
+            true
+        }
+    }
+
+    var body: some View {
+        SettingsView(
+            updatesView: AnyView(
+                AppUpdateSettingsView()
+                    .environmentObject(updater),
+            ),
+            showsSystemSettingsBadge: showsSystemSettingsBadge,
+        )
     }
 }
 

@@ -22,7 +22,7 @@ private enum LayoutConstants {
 /// Custom HStack sidebar + detail shell (no NavigationSplitView / SwiftUI toolbar).
 public struct SettingsView: View {
     private let updatesView: AnyView?
-    private let onCheckForUpdates: (() -> Void)?
+    private let showsSystemSettingsBadge: Bool
     private let settingsStore = AppSettingsStore.shared
     @State private var selectedSection: SettingsSection = .activity
     @State private var settingsSearchText = ""
@@ -38,9 +38,9 @@ public struct SettingsView: View {
     @Environment(\.settingsReduceTransparencyPreview) private var reduceTransparencyPreview
 
     @MainActor
-    public init(updatesView: AnyView? = nil, onCheckForUpdates: (() -> Void)? = nil) {
+    public init(updatesView: AnyView? = nil, showsSystemSettingsBadge: Bool = false) {
         self.updatesView = updatesView
-        self.onCheckForUpdates = onCheckForUpdates
+        self.showsSystemSettingsBadge = showsSystemSettingsBadge
         _isSidebarVisible = State(initialValue: AppSettingsStore.shared.isSettingsSidebarVisible)
     }
 
@@ -84,7 +84,7 @@ public struct SettingsView: View {
             SettingsSidebarView(
                 selectedSection: $selectedSection,
                 searchText: $settingsSearchText,
-                showsUpdates: updatesView != nil,
+                showsSystemSettingsBadge: showsSystemSettingsBadge,
                 onSelectDestination: selectDestination,
             )
             .padding(.top, LayoutConstants.titlebarClearance)
@@ -229,14 +229,13 @@ private extension SettingsView {
             PermissionsSettingsTab()
         case .intelligence:
             SystemSettingsTab(route: .constant(.models))
-        case .system:
+        case .system, .updates:
             SystemSettingsTab(
                 route: $systemRoute,
                 expandProtectedApps: $expandProtectedApps,
-                onCheckForUpdates: updatesView != nil ? onCheckForUpdates : nil,
+                updatesView: updatesView,
+                showsUpdateAvailable: showsSystemSettingsBadge,
             )
-        case .updates:
-            updatesView ?? AnyView(EmptyView())
         }
     }
 
