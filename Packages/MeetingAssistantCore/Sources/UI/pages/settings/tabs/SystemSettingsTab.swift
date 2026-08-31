@@ -10,13 +10,16 @@ public enum SystemSettingsRoute: Hashable, Sendable {
 public struct SystemSettingsTab: View {
     @Binding private var route: SystemSettingsRoute
     @Binding private var expandProtectedApps: Bool
+    private let onCheckForUpdates: (() -> Void)?
 
     public init(
         route: Binding<SystemSettingsRoute> = .constant(.root),
         expandProtectedApps: Binding<Bool> = .constant(false),
+        onCheckForUpdates: (() -> Void)? = nil,
     ) {
         _route = route
         _expandProtectedApps = expandProtectedApps
+        self.onCheckForUpdates = onCheckForUpdates
     }
 
     public var body: some View {
@@ -36,6 +39,7 @@ public struct SystemSettingsTab: View {
                 openModels: { route = .models },
                 openSound: { route = .sound },
                 expandProtectedApps: $expandProtectedApps,
+                onCheckForUpdates: onCheckForUpdates,
             )
         case .models:
             ModelsSettingsTab(onBack: { route = .root })

@@ -57,4 +57,12 @@ final class NavigationServiceTests: XCTestCase {
 
         XCTAssertEqual(NavigationService.shared.requestedSettingsSection, "history")
     }
+
+    func testOpenUpdatesRequestsUpdatesSection() {
+        resetNavigationService()
+
+        NavigationService.shared.openUpdates()
+
+        XCTAssertEqual(NavigationService.shared.requestedSettingsSection, "updates")
+    }
 }

@@ -22,6 +22,7 @@ private enum LayoutConstants {
 /// Custom HStack sidebar + detail shell (no NavigationSplitView / SwiftUI toolbar).
 public struct SettingsView: View {
     private let updatesView: AnyView?
+    private let onCheckForUpdates: (() -> Void)?
     private let settingsStore = AppSettingsStore.shared
     @State private var selectedSection: SettingsSection = .activity
     @State private var settingsSearchText = ""
@@ -37,8 +38,9 @@ public struct SettingsView: View {
     @Environment(\.settingsReduceTransparencyPreview) private var reduceTransparencyPreview
 
     @MainActor
-    public init(updatesView: AnyView? = nil) {
+    public init(updatesView: AnyView? = nil, onCheckForUpdates: (() -> Void)? = nil) {
         self.updatesView = updatesView
+        self.onCheckForUpdates = onCheckForUpdates
         _isSidebarVisible = State(initialValue: AppSettingsStore.shared.isSettingsSidebarVisible)
     }
 
@@ -231,6 +233,7 @@ private extension SettingsView {
             SystemSettingsTab(
                 route: $systemRoute,
                 expandProtectedApps: $expandProtectedApps,
+                onCheckForUpdates: updatesView != nil ? onCheckForUpdates : nil,
             )
         case .updates:
             updatesView ?? AnyView(EmptyView())

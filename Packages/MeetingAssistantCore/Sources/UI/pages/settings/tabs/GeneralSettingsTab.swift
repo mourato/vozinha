@@ -21,6 +21,7 @@ public struct GeneralSettingsTab: View {
     private let headerDescriptionKey: String
     private let openModels: (() -> Void)?
     private let openSound: (() -> Void)?
+    private let onCheckForUpdates: (() -> Void)?
     @Binding private var expandProtectedApps: Bool
 
     public init(
@@ -30,12 +31,14 @@ public struct GeneralSettingsTab: View {
         openModels: (() -> Void)? = nil,
         openSound: (() -> Void)? = nil,
         expandProtectedApps: Binding<Bool> = .constant(false),
+        onCheckForUpdates: (() -> Void)? = nil,
     ) {
         self.showsHeader = showsHeader
         self.headerTitleKey = headerTitleKey
         self.headerDescriptionKey = headerDescriptionKey
         self.openModels = openModels
         self.openSound = openSound
+        self.onCheckForUpdates = onCheckForUpdates
         _expandProtectedApps = expandProtectedApps
     }
 
@@ -151,6 +154,8 @@ public struct GeneralSettingsTab: View {
             recordingIndicatorSection
 
             storageSection
+
+            softwareUpdatesSection
 
             if openModels != nil {
                 PermissionsSettingsContent()
@@ -291,6 +296,29 @@ public struct GeneralSettingsTab: View {
             }
         } header: {
             SettingsFormSectionHeader(title: "settings.general.recording_indicator".localized, icon: "record.circle")
+        }
+    }
+
+    @ViewBuilder
+    private var softwareUpdatesSection: some View {
+        if let onCheckForUpdates {
+            Section {
+                LabeledContent("settings.system.version".localized) {
+                    Text(AppVersion.full)
+                        .foregroundStyle(.secondary)
+                }
+
+                HStack {
+                    Button("settings.updates.check".localized) {
+                        onCheckForUpdates()
+                    }
+                    .accessibilityHint("settings.updates.check_hint".localized)
+
+                    Spacer(minLength: 0)
+                }
+            } header: {
+                SettingsFormSectionHeader(title: "settings.updates.title".localized, icon: "arrow.down.circle")
+            }
         }
     }
 

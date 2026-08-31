@@ -27,6 +27,7 @@ struct MeetingAssistantApp: App {
                     AppUpdateSettingsView()
                         .environmentObject(AppUpdaterContainer.shared),
                 ),
+                onCheckForUpdates: AppUpdaterContainer.checkForUpdates,
             )
         }
         .defaultLaunchBehavior(.suppressed)
@@ -46,6 +47,11 @@ enum AppUpdaterContainer {
         repo: "vozinha",
         releasePrefix: "Vozinha",
     )
+
+    static func checkForUpdates() {
+        NavigationService.shared.openUpdates()
+        shared.check()
+    }
 }
 
 struct AppUpdateSettingsView: View {
@@ -221,6 +227,11 @@ struct MeetingAssistantCommands: Commands {
         let isSettingsOpenerRegistered = registerSettingsSceneOpener()
 
         CommandGroup(replacing: .appSettings) {
+            Button("menubar.check_for_updates".localized) {
+                guard isSettingsOpenerRegistered else { return }
+                AppUpdaterContainer.checkForUpdates()
+            }
+
             Button("menubar.settings".localized) {
                 guard isSettingsOpenerRegistered else { return }
                 commandRouter.openSettings()
