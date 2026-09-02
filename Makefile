@@ -5,7 +5,7 @@
 # with CI/CD pipelines and headless environments.
 # =============================================================================
 
-.PHONY: help build build-release build-agent build-test build-test-strict xcodebuild-safe test test-agent test-full test-full-agent test-smoke test-perf test-sensitive test-appkit test-parity test-parity-agent test-verbose test-strict test-ci-strict scope-check scope-check-agent validate validate-agent workflow-test benchmark-summary benchmark-summary-agent lint lint-agent lint-report lint-strict lint-strict-agent lint-fix arch-check preview-check localization-check guidance-check preflight preflight-fast preflight-agent preflight-agent-fast agent-artifacts-report agent-artifacts-dry-run agent-artifacts-clean clean run run-release build-and-run dmg setup-self-signed-cert setup format health ci-build deliverable-gate docs docs-preview docs-clean profile profile-report profile-cpu profile-memory profile-animation profile-animation-report
+.PHONY: help build build-release build-agent build-test build-test-strict xcodebuild-safe test test-agent test-full test-full-agent test-smoke test-perf test-sensitive test-appkit test-parity test-parity-agent test-verbose test-strict test-ci-strict scope-check scope-check-agent validate validate-lane validate-lane-command validate-agent workflow-test benchmark-summary benchmark-summary-agent lint lint-agent lint-report lint-strict lint-strict-agent lint-fix arch-check preview-check localization-check guidance-check preflight preflight-fast preflight-agent preflight-agent-fast agent-artifacts-report agent-artifacts-dry-run agent-artifacts-clean clean run run-release build-and-run dmg setup-self-signed-cert setup format health ci-build deliverable-gate docs docs-preview docs-clean profile profile-report profile-cpu profile-memory profile-animation profile-animation-report
 
 # Default target
 help:
@@ -38,6 +38,7 @@ help:
 	@echo "  make scope-check    - Run scoped validation (targeted tests + smart escalation)"
 	@echo "  make scope-check-agent - Run scoped validation in compact agent mode"
 	@echo "  make validate       - Run the canonical automatic validation lane"
+	@echo "  make validate-lane  - Run validate through the global baseline/artifact gate"
 	@echo "  make validate-agent  - Run the canonical Fast/Full/auto validation lane"
 	@echo "  make workflow-test  - Run deterministic validation workflow fixtures"
 	@echo "  make benchmark-summary - Run summary benchmark gate in report-only mode"
@@ -106,6 +107,11 @@ DIST_DIR = $(PROJECT_DIR)/dist
 AGENT_LOG_DIR ?= /tmp/ma-agent
 ARTIFACT_RETENTION_DAYS ?= 7
 AGENT_ENV = MA_AGENT_MODE=1 MA_AGENT_LOG_DIR="$(AGENT_LOG_DIR)"
+AGENT_CONFIG_HOME ?= $(HOME)/.agents
+VALIDATE_LANE ?= $(AGENT_CONFIG_HOME)/scripts/validate-lane
+VALIDATE_BASE ?= $(shell git merge-base origin/main HEAD 2>/dev/null || git rev-parse HEAD^)
+VALIDATE_ARTIFACT_ROOTS := .xcode-build/Build .xcode-build-tests/Build .tmp/swiftpm-agent
+VALIDATE_ARTIFACT_ARGS := $(foreach root,$(VALIDATE_ARTIFACT_ROOTS),--artifacts "$(PROJECT_DIR)/$(root)")
 
 # Colors for output
 RED = \033[0;31m
@@ -186,6 +192,21 @@ scope-check-agent:
 
 validate:
 	@$(AGENT_ENV) ./scripts/validate-agent.sh --lane auto $(ARGS)
+
+validate-lane:
+	@$(VALIDATE_LANE) --repo "$(PROJECT_DIR)" --base "$(VALIDATE_BASE)" $(VALIDATE_ARTIFACT_ARGS) -- $(MAKE) validate-lane-command
+
+validate-lane-command:
+	@set -eu; \
+		absent_roots=""; \
+		for root in $(VALIDATE_ARTIFACT_ROOTS); do \
+			if [ ! -e "$(PROJECT_DIR)/$$root" ] && [ ! -L "$(PROJECT_DIR)/$$root" ]; then absent_roots="$$absent_roots $$root"; fi; \
+		done; \
+		cleanup() { \
+			for root in $$absent_roots; do rm -rf "$(PROJECT_DIR)/$$root"; done; \
+		}; \
+		trap cleanup EXIT; \
+		$(MAKE) validate ARGS="$(ARGS) --base $(VALIDATE_BASE)"
 
 validate-agent:
 	@$(AGENT_ENV) ./scripts/validate-agent.sh $(ARGS)

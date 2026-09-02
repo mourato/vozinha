@@ -15,6 +15,11 @@ precedence: project
 - `make validate` is the default automatic validation entry; it delegates to
   `validate-agent`. Explicit Fast/Full lanes use `make validate-agent` with
   `ARGS`.
+- `make validate-lane` wraps `make validate` with the global explicit baseline
+  and artifact gate, watching the ignored `.xcode-build/Build/`,
+  `.xcode-build-tests/Build/`, and `.tmp/swiftpm-agent/` outputs; parent roots
+  created only for the run are cleaned before the wrapper returns.
+  Parity-specific roots belong to their explicit lanes.
 - Changes touching Swift, behavior, audio, concurrency, persistence, security, or cross-module boundaries use that lane policy and retained specialist routing.
 - Keep the app local-first: Keychain stores credentials, transcripts and prompts stay out of logs and agent artifacts, and CloudKit synchronization is intentionally absent.
 - Report commands, results, risk/lane, review outcome, and known baseline failures in delivery handoffs.
