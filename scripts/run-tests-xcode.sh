@@ -10,7 +10,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
 PACKAGE_DIR="${PROJECT_DIR}/Packages/MeetingAssistantCore"
 XCODEPROJ="${PROJECT_DIR}/MeetingAssistant.xcodeproj"
-DERIVED_DATA="${PROJECT_DIR}/.xcode-build"
+DERIVED_DATA="${VALIDATE_DERIVED_DATA_PATH:-${PROJECT_DIR}/.xcode-build}"
 PATCH_SCRIPT="${PROJECT_DIR}/scripts/apply-fluidaudio-patches.sh"
 # shellcheck source=scripts/config/app_identity.sh
 source "${SCRIPT_DIR}/config/app_identity.sh"

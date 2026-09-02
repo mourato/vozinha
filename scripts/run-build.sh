@@ -16,7 +16,7 @@ source "${SCRIPT_DIR}/config/app_identity.sh"
 source "${SCRIPT_DIR}/lib/agent-output.sh"
 
 XCODEPROJ="${PROJECT_ROOT}/${XCODEPROJ_NAME}"
-DERIVED_DATA="${PROJECT_ROOT}/.xcode-build"
+DERIVED_DATA="${VALIDATE_DERIVED_DATA_PATH:-${PROJECT_ROOT}/.xcode-build}"
 
 CONFIGURATION="Debug"
 AGENT_MODE=0

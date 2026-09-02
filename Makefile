@@ -110,8 +110,6 @@ AGENT_ENV = MA_AGENT_MODE=1 MA_AGENT_LOG_DIR="$(AGENT_LOG_DIR)"
 AGENT_CONFIG_HOME ?= $(HOME)/.agents
 VALIDATE_LANE ?= $(AGENT_CONFIG_HOME)/scripts/validate-lane
 VALIDATE_BASE ?= $(shell git merge-base origin/main HEAD 2>/dev/null || git rev-parse HEAD^)
-VALIDATE_ARTIFACT_ROOTS := .xcode-build/Build .xcode-build-tests/Build .tmp/swiftpm-agent
-VALIDATE_ARTIFACT_ARGS := $(foreach root,$(VALIDATE_ARTIFACT_ROOTS),--artifacts "$(PROJECT_DIR)/$(root)")
 
 # Colors for output
 RED = \033[0;31m
@@ -194,19 +192,33 @@ validate:
 	@$(AGENT_ENV) ./scripts/validate-agent.sh --lane auto $(ARGS)
 
 validate-lane:
-	@$(VALIDATE_LANE) --repo "$(PROJECT_DIR)" --base "$(VALIDATE_BASE)" $(VALIDATE_ARTIFACT_ARGS) -- $(MAKE) validate-lane-command
+	@set -eu; \
+		derived_parent="$(PROJECT_DIR)/.xcode-build-tests"; \
+		scratch_parent="$(PROJECT_DIR)/.tmp"; \
+		derived_parent_existed=0; \
+		scratch_parent_existed=0; \
+		if [ -e "$$derived_parent" ] || [ -L "$$derived_parent" ]; then derived_parent_existed=1; fi; \
+		if [ -e "$$scratch_parent" ] || [ -L "$$scratch_parent" ]; then scratch_parent_existed=1; fi; \
+		mkdir -p "$$derived_parent" "$$scratch_parent"; \
+		derived_data="$$(mktemp -d "$$derived_parent/validate-lane.XXXXXX")"; \
+		scratch_path="$$(mktemp -d "$$scratch_parent/validate-lane.XXXXXX")"; \
+		cleanup() { \
+			rm -rf "$$derived_data" "$$scratch_path"; \
+			if [ "$$derived_parent_existed" -eq 0 ]; then rmdir "$$derived_parent" 2>/dev/null || true; fi; \
+			if [ "$$scratch_parent_existed" -eq 0 ]; then rmdir "$$scratch_parent" 2>/dev/null || true; fi; \
+		}; \
+		trap cleanup EXIT; \
+		$(VALIDATE_LANE) --repo "$(PROJECT_DIR)" --base "$(VALIDATE_BASE)" --artifacts "$$derived_data/Build" --artifacts "$$scratch_path" -- $(MAKE) validate-lane-command VALIDATE_DERIVED_DATA_PATH="$$derived_data" MA_VALIDATE_SCRATCH_PATH="$$scratch_path"
 
 validate-lane-command:
 	@set -eu; \
-		absent_roots=""; \
-		for root in $(VALIDATE_ARTIFACT_ROOTS); do \
-			if [ ! -e "$(PROJECT_DIR)/$$root" ] && [ ! -L "$(PROJECT_DIR)/$$root" ]; then absent_roots="$$absent_roots $$root"; fi; \
-		done; \
-		cleanup() { \
-			for root in $$absent_roots; do rm -rf "$(PROJECT_DIR)/$$root"; done; \
-		}; \
+		derived_data="$(VALIDATE_DERIVED_DATA_PATH)"; \
+		scratch_path="$(MA_VALIDATE_SCRATCH_PATH)"; \
+		[ -n "$$derived_data" ] || { echo "VALIDATE_DERIVED_DATA_PATH is required" >&2; exit 2; }; \
+		[ -n "$$scratch_path" ] || { echo "MA_VALIDATE_SCRATCH_PATH is required" >&2; exit 2; }; \
+		cleanup() { rm -rf "$$derived_data" "$$scratch_path"; }; \
 		trap cleanup EXIT; \
-		$(MAKE) validate ARGS="$(ARGS) --base $(VALIDATE_BASE)"
+		VALIDATE_DERIVED_DATA_PATH="$$derived_data" MA_SWIFTPM_SCRATCH_PATH="$$scratch_path" $(MAKE) validate ARGS="$(ARGS) --base $(VALIDATE_BASE)"
 
 validate-agent:
 	@$(AGENT_ENV) ./scripts/validate-agent.sh $(ARGS)
