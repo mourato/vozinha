@@ -46,9 +46,15 @@ implementation writes in the canonical isolated worktree.
 
 ## Agent Validation Loop
 
-`make validate` is the project validation entry and selects the automatic lane
-through `validate-agent`. Run `make lint` for any Swift delta, then the
-affected-module validation when behavior changes.
+`make validate` is the native project validation entry and selects the
+automatic lane through `validate-agent`. Use `make validate-lane` for the
+global baseline/artifact wrapper; it defaults to `git merge-base origin/main
+HEAD`, accepts `VALIDATE_BASE=...`, and runs with unique ignored
+`.xcode-build-tests/validate-lane.*` DerivedData and `.tmp/validate-lane.*`
+SwiftPM scratch roots. Both run roots are watched and cleaned before the
+wrapper returns; their parent roots and parity-specific roots remain outside
+this default lane. Run `make lint` for any Swift delta, then the affected-module
+validation when behavior changes.
 `make guidance-check` covers guidance-only changes; merge review remains
 separate. Swift 6.2/toolchain details live in
 `.agents/docs/swift-6-2-agent-baseline.md`.

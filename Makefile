@@ -5,7 +5,7 @@
 # with CI/CD pipelines and headless environments.
 # =============================================================================
 
-.PHONY: help build build-release build-agent build-test build-test-strict xcodebuild-safe test test-agent test-full test-full-agent test-smoke test-perf test-sensitive test-appkit test-parity test-parity-agent test-verbose test-strict test-ci-strict scope-check scope-check-agent validate validate-agent workflow-test benchmark-summary benchmark-summary-agent lint lint-agent lint-report lint-strict lint-strict-agent lint-fix arch-check preview-check localization-check guidance-check preflight preflight-fast preflight-agent preflight-agent-fast agent-artifacts-report agent-artifacts-dry-run agent-artifacts-clean clean run run-release build-and-run dmg setup-self-signed-cert setup format health ci-build deliverable-gate docs docs-preview docs-clean profile profile-report profile-cpu profile-memory profile-animation profile-animation-report
+.PHONY: help build build-release build-agent build-test build-test-strict xcodebuild-safe test test-agent test-full test-full-agent test-smoke test-perf test-sensitive test-appkit test-parity test-parity-agent test-verbose test-strict test-ci-strict scope-check scope-check-agent validate validate-lane validate-lane-command validate-agent workflow-test benchmark-summary benchmark-summary-agent lint lint-agent lint-report lint-strict lint-strict-agent lint-fix arch-check preview-check localization-check guidance-check preflight preflight-fast preflight-agent preflight-agent-fast agent-artifacts-report agent-artifacts-dry-run agent-artifacts-clean clean run run-release build-and-run dmg setup-self-signed-cert setup format health ci-build deliverable-gate docs docs-preview docs-clean profile profile-report profile-cpu profile-memory profile-animation profile-animation-report
 
 # Default target
 help:
@@ -38,6 +38,7 @@ help:
 	@echo "  make scope-check    - Run scoped validation (targeted tests + smart escalation)"
 	@echo "  make scope-check-agent - Run scoped validation in compact agent mode"
 	@echo "  make validate       - Run the canonical automatic validation lane"
+	@echo "  make validate-lane  - Run validate through the global baseline/artifact gate"
 	@echo "  make validate-agent  - Run the canonical Fast/Full/auto validation lane"
 	@echo "  make workflow-test  - Run deterministic validation workflow fixtures"
 	@echo "  make benchmark-summary - Run summary benchmark gate in report-only mode"
@@ -106,6 +107,9 @@ DIST_DIR = $(PROJECT_DIR)/dist
 AGENT_LOG_DIR ?= /tmp/ma-agent
 ARTIFACT_RETENTION_DAYS ?= 7
 AGENT_ENV = MA_AGENT_MODE=1 MA_AGENT_LOG_DIR="$(AGENT_LOG_DIR)"
+AGENT_CONFIG_HOME ?= $(HOME)/.agents
+VALIDATE_LANE ?= $(AGENT_CONFIG_HOME)/scripts/validate-lane
+VALIDATE_BASE ?= $(shell git merge-base origin/main HEAD 2>/dev/null || git rev-parse HEAD^)
 
 # Colors for output
 RED = \033[0;31m
@@ -186,6 +190,35 @@ scope-check-agent:
 
 validate:
 	@$(AGENT_ENV) ./scripts/validate-agent.sh --lane auto $(ARGS)
+
+validate-lane:
+	@set -eu; \
+		derived_parent="$(PROJECT_DIR)/.xcode-build-tests"; \
+		scratch_parent="$(PROJECT_DIR)/.tmp"; \
+		derived_parent_existed=0; \
+		scratch_parent_existed=0; \
+		if [ -e "$$derived_parent" ] || [ -L "$$derived_parent" ]; then derived_parent_existed=1; fi; \
+		if [ -e "$$scratch_parent" ] || [ -L "$$scratch_parent" ]; then scratch_parent_existed=1; fi; \
+		mkdir -p "$$derived_parent" "$$scratch_parent"; \
+		derived_data="$$(mktemp -d "$$derived_parent/validate-lane.XXXXXX")"; \
+		scratch_path="$$(mktemp -d "$$scratch_parent/validate-lane.XXXXXX")"; \
+		cleanup() { \
+			rm -rf "$$derived_data" "$$scratch_path"; \
+			if [ "$$derived_parent_existed" -eq 0 ]; then rmdir "$$derived_parent" 2>/dev/null || true; fi; \
+			if [ "$$scratch_parent_existed" -eq 0 ]; then rmdir "$$scratch_parent" 2>/dev/null || true; fi; \
+		}; \
+		trap cleanup EXIT; \
+		$(VALIDATE_LANE) --repo "$(PROJECT_DIR)" --base "$(VALIDATE_BASE)" --artifacts "$$derived_data/Build" --artifacts "$$scratch_path" -- $(MAKE) validate-lane-command VALIDATE_DERIVED_DATA_PATH="$$derived_data" MA_VALIDATE_SCRATCH_PATH="$$scratch_path"
+
+validate-lane-command:
+	@set -eu; \
+		derived_data="$(VALIDATE_DERIVED_DATA_PATH)"; \
+		scratch_path="$(MA_VALIDATE_SCRATCH_PATH)"; \
+		[ -n "$$derived_data" ] || { echo "VALIDATE_DERIVED_DATA_PATH is required" >&2; exit 2; }; \
+		[ -n "$$scratch_path" ] || { echo "MA_VALIDATE_SCRATCH_PATH is required" >&2; exit 2; }; \
+		cleanup() { rm -rf "$$derived_data" "$$scratch_path"; }; \
+		trap cleanup EXIT; \
+		VALIDATE_DERIVED_DATA_PATH="$$derived_data" MA_SWIFTPM_SCRATCH_PATH="$$scratch_path" $(MAKE) validate ARGS="$(ARGS) --base $(VALIDATE_BASE)"
 
 validate-agent:
 	@$(AGENT_ENV) ./scripts/validate-agent.sh $(ARGS)
