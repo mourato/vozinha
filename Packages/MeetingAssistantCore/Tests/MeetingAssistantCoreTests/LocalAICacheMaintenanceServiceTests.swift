@@ -5,49 +5,6 @@ import XCTest
 
 @MainActor
 final class LocalAICacheMaintenanceServiceTests: XCTestCase {
-    func testComputeCleanupPreview_WhenCompiledModelIsActive_ExcludesActiveCompiledDirectory() async throws {
-        let rootDirectory = try makeTemporaryDirectory()
-        defer { try? FileManager.default.removeItem(at: rootDirectory) }
-
-        let modelDirectory = rootDirectory.appendingPathComponent("Models", isDirectory: true)
-        let sourceDirectory = modelDirectory.appendingPathComponent("cohere_encoder.mlpackage", isDirectory: true)
-        try FileManager.default.createDirectory(at: sourceDirectory, withIntermediateDirectories: true)
-        try Data("encoder".utf8).write(to: sourceDirectory.appendingPathComponent("weights.bin"))
-
-        let activeCompiledDirectory = try CohereTranscribeModelRuntime.compiledModelDirectory(
-            for: .encoder,
-            artifactURL: sourceDirectory,
-            modelDirectory: modelDirectory,
-        )
-        try FileManager.default.createDirectory(at: activeCompiledDirectory, withIntermediateDirectories: true)
-        try Data("compiled".utf8).write(to: activeCompiledDirectory.appendingPathComponent("model.bin"))
-
-        let staleCompiledDirectory = activeCompiledDirectory
-            .deletingLastPathComponent()
-            .appendingPathComponent("STALE.mlmodelc", isDirectory: true)
-        try FileManager.default.createDirectory(at: staleCompiledDirectory, withIntermediateDirectories: true)
-        try Data("stale".utf8).write(to: staleCompiledDirectory.appendingPathComponent("model.bin"))
-        try setModificationDate(daysAgo: 60, for: staleCompiledDirectory)
-
-        let runtimeState = MockLocalAICacheRuntimeState(
-            loadedASRLocalModelID: LocalTranscriptionModel.cohereTranscribe032026CoreML6Bit.rawValue,
-            modelState: .loaded,
-            isASRInUse: false,
-            isASRResidentInMemory: true,
-        )
-        let service = LocalAICacheMaintenanceService(
-            runtimeState: runtimeState,
-            fileManager: .default,
-            cohereModelDirectoryProvider: { modelDirectory },
-            appleRuntimeCacheDirectoryProvider: { rootDirectory.appendingPathComponent("AppleCache", isDirectory: true) },
-        )
-
-        let preview = try await service.computeCleanupPreview(olderThanDays: 30)
-
-        XCTAssertEqual(preview.compiledModelCount, 1)
-        XCTAssertEqual(preview.candidates.first?.url.standardizedFileURL, staleCompiledDirectory.standardizedFileURL)
-    }
-
     func testComputeCleanupPreview_WhenRuntimeActive_ExcludesAppleRuntimeCache() async throws {
         let rootDirectory = try makeTemporaryDirectory()
         defer { try? FileManager.default.removeItem(at: rootDirectory) }
@@ -60,7 +17,7 @@ final class LocalAICacheMaintenanceServiceTests: XCTestCase {
         try setModificationDate(daysAgo: 60, for: runtimeDirectory)
 
         let runtimeState = MockLocalAICacheRuntimeState(
-            loadedASRLocalModelID: LocalTranscriptionModel.cohereTranscribe032026CoreML6Bit.rawValue,
+            loadedASRLocalModelID: LocalTranscriptionModel.parakeetTdt06BV3.rawValue,
             modelState: .loaded,
             isASRInUse: false,
             isASRResidentInMemory: true,
@@ -68,7 +25,6 @@ final class LocalAICacheMaintenanceServiceTests: XCTestCase {
         let service = LocalAICacheMaintenanceService(
             runtimeState: runtimeState,
             fileManager: .default,
-            cohereModelDirectoryProvider: { rootDirectory.appendingPathComponent("Models", isDirectory: true) },
             appleRuntimeCacheDirectoryProvider: { appleCacheRoot },
         )
 
@@ -92,7 +48,6 @@ final class LocalAICacheMaintenanceServiceTests: XCTestCase {
         let service = LocalAICacheMaintenanceService(
             runtimeState: runtimeState,
             fileManager: .default,
-            cohereModelDirectoryProvider: { rootDirectory.appendingPathComponent("Models", isDirectory: true) },
             appleRuntimeCacheDirectoryProvider: { appleCacheRoot },
         )
 

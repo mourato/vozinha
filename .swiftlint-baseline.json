@@ -106,36 +106,6 @@
   },
   {
     "violation": {
-      "location": {
-        "line": 9,
-        "character": 1,
-        "file": "Packages/MeetingAssistantCore/Sources/AI/Services/CohereTranscribeModelRuntime.swift"
-      },
-      "ruleDescription": "Type bodies should not span too many lines",
-      "reason": "Enum body should span 400 lines or less excluding comments and whitespace: currently spans 534 lines",
-      "ruleIdentifier": "type_body_length",
-      "ruleName": "Type Body Length",
-      "severity": "warning"
-    },
-    "text": "enum CohereTranscribeModelRuntime {"
-  },
-  {
-    "violation": {
-      "severity": "warning",
-      "location": {
-        "line": 186,
-        "character": 12,
-        "file": "Packages/MeetingAssistantCore/Sources/AI/Services/CohereTranscribeModelRuntime.swift"
-      },
-      "ruleName": "Function Body Length",
-      "reason": "Function body should span 60 lines or less excluding comments and whitespace: currently spans 62 lines",
-      "ruleDescription": "Function bodies should not span too many lines",
-      "ruleIdentifier": "function_body_length"
-    },
-    "text": "    static func load(from directory: URL, configuration: MLModelConfiguration? = nil) throws -> AsrModels {"
-  },
-  {
-    "violation": {
       "severity": "warning",
       "location": {
         "file": "Packages/MeetingAssistantCore/Sources/AI/Services/MeetingQAService.swift",
@@ -1766,7 +1736,7 @@
         "character": 7,
         "line": 5
       },
-      "reason": "Class body should span 400 lines or less excluding comments and whitespace: currently spans 484 lines"
+      "reason": "Class body should span 400 lines or less excluding comments and whitespace: currently spans 481 lines"
     }
   },
   {

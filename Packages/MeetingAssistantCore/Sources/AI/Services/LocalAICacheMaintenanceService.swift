@@ -14,7 +14,6 @@ protocol LocalAICacheRuntimeStateProviding: AnyObject {
 extension FluidAIModelManager: LocalAICacheRuntimeStateProviding {}
 
 public enum LocalAICacheCleanupKind: String, Hashable, Sendable {
-    case compiledModel
     case appleRuntime
 }
 
@@ -47,16 +46,8 @@ public struct LocalAICacheCleanupPreview: Hashable, Sendable {
         candidates.reduce(0) { $0 + $1.byteSize }
     }
 
-    public var compiledModelCount: Int {
-        candidates.count(where: { $0.kind == .compiledModel })
-    }
-
     public var appleRuntimeCount: Int {
         candidates.count(where: { $0.kind == .appleRuntime })
-    }
-
-    public var totalCompiledModelBytes: Int64 {
-        candidates.filter { $0.kind == .compiledModel }.reduce(0) { $0 + $1.byteSize }
     }
 
     public var totalAppleRuntimeBytes: Int64 {
@@ -67,18 +58,15 @@ public struct LocalAICacheCleanupPreview: Hashable, Sendable {
 public struct LocalAICacheCleanupResult: Hashable, Sendable {
     public let deletedCandidates: Int
     public let deletedBytes: Int64
-    public let deletedCompiledModelCount: Int
     public let deletedAppleRuntimeCount: Int
 
     public init(
         deletedCandidates: Int,
         deletedBytes: Int64,
-        deletedCompiledModelCount: Int,
         deletedAppleRuntimeCount: Int,
     ) {
         self.deletedCandidates = deletedCandidates
         self.deletedBytes = deletedBytes
-        self.deletedCompiledModelCount = deletedCompiledModelCount
         self.deletedAppleRuntimeCount = deletedAppleRuntimeCount
     }
 }
@@ -89,21 +77,16 @@ public final class LocalAICacheMaintenanceService {
 
     private let runtimeState: any LocalAICacheRuntimeStateProviding
     private let fileManager: FileManager
-    private let cohereModelDirectoryProvider: () -> URL
     private let appleRuntimeCacheDirectoryProvider: () -> URL
     private let logger = Logger(subsystem: AppIdentity.logSubsystem, category: "LocalAICacheMaintenance")
 
     init(
         runtimeState: (any LocalAICacheRuntimeStateProviding)? = nil,
         fileManager: FileManager = .default,
-        cohereModelDirectoryProvider: (() -> URL)? = nil,
         appleRuntimeCacheDirectoryProvider: (() -> URL)? = nil,
     ) {
         self.runtimeState = runtimeState ?? FluidAIModelManager.shared
         self.fileManager = fileManager
-        self.cohereModelDirectoryProvider = cohereModelDirectoryProvider ?? {
-            CohereTranscribeModelRuntime.defaultCacheDirectory()
-        }
         self.appleRuntimeCacheDirectoryProvider = appleRuntimeCacheDirectoryProvider ?? {
             AppIdentity.cachesBaseDirectory(fileManager: .default)
                 .appendingPathComponent(AppIdentity.bundleIdentifier, isDirectory: true)
@@ -114,35 +97,18 @@ public final class LocalAICacheMaintenanceService {
     public func computeCleanupPreview(olderThanDays days: Int) async throws -> LocalAICacheCleanupPreview {
         let retentionDays = max(1, days)
         let cutoffDate = Calendar.current.date(byAdding: .day, value: -retentionDays, to: Date()) ?? Date()
-        let cohereModelDirectory = cohereModelDirectoryProvider().standardizedFileURL
         let appleRuntimeCacheDirectory = appleRuntimeCacheDirectoryProvider().standardizedFileURL
         let runtimeSnapshot = runtimeSnapshot()
-        let activeCompiledPaths = activeCompiledArtifactPathsIfLoaded(
-            modelDirectory: cohereModelDirectory,
-            runtimeSnapshot: runtimeSnapshot,
-        )
 
-        let compiledCandidates = compiledModelCandidates(
-            modelDirectory: cohereModelDirectory,
-            activeCompiledPaths: activeCompiledPaths,
-            cutoffDate: cutoffDate,
-        )
-        let appleRuntimeCandidates: [LocalAICacheCleanupCandidate] = if runtimeSnapshot.hasActiveRuntime {
+        let candidates: [LocalAICacheCleanupCandidate] = if runtimeSnapshot.hasActiveRuntime {
             []
         } else {
             appleRuntimeCandidates(
                 cacheDirectory: appleRuntimeCacheDirectory,
                 cutoffDate: cutoffDate,
             )
+            .sorted { $0.url.lastPathComponent < $1.url.lastPathComponent }
         }
-
-        let candidates = (compiledCandidates + appleRuntimeCandidates)
-            .sorted { lhs, rhs in
-                if lhs.kind == rhs.kind {
-                    return lhs.url.lastPathComponent < rhs.url.lastPathComponent
-                }
-                return lhs.kind.rawValue < rhs.kind.rawValue
-            }
 
         return LocalAICacheCleanupPreview(retentionDays: retentionDays, candidates: candidates)
     }
@@ -157,36 +123,24 @@ public final class LocalAICacheMaintenanceService {
             return LocalAICacheCleanupResult(
                 deletedCandidates: 0,
                 deletedBytes: 0,
-                deletedCompiledModelCount: 0,
                 deletedAppleRuntimeCount: 0,
             )
         }
 
-        let compiledRoot = CohereTranscribeModelRuntime.compiledArtifactsRootDirectory(
-            baseDirectory: cohereModelDirectoryProvider().standardizedFileURL,
-        ).path
         let appleRoot = appleRuntimeCacheDirectoryProvider().standardizedFileURL.path
         var deletedCandidates = 0
         var deletedBytes: Int64 = 0
-        var deletedCompiledModelCount = 0
         var deletedAppleRuntimeCount = 0
 
-        for candidate in preview.candidates where isAllowedCandidate(candidate.url, compiledRoot: compiledRoot, appleRoot: appleRoot) {
+        for candidate in preview.candidates where isAllowedCandidate(candidate.url, appleRoot: appleRoot) {
             guard fileManager.fileExists(atPath: candidate.url.path) else { continue }
 
             try fileManager.removeItem(at: candidate.url)
             deletedCandidates += 1
             deletedBytes += candidate.byteSize
-
-            switch candidate.kind {
-            case .compiledModel:
-                deletedCompiledModelCount += 1
-            case .appleRuntime:
-                deletedAppleRuntimeCount += 1
-            }
+            deletedAppleRuntimeCount += 1
         }
 
-        removeEmptyDirectoriesIfNeeded(at: URL(fileURLWithPath: compiledRoot, isDirectory: true))
         removeEmptyDirectoriesIfNeeded(at: URL(fileURLWithPath: appleRoot, isDirectory: true))
 
         if deletedCandidates > 0 {
@@ -198,28 +152,8 @@ public final class LocalAICacheMaintenanceService {
         return LocalAICacheCleanupResult(
             deletedCandidates: deletedCandidates,
             deletedBytes: deletedBytes,
-            deletedCompiledModelCount: deletedCompiledModelCount,
             deletedAppleRuntimeCount: deletedAppleRuntimeCount,
         )
-    }
-
-    private func activeCompiledArtifactPathsIfLoaded(
-        modelDirectory: URL,
-        runtimeSnapshot: LocalAICacheRuntimeSnapshot,
-    ) -> Set<String> {
-        guard runtimeSnapshot.loadedASRLocalModelID == LocalTranscriptionModel.cohereTranscribe032026CoreML6Bit.rawValue,
-              runtimeSnapshot.hasActiveRuntime
-        else {
-            return []
-        }
-
-        do {
-            let directories = try CohereTranscribeModelRuntime.currentCompiledArtifactDirectories(at: modelDirectory)
-            return Set(directories.map(\.standardizedFileURL.path))
-        } catch {
-            logger.error("Failed to resolve active compiled model directories: \(error.localizedDescription, privacy: .public)")
-            return []
-        }
     }
 
     private func runtimeSnapshot() -> LocalAICacheRuntimeSnapshot {
@@ -229,28 +163,6 @@ public final class LocalAICacheMaintenanceService {
             isASRInUse: runtimeState.isASRInUse,
             isASRResidentInMemory: runtimeState.isASRResidentInMemory,
         )
-    }
-
-    private func compiledModelCandidates(
-        modelDirectory: URL,
-        activeCompiledPaths: Set<String>,
-        cutoffDate: Date,
-    ) -> [LocalAICacheCleanupCandidate] {
-        let directories = CohereTranscribeModelRuntime.persistedCompiledModelDirectories(
-            at: modelDirectory,
-            fileManager: fileManager,
-        )
-
-        return directories.compactMap { directory in
-            let standardizedPath = directory.standardizedFileURL.path
-            guard !activeCompiledPaths.contains(standardizedPath) else { return nil }
-            guard isOlderThanCutoff(directory, cutoffDate: cutoffDate) else { return nil }
-            return LocalAICacheCleanupCandidate(
-                url: directory,
-                byteSize: directoryByteSize(at: directory),
-                kind: .compiledModel,
-            )
-        }
     }
 
     private func appleRuntimeCandidates(
@@ -296,11 +208,9 @@ public final class LocalAICacheMaintenanceService {
         return candidates
     }
 
-    private func isAllowedCandidate(_ url: URL, compiledRoot: String, appleRoot: String) -> Bool {
+    private func isAllowedCandidate(_ url: URL, appleRoot: String) -> Bool {
         let standardizedPath = url.standardizedFileURL.path
-        return standardizedPath == compiledRoot
-            || standardizedPath.hasPrefix(compiledRoot + "/")
-            || standardizedPath == appleRoot
+        return standardizedPath == appleRoot
             || standardizedPath.hasPrefix(appleRoot + "/")
     }
 

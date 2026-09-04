@@ -13,8 +13,6 @@ enum LocalASRModelRuntimeRegistry {
         switch model {
         case .parakeetTdt06BV3:
             ParakeetLocalASRModelRuntime()
-        case .cohereTranscribe032026CoreML6Bit:
-            CohereLocalASRModelRuntime()
         }
     }
 }
@@ -31,17 +29,5 @@ private struct ParakeetLocalASRModelRuntime: LocalASRModelRuntime {
 
     func downloadAndLoad() async throws -> AsrModels {
         try await AsrModels.downloadAndLoad(version: .v3)
-    }
-}
-
-private struct CohereLocalASRModelRuntime: LocalASRModelRuntime {
-    let model: LocalTranscriptionModel = .cohereTranscribe032026CoreML6Bit
-
-    func isInstalled() -> Bool {
-        CohereTranscribeModelRuntime.modelsExist()
-    }
-
-    func downloadAndLoad() async throws -> AsrModels {
-        try await CohereTranscribeModelRuntime.downloadAndLoad()
     }
 }

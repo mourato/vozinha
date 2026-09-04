@@ -41,7 +41,7 @@ final class TranscriptionClientWarmupTests: XCTestCase {
         defer { settings.isMeetingTranscriptionEnabled = originalMeetingEnabled }
         settings.isMeetingTranscriptionEnabled = false
 
-        let dictationModelID = LocalTranscriptionModel.cohereTranscribe032026CoreML6Bit.rawValue
+        let dictationModelID = LocalTranscriptionModel.parakeetTdt06BV3.rawValue
         let configuration = DomainTranscriptionRequestConfiguration(
             providerID: MeetingAssistantCoreInfrastructure.TranscriptionProvider.local.rawValue,
             modelID: dictationModelID,
@@ -62,7 +62,7 @@ final class TranscriptionClientWarmupTests: XCTestCase {
 
         settings.meetingTranscriptionLocalModel = .parakeetTdt06BV3
 
-        let dictationModelID = LocalTranscriptionModel.cohereTranscribe032026CoreML6Bit.rawValue
+        let dictationModelID = LocalTranscriptionModel.parakeetTdt06BV3.rawValue
         let configuration = DomainTranscriptionRequestConfiguration(
             providerID: MeetingAssistantCoreInfrastructure.TranscriptionProvider.local.rawValue,
             modelID: dictationModelID,
@@ -73,7 +73,7 @@ final class TranscriptionClientWarmupTests: XCTestCase {
         try await client.warmupModel(for: .dictation, configuration: configuration)
 
         XCTAssertEqual(loadedASRModelIDs, [dictationModelID])
-        XCTAssertNotEqual(loadedASRModelIDs.first, settings.resolvedTranscriptionSelection(for: .meeting).selectedModel)
+        XCTAssertEqual(loadedASRModelIDs.first, settings.resolvedTranscriptionSelection(for: .meeting).selectedModel)
     }
 
     func testDictationWarmupDoesNotLoadDiarizationEvenWhenMeetingDiarizationEnabled() async throws {

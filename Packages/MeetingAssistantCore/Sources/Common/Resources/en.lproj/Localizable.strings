@@ -560,11 +560,10 @@
 "settings.service.transcription_provider.option.groq" = "Groq";
 "settings.service.transcription_provider.option.elevenlabs" = "ElevenLabs";
 "settings.service.transcription_provider.model_option.local.parakeet" = "Parakeet TDT 0.6B v3";
-"settings.service.transcription_provider.model_option.local.cohere" = "Cohere Transcribe 03-2026 (CoreML 6-bit)";
 "settings.service.transcription_provider.model_option.elevenlabs.scribe_v1" = "Scribe v1 (ElevenLabs)";
 "settings.service.transcription_provider.model_option.elevenlabs.scribe_v2" = "Scribe v2 (ElevenLabs)";
 "settings.service.transcription_provider.input_language" = "Input language:";
-"settings.service.transcription_provider.input_language.help" = "Only languages supported by all current transcription models (Parakeet, Cohere Transcribe, Groq Whisper, and ElevenLabs Scribe) are listed here. Use Automatic for any other language or mixed-language audio.";
+"settings.service.transcription_provider.input_language.help" = "Only languages supported by all current transcription models (Parakeet, Groq Whisper, and ElevenLabs Scribe) are listed here. Use Automatic for any other language or mixed-language audio.";
 "settings.service.transcription_provider.input_language.option.auto" = "Automatic (detect)";
 "settings.service.transcription_provider.get_api_key" = "Get %@ API Key";
 "settings.service.transcription_provider.missing_key.title" = "%@ API key required";
@@ -574,11 +573,6 @@
 "settings.service.transcription_provider.meeting_local.message" = "Meeting mode always uses local on-device transcription (%@). Provider selection here affects Dictation and Assistant only.";
 "settings.service.transcription_provider.meeting_diarization_warning.title" = "Speaker identification will be disabled";
 "settings.service.transcription_provider.meeting_diarization_warning.message" = "Meeting diarization is automatically disabled when %@ is selected because this model does not provide diarization support.";
-"settings.service.transcription_provider.local_cohere_unavailable.title" = "Cohere local model is not installed";
-"settings.service.transcription_provider.local_cohere_unavailable.message" = "Install the Cohere local runtime before using this model in Meeting mode.";
-"settings.service.transcription_provider.download_cohere_coming_soon" = "Download Cohere Model";
-"settings.service.transcription_provider.download_cohere_coming_soon.help" = "Requires access to the Cohere CoreML model repository on Hugging Face.";
-"settings.service.transcription_provider.cohere_download_failed.title" = "Cohere model download failed";
 "settings.service.model_residency_timeout" = "Unload model from RAM:";
 "settings.service.model_residency_timeout.help" = "Applies to transcription and diarization local models. RAM only; downloaded model files stay on disk.";
 "settings.service.model_residency_timeout.option.5m" = "5 minutes";

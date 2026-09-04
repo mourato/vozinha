@@ -561,11 +561,10 @@
 "settings.service.transcription_provider.option.groq" = "Groq";
 "settings.service.transcription_provider.option.elevenlabs" = "ElevenLabs";
 "settings.service.transcription_provider.model_option.local.parakeet" = "Parakeet TDT 0.6B v3";
-"settings.service.transcription_provider.model_option.local.cohere" = "Cohere Transcribe 03-2026 (CoreML 6-bit)";
 "settings.service.transcription_provider.model_option.elevenlabs.scribe_v1" = "Scribe v1 (ElevenLabs)";
 "settings.service.transcription_provider.model_option.elevenlabs.scribe_v2" = "Scribe v2 (ElevenLabs)";
 "settings.service.transcription_provider.input_language" = "Idioma de entrada:";
-"settings.service.transcription_provider.input_language.help" = "Aqui aparecem apenas idiomas suportados por todos os modelos atuais de transcrição (Parakeet, Cohere Transcribe, Groq Whisper e ElevenLabs Scribe). Use Automático para outros idiomas ou áudio com mistura de idiomas.";
+"settings.service.transcription_provider.input_language.help" = "Aqui aparecem apenas idiomas suportados por todos os modelos atuais de transcrição (Parakeet, Groq Whisper e ElevenLabs Scribe). Use Automático para outros idiomas ou áudio com mistura de idiomas.";
 "settings.service.transcription_provider.input_language.option.auto" = "Automático (detectar)";
 "settings.service.transcription_provider.get_api_key" = "Obter chave de API da %@";
 "settings.service.transcription_provider.missing_key.title" = "Chave de API da %@ obrigatória";
@@ -575,11 +574,6 @@
 "settings.service.transcription_provider.meeting_local.message" = "O modo reunião sempre usa transcrição local on-device (%@). Esta seleção afeta apenas Ditado e Assistant.";
 "settings.service.transcription_provider.meeting_diarization_warning.title" = "Identificação de oradores será desativada";
 "settings.service.transcription_provider.meeting_diarization_warning.message" = "A diarização em reuniões é desativada automaticamente quando %@ está selecionado, porque esse modelo não oferece suporte à diarização.";
-"settings.service.transcription_provider.local_cohere_unavailable.title" = "Modelo local Cohere não está instalado";
-"settings.service.transcription_provider.local_cohere_unavailable.message" = "Instale a runtime local Cohere antes de usar esse modelo no modo Reunião.";
-"settings.service.transcription_provider.download_cohere_coming_soon" = "Baixar Modelo Cohere";
-"settings.service.transcription_provider.download_cohere_coming_soon.help" = "Exige acesso ao repositório do modelo CoreML da Cohere no Hugging Face.";
-"settings.service.transcription_provider.cohere_download_failed.title" = "Falha ao baixar o modelo Cohere";
 "settings.service.model_residency_timeout" = "Descarregar modelo da RAM:";
 "settings.service.model_residency_timeout.help" = "Aplica-se aos modelos locais de transcrição e diarização. Apenas RAM; os arquivos baixados permanecem no disco.";
 "settings.service.model_residency_timeout.option.5m" = "5 minutos";

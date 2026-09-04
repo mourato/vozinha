@@ -30,8 +30,6 @@ extension FluidAIModelManager {
         switch model {
         case .parakeetTdt06BV3:
             AsrModels.defaultCacheDirectory(for: .v3)
-        case .cohereTranscribe032026CoreML6Bit:
-            CohereTranscribeModelRuntime.defaultCacheDirectory()
         }
     }
 

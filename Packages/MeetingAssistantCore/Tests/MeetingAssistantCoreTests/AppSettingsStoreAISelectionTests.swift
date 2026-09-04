@@ -91,7 +91,7 @@ final class AppSettingsStoreAISelectionTests: XCTestCase {
         settings.resetToDefaults()
 
         XCTAssertEqual(settings.meetingNotesFontFamilyKey, "__system__")
-        XCTAssertEqual(settings.meetingNotesFontSize, 16, accuracy: 0.000_001)
+        XCTAssertEqual(settings.meetingNotesFontSize, 16, accuracy: 1e-6)
     }
 
     func testAppearanceModeSettingIsPersistedAndReset() {
@@ -109,14 +109,14 @@ final class AppSettingsStoreAISelectionTests: XCTestCase {
         settings.meetingNotesFontSize = 15
 
         XCTAssertEqual(settings.meetingNotesFontFamilyKey, "__system__")
-        XCTAssertEqual(settings.meetingNotesFontSize, 14, accuracy: 0.000_001)
+        XCTAssertEqual(settings.meetingNotesFontSize, 14, accuracy: 1e-6)
         XCTAssertEqual(
             UserDefaults.standard.string(forKey: "meetingNotesFontFamilyKey"),
             "__system__",
         )
         let persistedSize = UserDefaults.standard.object(forKey: "meetingNotesFontSize") as? Double
         XCTAssertNotNil(persistedSize)
-        XCTAssertEqual(persistedSize ?? 0, 14, accuracy: 0.000_001)
+        XCTAssertEqual(persistedSize ?? 0, 14, accuracy: 1e-6)
     }
 
     func testDictationStructuredPostProcessingSettingIsPersisted() {
@@ -494,7 +494,40 @@ final class AppSettingsStoreAISelectionTests: XCTestCase {
     }
 
     func testResolvedTranscriptionSelection_MeetingUsesDedicatedMeetingLocalModel() {
-        settings.updateMeetingTranscriptionLocalModel(.cohereTranscribe032026CoreML6Bit)
+        settings.updateMeetingTranscriptionLocalModel(.parakeetTdt06BV3)
+        settings.updateTranscriptionDictationSelection(
+            provider: .groq,
+            model: "whisper-large-v3",
+        )
+
+        let resolved = settings.resolvedTranscriptionSelection(for: .meeting)
+
+        XCTAssertEqual(resolved.provider, .local)
+        XCTAssertEqual(
+            resolved.selectedModel,
+            MeetingAssistantCoreInfrastructure.TranscriptionProvider.localModelID,
+        )
+    }
+
+    func testMeetingTranscriptionLocalModel_IsPersistedIndependently() {
+        settings.updateMeetingTranscriptionLocalModel(.parakeetTdt06BV3)
+        settings.updateTranscriptionDictationSelection(
+            provider: .groq,
+            model: "whisper-large-v3",
+        )
+
+        XCTAssertEqual(
+            UserDefaults.standard.string(forKey: "meetingTranscriptionLocalModel"),
+            MeetingAssistantCoreInfrastructure.TranscriptionProvider.localModelID,
+        )
+        XCTAssertEqual(
+            settings.transcriptionDictationSelection.provider,
+            .groq,
+        )
+    }
+
+    func testResolvedTranscriptionSelection_MeetingModelDoesNotChangeWhenDictationProviderChanges() {
+        settings.updateMeetingTranscriptionLocalModel(.parakeetTdt06BV3)
         settings.updateTranscriptionDictationSelection(
             provider: .local,
             model: MeetingAssistantCoreInfrastructure.TranscriptionProvider.localModelID,
@@ -507,40 +540,14 @@ final class AppSettingsStoreAISelectionTests: XCTestCase {
         let resolved = settings.resolvedTranscriptionSelection(for: .meeting)
 
         XCTAssertEqual(resolved.provider, .local)
-        XCTAssertEqual(
-            resolved.selectedModel,
-            MeetingAssistantCoreInfrastructure.TranscriptionProvider.cohereLocalModelID,
-        )
-    }
-
-    func testMeetingTranscriptionLocalModel_IsPersistedIndependently() {
-        settings.updateMeetingTranscriptionLocalModel(.cohereTranscribe032026CoreML6Bit)
-        settings.updateTranscriptionDictationSelection(
-            provider: .local,
-            model: MeetingAssistantCoreInfrastructure.TranscriptionProvider.localModelID,
-        )
-
-        XCTAssertEqual(
-            UserDefaults.standard.string(forKey: "meetingTranscriptionLocalModel"),
-            MeetingAssistantCoreInfrastructure.TranscriptionProvider.cohereLocalModelID,
-        )
-        XCTAssertEqual(
-            settings.transcriptionSelectedModel(for: .local),
-            MeetingAssistantCoreInfrastructure.TranscriptionProvider.localModelID,
-        )
-    }
-
-    func testResolvedTranscriptionSelection_MeetingModelDoesNotChangeWhenDictationLocalModelChanges() {
-        settings.updateMeetingTranscriptionLocalModel(.parakeetTdt06BV3)
-        settings.updateTranscriptionDictationSelection(
-            provider: .local,
-            model: MeetingAssistantCoreInfrastructure.TranscriptionProvider.cohereLocalModelID,
-        )
-
-        let resolved = settings.resolvedTranscriptionSelection(for: .meeting)
-
-        XCTAssertEqual(resolved.provider, .local)
         XCTAssertEqual(resolved.selectedModel, MeetingAssistantCoreInfrastructure.TranscriptionProvider.localModelID)
+    }
+
+    func testNormalizedLocalModelID_FallsBackFromRemovedCohereSelection() {
+        let normalized = MeetingAssistantCoreInfrastructure.TranscriptionProvider.local
+            .normalizedModelID("cohere-transcribe-03-2026-coreml-6bit")
+
+        XCTAssertEqual(normalized, MeetingAssistantCoreInfrastructure.TranscriptionProvider.localModelID)
     }
 
     func testResolvedTranscriptionSelection_DictationFollowsConfiguredProvider() {
@@ -585,16 +592,6 @@ final class AppSettingsStoreAISelectionTests: XCTestCase {
 
         XCTAssertFalse(settings.supportsIncrementalTranscription(for: .assistant))
         XCTAssertTrue(settings.supportsIncrementalTranscription(for: .meeting))
-    }
-
-    func testSupportsIncrementalTranscription_DisabledWhenMeetingLocalModelDoesNotSupportIt() {
-        settings.updateMeetingTranscriptionLocalModel(.cohereTranscribe032026CoreML6Bit)
-        settings.updateTranscriptionDictationSelection(
-            provider: .groq,
-            model: "whisper-large-v3-turbo",
-        )
-
-        XCTAssertFalse(settings.supportsIncrementalTranscription(for: .meeting))
     }
 
     func testResolvedTranscriptionSelection_DictationSupportsElevenLabsProvider() {

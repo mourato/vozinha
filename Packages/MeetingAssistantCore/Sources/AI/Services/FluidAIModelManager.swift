@@ -56,13 +56,12 @@ public class FluidAIModelManager: ObservableObject, AIModelService {
     }
 
     private(set) var asrManager: AsrManager?
-    private(set) var cohereAsrManager: CohereTranscribeAsrManager?
     private(set) var diarizerManager: OfflineDiarizerManager?
     private var asrInFlightOperationCount = 0
     private var diarizationInFlightOperationCount = 0
 
     private var hasLoadedASRRuntime: Bool {
-        asrManager != nil || cohereAsrManager != nil
+        asrManager != nil
     }
 
     public enum ModelState: String, Sendable {
@@ -154,13 +153,6 @@ public class FluidAIModelManager: ObservableObject, AIModelService {
                 let manager = AsrManager(config: .default)
                 try await manager.initialize(models: models)
                 asrManager = manager
-                cohereAsrManager = nil
-            case .cohereTranscribe032026CoreML6Bit:
-                let modelDirectory = try await CohereTranscribeModelRuntime.downloadIfNeeded()
-                let manager = CohereTranscribeAsrManager()
-                try await manager.loadModels(from: modelDirectory, computeUnits: .cpuAndGPU)
-                cohereAsrManager = manager
-                asrManager = nil
             }
 
             loadedASRLocalModelID = requestedModel.rawValue
@@ -288,7 +280,6 @@ public class FluidAIModelManager: ObservableObject, AIModelService {
 
         if isLoadedModel {
             asrManager = nil
-            cohereAsrManager = nil
             loadedASRLocalModelID = nil
             modelState = .unloaded
             lastASRActivityAt = nil
@@ -366,7 +357,6 @@ public class FluidAIModelManager: ObservableObject, AIModelService {
         guard modelState != .downloading, modelState != .loading else { return false }
 
         asrManager = nil
-        cohereAsrManager = nil
         loadedASRLocalModelID = nil
         modelState = .unloaded
         if downloadPhase == .ready {
@@ -520,23 +510,6 @@ extension FluidAIModelManager {
                 segments: mappedSegments,
                 confidenceScore: Double(result.confidence),
             )
-
-        case .cohereTranscribe032026CoreML6Bit:
-            if let inputLanguageHintCode, !inputLanguageHintCode.isEmpty {
-                logger.info(
-                    "ASR language hint requested: \(inputLanguageHintCode) (Cohere runtime currently uses manifest default prompts)",
-                )
-            }
-
-            guard let manager = cohereAsrManager else {
-                throw FluidError.modelNotLoaded
-            }
-
-            progress?(10)
-            let text = try await manager.transcribe(audioFileAt: audioURL)
-            progress?(100)
-
-            return AsrTranscriptionOutput(text: text, segments: [], confidenceScore: nil)
         }
     }
 
@@ -582,20 +555,6 @@ extension FluidAIModelManager {
                 segments: mappedSegments,
                 confidenceScore: Double(result.confidence),
             )
-
-        case .cohereTranscribe032026CoreML6Bit:
-            if let inputLanguageHintCode, !inputLanguageHintCode.isEmpty {
-                logger.info(
-                    "ASR language hint requested: \(inputLanguageHintCode) (Cohere runtime currently uses manifest default prompts)",
-                )
-            }
-
-            guard let manager = cohereAsrManager else {
-                throw FluidError.modelNotLoaded
-            }
-
-            let text = try await manager.transcribe(audioSamples: samples)
-            return AsrTranscriptionOutput(text: text, segments: [], confidenceScore: nil)
         }
     }
 

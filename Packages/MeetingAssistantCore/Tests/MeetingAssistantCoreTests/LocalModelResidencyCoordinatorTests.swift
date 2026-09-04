@@ -111,7 +111,7 @@ final class LocalModelResidencyCoordinatorTests: XCTestCase {
         )
         let managerB = MockLocalModelResidencyManager(
             residencyManagerID: "manager-b",
-            managedLocalModelIDs: [LocalTranscriptionModel.cohereTranscribe032026CoreML6Bit.rawValue],
+            managedLocalModelIDs: ["other-local-model"],
             asrResident: false,
             diarizationResident: false,
             lastASRActivityAt: nil,
@@ -128,7 +128,7 @@ final class LocalModelResidencyCoordinatorTests: XCTestCase {
             coordinator.isResidencyManaged(localModelID: LocalTranscriptionModel.parakeetTdt06BV3.rawValue),
         )
         XCTAssertTrue(
-            coordinator.isResidencyManaged(localModelID: LocalTranscriptionModel.cohereTranscribe032026CoreML6Bit.rawValue),
+            coordinator.isResidencyManaged(localModelID: "other-local-model"),
         )
     }
 
@@ -149,7 +149,7 @@ final class LocalModelResidencyCoordinatorTests: XCTestCase {
         )
 
         XCTAssertFalse(
-            coordinator.isResidencyManaged(localModelID: LocalTranscriptionModel.cohereTranscribe032026CoreML6Bit.rawValue),
+            coordinator.isResidencyManaged(localModelID: "unmanaged-local-model"),
         )
     }
 

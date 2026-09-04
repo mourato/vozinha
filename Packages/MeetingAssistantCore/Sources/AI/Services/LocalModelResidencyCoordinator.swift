@@ -27,10 +27,7 @@ extension FluidAIModelManager {
     }
 
     var managedLocalModelIDs: Set<String> {
-        [
-            LocalTranscriptionModel.parakeetTdt06BV3.rawValue,
-            LocalTranscriptionModel.cohereTranscribe032026CoreML6Bit.rawValue,
-        ]
+        [LocalTranscriptionModel.parakeetTdt06BV3.rawValue]
     }
 }
 

@@ -433,7 +433,7 @@ extension TranscriptionSettingsViewModelTests {
             previewText: "Meeting text",
             capturePurpose: .meeting,
         )
-        let installedModel = LocalTranscriptionModel.cohereTranscribe032026CoreML6Bit
+        let installedModel = LocalTranscriptionModel.parakeetTdt06BV3
         readyLocalModels = [installedModel]
 
         let options = viewModel.availableRetryTranscriptionOptions(for: metadata)
