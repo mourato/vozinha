@@ -249,12 +249,7 @@ extension RecordingManager {
         apiKeyExists: ((AIProvider) -> Bool)? = nil,
     ) -> Bool {
         let readinessIssue = settings.enhancementsInferenceReadinessIssue(for: kernelMode, apiKeyExists: apiKeyExists)
-        let kernelModeEnabled: Bool = switch kernelMode {
-        case .dictation:
-            true
-        case .meeting, .assistant:
-            settings.isIntelligenceKernelModeEnabled(kernelMode)
-        }
+        let kernelModeEnabled = settings.isIntelligenceKernelModeEnabled(kernelMode)
 
         let globalPostProcessingEnabled = kernelMode == .dictation || settings.postProcessingEnabled
         return globalPostProcessingEnabled
