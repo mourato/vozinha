@@ -30,6 +30,8 @@ actor IncrementalTranscriptionCoordinator {
         voiceActivityKernel: any VoiceActivityKernel = RealtimeVoiceActivityWindowAssembler(),
         callbacks: Callbacks,
         fallbackLogMessage: String,
+        holdBuffersUntilASRReady: Bool = false,
+        asrWarmup: (@Sendable () async -> Void)? = nil,
     ) {
         core = IncrementalTranscriptionCoordinatorCore(
             configuration: .init(
@@ -42,6 +44,8 @@ actor IncrementalTranscriptionCoordinator {
                 onPreviewTextChanged: callbacks.onPreviewTextChanged,
                 onProcessedDurationChanged: callbacks.onProcessedDurationChanged,
                 fallbackLogMessage: fallbackLogMessage,
+                holdBuffersUntilASRReady: holdBuffersUntilASRReady,
+                asrWarmup: asrWarmup,
             ),
         )
     }
@@ -80,6 +84,10 @@ actor IncrementalTranscriptionCoordinator {
 
     func setHighLoadMode(_ isHighLoad: Bool) async {
         await core.setHighLoadMode(isHighLoad)
+    }
+
+    func setASRReady(_ ready: Bool) async {
+        await core.setASRReady(ready)
     }
 
     func finish(

@@ -35,30 +35,15 @@ extension RecordingManager {
             configuration: activeTranscriptionConfiguration,
         )
 
-        let coordinator = IncrementalTranscriptionCoordinator(
-            transcriptionID: meeting.id,
+        let holdBuffersUntilASRReady = shouldHoldDictationBuffersUntilASRReady()
+        let asrWarmup = makeDictationASRWarmupHandler(holdBuffersUntilASRReady: holdBuffersUntilASRReady)
+
+        let coordinator = makeIncrementalDictationCoordinator(
             meeting: meeting,
-            inputSource: resolveInputSourceLabel(for: meeting, recordingSource: source),
-            storage: storage,
+            source: source,
             transcriptionClientBox: transcriptionClientBox,
-            voiceActivityKernel: audioKernelProvider.makeVoiceActivityKernel(),
-            callbacks: .init(
-                onPreviewTextChanged: { [weak self] previewText in
-                    Task { @MainActor [weak self] in
-                        self?.transcriptionStatus.updateLivePreviewText(previewText)
-                    }
-                },
-                onProcessedDurationChanged: { [weak self] (processedDuration: Double) in
-                    Task { @MainActor [weak self] in
-                        guard let self else { return }
-                        transcriptionStatus.updateProgress(
-                            phase: .processing,
-                            processedSeconds: processedDuration,
-                        )
-                    }
-                },
-            ),
-            fallbackLogMessage: "Dictation incremental transcription degraded; full-file fallback required",
+            holdBuffersUntilASRReady: holdBuffersUntilASRReady,
+            asrWarmup: asrWarmup,
         )
 
         installIncrementalBufferForwarder(
@@ -144,5 +129,41 @@ extension RecordingManager {
             await incrementalDictationCoordinator.cancelAndDiscard()
         }
         teardownIncrementalDictationSession()
+    }
+
+    private func makeIncrementalDictationCoordinator(
+        meeting: Meeting,
+        source: RecordingSource,
+        transcriptionClientBox: UncheckedTranscriptionServiceBox,
+        holdBuffersUntilASRReady: Bool,
+        asrWarmup: (@Sendable () async -> Void)?,
+    ) -> IncrementalTranscriptionCoordinator {
+        IncrementalTranscriptionCoordinator(
+            transcriptionID: meeting.id,
+            meeting: meeting,
+            inputSource: resolveInputSourceLabel(for: meeting, recordingSource: source),
+            storage: storage,
+            transcriptionClientBox: transcriptionClientBox,
+            voiceActivityKernel: audioKernelProvider.makeVoiceActivityKernel(),
+            callbacks: .init(
+                onPreviewTextChanged: { [weak self] previewText in
+                    Task { @MainActor [weak self] in
+                        self?.transcriptionStatus.updateLivePreviewText(previewText)
+                    }
+                },
+                onProcessedDurationChanged: { [weak self] (processedDuration: Double) in
+                    Task { @MainActor [weak self] in
+                        guard let self else { return }
+                        transcriptionStatus.updateProgress(
+                            phase: .processing,
+                            processedSeconds: processedDuration,
+                        )
+                    }
+                },
+            ),
+            fallbackLogMessage: "Dictation incremental transcription degraded; full-file fallback required",
+            holdBuffersUntilASRReady: holdBuffersUntilASRReady,
+            asrWarmup: asrWarmup,
+        )
     }
 }

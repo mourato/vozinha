@@ -126,6 +126,12 @@ public class TranscriptionClient: ObservableObject, TranscriptionService, Transc
         }
     }
 
+    /// Whether the local ASR model for the given id is loaded and ready for incremental transcription.
+    public func isLocalASRReady(for modelID: String) -> Bool {
+        let manager = FluidAIModelManager.shared
+        return manager.modelState == .loaded && manager.loadedASRLocalModelID == modelID
+    }
+
     /// Warm up the transcription model for meeting capture.
     public func warmupModel() async throws {
         try await warmupModel(for: .meeting, configuration: nil)
