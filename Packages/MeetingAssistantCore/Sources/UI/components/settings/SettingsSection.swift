@@ -1,4 +1,5 @@
 import MeetingAssistantCoreCommon
+import SwiftUI
 
 public struct SettingsDestination: Equatable, Sendable {
     public let section: SettingsSection
@@ -187,6 +188,35 @@ public enum SettingsSection: String, CaseIterable, Identifiable, Sendable {
         case .updates: "arrow.down.circle.fill"
         default: icon
         }
+    }
+
+    /// The badge background color corresponding to macOS System Settings visual styling.
+    public var badgeColor: Color {
+        switch self {
+        case .activity, .metrics:
+            .blue
+        case .modes, .dictation, .assistant, .integrations:
+            .purple
+        case .meetings:
+            .green
+        case .history, .transcriptions:
+            .orange
+        case .dictionary, .vocabulary:
+            .indigo
+        case .system, .general, .permissions, .audio, .intelligence, .models, .enhancements:
+            Color(nsColor: .systemGray)
+        case .updates:
+            .blue
+        }
+    }
+
+    /// Subtle gradient applied to the icon badge for visual depth.
+    public var badgeGradient: LinearGradient {
+        LinearGradient(
+            colors: [badgeColor, badgeColor.opacity(0.88)],
+            startPoint: .top,
+            endPoint: .bottom,
+        )
     }
 
 }
