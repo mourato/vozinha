@@ -21,7 +21,7 @@ extension FluidAIModelManager {
         LocalTranscriptionModel(rawValue: rawValue) ?? .parakeetTdt06BV3
     }
 
-    func loadASRModels(for model: LocalTranscriptionModel) async throws -> AsrModels {
+    nonisolated static func loadASRModels(for model: LocalTranscriptionModel) async throws -> AsrModels {
         let runtime = LocalASRModelRuntimeRegistry.runtime(for: model)
         return try await runtime.downloadAndLoad()
     }
