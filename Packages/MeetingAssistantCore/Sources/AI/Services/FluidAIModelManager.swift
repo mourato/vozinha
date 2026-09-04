@@ -149,9 +149,13 @@ public class FluidAIModelManager: ObservableObject, AIModelService {
 
             switch requestedModel {
             case .parakeetTdt06BV3:
-                let models = try await loadASRModels(for: requestedModel)
-                let manager = AsrManager(config: .default)
-                try await manager.initialize(models: models)
+                // Model deserialization and Core ML compilation must not run on the MainActor during capture.
+                let manager = try await Task.detached(priority: .userInitiated) {
+                    let models = try await Self.loadASRModels(for: requestedModel)
+                    let manager = AsrManager(config: .default)
+                    try await manager.initialize(models: models)
+                    return manager
+                }.value
                 asrManager = manager
             }
 
