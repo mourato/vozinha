@@ -10,6 +10,7 @@ struct SettingsSearchField: View {
     enum Style {
         case standard
         case sidebar
+        case history
     }
 
     @Binding var text: String
@@ -31,6 +32,16 @@ struct SettingsSearchField: View {
                         style: .continuous,
                     ),
                 )
+        case .history:
+            DSCard(
+                style: .settings,
+                cornerRadius: AppDesignSystem.Layout.largeCornerRadius,
+                padding: 0,
+            ) {
+                nativeField(style: .sidebar)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
+            }
         }
     }
 
@@ -57,6 +68,7 @@ struct SettingsSearchField: View {
         SettingsSearchField(
             text: .constant("Transcript"),
             placeholder: "settings.transcriptions.search_placeholder".localized,
+            style: .history,
         )
     }
     .padding(16)

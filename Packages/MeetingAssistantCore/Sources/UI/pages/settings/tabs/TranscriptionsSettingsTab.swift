@@ -105,6 +105,7 @@ public struct TranscriptionsSettingsTab: View {
                 SettingsSearchField(
                     text: $viewModel.searchText,
                     placeholder: "settings.transcriptions.search_placeholder".localized,
+                    style: .history,
                 )
 
                 HStack(spacing: 12) {
