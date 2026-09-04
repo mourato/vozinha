@@ -183,16 +183,37 @@ extension RecordingManager {
 
     func warmupIncrementalTranscriptionIfNeeded() {
         guard let transcriptionClient = transcriptionClient as? TranscriptionClient else { return }
-        transcriptionClient.warmupModelIfNeededInBackground()
+        transcriptionClient.warmupModelIfNeededInBackground(for: .meeting, configuration: activeTranscriptionConfiguration)
+    }
+
+    func shouldEagerWarmupLocalASRForDictation() -> Bool {
+        guard currentCapturePurpose == .dictation else { return false }
+        guard let configuration = activeTranscriptionConfiguration,
+              let provider = TranscriptionProvider(rawValue: configuration.providerID)
+        else { return false }
+        return provider == .local
+    }
+
+    func scheduleEagerDictationWarmupIfNeeded(meetingID: UUID) {
+        guard shouldEagerWarmupLocalASRForDictation() else { return }
+
+        deferredIncrementalWarmupTask?.cancel()
+        deferredIncrementalWarmupTask = Task { @MainActor [weak self] in
+            guard let self else { return }
+            guard !Task.isCancelled else { return }
+            guard isRecording, currentMeeting?.id == meetingID else { return }
+            guard let transcriptionClient = transcriptionClient as? TranscriptionClient else { return }
+            transcriptionClient.warmupModelIfNeededInBackground(
+                for: .dictation,
+                configuration: activeTranscriptionConfiguration,
+            )
+        }
     }
 
     func scheduleDeferredIncrementalWarmupIfNeeded(meetingID: UUID) {
-        deferredIncrementalWarmupTask?.cancel()
+        guard incrementalMeetingCoordinator != nil else { return }
 
-        guard incrementalDictationCoordinator != nil || incrementalMeetingCoordinator != nil else {
-            deferredIncrementalWarmupTask = nil
-            return
-        }
+        deferredIncrementalWarmupTask?.cancel()
 
         deferredIncrementalWarmupTask = Task { @MainActor [weak self] in
             try? await Task.sleep(nanoseconds: Constants.deferredIncrementalWarmupDelay)

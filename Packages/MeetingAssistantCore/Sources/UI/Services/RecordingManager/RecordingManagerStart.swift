@@ -254,6 +254,7 @@ extension RecordingManager {
             "source": source.rawValue,
         ])
 
+        scheduleEagerDictationWarmupIfNeeded(meetingID: meeting.id)
         scheduleDeferredIncrementalWarmupIfNeeded(meetingID: meeting.id)
     }
 

@@ -59,7 +59,11 @@ public class TranscriptionClient: ObservableObject, TranscriptionService, Transc
         return LocalTranscriptionModel(rawValue: selection.selectedModel)?.supportsIncrementalTranscription ?? false
     }
 
-    private init(
+    /// ponytail: test-only seam; production uses FluidAIModelManager.shared.
+    var localASRWarmupLoader: (@MainActor (String) async -> Void)?
+    var diarizationWarmupLoader: (@MainActor () async -> Void)?
+
+    init(
         settingsStore: AppSettingsStore = .shared,
         groqTranscriptionClient: GroqTranscriptionClient = GroqTranscriptionClient(),
         elevenLabsTranscriptionClient: ElevenLabsTranscriptionClient = ElevenLabsTranscriptionClient(),
@@ -122,19 +126,32 @@ public class TranscriptionClient: ObservableObject, TranscriptionService, Transc
         }
     }
 
-    /// Warm up the transcription model.
+    /// Warm up the transcription model for meeting capture.
     public func warmupModel() async throws {
-        guard settingsStore.isMeetingTranscriptionEnabled else {
-            updateCachedReadiness(.unknown)
-            AppLogger.debug(
-                "Skipped model warmup because meeting transcription capability is disabled",
-                category: .transcriptionEngine,
-            )
-            return
+        try await warmupModel(for: .meeting, configuration: nil)
+    }
+
+    /// Purpose-aware warmup for meeting or dictation capture.
+    public func warmupModel(
+        for executionMode: TranscriptionExecutionMode,
+        configuration: DomainTranscriptionRequestConfiguration?,
+    ) async throws {
+        if executionMode == .meeting {
+            guard settingsStore.isMeetingTranscriptionEnabled else {
+                updateCachedReadiness(.unknown)
+                AppLogger.debug(
+                    "Skipped model warmup because meeting transcription capability is disabled",
+                    category: .transcriptionEngine,
+                )
+                return
+            }
         }
 
-        switch transcriptionImplementation {
+        let selection = warmupSelection(for: executionMode, configuration: configuration)
+
+        switch resolvedBackend(for: selection) {
         case .xpc:
+            guard executionMode == .meeting else { return }
             do {
                 try await MeetingAssistantAIClient.shared.warmupModel()
                 updateCachedReadiness(.healthy)
@@ -143,16 +160,13 @@ public class TranscriptionClient: ObservableObject, TranscriptionService, Transc
                 throw error
             }
         case .local:
-            await FluidAIModelManager.shared.loadModels()
-            let meetingSelection = settingsStore.resolvedTranscriptionSelection(for: .meeting)
-            let supportsDiarization = settingsStore.localModelSupportsDiarization(modelID: meetingSelection.selectedModel)
-            if FeatureFlags.enableDiarization,
-               AppSettingsStore.shared.isDiarizationEnabled,
-               supportsDiarization
-            {
-                await FluidAIModelManager.shared.loadDiarizationModels()
+            await loadLocalASRModel(modelID: selection.selectedModel)
+            if shouldLoadDiarization(for: executionMode, modelID: selection.selectedModel) {
+                await loadDiarizationModelsIfNeeded()
             }
             updateCachedReadiness(FluidAIModelManager.shared.modelState == .loaded ? .healthy : .unhealthy)
+        case .groq, .elevenLabs:
+            return
         }
     }
 
@@ -465,13 +479,27 @@ public class TranscriptionClient: ObservableObject, TranscriptionService, Transc
     }
 
     public func warmupModelIfNeededInBackground() {
+        warmupModelIfNeededInBackground(for: .meeting, configuration: nil)
+    }
+
+    public func warmupModelIfNeededInBackground(
+        for executionMode: TranscriptionExecutionMode,
+        configuration: DomainTranscriptionRequestConfiguration?,
+    ) {
         guard FeatureFlags.enableCachedTranscriptionReadinessGate else { return }
-        guard settingsStore.isMeetingTranscriptionEnabled else { return }
-        guard cachedReadinessState != .healthy else { return }
+
+        if executionMode == .meeting {
+            guard settingsStore.isMeetingTranscriptionEnabled else { return }
+            guard cachedReadinessState != .healthy else { return }
+        } else {
+            let selection = warmupSelection(for: executionMode, configuration: configuration)
+            guard isLocalWarmupBackend(for: selection) else { return }
+            guard needsLocalASRWarmup(modelID: selection.selectedModel) else { return }
+        }
 
         Task { @MainActor [weak self] in
             do {
-                try await self?.warmupModel()
+                try await self?.warmupModel(for: executionMode, configuration: configuration)
             } catch {
                 self?.logger.error("Background warmup failed: \(error.localizedDescription)")
             }
@@ -664,6 +692,57 @@ public class TranscriptionClient: ObservableObject, TranscriptionService, Transc
             return false
         }
         return requestedOverride
+    }
+
+    private func warmupSelection(
+        for executionMode: TranscriptionExecutionMode,
+        configuration: DomainTranscriptionRequestConfiguration?,
+    ) -> TranscriptionProviderSelection {
+        if let configuration,
+           let provider = MeetingAssistantCoreInfrastructure.TranscriptionProvider(rawValue: configuration.providerID)
+        {
+            return TranscriptionProviderSelection(provider: provider, selectedModel: configuration.modelID)
+        }
+        return settingsStore.resolvedTranscriptionSelection(for: executionMode)
+    }
+
+    private func isLocalWarmupBackend(for selection: TranscriptionProviderSelection) -> Bool {
+        if case .local = resolvedBackend(for: selection) {
+            return true
+        }
+        return false
+    }
+
+    private func shouldLoadDiarization(for executionMode: TranscriptionExecutionMode, modelID: String) -> Bool {
+        guard executionMode == .meeting else { return false }
+        guard FeatureFlags.enableDiarization, settingsStore.isDiarizationEnabled else { return false }
+        return settingsStore.localModelSupportsDiarization(modelID: modelID)
+    }
+
+    private func needsLocalASRWarmup(modelID: String) -> Bool {
+        let manager = FluidAIModelManager.shared
+        guard manager.modelState == .loaded,
+              manager.loadedASRLocalModelID == modelID
+        else {
+            return true
+        }
+        return false
+    }
+
+    private func loadLocalASRModel(modelID: String) async {
+        if let localASRWarmupLoader {
+            await localASRWarmupLoader(modelID)
+        } else {
+            await FluidAIModelManager.shared.loadModels(for: modelID)
+        }
+    }
+
+    private func loadDiarizationModelsIfNeeded() async {
+        if let diarizationWarmupLoader {
+            await diarizationWarmupLoader()
+        } else {
+            await FluidAIModelManager.shared.loadDiarizationModels()
+        }
     }
 
     private func updateCachedReadiness(_ state: CachedReadinessState) {
