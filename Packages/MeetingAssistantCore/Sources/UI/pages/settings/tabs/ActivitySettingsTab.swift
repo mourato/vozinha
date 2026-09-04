@@ -46,7 +46,7 @@ public struct ActivitySettingsTab: View {
             openEventDetail: { presentedSheet = .eventDetail($0) },
         )
         .task {
-            await viewModel.load()
+            await viewModel.loadIfNeeded()
             presentPendingSheetIfNeeded()
         }
         .onReceive(NotificationCenter.default.publisher(for: .meetingAssistantTranscriptionSaved)) { notification in

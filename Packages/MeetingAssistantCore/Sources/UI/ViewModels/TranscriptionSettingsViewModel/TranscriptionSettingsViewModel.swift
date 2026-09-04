@@ -89,6 +89,8 @@ public class TranscriptionSettingsViewModel: ObservableObject {
     @Published public var showDeleteConfirmation = false
     @Published public var pendingDeleteTranscription: TranscriptionMetadata?
 
+    private var hasInitialLoadCompleted = false
+
     let storage: StorageService
     let recordingManager: RecordingManager
     let meetingRepository: MeetingRepository
@@ -210,6 +212,11 @@ public class TranscriptionSettingsViewModel: ObservableObject {
         groupedTranscriptions.keys.sorted(by: >)
     }
 
+    public func loadIfNeeded() async {
+        guard !hasInitialLoadCompleted else { return }
+        await loadTranscriptions()
+    }
+
     public func loadTranscriptions() async {
         isLoading = true
         loadErrorMessage = nil
@@ -243,6 +250,7 @@ public class TranscriptionSettingsViewModel: ObservableObject {
             loadErrorMessage = "settings.transcriptions.error_load".localized
         }
         isLoading = false
+        hasInitialLoadCompleted = true
     }
 
     private var rawAppValueFilter: String? {
