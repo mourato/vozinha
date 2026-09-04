@@ -49,7 +49,7 @@ Status values: `TODO` | `IN PROGRESS` | `DONE` | `BLOCKED` | `REJECTED`.
 | [129](129-dictation-shortcut-hybrid-parity.md) | Characterize/parity hybrid+PTT dictation shortcuts | P1 | M | — | REVIEWED (`b35a94a3`, merged local) |
 | [130](130-dictation-incremental-ready-gate.md) | Bound early incremental audio until ASR is ready | P1 | M | 128 | REVIEWED (`f0622716`, merged local) |
 | [131](131-dictation-post-session-unload.md) | Unload local ASR after dictation idle grace | P1 | M | 128 | REVIEWED (`d0ad592b`, merged local) |
-| [132](132-enable-dictation-intelligence-mode.md) | Enable dictation Intelligence Kernel mode gating | P2 | M | prefer after 128–131 | TODO |
+| [132](132-enable-dictation-intelligence-mode.md) | Enable dictation Intelligence Kernel mode gating | P2 | M | prefer after 128–131 | REVIEWED (`7035c28e`, merged local) |
 
 ## Dependency order
 
