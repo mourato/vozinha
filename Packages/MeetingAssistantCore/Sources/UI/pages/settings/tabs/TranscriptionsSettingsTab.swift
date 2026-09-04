@@ -32,7 +32,7 @@ public struct TranscriptionsSettingsTab: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .task {
-            await viewModel.loadTranscriptions()
+            await viewModel.loadIfNeeded()
             syncSelectionForCurrentRoute()
         }
         .onReceive(NotificationCenter.default.publisher(for: .meetingAssistantTranscriptionSaved)) { _ in

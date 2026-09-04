@@ -86,6 +86,11 @@ public final class MetricsDashboardViewModel: ObservableObject {
         }
     }
 
+    public func loadIfNeeded() async {
+        guard !hasLoaded else { return }
+        await load()
+    }
+
     public func load() async {
         await refresh(showLoadingIndicator: !hasLoaded)
         await refreshUpcomingEvents(showLoadingIndicator: !hasLoaded)

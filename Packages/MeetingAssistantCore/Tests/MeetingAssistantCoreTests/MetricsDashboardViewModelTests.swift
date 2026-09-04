@@ -3,6 +3,25 @@ import XCTest
 
 @MainActor
 final class MetricsDashboardViewModelTests: XCTestCase {
+    func testLoadIfNeeded_DoesNotReloadWhenAlreadyLoaded() async {
+        let storage = MockStorageService()
+        storage.mockTranscriptions = [
+            makeTranscription(wordCount: 3),
+        ]
+        let viewModel = makeViewModel(storage: storage)
+
+        await viewModel.loadIfNeeded()
+        XCTAssertEqual(viewModel.summary.sessionsRecorded, 1)
+
+        storage.mockTranscriptions.append(makeTranscription(wordCount: 4))
+
+        await viewModel.loadIfNeeded()
+        XCTAssertEqual(viewModel.summary.sessionsRecorded, 1)
+
+        await viewModel.load()
+        XCTAssertEqual(viewModel.summary.sessionsRecorded, 2)
+    }
+
     func testLoad_RefreshesAfterFirstLoadEvenWhenAlreadyLoaded() async {
         let storage = MockStorageService()
         storage.mockTranscriptions = [
