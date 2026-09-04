@@ -46,7 +46,7 @@ Status values: `TODO` | `IN PROGRESS` | `DONE` | `BLOCKED` | `REJECTED`.
 | [126](126-meeting-reminder-scheduler-slapss.md) | Proactive meeting reminders with full-screen overlay (Slapss-inspired) | P1 | L | ADR 001 | TODO |
 | [127](127-meeting-notes-pane-ux.md) | Raycast-style meeting notes panel with WebKit editor (Pane-inspired) | P1 | L | ADR 002; 126 slice 4b recommended | TODO |
 | [128](128-dictation-eager-model-warmup.md) | Eager purpose-aware ASR warmup during dictation capture | P1 | M | — | REVIEWED (`99393e84`, merged local) |
-| [129](129-dictation-shortcut-hybrid-parity.md) | Characterize/parity hybrid+PTT dictation shortcuts | P1 | M | — | TODO |
+| [129](129-dictation-shortcut-hybrid-parity.md) | Characterize/parity hybrid+PTT dictation shortcuts | P1 | M | — | REVIEWED (`b35a94a3`, merged local) |
 | [130](130-dictation-incremental-ready-gate.md) | Bound early incremental audio until ASR is ready | P1 | M | 128 | REVIEWED (`f0622716`, merged local) |
 | [131](131-dictation-post-session-unload.md) | Unload local ASR after dictation idle grace | P1 | M | 128 | REVIEWED (`d0ad592b`, merged local) |
 | [132](132-enable-dictation-intelligence-mode.md) | Enable dictation Intelligence Kernel mode gating | P2 | M | prefer after 128–131 | TODO |
