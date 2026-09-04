@@ -152,6 +152,180 @@ final class LocalModelResidencyCoordinatorTests: XCTestCase {
             coordinator.isResidencyManaged(localModelID: LocalTranscriptionModel.cohereTranscribe032026CoreML6Bit.rawValue),
         )
     }
+
+    func testPerformDictationIdleUnloadUnloadsASRAfterGraceWhenIdle() async {
+        let referenceDate = Date(timeIntervalSince1970: 1_000)
+        let manager = MockLocalModelResidencyManager(
+            residencyManagerID: "manager-a",
+            managedLocalModelIDs: [LocalTranscriptionModel.parakeetTdt06BV3.rawValue],
+            asrResident: true,
+            diarizationResident: true,
+            lastASRActivityAt: referenceDate,
+            lastDiarizationActivityAt: referenceDate,
+        )
+        let settings = MockModelResidencySettings(timeout: .minutes30)
+        let coordinator = LocalModelResidencyCoordinator(
+            modelManager: manager,
+            settingsStore: settings,
+            checkIntervalSeconds: 1,
+        )
+
+        await coordinator.performDictationIdleUnloadIfEligible(
+            now: referenceDate.addingTimeInterval(120),
+            grace: 120,
+        )
+
+        XCTAssertEqual(manager.asrUnloadAttempts, 1)
+        XCTAssertEqual(manager.diarizationUnloadAttempts, 0)
+        XCTAssertFalse(manager.isASRResidentInMemory)
+        XCTAssertTrue(manager.isDiarizationResidentInMemory)
+    }
+
+    func testPerformDictationIdleUnloadSkipsWhenASRIsInUse() async {
+        let referenceDate = Date(timeIntervalSince1970: 1_000)
+        let manager = MockLocalModelResidencyManager(
+            residencyManagerID: "manager-a",
+            managedLocalModelIDs: [LocalTranscriptionModel.parakeetTdt06BV3.rawValue],
+            asrResident: true,
+            diarizationResident: true,
+            lastASRActivityAt: referenceDate,
+            lastDiarizationActivityAt: referenceDate,
+            isASRInUse: true,
+        )
+        let settings = MockModelResidencySettings(timeout: .minutes30)
+        let coordinator = LocalModelResidencyCoordinator(
+            modelManager: manager,
+            settingsStore: settings,
+            checkIntervalSeconds: 1,
+        )
+
+        await coordinator.performDictationIdleUnloadIfEligible(
+            now: referenceDate.addingTimeInterval(120),
+            grace: 120,
+        )
+
+        XCTAssertEqual(manager.asrUnloadAttempts, 0)
+    }
+
+    func testPerformDictationIdleUnloadSkipsWhenMeetingCaptureIsActive() async {
+        let referenceDate = Date(timeIntervalSince1970: 1_000)
+        let manager = MockLocalModelResidencyManager(
+            residencyManagerID: "manager-a",
+            managedLocalModelIDs: [LocalTranscriptionModel.parakeetTdt06BV3.rawValue],
+            asrResident: true,
+            diarizationResident: false,
+            lastASRActivityAt: referenceDate,
+            lastDiarizationActivityAt: nil,
+        )
+        let settings = MockModelResidencySettings(timeout: .minutes30)
+        let coordinator = LocalModelResidencyCoordinator(
+            modelManager: manager,
+            settingsStore: settings,
+            checkIntervalSeconds: 1,
+        )
+
+        await coordinator.performDictationIdleUnloadIfEligible(
+            now: referenceDate.addingTimeInterval(120),
+            grace: 120,
+            isMeetingCaptureActive: { true },
+        )
+
+        XCTAssertEqual(manager.asrUnloadAttempts, 0)
+    }
+
+    func testScheduleDictationIdleUnloadDoesNothingWhenTimeoutIsNever() async {
+        let manager = MockLocalModelResidencyManager(
+            residencyManagerID: "manager-a",
+            managedLocalModelIDs: [LocalTranscriptionModel.parakeetTdt06BV3.rawValue],
+            asrResident: true,
+            diarizationResident: false,
+            lastASRActivityAt: Date(timeIntervalSince1970: 0),
+            lastDiarizationActivityAt: nil,
+        )
+        let settings = MockModelResidencySettings(timeout: .never)
+        let coordinator = LocalModelResidencyCoordinator(
+            modelManager: manager,
+            settingsStore: settings,
+            checkIntervalSeconds: 1,
+        )
+
+        coordinator.scheduleDictationIdleUnload(grace: 0.01)
+        try? await Task.sleep(nanoseconds: 20_000_000)
+
+        XCTAssertEqual(manager.asrUnloadAttempts, 0)
+    }
+
+    func testScheduleDictationIdleUnloadSkipsWhenGraceExceedsGlobalTimeout() async {
+        let referenceDate = Date(timeIntervalSince1970: 1_000)
+        let manager = MockLocalModelResidencyManager(
+            residencyManagerID: "manager-a",
+            managedLocalModelIDs: [LocalTranscriptionModel.parakeetTdt06BV3.rawValue],
+            asrResident: true,
+            diarizationResident: false,
+            lastASRActivityAt: referenceDate,
+            lastDiarizationActivityAt: nil,
+        )
+        let settings = MockModelResidencySettings(timeout: .minutes5)
+        let coordinator = LocalModelResidencyCoordinator(
+            modelManager: manager,
+            settingsStore: settings,
+            checkIntervalSeconds: 1,
+        )
+
+        coordinator.scheduleDictationIdleUnload(grace: 400)
+        try? await Task.sleep(nanoseconds: 20_000_000)
+
+        XCTAssertEqual(manager.asrUnloadAttempts, 0)
+    }
+
+    func testNoteASRActivityCancelsPendingDictationIdleUnload() async {
+        let referenceDate = Date(timeIntervalSince1970: 1_000)
+        let manager = MockLocalModelResidencyManager(
+            residencyManagerID: "manager-a",
+            managedLocalModelIDs: [LocalTranscriptionModel.parakeetTdt06BV3.rawValue],
+            asrResident: true,
+            diarizationResident: false,
+            lastASRActivityAt: referenceDate,
+            lastDiarizationActivityAt: nil,
+        )
+        let settings = MockModelResidencySettings(timeout: .minutes30)
+        let coordinator = LocalModelResidencyCoordinator(
+            modelManager: manager,
+            settingsStore: settings,
+            checkIntervalSeconds: 1,
+        )
+
+        coordinator.scheduleDictationIdleUnload(grace: 0.05)
+        coordinator.noteASRActivity()
+        try? await Task.sleep(nanoseconds: 100_000_000)
+
+        XCTAssertEqual(manager.asrUnloadAttempts, 0)
+    }
+
+    func testPerformDictationIdleUnloadSkipsWhenIdleDurationIsShorterThanGrace() async {
+        let referenceDate = Date(timeIntervalSince1970: 1_000)
+        let manager = MockLocalModelResidencyManager(
+            residencyManagerID: "manager-a",
+            managedLocalModelIDs: [LocalTranscriptionModel.parakeetTdt06BV3.rawValue],
+            asrResident: true,
+            diarizationResident: false,
+            lastASRActivityAt: referenceDate.addingTimeInterval(60),
+            lastDiarizationActivityAt: nil,
+        )
+        let settings = MockModelResidencySettings(timeout: .minutes30)
+        let coordinator = LocalModelResidencyCoordinator(
+            modelManager: manager,
+            settingsStore: settings,
+            checkIntervalSeconds: 1,
+        )
+
+        await coordinator.performDictationIdleUnloadIfEligible(
+            now: referenceDate.addingTimeInterval(120),
+            grace: 120,
+        )
+
+        XCTAssertEqual(manager.asrUnloadAttempts, 0)
+    }
 }
 
 @MainActor

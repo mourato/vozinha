@@ -166,7 +166,7 @@ public class FluidAIModelManager: ObservableObject, AIModelService {
             loadedASRLocalModelID = requestedModel.rawValue
             modelState = .loaded
             isASRInstalled = isASRModelInstalled(localModelID: requestedModel.rawValue)
-            lastASRActivityAt = Date()
+            recordASRActivity()
             updateReadyState()
             logger.info("Local ASR runtime initialized successfully.")
 
@@ -398,6 +398,11 @@ public class FluidAIModelManager: ObservableObject, AIModelService {
     private var currentDiarizerMaxSpeakers: Int?
     private var currentDiarizerNumSpeakers: Int?
 
+    private func recordASRActivity() {
+        lastASRActivityAt = Date()
+        LocalModelResidencyCoordinator.shared.noteASRActivity()
+    }
+
 }
 
 extension FluidAIModelManager {
@@ -462,7 +467,7 @@ extension FluidAIModelManager {
         inputLanguageHintCode: String? = nil,
         progress: (@Sendable (Double) -> Void)? = nil,
     ) async throws -> AsrTranscriptionOutput {
-        lastASRActivityAt = Date()
+        recordASRActivity()
         guard modelState == .loaded, let loadedASRLocalModelID else {
             throw FluidError.modelNotLoaded
         }
@@ -539,7 +544,7 @@ extension FluidAIModelManager {
         samples: [Float],
         inputLanguageHintCode: String? = nil,
     ) async throws -> AsrTranscriptionOutput {
-        lastASRActivityAt = Date()
+        recordASRActivity()
         guard modelState == .loaded, let loadedASRLocalModelID else {
             throw FluidError.modelNotLoaded
         }

@@ -98,6 +98,7 @@ public extension RecordingManager {
         let wasStarting = isStartingRecording
         guard wasRecording || wasStarting || isStartOperationInFlight else { return }
 
+        let capturePurpose = currentCapturePurpose
         cancelAutomaticMeetingRecordingStop()
         AppLogger.info(
             wasRecording ? "Cancelling recording..." : "Cancelling recording during startup...",
@@ -112,6 +113,7 @@ public extension RecordingManager {
             wasRecording ? "Recording cancelled and files discarded" : "Recording startup cancelled",
             category: .recordingManager,
         )
+        scheduleDictationPostSessionUnloadIfNeeded(for: capturePurpose)
     }
 }
 
@@ -130,6 +132,15 @@ private extension RecordingManager {
         }
 
         return session
+    }
+
+    func scheduleDictationPostSessionUnloadIfNeeded(for capturePurpose: CapturePurpose?) {
+        guard capturePurpose == .dictation else { return }
+        LocalModelResidencyCoordinator.shared.scheduleDictationIdleUnload(
+            isMeetingCaptureActive: {
+                await RecordingExclusivityCoordinator.shared.activeRecordingMode() == .meeting
+            },
+        )
     }
 }
 
@@ -231,6 +242,7 @@ private extension RecordingManager {
         if foregroundTranscriptionSessionID == nil, !isRecording, !isStartingRecording {
             meetingState = .idle
         }
+        scheduleDictationPostSessionUnloadIfNeeded(for: session.meeting.capturePurpose)
     }
 
     func clearCompletedMeetingState(sessionID: UUID) {
@@ -281,5 +293,6 @@ private extension RecordingManager {
             error: error,
             transcriptionID: transcriptionSession?.id,
         )
+        scheduleDictationPostSessionUnloadIfNeeded(for: transcriptionSession?.meeting.capturePurpose)
     }
 }

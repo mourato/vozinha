@@ -53,12 +53,16 @@ extension AppSettingsStore: ModelResidencyTimeoutSettingsProviding {}
 public final class LocalModelResidencyCoordinator {
     public static let shared = LocalModelResidencyCoordinator()
 
+    /// Post-dictation grace before unloading ASR so back-to-back dictates reuse the warm model (plan 128).
+    public static let dictationIdleUnloadGraceSeconds: TimeInterval = 120
+
     private let logger = Logger(subsystem: AppIdentity.logSubsystem, category: "LocalModelResidencyCoordinator")
     private let modelManagers: [any LocalModelResidencyManaging]
     private let settingsStore: any ModelResidencyTimeoutSettingsProviding
     private let checkIntervalNanoseconds: UInt64
 
     private var monitorTask: Task<Void, Never>?
+    private var dictationIdleUnloadTask: Task<Void, Never>?
 
     init(
         modelManager: any LocalModelResidencyManaging,
@@ -84,6 +88,7 @@ public final class LocalModelResidencyCoordinator {
 
     deinit {
         monitorTask?.cancel()
+        dictationIdleUnloadTask?.cancel()
     }
 
     public func startMonitoring() {
@@ -104,6 +109,64 @@ public final class LocalModelResidencyCoordinator {
     public func stopMonitoring() {
         monitorTask?.cancel()
         monitorTask = nil
+        cancelDictationIdleUnload()
+    }
+
+    /// Schedules ASR unload after dictation ends when idle past `grace`. Honors global `never` timeout
+    /// and skips when `grace` exceeds the configured global inactivity interval.
+    public func scheduleDictationIdleUnload(
+        grace: TimeInterval = dictationIdleUnloadGraceSeconds,
+        isMeetingCaptureActive: @escaping @MainActor () async -> Bool = { false },
+    ) {
+        cancelDictationIdleUnload()
+
+        guard let globalTimeout = settingsStore.modelResidencyTimeout.inactivityInterval else {
+            return
+        }
+        guard grace <= globalTimeout else {
+            return
+        }
+
+        dictationIdleUnloadTask = Task { [weak self] in
+            let graceNanoseconds = UInt64(max(0, grace) * 1_000_000_000)
+            try? await Task.sleep(nanoseconds: graceNanoseconds)
+            guard !Task.isCancelled else { return }
+            await self?.performDictationIdleUnloadIfEligible(
+                grace: grace,
+                isMeetingCaptureActive: isMeetingCaptureActive,
+            )
+        }
+    }
+
+    func cancelDictationIdleUnload() {
+        dictationIdleUnloadTask?.cancel()
+        dictationIdleUnloadTask = nil
+    }
+
+    func noteASRActivity() {
+        cancelDictationIdleUnload()
+    }
+
+    func performDictationIdleUnloadIfEligible(
+        now: Date = Date(),
+        grace: TimeInterval = dictationIdleUnloadGraceSeconds,
+        isMeetingCaptureActive: @MainActor () async -> Bool = { false },
+    ) async {
+        guard settingsStore.modelResidencyTimeout.inactivityInterval != nil else { return }
+        guard await !isMeetingCaptureActive() else { return }
+
+        for modelManager in modelManagers {
+            guard modelManager.isASRResidentInMemory else { continue }
+            guard !modelManager.isASRInUse else { continue }
+            guard let lastActivity = modelManager.lastASRActivityAt else { continue }
+            guard now.timeIntervalSince(lastActivity) >= grace else { continue }
+
+            if modelManager.unloadASRFromMemoryIfPossible() {
+                logger.info(
+                    "Auto-unloaded ASR model from RAM after dictation idle grace for manager=\(modelManager.residencyManagerID, privacy: .public).",
+                )
+            }
+        }
     }
 
     func evaluateAndUnloadIfNeeded(now: Date = Date()) {
