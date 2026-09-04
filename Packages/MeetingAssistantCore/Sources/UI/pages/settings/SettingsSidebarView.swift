@@ -8,27 +8,22 @@ struct SettingsSidebarView: View {
     @Binding var searchText: String
     let showsSystemSettingsBadge: Bool
     let onSelectDestination: (SettingsDestination) -> Void
-    @ScaledMetric(relativeTo: .body) private var sidebarIconSize: CGFloat = 24
+    @ScaledMetric(relativeTo: .body) private var sidebarIconSize: CGFloat = 20
     @ScaledMetric(relativeTo: .caption) private var searchResultIconSize: CGFloat = 18
-    @State private var hoveredSectionID: String?
-    @FocusState private var focusedSectionID: String?
 
     var body: some View {
         VStack(spacing: 0) {
             searchField
                 .padding(.horizontal, 10)
-                .padding(.bottom, 8)
+                .padding(.bottom, 6)
 
-            Group {
-                if hasActiveSearch {
-                    searchResultsList
-                } else {
-                    sectionsList
-                }
+            if hasActiveSearch {
+                searchResultsList
+            } else {
+                sectionsList
             }
         }
         .padding(.top, 10)
-        .padding(.horizontal, 0)
     }
 
     private var searchField: some View {
@@ -41,48 +36,27 @@ struct SettingsSidebarView: View {
     }
 
     private var sectionsList: some View {
-        VStack(spacing: 0) {
-            VStack(spacing: 3) {
+        List(selection: $selectedSection) {
+            Section {
                 ForEach(SettingsSection.primarySections) { section in
-                    sidebarNavigationButton(for: section)
+                    sidebarRow(for: section)
+                        .tag(section)
                 }
             }
 
-            Spacer(minLength: 16)
-
-            sidebarNavigationButton(for: .system)
-                .padding(.bottom, 14)
+            Section {
+                sidebarRow(for: SettingsSection.system)
+                    .tag(SettingsSection.system)
+            }
         }
+        .listStyle(.sidebar)
+        .scrollContentBackground(.hidden)
     }
 
-    private func sidebarNavigationButton(for section: SettingsSection) -> some View {
-        Button {
-            onSelectDestination(section.destination)
-        } label: {
-            sidebarLabel(for: section)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.leading, 8)
-                .padding(.trailing, 10)
-                .frame(height: 38)
-                .contentShape(RoundedRectangle(cornerRadius: AppDesignSystem.Layout.smallCornerRadius))
-        }
-        .buttonStyle(.plain)
-        .background(sidebarButtonBackground(for: section))
-        .clipShape(RoundedRectangle(cornerRadius: AppDesignSystem.Layout.smallCornerRadius))
-        .padding(.horizontal, 10)
-        .onHover { hovering in
-            hoveredSectionID = hovering ? section.id : nil
-        }
-        .focused($focusedSectionID, equals: section.id)
-        .overlay {
-            RoundedRectangle(cornerRadius: AppDesignSystem.Layout.smallCornerRadius)
-                .stroke(
-                    focusedSectionID == section.id ? AppDesignSystem.Colors.accent : .clear,
-                    lineWidth: 2,
-                )
-        }
-        .accessibilityAddTraits(selectedSection == section ? .isSelected : [])
-        .accessibilityLabel(sidebarAccessibilityLabel(for: section))
+    private func sidebarRow(for section: SettingsSection) -> some View {
+        sidebarLabel(for: section)
+            .contentShape(Rectangle())
+            .accessibilityLabel(sidebarAccessibilityLabel(for: section))
     }
 
     private func sidebarAccessibilityLabel(for section: SettingsSection) -> String {
@@ -90,16 +64,6 @@ struct SettingsSidebarView: View {
             return section.title
         }
         return "\(section.title), \("settings.system.update_available".localized)"
-    }
-
-    private func sidebarButtonBackground(for section: SettingsSection) -> some ShapeStyle {
-        if selectedSection == section {
-            return AnyShapeStyle(AppDesignSystem.Colors.subtleFill)
-        }
-        if hoveredSectionID == section.id {
-            return AnyShapeStyle(AppDesignSystem.Colors.subtleFill.opacity(0.65))
-        }
-        return AnyShapeStyle(Color.clear)
     }
 
     private var hasActiveSearch: Bool {
@@ -156,14 +120,14 @@ struct SettingsSidebarView: View {
                 .lineLimit(1)
 
             if section == .system, showsSystemSettingsBadge {
+                Spacer(minLength: 0)
                 Circle()
                     .fill(AppDesignSystem.Colors.accent)
                     .frame(width: 8, height: 8)
                     .accessibilityHidden(true)
             }
-
-            Spacer(minLength: 0)
         }
+        .frame(height: 28)
     }
 
     private func sidebarIcon(for section: SettingsSection) -> String {
