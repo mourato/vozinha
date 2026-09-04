@@ -1,5 +1,6 @@
 @testable import MeetingAssistantCore
 @testable import MeetingAssistantCoreUI
+import SwiftUI
 import XCTest
 
 final class SettingsSplitViewNavigationTests: XCTestCase {
@@ -26,6 +27,13 @@ final class SettingsSplitViewNavigationTests: XCTestCase {
             XCTAssertFalse(section.title.isEmpty)
             XCTAssertFalse(section.icon.isEmpty)
             XCTAssertFalse(section.selectedSidebarIcon.isEmpty)
+        }
+    }
+
+    func testAllSectionsProvideValidBadgeStyling() {
+        for section in SettingsSection.allCases {
+            _ = section.badgeColor
+            _ = section.badgeGradient
         }
     }
 }
