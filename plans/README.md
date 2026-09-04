@@ -1,6 +1,6 @@
 # Implementation Plans
 
-This is the active plan ledger. The next available plan number is 128.
+This is the active plan ledger. The next available plan number is 133.
 
 ## Execution rules
 
@@ -45,6 +45,11 @@ Status values: `TODO` | `IN PROGRESS` | `DONE` | `BLOCKED` | `REJECTED`.
 | [125](125-reduce-settings-singleton-coupling.md) | Reduce operation-time coupling to AppSettingsStore.shared | P1 | M | 122, 123, 124 | DONE (merged in `49d83d6a`) |
 | [126](126-meeting-reminder-scheduler-slapss.md) | Proactive meeting reminders with full-screen overlay (Slapss-inspired) | P1 | L | ADR 001 | TODO |
 | [127](127-meeting-notes-pane-ux.md) | Raycast-style meeting notes panel with WebKit editor (Pane-inspired) | P1 | L | ADR 002; 126 slice 4b recommended | TODO |
+| [128](128-dictation-eager-model-warmup.md) | Eager purpose-aware ASR warmup during dictation capture | P1 | M | — | REVIEWED (`99393e84`, merged local) |
+| [129](129-dictation-shortcut-hybrid-parity.md) | Characterize/parity hybrid+PTT dictation shortcuts | P1 | M | — | TODO |
+| [130](130-dictation-incremental-ready-gate.md) | Bound early incremental audio until ASR is ready | P1 | M | 128 | TODO |
+| [131](131-dictation-post-session-unload.md) | Unload local ASR after dictation idle grace | P1 | M | 128 | TODO |
+| [132](132-enable-dictation-intelligence-mode.md) | Enable dictation Intelligence Kernel mode gating | P2 | M | prefer after 128–131 | TODO |
 
 ## Dependency order
 
@@ -109,6 +114,24 @@ order: **126 complete, then 127**. Slice 126-4b (`CalendarEventNotesPanelControl
 merges into Plan 127 slice 2. Plan 127 slice 0–1 can start early only in a
 separate worktree with no overlapping panel files.
 
+## Dictation VT parity batch (128–132)
+
+VoiceInk-inspired dictation latency/reliability work (GPL inspiration only; no
+source copy). Planned at `08124206` (2026-09-04).
+
+Recommended serial order on shared capture/residency files:
+
+`128 → 130 → 131`, with **129 parallelizable** in a separate worktree, and
+**132** after the residency/warmup batch when practical.
+
+| Plan | Intent |
+|------|--------|
+| 128 | Purpose-aware eager ASR warmup (fix meeting-gated / wrong-model warm) |
+| 129 | Hybrid/PTT already exists as `holdOrToggle`; extract, test, clarify UX |
+| 130 | Ready-gate so early incremental audio is not transcribed cold |
+| 131 | Post-dictation ASR unload grace without weakening meeting residency |
+| 132 | Flip `enableDictationIntelligenceMode` and unify kernel gates (no dictation Q&A) |
+
 ## Archives
 
 - [2026-07-12 ledger history](archive/2026-07-12-plan-ledger-history.md)
@@ -134,6 +157,10 @@ separate worktree with no overlapping panel files.
   substitution semantics while adding a separate vocabulary model.
 - Use VoiceInk beta as a behavioral benchmark only; do not copy source or adopt
   its CloudKit persistence.
+- Dictation VT parity (plans 128–132) reuses existing `holdOrToggle`, residency
+  coordinator, and incremental coordinator seams; prefer extend-over-create and
+  keep meeting defaults (30m residency, meeting warmup gates) intact unless a
+  plan explicitly changes them.
 - Prefer deterministic scripts and Make gates for repeatable checks; keep model
   reasoning for ambiguity, design judgment, and user-facing decisions.
 - Treat token or time savings as hypotheses until a later measurement pass
