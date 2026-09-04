@@ -19,7 +19,7 @@ final class IntelligenceKernelContractsTests: XCTestCase {
 
         XCTAssertEqual(settings.intelligenceKernelEnabled, FeatureFlags.enableIntelligenceKernel)
         XCTAssertTrue(settings.isIntelligenceKernelModeEnabled(.meeting))
-        XCTAssertFalse(settings.isIntelligenceKernelModeEnabled(.dictation))
+        XCTAssertTrue(settings.isIntelligenceKernelModeEnabled(.dictation))
         XCTAssertFalse(settings.isIntelligenceKernelModeEnabled(.assistant))
     }
 
@@ -88,6 +88,32 @@ final class IntelligenceKernelContractsTests: XCTestCase {
 
         XCTAssertEqual(response.status, .answered)
         XCTAssertEqual(response.answer, "Decision logged.")
+    }
+
+    func testMeetingQAServiceDictationModeRemainsDisabled() async {
+        let service = MeetingQAService(
+            settings: .shared,
+            apiKeyProvider: { _ in "test-key" },
+            sleepFunction: { _ in },
+        )
+
+        do {
+            _ = try await service.ask(
+                IntelligenceKernelQuestionRequest(
+                    mode: .dictation,
+                    question: "What did I say?",
+                    transcription: makeTranscription(),
+                    modelSelectionOverride: nil,
+                ),
+            )
+            XCTFail("Expected dictation Q&A to remain disabled")
+        } catch let error as MeetingQAError {
+            guard case .disabled = error else {
+                return XCTFail("Expected .disabled, got \(error)")
+            }
+        } catch {
+            XCTFail("Unexpected error: \(error)")
+        }
     }
 
     private func makeTranscription() -> Transcription {

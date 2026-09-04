@@ -11,8 +11,7 @@ public enum FeatureFlags {
     public static let enableMeetingIntelligenceMode: Bool = true
 
     /// Enables dictation mode execution through the shared intelligence kernel.
-    /// Reserved for a future phase.
-    public static let enableDictationIntelligenceMode: Bool = false
+    public static let enableDictationIntelligenceMode: Bool = true
 
     /// Enables assistant mode execution through the shared intelligence kernel.
     /// Reserved for a future phase.
