@@ -98,25 +98,24 @@ public struct TranscriptionCardView: View {
     }
 
     public var body: some View {
-        DSCard(
-            cornerRadius: AppDesignSystem.Layout.largeCornerRadius,
-            padding: isExpanded ? 16 : 12,
-        ) {
+        Group {
             if isExpanded {
-                expandedContent
+                DSCard(
+                    style: .settings,
+                    cornerRadius: AppDesignSystem.Layout.cardCornerRadius,
+                    padding: 16,
+                ) {
+                    expandedContent
+                }
             } else {
-                collapsedContent
-            }
-        }
-        .contentShape(Rectangle())
-        .onTapGesture {
-            onToggleExpand()
-        }
-        .onHover { isHovering in
-            if isHovering {
-                NSCursor.pointingHand.set()
-            } else {
-                NSCursor.arrow.set()
+                Button(action: onToggleExpand) {
+                    collapsedContent
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel(collapsedAccessibilityLabel)
+                .accessibilityValue(collapsedAccessibilityValue)
+                .accessibilityHint("transcription.content.show_all".localized)
+                .accessibilityAddTraits(.isButton)
             }
         }
         .onAppear {
@@ -124,31 +123,6 @@ public struct TranscriptionCardView: View {
         }
         .onChange(of: currentPersistedMeetingTitle) { _, _ in
             syncDraftMeetingTitleIfNeeded()
-        }
-    }
-
-    private var collapsedContent: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            if shouldDisplayMeetingTitle {
-                Text(collapsedMeetingTitle)
-                    .font(.headline)
-                    .lineLimit(1)
-                    .foregroundStyle(.primary)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-            }
-
-            Text(displayText(transcription.previewText))
-                .font(.body)
-                .lineLimit(3)
-                .fixedSize(horizontal: false, vertical: true)
-                .foregroundStyle(.primary)
-                .frame(maxWidth: .infinity, alignment: .leading)
-
-            if let failureMessage = persistedPostProcessingFailureMessage {
-                postProcessingFailureLabel(failureMessage)
-            }
-
-            sourceLabel(text: sourceDisplayName)
         }
     }
 
@@ -169,6 +143,8 @@ public struct TranscriptionCardView: View {
                     .labelsHidden()
                     .frame(width: 180)
                 }
+
+                collapseButton
             }
 
             if shouldDisplayMeetingTitle {
@@ -415,7 +391,7 @@ public struct TranscriptionCardView: View {
         let text = displayText(currentText)
 
         return VStack(alignment: .leading, spacing: 8) {
-            Text(text)
+            markdownText(text)
                 .lineLimit(isTabExpanded(selectedTab) ? nil : Layout.contentLineLimit)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .opacity(textOpacity)
@@ -661,6 +637,81 @@ public struct TranscriptionCardView: View {
                 .truncationMode(.tail)
         }
         .foregroundStyle(.secondary)
+    }
+}
+
+private extension TranscriptionCardView {
+    var collapsedContent: some View {
+        HStack(alignment: .top, spacing: 12) {
+            AppIconView(
+                bundleIdentifier: transcription.appBundleIdentifier,
+                fallbackSystemName: appSource.icon,
+                size: 32,
+                cornerRadius: 7,
+            )
+            .padding(.top, 2)
+
+            VStack(alignment: .leading, spacing: 4) {
+                Text(collapsedTitle)
+                    .font(.body.weight(.semibold))
+                    .lineLimit(1)
+                    .foregroundStyle(.primary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+
+                markdownText(displayText(transcription.previewText))
+                    .font(.caption)
+                    .lineLimit(2)
+                    .foregroundStyle(.secondary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+
+                if let failureMessage = persistedPostProcessingFailureMessage {
+                    postProcessingFailureLabel(failureMessage)
+                }
+            }
+
+            Image(systemName: "chevron.right")
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(.tertiary)
+                .frame(width: 28, height: 28)
+                .accessibilityHidden(true)
+        }
+        .padding(.vertical, 8)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .contentShape(Rectangle())
+    }
+
+    var collapsedTitle: String {
+        shouldDisplayMeetingTitle ? collapsedMeetingTitle : sourceDisplayName
+    }
+
+    var collapsedAccessibilityLabel: String {
+        collapsedTitle
+    }
+
+    var collapsedAccessibilityValue: String {
+        String(markdownAttributedString(displayText(transcription.previewText)).characters)
+    }
+
+    var collapseButton: some View {
+        Button(action: onToggleExpand) {
+            Image(systemName: "chevron.down")
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(.secondary)
+                .frame(width: 28, height: 28)
+                .accessibilityHidden(true)
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel("transcription.content.show_less".localized)
+        .accessibilityHint("transcription.content.show_less".localized)
+        .accessibilityAddTraits([.isButton, .isSelected])
+    }
+
+    func markdownText(_ text: String) -> Text {
+        Text(markdownAttributedString(text))
+    }
+
+    func markdownAttributedString(_ text: String) -> AttributedString {
+        (try? AttributedString(markdown: text)) ?? AttributedString(text)
     }
 }
 

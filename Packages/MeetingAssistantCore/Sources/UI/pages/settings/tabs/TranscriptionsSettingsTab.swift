@@ -107,15 +107,13 @@ public struct TranscriptionsSettingsTab: View {
                     placeholder: "settings.transcriptions.search_placeholder".localized,
                 )
 
-                HStack(spacing: 16) {
+                HStack(spacing: 12) {
                     sourceFilterPicker
-                        .frame(maxWidth: .infinity)
+                        .frame(maxWidth: .infinity, alignment: .leading)
 
-                    dateFilterMenu
-                        .frame(width: AppDesignSystem.Layout.narrowPickerWidth)
+                    dateFilterPicker
 
-                    appFilterMenu
-                        .frame(width: 170)
+                    appFilterPicker
                 }
 
                 if let errorMessage = viewModel.loadErrorMessage {
@@ -168,77 +166,28 @@ public struct TranscriptionsSettingsTab: View {
         .labelsHidden()
     }
 
-    private var appFilterMenu: some View {
-        Menu {
+    private var appFilterPicker: some View {
+        Picker("", selection: $viewModel.appFilterId) {
             ForEach(viewModel.appFilterOptions) { option in
-                Button {
-                    viewModel.appFilterId = option.id
-                } label: {
-                    HStack {
-                        Text(option.displayName)
-                        if viewModel.appFilterId == option.id {
-                            Image(systemName: "checkmark")
-                        }
-                    }
-                }
+                Text(option.displayName).tag(option.id)
             }
-        } label: {
-            HStack {
-                Image(systemName: "desktopcomputer")
-                    .foregroundStyle(AppDesignSystem.Colors.accent)
-                Text(selectedAppFilterLabel)
-                    .font(.body)
-                    .lineLimit(1)
-                Spacer()
-                Image(systemName: "chevron.down")
-                    .font(.caption2)
-                    .foregroundStyle(.secondary)
-            }
-            .controlSize(.regular)
-            .padding(.horizontal, 10)
-            .padding(.vertical, 8)
-            .background(AppDesignSystem.Colors.subtleFill)
-            .clipShape(RoundedRectangle(cornerRadius: AppDesignSystem.Layout.smallCornerRadius))
         }
-        .menuStyle(.borderlessButton)
+        .pickerStyle(.menu)
+        .controlSize(.regular)
+        .labelsHidden()
+        .fixedSize()
     }
 
-    private var dateFilterMenu: some View {
-        Menu {
+    private var dateFilterPicker: some View {
+        Picker("", selection: $viewModel.dateFilter) {
             ForEach(DateFilter.allCases, id: \.self) { filter in
-                Button {
-                    viewModel.dateFilter = filter
-                } label: {
-                    HStack {
-                        Text(filter.displayName)
-                        if viewModel.dateFilter == filter {
-                            Image(systemName: "checkmark")
-                        }
-                    }
-                }
+                Text(filter.displayName).tag(filter)
             }
-        } label: {
-            HStack {
-                Image(systemName: "calendar")
-                    .foregroundStyle(AppDesignSystem.Colors.accent)
-                Text(viewModel.dateFilter.displayName)
-                    .font(.body)
-                Spacer()
-                Image(systemName: "chevron.down")
-                    .font(.caption2)
-                    .foregroundStyle(.secondary)
-            }
-            .padding(.horizontal, 10)
-            .padding(.vertical, 8)
-            .background(AppDesignSystem.Colors.subtleFill)
-            .clipShape(RoundedRectangle(cornerRadius: AppDesignSystem.Layout.smallCornerRadius))
         }
-        .menuStyle(.borderlessButton)
-    }
-
-    private var selectedAppFilterLabel: String {
-        viewModel.appFilterOptions.first(where: { $0.id == viewModel.appFilterId })?.displayName
-            ?? "settings.transcriptions.filter_app_all".localized
+        .pickerStyle(.menu)
+        .controlSize(.regular)
+        .labelsHidden()
+        .fixedSize()
     }
 
     private var emptyState: some View {
@@ -261,22 +210,16 @@ public struct TranscriptionsSettingsTab: View {
     private var transcriptionsList: some View {
         List {
             ForEach(viewModel.sortedGroupDates, id: \.self) { date in
-                Section(
-                    header: Text(formatHeaderDate(date))
-                        .font(.caption)
-                        .fontWeight(.bold)
-                        .foregroundStyle(.secondary)
-                        .padding(.top, 16)
-                        .padding(.bottom, 8),
-                ) {
+                Section {
                     ForEach(viewModel.groupedTranscriptions[date] ?? []) { transcription in
-                        HStack(alignment: .top, spacing: 16) {
+                        HStack(alignment: .top, spacing: 12) {
                             Text(formatTime(transcription.createdAt))
-                                .font(.body)
-                                .fontWeight(.semibold)
+                                .font(.callout)
+                                .fontWeight(.medium)
+                                .monospacedDigit()
                                 .foregroundStyle(.secondary)
-                                .padding(.top, 12)
-                                .frame(width: 50, alignment: .trailing)
+                                .padding(.top, 14)
+                                .frame(minWidth: 46, alignment: .trailing)
 
                             TranscriptionCardView(
                                 transcription: transcription,
@@ -299,12 +242,8 @@ public struct TranscriptionsSettingsTab: View {
                                         }
                                     }
 
-                                    if reduceMotion {
+                                    withAnimation(AppleMotion.disclosureAnimation(reduceMotion: reduceMotion)) {
                                         toggleSelection()
-                                    } else {
-                                        withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
-                                            toggleSelection()
-                                        }
                                     }
                                 },
                                 onAction: { action in
@@ -312,10 +251,13 @@ public struct TranscriptionsSettingsTab: View {
                                 },
                             )
                         }
-                        .listRowSeparator(.hidden)
-                        .listRowBackground(Color.clear)
-                        .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 12, trailing: 16))
+                        .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
                     }
+                } header: {
+                    Text(formatHeaderDate(date))
+                        .font(.subheadline)
+                        .fontWeight(.semibold)
+                        .foregroundStyle(.secondary)
                 }
             }
         }
