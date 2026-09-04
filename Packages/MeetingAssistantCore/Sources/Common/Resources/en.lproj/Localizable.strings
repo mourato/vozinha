@@ -737,9 +737,9 @@
 "settings.shortcuts.header_desc" = "Choose your preferred keyboard keys for starting recordings. Press only these keys to begin recording.";
 "settings.shortcuts.recording_controls" = "Recording Controls";
 "settings.shortcuts.activation_mode" = "Activation Mode";
-"settings.shortcuts.activation_mode.hold_or_press" = "Hold or Press";
-"settings.shortcuts.activation_mode.press" = "Press";
-"settings.shortcuts.activation_mode.hold" = "Hold";
+"settings.shortcuts.activation_mode.hold_or_press" = "Hybrid (Press or Hold)";
+"settings.shortcuts.activation_mode.press" = "Press to Toggle";
+"settings.shortcuts.activation_mode.hold" = "Push to Talk";
 "settings.shortcuts.activation_mode.double_tap" = "Double Tap";
 "settings.shortcuts.tips_title" = "Tips";
 "settings.shortcuts.fn_key_title" = "Using the Fn key";

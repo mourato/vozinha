@@ -738,9 +738,9 @@
 "settings.shortcuts.header_desc" = "Escolha suas teclas preferidas para iniciar gravações. Pressione apenas essas teclas para começar a gravar.";
 "settings.shortcuts.recording_controls" = "Controles de Gravação";
 "settings.shortcuts.activation_mode" = "Modo de Ativação";
-"settings.shortcuts.activation_mode.hold_or_press" = "Segurar ou Pressionar";
-"settings.shortcuts.activation_mode.press" = "Pressionar";
-"settings.shortcuts.activation_mode.hold" = "Segurar";
+"settings.shortcuts.activation_mode.hold_or_press" = "Híbrido (Pressionar ou Segurar)";
+"settings.shortcuts.activation_mode.press" = "Pressionar para Alternar";
+"settings.shortcuts.activation_mode.hold" = "Segurar para Falar";
 "settings.shortcuts.activation_mode.double_tap" = "Toque Duplo";
 "settings.shortcuts.tips_title" = "Dicas";
 "settings.shortcuts.fn_key_title" = "Usando a tecla Fn";

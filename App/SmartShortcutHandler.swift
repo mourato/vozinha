@@ -13,22 +13,16 @@ final class SmartShortcutHandler {
 
     private(set) var isPressed = false
     private let executionEngine: ShortcutExecutionEngine
-    private let holdThreshold: TimeInterval
-
-    private var holdOrTogglePressStartTime: Date?
-    private var holdOrToggleWasRecordingAtPress = false
-    private var holdOrToggleStartedRecording = false
 
     private let actionHandler: (Action) -> Void
     private let isRecordingProvider: () -> Bool
 
     init(
-        holdThreshold: TimeInterval = 0.35,
+        holdThreshold: TimeInterval = 0.5,
         doubleTapInterval: TimeInterval = 0.25,
         isRecordingProvider: @escaping () -> Bool,
         actionHandler: @escaping (Action) -> Void,
     ) {
-        self.holdThreshold = holdThreshold
         executionEngine = ShortcutExecutionEngine(
             holdThreshold: holdThreshold,
             doubleTapInterval: doubleTapInterval,
@@ -40,9 +34,6 @@ final class SmartShortcutHandler {
     func reset() {
         isPressed = false
         executionEngine.reset()
-        holdOrTogglePressStartTime = nil
-        holdOrToggleWasRecordingAtPress = false
-        holdOrToggleStartedRecording = false
     }
 
     func setDoubleTapInterval(_ interval: TimeInterval) {
@@ -56,7 +47,7 @@ final class SmartShortcutHandler {
         case .hold:
             applyActions(executionEngine.handleDown(trigger: .hold, isRecording: isRecordingProvider()))
         case .holdOrToggle:
-            handleHoldOrToggleDown()
+            applyActions(executionEngine.handleHoldOrToggleDown(isRecording: isRecordingProvider()))
         case .doubleTap:
             break
         }
@@ -67,7 +58,7 @@ final class SmartShortcutHandler {
         case .hold:
             applyActions(executionEngine.handleUp(trigger: .hold, isRecording: isRecordingProvider()))
         case .holdOrToggle:
-            handleHoldOrToggleUp()
+            applyActions(executionEngine.handleHoldOrToggleUp())
         case .doubleTap:
             applyActions(executionEngine.handleUp(trigger: .doubleTap, isRecording: isRecordingProvider()))
         case .toggle:
@@ -96,38 +87,6 @@ final class SmartShortcutHandler {
 
     func handleKeyUp(inputEvent: ShortcutInputEvent) {
         // No-op for key up - handled via handleShortcutUp with activation mode
-    }
-
-    private func handleHoldOrToggleDown() {
-        holdOrTogglePressStartTime = Date()
-        holdOrToggleWasRecordingAtPress = isRecordingProvider()
-
-        if isRecordingProvider() {
-            actionHandler(.stopRecording)
-            holdOrToggleStartedRecording = false
-        } else {
-            holdOrToggleStartedRecording = true
-            actionHandler(.startRecording)
-        }
-    }
-
-    private func handleHoldOrToggleUp() {
-        defer {
-            holdOrTogglePressStartTime = nil
-            holdOrToggleWasRecordingAtPress = false
-            holdOrToggleStartedRecording = false
-        }
-
-        guard let startTime = holdOrTogglePressStartTime else {
-            return
-        }
-
-        if !holdOrToggleWasRecordingAtPress {
-            let heldDuration = Date().timeIntervalSince(startTime)
-            if heldDuration >= holdThreshold, holdOrToggleStartedRecording {
-                actionHandler(.stopRecording)
-            }
-        }
     }
 
     private func applyActions(_ actions: [ShortcutExecutionAction]) {
