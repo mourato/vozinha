@@ -16,11 +16,15 @@ public final class ShortcutExecutionEngine {
     private var lastTapTime: Date?
     private var lastTapWasRecording = false
 
+    private var holdOrTogglePressStartTime: Date?
+    private var holdOrToggleWasRecordingAtPress = false
+    private var holdOrToggleStartedRecording = false
+
     private let holdThreshold: TimeInterval
     private var doubleTapInterval: TimeInterval
 
     public init(
-        holdThreshold: TimeInterval = 0.35,
+        holdThreshold: TimeInterval = 0.5,
         doubleTapInterval: TimeInterval = 0.25,
     ) {
         self.holdThreshold = holdThreshold
@@ -40,6 +44,7 @@ public final class ShortcutExecutionEngine {
         startedRecording = false
         lastTapTime = nil
         lastTapWasRecording = false
+        resetHoldOrToggleState()
     }
 
     public func handleTransition(
@@ -124,6 +129,39 @@ public final class ShortcutExecutionEngine {
         return referenceDate.timeIntervalSince(pressStartTime) >= holdThreshold
     }
 
+    public func handleHoldOrToggleDown(
+        isRecording: Bool,
+        referenceDate: Date = Date(),
+    ) -> [ShortcutExecutionAction] {
+        holdOrTogglePressStartTime = referenceDate
+        holdOrToggleWasRecordingAtPress = isRecording
+
+        if isRecording {
+            holdOrToggleStartedRecording = false
+            return [.stop]
+        }
+
+        holdOrToggleStartedRecording = true
+        return [.start]
+    }
+
+    public func handleHoldOrToggleUp(referenceDate: Date = Date()) -> [ShortcutExecutionAction] {
+        defer { resetHoldOrToggleState() }
+
+        guard let startTime = holdOrTogglePressStartTime else {
+            return []
+        }
+
+        if !holdOrToggleWasRecordingAtPress {
+            let heldDuration = referenceDate.timeIntervalSince(startTime)
+            if heldDuration >= holdThreshold, holdOrToggleStartedRecording {
+                return [.stop]
+            }
+        }
+
+        return []
+    }
+
     private func toggleAction(isRecording: Bool) -> [ShortcutExecutionAction] {
         isRecording ? [.stop] : [.start]
     }
@@ -131,6 +169,12 @@ public final class ShortcutExecutionEngine {
     private func resetHoldState() {
         pressStartTime = nil
         startedRecording = false
+    }
+
+    private func resetHoldOrToggleState() {
+        holdOrTogglePressStartTime = nil
+        holdOrToggleWasRecordingAtPress = false
+        holdOrToggleStartedRecording = false
     }
 
     private func emitShortcutRejected(trigger: ShortcutTrigger, reason: String) {

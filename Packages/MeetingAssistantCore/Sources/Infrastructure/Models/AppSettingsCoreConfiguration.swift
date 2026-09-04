@@ -79,8 +79,11 @@ public enum AppLanguage: String, CaseIterable, Codable, Sendable {
 
 /// Modes for how keyboard shortcuts activate recording.
 public enum ShortcutActivationMode: String, CaseIterable, Codable, Sendable {
+    /// Short press toggles recording; hold acts as push-to-talk (persisted raw value unchanged).
     case holdOrToggle
+    /// Press once to start, press again to stop.
     case toggle
+    /// Hold to record; release to stop (push-to-talk).
     case hold
     case doubleTap
 
