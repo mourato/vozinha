@@ -12,14 +12,14 @@ private enum LayoutConstants {
     static let windowWidth: CGFloat = 900
     static let windowHeight: CGFloat = 640
     static let sidebarWidth: CGFloat = 220
-    /// Clears traffic lights under the transparent titlebar (VoiceInk AppScreenHeader pattern).
+    /// Clears traffic lights under the transparent titlebar.
     static let titlebarClearance: CGFloat = 20
 }
 
 // MARK: - Settings View
 
 /// Settings view for app configuration.
-/// Custom HStack sidebar + detail shell (no NavigationSplitView / SwiftUI toolbar).
+/// Pure NavigationSplitView architecture with native macOS sidebar and detail column.
 public struct SettingsView: View {
     private let updatesView: AnyView?
     private let showsSystemSettingsBadge: Bool
@@ -30,28 +30,38 @@ public struct SettingsView: View {
     @State private var transcriptionsNavigationHistory = TranscriptionsNavigationHistory()
     @State private var systemRoute: SystemSettingsRoute = .root
     @State private var expandProtectedApps = false
-    @State private var isSidebarVisible: Bool
+    @State private var columnVisibility: NavigationSplitViewVisibility
     @State private var navigationService = NavigationService.shared
     @State private var requestedModesSubroute: DictationStyleRoute?
-    @Environment(\.colorSchemeContrast) private var colorSchemeContrast
-    @Environment(\.accessibilityReduceTransparency) private var accessibilityReduceTransparency
-    @Environment(\.settingsReduceTransparencyPreview) private var reduceTransparencyPreview
 
     @MainActor
     public init(updatesView: AnyView? = nil, showsSystemSettingsBadge: Bool = false) {
         self.updatesView = updatesView
         self.showsSystemSettingsBadge = showsSystemSettingsBadge
-        _isSidebarVisible = State(initialValue: AppSettingsStore.shared.isSettingsSidebarVisible)
+        _columnVisibility = State(
+            initialValue: AppSettingsStore.shared.isSettingsSidebarVisible ? .all : .detailOnly,
+        )
     }
 
     public var body: some View {
-        HStack(spacing: 0) {
-            if isSidebarVisible {
-                sidebarColumn
-            }
-
+        NavigationSplitView(columnVisibility: $columnVisibility) {
+            SettingsSidebarView(
+                selectedSection: Binding(
+                    get: { selectedSection },
+                    set: { newSection in
+                        selectDestination(newSection.destination)
+                    },
+                ),
+                searchText: $settingsSearchText,
+                showsSystemSettingsBadge: showsSystemSettingsBadge,
+                onSelectDestination: selectDestination,
+            )
+            .padding(.top, LayoutConstants.titlebarClearance)
+            .navigationSplitViewColumnWidth(min: 200, ideal: LayoutConstants.sidebarWidth, max: 280)
+        } detail: {
             detailColumn
         }
+        .navigationSplitViewStyle(.balanced)
         .background(SettingsWindowConfigurator())
         .frame(minWidth: LayoutConstants.windowWidth, minHeight: LayoutConstants.windowHeight)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -75,48 +85,9 @@ public struct SettingsView: View {
         .onChange(of: navigationService.settingsSidebarToggleRequestID) { _, _ in
             toggleSidebar()
         }
-    }
-
-    private var sidebarColumn: some View {
-        ZStack(alignment: .trailing) {
-            sidebarBackground
-            sidebarDivider
-            SettingsSidebarView(
-                selectedSection: $selectedSection,
-                searchText: $settingsSearchText,
-                showsSystemSettingsBadge: showsSystemSettingsBadge,
-                onSelectDestination: selectDestination,
-            )
-            .padding(.top, LayoutConstants.titlebarClearance)
+        .onChange(of: columnVisibility) { _, next in
+            persistSidebarVisibility(next != .detailOnly)
         }
-        .frame(width: LayoutConstants.sidebarWidth)
-        .frame(maxHeight: .infinity)
-    }
-
-    private var effectiveReduceTransparency: Bool {
-        accessibilityReduceTransparency
-            || reduceTransparencyPreview
-            || AppDesignSystem.Accessibility.reduceTransparency
-    }
-
-    private var sidebarBackground: some View {
-        Group {
-            if effectiveReduceTransparency {
-                AppDesignSystem.Colors.settingsCanvasBackground
-            } else {
-                VisualEffectView(material: .sidebar, blendingMode: .behindWindow)
-            }
-        }
-        .ignoresSafeArea(.container, edges: .top)
-        .accessibilityHidden(true)
-    }
-
-    private var sidebarDivider: some View {
-        Rectangle()
-            .fill(AppDesignSystem.Colors.separator.opacity(colorSchemeContrast == .increased ? 0.78 : 0.42))
-            .frame(width: 1)
-            .ignoresSafeArea(.container, edges: .top)
-            .accessibilityHidden(true)
     }
 
     private var detailColumn: some View {
@@ -124,7 +95,7 @@ public struct SettingsView: View {
             SettingsWindowBackground()
 
             VStack(spacing: 0) {
-                if !isSidebarVisible {
+                if columnVisibility == .detailOnly {
                     collapsedSidebarChrome
                 }
 
@@ -135,7 +106,7 @@ public struct SettingsView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
     }
 
-    /// Transparent inset for the sidebar toggle when chrome is collapsed — no opaque title strip.
+    /// Inset for the sidebar toggle when sidebar is collapsed.
     private var collapsedSidebarChrome: some View {
         HStack(spacing: 12) {
             sidebarToggleButton
@@ -178,14 +149,16 @@ private extension SettingsView {
     }
 
     private func toggleSidebar() {
-        let next = !isSidebarVisible
-        isSidebarVisible = next
-        persistSidebarVisibility(next)
+        withAnimation(.easeInOut(duration: 0.2)) {
+            let next: NavigationSplitViewVisibility = columnVisibility == .detailOnly ? .all : .detailOnly
+            columnVisibility = next
+            persistSidebarVisibility(next != .detailOnly)
+        }
     }
 
     private func syncSidebarVisibilityFromStore() {
         let visible = settingsStore.isSettingsSidebarVisible
-        isSidebarVisible = visible
+        columnVisibility = visible ? .all : .detailOnly
         navigationService.setSettingsSidebarVisible(visible)
     }
 
@@ -195,7 +168,7 @@ private extension SettingsView {
     }
 
     private var sidebarToggleHelpText: String {
-        let key = isSidebarVisible
+        let key = columnVisibility != .detailOnly
             ? "commands.view.hide_sidebar"
             : "commands.view.show_sidebar"
         return key.localized
