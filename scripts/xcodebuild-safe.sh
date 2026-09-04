@@ -6,7 +6,6 @@
 set -euo pipefail
 
 PROJECT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
-PATCH_SCRIPT="${PROJECT_DIR}/scripts/apply-fluidaudio-patches.sh"
 
 # shellcheck source=scripts/config/app_identity.sh
 source "${PROJECT_DIR}/scripts/config/app_identity.sh"
@@ -121,23 +120,17 @@ should_resolve_dependencies() {
     return 0
 }
 
-if [[ -x "${PATCH_SCRIPT}" ]]; then
-    mkdir -p "${DERIVED_DATA_PATH}"
-    MARKER_PATH="${DERIVED_DATA_PATH}/.ma-xcode-resolve-${SCHEME}.fingerprint"
-    if should_resolve_dependencies "${MARKER_PATH}"; then
-        xcodebuild \
-            -resolvePackageDependencies \
-            -project "${XCODEPROJ}" \
-            -scheme "${SCHEME}" \
-            -derivedDataPath "${DERIVED_DATA_PATH}" >/dev/null
+mkdir -p "${DERIVED_DATA_PATH}"
+MARKER_PATH="${DERIVED_DATA_PATH}/.ma-xcode-resolve-${SCHEME}.fingerprint"
+if should_resolve_dependencies "${MARKER_PATH}"; then
+    xcodebuild \
+        -resolvePackageDependencies \
+        -project "${XCODEPROJ}" \
+        -scheme "${SCHEME}" \
+        -derivedDataPath "${DERIVED_DATA_PATH}" >/dev/null
 
-        if [[ -n "${DEPENDENCY_FINGERPRINT}" ]]; then
-            printf '%s\n' "${DEPENDENCY_FINGERPRINT}" > "${MARKER_PATH}"
-        fi
-    fi
-
-    if [[ -d "${DERIVED_DATA_PATH}/SourcePackages/checkouts/FluidAudio" ]]; then
-        "${PATCH_SCRIPT}" "${DERIVED_DATA_PATH}/SourcePackages/checkouts/FluidAudio"
+    if [[ -n "${DEPENDENCY_FINGERPRINT}" ]]; then
+        printf '%s\n' "${DEPENDENCY_FINGERPRINT}" > "${MARKER_PATH}"
     fi
 fi
 

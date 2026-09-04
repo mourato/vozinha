@@ -8,7 +8,6 @@ set -o pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
-PATCH_SCRIPT="${PROJECT_DIR}/scripts/apply-fluidaudio-patches.sh"
 TEST_SUITES_CONFIG="${SCRIPT_DIR}/config/test-suites.sh"
 # shellcheck source=scripts/config/app_identity.sh
 source "${SCRIPT_DIR}/config/app_identity.sh"
@@ -372,14 +371,6 @@ run_swift_tests() {
         swift package resolve >/dev/null
     fi
 
-    local fluidaudio_checkout="${PROJECT_DIR}/Packages/MeetingAssistantCore/.build/checkouts/FluidAudio"
-    if [ -n "${scratch_path}" ]; then
-        fluidaudio_checkout="${scratch_path}/checkouts/FluidAudio"
-    fi
-
-    if [ -x "${PATCH_SCRIPT}" ]; then
-        "${PATCH_SCRIPT}" "${fluidaudio_checkout}"
-    fi
     if [ "${#TEST_ARGS[@]}" -gt 0 ]; then
         if [ "${AGENT_MODE}" -eq 1 ]; then
             swift test --disable-sandbox --scratch-path "${scratch_path}" "${TEST_ARGS[@]}"

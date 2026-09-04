@@ -11,7 +11,6 @@ PROJECT_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
 PACKAGE_DIR="${PROJECT_DIR}/Packages/MeetingAssistantCore"
 XCODEPROJ="${PROJECT_DIR}/MeetingAssistant.xcodeproj"
 DERIVED_DATA="${VALIDATE_DERIVED_DATA_PATH:-${PROJECT_DIR}/.xcode-build}"
-PATCH_SCRIPT="${PROJECT_DIR}/scripts/apply-fluidaudio-patches.sh"
 # shellcheck source=scripts/config/app_identity.sh
 source "${SCRIPT_DIR}/config/app_identity.sh"
 
@@ -182,12 +181,7 @@ resolve_dependencies_if_needed() {
     fi
 }
 
-if [ -x "${PATCH_SCRIPT}" ]; then
-    resolve_dependencies_if_needed
-    if [ -d "${DERIVED_DATA}/SourcePackages/checkouts/FluidAudio" ]; then
-        "${PATCH_SCRIPT}" "${DERIVED_DATA}/SourcePackages/checkouts/FluidAudio"
-    fi
-fi
+resolve_dependencies_if_needed
 
 run_xcode_tests() {
     if [ "${XCODE_TEST_MODE}" = "package" ]; then
