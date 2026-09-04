@@ -181,6 +181,39 @@ extension RecordingManager {
         )
     }
 
+    func runDictationASRWarmupForReadyGate() async {
+        guard let configuration = activeTranscriptionConfiguration,
+              let transcriptionClient = transcriptionClient as? TranscriptionClient
+        else {
+            return
+        }
+        if transcriptionClient.isLocalASRReady(for: configuration.modelID) {
+            return
+        }
+        try? await transcriptionClient.warmupModel(for: .dictation, configuration: configuration)
+    }
+
+    func shouldHoldDictationBuffersUntilASRReady() -> Bool {
+        guard shouldEagerWarmupLocalASRForDictation(),
+              let modelID = activeTranscriptionConfiguration?.modelID,
+              let transcriptionClient = transcriptionClient as? TranscriptionClient
+        else {
+            return false
+        }
+        return !transcriptionClient.isLocalASRReady(for: modelID)
+    }
+
+    func makeDictationASRWarmupHandler(
+        holdBuffersUntilASRReady: Bool,
+    ) -> (@Sendable () async -> Void)? {
+        guard holdBuffersUntilASRReady else {
+            return nil
+        }
+        return { [weak self] in
+            await self?.runDictationASRWarmupForReadyGate()
+        }
+    }
+
     func warmupIncrementalTranscriptionIfNeeded() {
         guard let transcriptionClient = transcriptionClient as? TranscriptionClient else { return }
         transcriptionClient.warmupModelIfNeededInBackground(for: .meeting, configuration: activeTranscriptionConfiguration)

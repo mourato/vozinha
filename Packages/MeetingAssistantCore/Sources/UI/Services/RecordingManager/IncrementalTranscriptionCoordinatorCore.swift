@@ -17,6 +17,8 @@ actor IncrementalTranscriptionCoordinatorCore {
         let onPreviewTextChanged: (@Sendable (String) -> Void)?
         let onProcessedDurationChanged: @Sendable (Double) -> Void
         let fallbackLogMessage: String
+        let holdBuffersUntilASRReady: Bool
+        let asrWarmup: (@Sendable () async -> Void)?
     }
 
     private let transcriptionID: UUID
@@ -28,7 +30,19 @@ actor IncrementalTranscriptionCoordinatorCore {
     private let onPreviewTextChanged: (@Sendable (String) -> Void)?
     private let onProcessedDurationChanged: @Sendable (Double) -> Void
     private let fallbackLogMessage: String
+    private let holdBuffersUntilASRReady: Bool
+    private let asrWarmup: (@Sendable () async -> Void)?
     private let createdAt: Date
+
+    // ponytail: fixed 3s PCM ceiling by summed buffer duration; upgrade to sample-accurate budget if tap size changes
+    private enum ASRReadyGateConstants {
+        static let maxQueuedSecondsBeforeReady = 3.0
+    }
+
+    private var isASRReady = true
+    private var pendingBufferBoxes: [RecordingManager.SendableIncrementalAudioBufferBox] = []
+    private var queuedSecondsBeforeReady: Double = 0
+    private var asrWarmupTask: Task<Void, Never>?
 
     private var accumulatedRawText = ""
     private var accumulatedSegments: [Transcription.Segment] = []
@@ -52,7 +66,10 @@ actor IncrementalTranscriptionCoordinatorCore {
         onPreviewTextChanged = configuration.onPreviewTextChanged
         onProcessedDurationChanged = configuration.onProcessedDurationChanged
         fallbackLogMessage = configuration.fallbackLogMessage
+        holdBuffersUntilASRReady = configuration.holdBuffersUntilASRReady
+        asrWarmup = configuration.asrWarmup
         createdAt = Date()
+        isASRReady = !configuration.holdBuffersUntilASRReady
     }
 
     var checkpointID: UUID {
@@ -69,21 +86,41 @@ actor IncrementalTranscriptionCoordinatorCore {
 
     func start() async throws {
         try await persistCheckpoint(lifecycleState: .partial)
+        if holdBuffersUntilASRReady, let asrWarmup {
+            isASRReady = false
+            asrWarmupTask = Task {
+                defer {
+                    Task {
+                        await self.setASRReady(true)
+                    }
+                }
+                await asrWarmup()
+            }
+        }
+    }
+
+    func setASRReady(_ ready: Bool) async {
+        guard holdBuffersUntilASRReady else { return }
+        guard ready else {
+            isASRReady = false
+            return
+        }
+
+        isASRReady = true
+        asrWarmupTask?.cancel()
+        asrWarmupTask = nil
+        await flushPendingBufferBoxes()
     }
 
     func append(bufferBox: RecordingManager.SendableIncrementalAudioBufferBox) async {
         guard !requiresLegacyFallback else { return }
 
-        do {
-            let windows = try await voiceActivityKernel.append(buffer: bufferBox.buffer)
-            for window in windows {
-                try await transcribe(window: window)
-            }
-        } catch {
-            if !requiresLegacyFallback {
-                await markForLegacyFallback(error, reason: .assemblerFailed)
-            }
+        if holdBuffersUntilASRReady, !isASRReady {
+            await enqueueBeforeReady(bufferBox)
+            return
         }
+
+        await processBufferBox(bufferBox)
     }
 
     func setHighLoadMode(_ isHighLoad: Bool) async {
@@ -102,6 +139,8 @@ actor IncrementalTranscriptionCoordinatorCore {
         if let fallbackError {
             throw fallbackError
         }
+
+        await releaseASRReadyGateForShutdown()
 
         do {
             let windows = try await voiceActivityKernel.finish()
@@ -151,6 +190,10 @@ actor IncrementalTranscriptionCoordinatorCore {
     }
 
     func cancelAndDiscard() async {
+        asrWarmupTask?.cancel()
+        asrWarmupTask = nil
+        pendingBufferBoxes = []
+        queuedSecondsBeforeReady = 0
         fallbackError = CancellationError()
         requiresLegacyFallback = true
         if hasPersistedCheckpoint {
@@ -176,6 +219,62 @@ actor IncrementalTranscriptionCoordinatorCore {
         )
         // Keep the checkpoint non-visible while full-file fallback runs.
         try? await persistCheckpoint(lifecycleState: .finalizing)
+    }
+
+    private func enqueueBeforeReady(_ bufferBox: RecordingManager.SendableIncrementalAudioBufferBox) async {
+        let bufferDuration = bufferDurationSeconds(bufferBox.buffer)
+        if queuedSecondsBeforeReady + bufferDuration > ASRReadyGateConstants.maxQueuedSecondsBeforeReady {
+            await markForLegacyFallback(
+                TranscriptionError.transcriptionFailed("ASR ready queue overflow"),
+                reason: .assemblerFailed,
+            )
+            return
+        }
+
+        pendingBufferBoxes.append(bufferBox)
+        queuedSecondsBeforeReady += bufferDuration
+    }
+
+    private func flushPendingBufferBoxes() async {
+        guard !pendingBufferBoxes.isEmpty else { return }
+
+        let pending = pendingBufferBoxes
+        pendingBufferBoxes = []
+        queuedSecondsBeforeReady = 0
+
+        for bufferBox in pending {
+            await processBufferBox(bufferBox)
+        }
+    }
+
+    private func releaseASRReadyGateForShutdown() async {
+        asrWarmupTask?.cancel()
+        asrWarmupTask = nil
+        if holdBuffersUntilASRReady, !isASRReady {
+            isASRReady = true
+            await flushPendingBufferBoxes()
+        }
+    }
+
+    private func processBufferBox(_ bufferBox: RecordingManager.SendableIncrementalAudioBufferBox) async {
+        guard !requiresLegacyFallback else { return }
+
+        do {
+            let windows = try await voiceActivityKernel.append(buffer: bufferBox.buffer)
+            for window in windows {
+                try await transcribe(window: window)
+            }
+        } catch {
+            if !requiresLegacyFallback {
+                await markForLegacyFallback(error, reason: .assemblerFailed)
+            }
+        }
+    }
+
+    private func bufferDurationSeconds(_ buffer: AVAudioPCMBuffer) -> Double {
+        let sampleRate = buffer.format.sampleRate
+        guard sampleRate > 0 else { return 0 }
+        return Double(buffer.frameLength) / sampleRate
     }
 
     private func transcribe(window: RealtimeVoiceActivityWindowAssembler.Window) async throws {
