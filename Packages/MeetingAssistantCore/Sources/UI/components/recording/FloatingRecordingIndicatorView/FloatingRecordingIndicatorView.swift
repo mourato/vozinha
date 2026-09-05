@@ -29,8 +29,8 @@ public struct FloatingRecordingIndicatorView: View {
     @State var isPromptRegionHovered = false
     @State var isPromptSessionArmed = false
     @State var isSilenceWarningDialogPresented = false
+    @State private var isAccessibilityControlsRevealed = false
     @FocusState var isKeyboardFocused: Bool
-    @AccessibilityFocusState var isAccessibilityFocused: Bool
 
     public init(
         audioMonitor: AudioLevelMonitor,
@@ -117,7 +117,12 @@ public struct FloatingRecordingIndicatorView: View {
             isPromptRegionHovered = false
             isPromptSessionArmed = false
             isKeyboardFocused = false
-            isAccessibilityFocused = false
+            resetAccessibilityControls()
+        }
+        .onChange(of: isRecordingMode) { _, isRecording in
+            if !isRecording {
+                resetAccessibilityControls()
+            }
         }
         // Keep warning overlays out of layout sizing to prevent NSPanel constraint loops
         // when warnings appear/disappear while the panel uses a fixed content size.
@@ -141,5 +146,19 @@ public struct FloatingRecordingIndicatorView: View {
             x: AppDesignSystem.Layout.shadowX,
             y: AppDesignSystem.Layout.shadowY,
         )
+    }
+
+    /// Keeps VoiceOver-revealed controls visible while the user navigates into them.
+    var revealsExpandedControls: Bool {
+        guard isRecordingMode else { return false }
+        return isHovering || isKeyboardFocused || isAccessibilityControlsRevealed
+    }
+
+    func revealAccessibilityControls() {
+        isAccessibilityControlsRevealed = true
+    }
+
+    func resetAccessibilityControls() {
+        isAccessibilityControlsRevealed = false
     }
 }

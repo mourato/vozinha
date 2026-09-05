@@ -1132,6 +1132,7 @@
 "recording_indicator.super.cancel.help" = "Cancel and discard (Esc)";
 "recording_indicator.duration" = "Recording duration";
 "recording_indicator.prompt.help" = "Choose post-processing prompt";
+"recording_indicator.expand.help" = "Show recording controls";
 "recording_indicator.prompt.none" = "No post-processing";
 "recording_indicator.prompt.none_desc" = "Skip AI post-processing after recording.";
 "recording_indicator.microphone.enabled.help" = "Microphone is included in this meeting recording";
@@ -1169,6 +1170,7 @@
 "transcription.empty_fallback" = "No transcription available";
 "transcription.no_segments" = "No segments available";
 "transcription.qa.title" = "Ask about this meeting";
+"transcription.qa.accessibility_hint" = "Opens Meeting Q&A for this transcription.";
 "transcription.qa.placeholder" = "Ask a question grounded in this transcript";
 "transcription.qa.ask" = "Ask";
 "transcription.qa.send_on_return" = "Send on Return";

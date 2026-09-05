@@ -94,7 +94,7 @@ extension FloatingRecordingIndicatorView {
         isPromptRegionHovered = false
         isPromptSessionArmed = false
         isKeyboardFocused = false
-        isAccessibilityFocused = false
+        resetAccessibilityControls()
     }
 
     var isRecordingMode: Bool {
@@ -355,8 +355,27 @@ extension FloatingRecordingIndicatorView {
             .contentShape(Capsule())
             .focusable(isRecordingMode)
             .focused($isKeyboardFocused)
-            .accessibilityFocused($isAccessibilityFocused)
-            .modifier(collapsedSecondaryAccessibilityActions())
+            .accessibilityActions {
+                if !revealsExpandedControls, isRecordingMode {
+                    if showsMeetingMicrophoneControl {
+                        Button(collapsedMicrophoneActionName) {
+                            Task { await recordingManager.toggleMeetingMicrophone() }
+                        }
+                    }
+
+                    if showsMeetingNotesControl {
+                        Button(collapsedNotesActionName) {
+                            Task { @MainActor in
+                                recordingManager.toggleMeetingNotesPanel()
+                            }
+                        }
+                    }
+
+                    Button("recording_indicator.expand.help".localized) {
+                        revealAccessibilityControls()
+                    }
+                }
+            }
             .onHover { hovering in
                 handleMainRegionHover(hovering)
             }
@@ -401,28 +420,6 @@ extension FloatingRecordingIndicatorView {
         }
     }
 
-    func collapsedSecondaryAccessibilityActions() -> some ViewModifier {
-        CollapsedSecondaryAccessibilityActions(
-            showsMeetingMicrophone: showsMeetingMicrophoneControl,
-            showsMeetingNotes: showsMeetingNotesControl,
-            showsPromptOrLanguage: overlayLayout.showsPromptSelector || overlayLayout.showsLanguageSelector,
-            microphoneActionName: collapsedMicrophoneActionName,
-            notesActionName: collapsedNotesActionName,
-            onToggleMicrophone: {
-                Task { await recordingManager.toggleMeetingMicrophone() }
-            },
-            onToggleNotes: {
-                Task { @MainActor in
-                    recordingManager.toggleMeetingNotesPanel()
-                }
-            },
-            onRevealSelectors: {
-                isAccessibilityFocused = true
-                isKeyboardFocused = true
-            },
-        )
-    }
-
     var collapsedMicrophoneActionName: String {
         recordingManager.isMeetingMicrophoneEnabled
             ? "recording_indicator.microphone.enabled.help".localized
@@ -437,43 +434,5 @@ extension FloatingRecordingIndicatorView {
 
     func controlSpacing(for size: IndicatorSize) -> CGFloat {
         FloatingRecordingIndicatorViewUtilities.controlSpacing(for: size)
-    }
-}
-
-/// VoiceOver actions for secondary controls while the quiet pill hides them visually.
-private struct CollapsedSecondaryAccessibilityActions: ViewModifier {
-    let showsMeetingMicrophone: Bool
-    let showsMeetingNotes: Bool
-    let showsPromptOrLanguage: Bool
-    let microphoneActionName: String
-    let notesActionName: String
-    let onToggleMicrophone: () -> Void
-    let onToggleNotes: () -> Void
-    let onRevealSelectors: () -> Void
-
-    func body(content: Content) -> some View {
-        content
-            .accessibilityActionIf(showsMeetingMicrophone, named: Text(microphoneActionName), action: onToggleMicrophone)
-            .accessibilityActionIf(showsMeetingNotes, named: Text(notesActionName), action: onToggleNotes)
-            .accessibilityActionIf(
-                showsPromptOrLanguage,
-                named: Text("recording_indicator.prompt.help".localized),
-                action: onRevealSelectors,
-            )
-    }
-}
-
-private extension View {
-    @ViewBuilder
-    func accessibilityActionIf(
-        _ condition: Bool,
-        named name: Text,
-        action: @escaping () -> Void,
-    ) -> some View {
-        if condition {
-            accessibilityAction(named: name, action)
-        } else {
-            self
-        }
     }
 }
