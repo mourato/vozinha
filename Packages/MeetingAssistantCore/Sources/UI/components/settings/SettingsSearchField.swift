@@ -22,16 +22,10 @@ struct SettingsSearchField: View {
         case .standard:
             nativeField(style: .standard)
         case .sidebar:
+            // Quiet sidebar chrome: native field only, no filled plate competing with List rows.
             nativeField(style: .sidebar)
                 .padding(.horizontal, Layout.sidebarHorizontalPadding)
                 .padding(.vertical, Layout.sidebarVerticalPadding)
-                .background(AppDesignSystem.Colors.subtleFill)
-                .clipShape(
-                    RoundedRectangle(
-                        cornerRadius: AppDesignSystem.Layout.smallCornerRadius,
-                        style: .continuous,
-                    ),
-                )
         case .history:
             DSCard(
                 style: .settings,

@@ -9,14 +9,12 @@ struct SettingsSidebarView: View {
     let showsSystemSettingsBadge: Bool
     let onSelectDestination: (SettingsDestination) -> Void
     @Environment(\.controlActiveState) private var controlActiveState
-    @ScaledMetric(relativeTo: .body) private var sidebarBadgeSize: CGFloat = 22
-    @ScaledMetric(relativeTo: .caption) private var searchResultBadgeSize: CGFloat = 20
 
     var body: some View {
         VStack(spacing: 0) {
             searchField
                 .padding(.horizontal, 10)
-                .padding(.bottom, 6)
+                .padding(.bottom, 4)
 
             if hasActiveSearch {
                 searchResultsList
@@ -24,7 +22,7 @@ struct SettingsSidebarView: View {
                 sectionsList
             }
         }
-        .padding(.top, 10)
+        .padding(.top, 8)
     }
 
     private var searchField: some View {
@@ -109,8 +107,12 @@ struct SettingsSidebarView: View {
     }
 
     private func sidebarLabel(for section: SettingsSection) -> some View {
-        HStack(spacing: 10) {
-            sidebarIconBadge(for: section)
+        HStack(spacing: 8) {
+            Image(systemName: sidebarIcon(for: section))
+                .font(AppTypography.sidebarIcon)
+                .foregroundStyle(.primary)
+                .frame(width: 18, alignment: .center)
+                .opacity(controlActiveState == .inactive ? 0.55 : 1.0)
 
             Text(section.title)
                 .font(AppTypography.sidebarLabel)
@@ -127,36 +129,18 @@ struct SettingsSidebarView: View {
         .frame(height: 28)
     }
 
-    private func sidebarIconBadge(for section: SettingsSection) -> some View {
-        ZStack {
-            RoundedRectangle(cornerRadius: 6, style: .continuous)
-                .fill(section.badgeGradient)
-                .frame(width: sidebarBadgeSize, height: sidebarBadgeSize)
-
-            Image(systemName: sidebarIcon(for: section))
-                .font(.system(size: 11.5, weight: .semibold))
-                .foregroundStyle(.white)
-        }
-        .opacity(controlActiveState == .inactive ? 0.65 : 1.0)
-    }
-
     private func sidebarIcon(for section: SettingsSection) -> String {
         selectedSection == section ? section.selectedSidebarIcon : section.icon
     }
 
     private func resultRow(for result: SettingsSearchResult) -> some View {
-        HStack(alignment: .top, spacing: 10) {
-            ZStack {
-                RoundedRectangle(cornerRadius: 5, style: .continuous)
-                    .fill(result.section.badgeGradient)
-                    .frame(width: searchResultBadgeSize, height: searchResultBadgeSize)
-
-                Image(systemName: result.section.icon)
-                    .font(.system(size: 10.5, weight: .semibold))
-                    .foregroundStyle(.white)
-            }
-            .opacity(controlActiveState == .inactive ? 0.65 : 1.0)
-            .padding(.top, 1)
+        HStack(alignment: .top, spacing: 8) {
+            Image(systemName: result.section.icon)
+                .font(AppTypography.sidebarSearchResultIcon)
+                .foregroundStyle(.secondary)
+                .frame(width: 16, alignment: .center)
+                .opacity(controlActiveState == .inactive ? 0.55 : 1.0)
+                .padding(.top, 1)
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(result.title)
