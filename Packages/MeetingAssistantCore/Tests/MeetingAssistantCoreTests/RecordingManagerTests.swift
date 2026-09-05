@@ -86,8 +86,8 @@ final class RecordingManagerTests: XCTestCase {
     }
 
     override func tearDown() async throws {
-        if let manager, manager.isRecording {
-            await manager.cancelRecording()
+        if let manager {
+            await manager.reset()
         }
 
         await RecordingExclusivityCoordinator.shared.endRecording()
