@@ -54,8 +54,8 @@ Status values: `TODO` | `IN PROGRESS` | `DONE` | `BLOCKED` | `REJECTED`.
 | [133](133-visual-surface-contract.md) | Establish the shared visual surface contract | P1 | M | - | REVIEWED (`a915fc91`, merged local) |
 | [134](134-simplify-settings-sidebar.md) | Simplify the Settings shell and sidebar | P1 | M | 133 | REVIEWED (`e0258d5d`, merged local) |
 | [135](135-normalize-settings-surfaces.md) | Normalize Settings surfaces and visual density | P1 | L | 133, 134 | REVIEWED (`852b907a`, merged local) |
-| [136](136-lighten-transcription-history.md) | Lighten transcription history with progressive disclosure | P1 | L | 133, 135 | TODO |
-| [137](137-recompose-activity-dashboard.md) | Recompose Activity around a clear first-fold story | P1 | M | 133, 135 | TODO |
+| [136](136-lighten-transcription-history.md) | Lighten transcription history with progressive disclosure | P1 | L | 133, 135 | REVIEWED (`fcc00f7d`, merged local) |
+| [137](137-recompose-activity-dashboard.md) | Recompose Activity around a clear first-fold story | P1 | M | 133, 135 | REVIEWED (`51d40c59`, merged local) |
 | [138](138-simplify-recorder-surface.md) | Simplify the recorder surface and reveal secondary controls progressively | P1 | M | 133 | REVIEWED (`015f252a`, merged local) |
 
 ## Dependency order
