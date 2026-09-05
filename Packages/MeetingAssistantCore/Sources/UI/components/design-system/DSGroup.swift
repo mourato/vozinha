@@ -5,7 +5,8 @@ import SwiftUI
 ///
 /// Ordinary scalar settings belong in the owning page's native `Form` and
 /// `Section`; use this group only when the content's semantics need a richer
-/// surface than a settings row.
+/// surface than a settings row. Default surface intensity is `.subtle` so the
+/// group does not compete with `SettingsWindowBackground`.
 public struct DSGroup<Content: View, HeaderAccessory: View>: View {
     private let title: String?
     private let icon: String?
@@ -14,7 +15,7 @@ public struct DSGroup<Content: View, HeaderAccessory: View>: View {
     private let content: Content
 
     public init(
-        surfaceIntensity: AppDesignSystem.SettingsSurfaceIntensity = .regular,
+        surfaceIntensity: AppDesignSystem.SettingsSurfaceIntensity = .subtle,
         @ViewBuilder content: () -> Content,
     )
         where HeaderAccessory == EmptyView
@@ -29,7 +30,7 @@ public struct DSGroup<Content: View, HeaderAccessory: View>: View {
     public init(
         _ title: String,
         icon: String? = nil,
-        surfaceIntensity: AppDesignSystem.SettingsSurfaceIntensity = .regular,
+        surfaceIntensity: AppDesignSystem.SettingsSurfaceIntensity = .subtle,
         @ViewBuilder content: () -> Content,
     )
         where HeaderAccessory == EmptyView
@@ -44,7 +45,7 @@ public struct DSGroup<Content: View, HeaderAccessory: View>: View {
     public init(
         _ title: String,
         icon: String? = nil,
-        surfaceIntensity: AppDesignSystem.SettingsSurfaceIntensity = .regular,
+        surfaceIntensity: AppDesignSystem.SettingsSurfaceIntensity = .subtle,
         @ViewBuilder headerAccessory: () -> HeaderAccessory,
         @ViewBuilder content: () -> Content,
     ) {

@@ -51,32 +51,19 @@ public struct DSCard<Content: View>: View {
                     shape.stroke(AppDesignSystem.Colors.cardStroke, lineWidth: 0.5)
                 }
         case .settings:
-            if reduceTransparency {
-                shape
-                    .fill(
-                        AppDesignSystem.Colors.settingsMaterialCardFill(
-                            reduceTransparency: true,
-                            intensity: settingsSurfaceIntensity,
-                        ),
-                    )
-                    .overlay {
-                        shape.stroke(settingsCardStroke, lineWidth: settingsCardStrokeWidth)
-                    }
-            } else {
-                shape
-                    .fill(.regularMaterial)
-                    .overlay {
-                        shape.fill(
-                            AppDesignSystem.Colors.settingsMaterialCardFill(
-                                reduceTransparency: false,
-                                intensity: settingsSurfaceIntensity,
-                            ),
-                        )
-                    }
-                    .overlay {
-                        shape.stroke(settingsCardStroke, lineWidth: settingsCardStrokeWidth)
-                    }
-            }
+            // One surface treatment: semantic fill (+ stroke). Do not stack
+            // regularMaterial under an opaque tint — that competed with the
+            // Settings window canvas for ordinary collection content.
+            shape
+                .fill(
+                    AppDesignSystem.Colors.settingsMaterialCardFill(
+                        reduceTransparency: reduceTransparency,
+                        intensity: settingsSurfaceIntensity,
+                    ),
+                )
+                .overlay {
+                    shape.stroke(settingsCardStroke, lineWidth: settingsCardStrokeWidth)
+                }
         }
     }
 
