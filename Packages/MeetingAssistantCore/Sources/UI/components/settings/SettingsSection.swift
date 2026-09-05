@@ -190,7 +190,7 @@ public enum SettingsSection: String, CaseIterable, Identifiable, Sendable {
         }
     }
 
-    /// The badge background color corresponding to macOS System Settings visual styling.
+    /// Compatibility color retained for existing callers; sidebar rows no longer render badge plates.
     public var badgeColor: Color {
         switch self {
         case .activity, .metrics:
@@ -210,7 +210,7 @@ public enum SettingsSection: String, CaseIterable, Identifiable, Sendable {
         }
     }
 
-    /// Subtle gradient applied to the icon badge for visual depth.
+    /// Compatibility gradient retained for existing callers; sidebar rows no longer render badge plates.
     public var badgeGradient: LinearGradient {
         LinearGradient(
             colors: [badgeColor, badgeColor.opacity(0.88)],
