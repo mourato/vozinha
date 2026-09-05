@@ -6,10 +6,15 @@ import MeetingAssistantCoreDomain
 import MeetingAssistantCoreInfrastructure
 import SwiftUI
 
-/// An expandable card for a transcription item.
+// ponytail: file already over length ceilings before this unit; split only with a scoped follow-up.
+// swiftlint:disable file_length type_body_length
+
+/// An expandable history row for a transcription item.
+/// Collapsed = quiet scan; expanded = short context + secondary overflow.
 public struct TranscriptionCardView: View {
     private enum Layout {
-        static let contentLineLimit = 8
+        /// List peek only — deep reading belongs on TranscriptionConversationPage.
+        static let contentLineLimit = 3
     }
 
     let transcription: TranscriptionMetadata
@@ -53,6 +58,7 @@ public struct TranscriptionCardView: View {
     @State private var selectedTab: TranscriptionTab = .aiProcessed
     @State private var showInfoPopover = false
     @State private var showPromptPopover = false
+    @State private var isAudioDisclosureExpanded = false
     @State private var expandedTabs: Set<TranscriptionTab> = []
     @State private var draftMeetingTitle = ""
     @State private var isEditingMeetingTitle = false
@@ -100,22 +106,28 @@ public struct TranscriptionCardView: View {
     public var body: some View {
         Group {
             if isExpanded {
-                DSCard(
-                    style: .settings,
-                    cornerRadius: AppDesignSystem.Layout.cardCornerRadius,
-                    padding: 16,
-                ) {
-                    expandedContent
-                }
+                expandedContent
+                    .padding(.vertical, 4)
+                    .accessibilityElement(children: .contain)
+                    .accessibilityAddTraits(.isSelected)
             } else {
-                Button(action: onToggleExpand) {
-                    collapsedContent
-                }
-                .buttonStyle(.plain)
-                .accessibilityLabel(collapsedAccessibilityLabel)
-                .accessibilityValue(collapsedAccessibilityValue)
-                .accessibilityHint("transcription.content.show_all".localized)
-                .accessibilityAddTraits(.isButton)
+                collapsedRow
+            }
+        }
+        .contextMenu {
+            secondaryActionsMenuContent
+        }
+        .popover(isPresented: $showInfoPopover) {
+            if let details = transcriptionDetail {
+                TranscriptionInfoPopover(transcription: details)
+            } else {
+                Text("transcription.info.loading".localized)
+                    .padding()
+            }
+        }
+        .popover(isPresented: $showPromptPopover) {
+            if let details = transcriptionDetail {
+                TranscriptionPromptPopover(transcription: details)
             }
         }
         .onAppear {
@@ -124,14 +136,33 @@ public struct TranscriptionCardView: View {
         .onChange(of: currentPersistedMeetingTitle) { _, _ in
             syncDraftMeetingTitleIfNeeded()
         }
+        .onChange(of: isExpanded) { _, expanded in
+            if !expanded {
+                isAudioDisclosureExpanded = false
+                showInfoPopover = false
+                showPromptPopover = false
+            }
+        }
     }
 
     private var expandedContent: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: 12) {
             HStack(alignment: .center, spacing: 12) {
-                TranscriptionAudioPlayerView(audioURL: audioURL)
+                sourceLabel(text: sourceDisplayName)
 
-                Spacer(minLength: 12)
+                Spacer(minLength: 8)
+
+                if transcription.supportsMeetingConversation {
+                    Button {
+                        onAction(.askAboutMeeting)
+                    } label: {
+                        Label("transcription.qa.title".localized, systemImage: "bubble.left.and.bubble.right")
+                            .font(.caption.weight(.medium))
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .controlSize(.small)
+                    .accessibilityHint("transcription.content.show_all".localized)
+                }
 
                 if shouldShowTabPicker {
                     Picker("", selection: $selectedTab) {
@@ -141,8 +172,21 @@ public struct TranscriptionCardView: View {
                     }
                     .pickerStyle(.menu)
                     .labelsHidden()
-                    .frame(width: 180)
+                    .controlSize(.small)
+                    .frame(maxWidth: 160)
                 }
+
+                Menu {
+                    secondaryActionsMenuContent
+                } label: {
+                    Image(systemName: "ellipsis.circle")
+                        .font(.body)
+                        .foregroundStyle(.secondary)
+                        .frame(width: 28, height: 28)
+                        .contentShape(Rectangle())
+                }
+                .menuStyle(.borderlessButton)
+                .fixedSize()
 
                 collapseButton
             }
@@ -152,14 +196,14 @@ public struct TranscriptionCardView: View {
                     meetingTitleEditor
                 } else {
                     Text(collapsedMeetingTitle)
-                        .font(.title3.weight(.semibold))
+                        .font(.body.weight(.semibold))
                         .foregroundStyle(.primary)
                         .frame(maxWidth: .infinity, alignment: .leading)
                 }
             }
 
             contentView
-                .font(.body)
+                .font(.callout)
                 .foregroundStyle(.primary)
                 .textSelection(.enabled)
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -168,136 +212,14 @@ public struct TranscriptionCardView: View {
                 postProcessingFailureLabel(error)
             }
 
-            HStack(alignment: .center, spacing: 12) {
-                sourceLabel(text: sourceDisplayName)
-
-                Spacer()
-
-                HStack(spacing: 8) {
-                    if transcription.supportsMeetingConversation {
-                        Button {
-                            onAction(.askAboutMeeting)
-                        } label: {
-                            Label("transcription.qa.title".localized, systemImage: "bubble.left.and.bubble.right")
-                                .font(.caption)
-                        }
-                        .buttonStyle(.bordered)
-                    }
-
-                    Button {
-                        showInfoPopover.toggle()
-                    } label: {
-                        Label("transcription.info.title".localized, systemImage: "info.circle")
-                            .font(.caption)
-                    }
-                    .buttonStyle(.bordered)
-                    .popover(isPresented: $showInfoPopover) {
-                        if let details = transcriptionDetail {
-                            TranscriptionInfoPopover(transcription: details)
-                        } else {
-                            Text("transcription.info.loading".localized)
-                                .padding()
-                        }
-                    }
-
-                    if hasPromptText {
-                        Button {
-                            showPromptPopover.toggle()
-                        } label: {
-                            Label("transcription.prompt.view".localized, systemImage: "text.quote")
-                                .font(.caption)
-                        }
-                        .buttonStyle(.bordered)
-                        .popover(isPresented: $showPromptPopover) {
-                            if let details = transcriptionDetail {
-                                TranscriptionPromptPopover(transcription: details)
-                            }
-                        }
-                    }
-
-                    Menu {
-                        Button {
-                            onAction(.copy(text: currentText))
-                        } label: {
-                            Label("common.copy".localized, systemImage: "doc.on.doc")
-                        }
-
-                        Menu {
-                            Button {
-                                onAction(.export(.summary))
-                            } label: {
-                                Label("transcription.actions.export_summary".localized, systemImage: "sparkles")
-                            }
-                            .disabled(!hasPostProcessingContent)
-
-                            Button {
-                                onAction(.export(.original))
-                            } label: {
-                                Label("transcription.actions.export_original".localized, systemImage: "doc.plaintext")
-                            }
-                        } label: {
-                            Label("transcription.actions.export".localized, systemImage: "square.and.arrow.up")
-                        }
-
-                        Menu {
-                            ForEach(filteredPrompts) { prompt in
-                                Button(prompt.title) {
-                                    onAction(.reprocess(prompt: prompt))
-                                }
-                            }
-                        } label: {
-                            Label("transcription.actions.redo_post_processing".localized, systemImage: "wand.and.sparkles")
-                        }
-                        .disabled(filteredPrompts.isEmpty || isPostProcessing)
-
-                        if availableRetryTranscriptionOptions.count > 1 {
-                            Menu {
-                                ForEach(availableRetryTranscriptionOptions) { option in
-                                    Button(option.displayName) {
-                                        onAction(.retryTranscription(selection: option.selection))
-                                    }
-                                }
-                            } label: {
-                                Label("transcription.actions.retry_transcription".localized, systemImage: "arrow.clockwise.circle")
-                            }
-                            .disabled(audioURL == nil)
-                        } else {
-                            Button {
-                                if let onlyOption = availableRetryTranscriptionOptions.first {
-                                    onAction(.retryTranscription(selection: onlyOption.selection))
-                                }
-                            } label: {
-                                Label("transcription.actions.retry_transcription".localized, systemImage: "arrow.clockwise.circle")
-                            }
-                            .disabled(audioURL == nil || availableRetryTranscriptionOptions.isEmpty)
-                        }
-
-                        Button {
-                            onAction(.updateCapturePurpose(toggledCapturePurpose))
-                        } label: {
-                            Label(toggleCapturePurposeLabel, systemImage: toggleCapturePurposeIcon)
-                        }
-
-                        Divider()
-
-                        Button(role: .destructive) {
-                            onAction(.delete)
-                        } label: {
-                            Label {
-                                Text("common.delete".localized)
-                            } icon: {
-                                Image(systemName: "trash")
-                            }
-                            .foregroundStyle(AppDesignSystem.Colors.error)
-                        }
-                        .foregroundStyle(AppDesignSystem.Colors.error)
-                    } label: {
-                        Image(systemName: "ellipsis.circle")
-                            .font(.body)
-                    }
-                    .menuStyle(.borderlessButton)
-                    .fixedSize()
-                    .buttonStyle(.bordered)
+            if audioURL != nil {
+                DisclosureGroup(isExpanded: $isAudioDisclosureExpanded) {
+                    TranscriptionAudioPlayerView(audioURL: audioURL)
+                        .padding(.top, 4)
+                } label: {
+                    Label("settings.section.audio".localized, systemImage: "waveform")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
                 }
             }
         }
@@ -310,6 +232,118 @@ public struct TranscriptionCardView: View {
         .onChange(of: hasPostProcessingContent) { _, _ in
             ensureValidSelectedTab()
         }
+    }
+
+    @ViewBuilder
+    private var secondaryActionsMenuContent: some View {
+        if transcription.supportsMeetingConversation {
+            Button {
+                onAction(.askAboutMeeting)
+            } label: {
+                Label("transcription.qa.title".localized, systemImage: "bubble.left.and.bubble.right")
+            }
+        }
+
+        Button {
+            revealInlineContextIfNeeded()
+            showInfoPopover = true
+            onAction(.info)
+        } label: {
+            Label("transcription.info.title".localized, systemImage: "info.circle")
+        }
+
+        if hasPromptText {
+            Button {
+                revealInlineContextIfNeeded()
+                showPromptPopover = true
+                onAction(.viewPrompt)
+            } label: {
+                Label("transcription.prompt.view".localized, systemImage: "text.quote")
+            }
+        }
+
+        Divider()
+
+        Button {
+            onAction(.copy(text: currentText))
+        } label: {
+            Label("common.copy".localized, systemImage: "doc.on.doc")
+        }
+
+        Menu {
+            Button {
+                onAction(.export(.summary))
+            } label: {
+                Label("transcription.actions.export_summary".localized, systemImage: "sparkles")
+            }
+            .disabled(!hasPostProcessingContent)
+
+            Button {
+                onAction(.export(.original))
+            } label: {
+                Label("transcription.actions.export_original".localized, systemImage: "doc.plaintext")
+            }
+        } label: {
+            Label("transcription.actions.export".localized, systemImage: "square.and.arrow.up")
+        }
+
+        Menu {
+            ForEach(filteredPrompts) { prompt in
+                Button(prompt.title) {
+                    onAction(.reprocess(prompt: prompt))
+                }
+            }
+        } label: {
+            Label("transcription.actions.redo_post_processing".localized, systemImage: "wand.and.sparkles")
+        }
+        .disabled(filteredPrompts.isEmpty || isPostProcessing)
+
+        if availableRetryTranscriptionOptions.count > 1 {
+            Menu {
+                ForEach(availableRetryTranscriptionOptions) { option in
+                    Button(option.displayName) {
+                        onAction(.retryTranscription(selection: option.selection))
+                    }
+                }
+            } label: {
+                Label("transcription.actions.retry_transcription".localized, systemImage: "arrow.clockwise.circle")
+            }
+            .disabled(audioURL == nil)
+        } else {
+            Button {
+                if let onlyOption = availableRetryTranscriptionOptions.first {
+                    onAction(.retryTranscription(selection: onlyOption.selection))
+                }
+            } label: {
+                Label("transcription.actions.retry_transcription".localized, systemImage: "arrow.clockwise.circle")
+            }
+            .disabled(audioURL == nil || availableRetryTranscriptionOptions.isEmpty)
+        }
+
+        Button {
+            onAction(.updateCapturePurpose(toggledCapturePurpose))
+        } label: {
+            Label(toggleCapturePurposeLabel, systemImage: toggleCapturePurposeIcon)
+        }
+
+        Divider()
+
+        Button(role: .destructive) {
+            onAction(.delete)
+        } label: {
+            Label {
+                Text("common.delete".localized)
+            } icon: {
+                Image(systemName: "trash")
+            }
+            .foregroundStyle(AppDesignSystem.Colors.error)
+        }
+        .foregroundStyle(AppDesignSystem.Colors.error)
+    }
+
+    private func revealInlineContextIfNeeded() {
+        guard !isExpanded else { return }
+        onToggleExpand()
     }
 
     private var availableTabs: [TranscriptionTab] {
@@ -491,17 +525,6 @@ public struct TranscriptionCardView: View {
         return estimatedLines > Layout.contentLineLimit
     }
 
-    private func actionButton(icon: String, action: TranscriptionAction, isDestructive: Bool = false) -> some View {
-        Button {
-            onAction(action)
-        } label: {
-            Image(systemName: icon)
-                .font(.body)
-                .foregroundStyle(isDestructive ? .red : .secondary)
-        }
-        .buttonStyle(.plain)
-    }
-
     private var appSource: MeetingApp {
         MeetingApp(rawValue: transcription.appRawValue) ?? .unknown
     }
@@ -564,7 +587,7 @@ public struct TranscriptionCardView: View {
                     prompt: Text(sourceDisplayName),
                 )
                 .textFieldStyle(.roundedBorder)
-                .font(.title3.weight(.semibold))
+                .font(.body.weight(.semibold))
                 .focused($isMeetingTitleFieldFocused)
                 .onSubmit {
                     commitMeetingTitleEdit()
@@ -582,7 +605,7 @@ public struct TranscriptionCardView: View {
                     beginMeetingTitleEdit()
                 } label: {
                     Text(currentPersistedMeetingTitle ?? sourceDisplayName)
-                        .font(.title3.weight(.semibold))
+                        .font(.body.weight(.semibold))
                         .foregroundStyle(.primary)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .contentShape(Rectangle())
@@ -641,6 +664,49 @@ public struct TranscriptionCardView: View {
 }
 
 private extension TranscriptionCardView {
+    var collapsedRow: some View {
+        HStack(alignment: .top, spacing: 8) {
+            Button(action: primaryCollapsedAction) {
+                collapsedContent
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel(collapsedAccessibilityLabel)
+            .accessibilityValue(collapsedAccessibilityValue)
+            .accessibilityHint(primaryCollapsedAccessibilityHint)
+            .accessibilityAddTraits(.isButton)
+
+            if transcription.supportsMeetingConversation {
+                Button(action: onToggleExpand) {
+                    Image(systemName: "chevron.down")
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(.tertiary)
+                        .frame(width: 28, height: 28)
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("transcription.content.show_all".localized)
+                .accessibilityValue("common.collapsed".localized)
+                .accessibilityAddTraits(.isButton)
+            }
+        }
+    }
+
+    func primaryCollapsedAction() {
+        if transcription.supportsMeetingConversation {
+            onAction(.askAboutMeeting)
+        } else {
+            onToggleExpand()
+        }
+    }
+
+    var primaryCollapsedAccessibilityHint: String {
+        if transcription.supportsMeetingConversation {
+            "transcription.qa.title".localized
+        } else {
+            "transcription.content.show_all".localized
+        }
+    }
+
     var collapsedContent: some View {
         HStack(alignment: .top, spacing: 12) {
             AppIconView(
@@ -669,11 +735,13 @@ private extension TranscriptionCardView {
                 }
             }
 
-            Image(systemName: "chevron.right")
-                .font(.caption.weight(.semibold))
-                .foregroundStyle(.tertiary)
-                .frame(width: 28, height: 28)
-                .accessibilityHidden(true)
+            if !transcription.supportsMeetingConversation {
+                Image(systemName: "chevron.right")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.tertiary)
+                    .frame(width: 28, height: 28)
+                    .accessibilityHidden(true)
+            }
         }
         .padding(.vertical, 8)
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -689,7 +757,8 @@ private extension TranscriptionCardView {
     }
 
     var collapsedAccessibilityValue: String {
-        String(markdownAttributedString(displayText(transcription.previewText)).characters)
+        let preview = String(markdownAttributedString(displayText(transcription.previewText)).characters)
+        return "\("common.collapsed".localized). \(preview)"
     }
 
     var collapseButton: some View {
@@ -702,7 +771,7 @@ private extension TranscriptionCardView {
         }
         .buttonStyle(.plain)
         .accessibilityLabel("transcription.content.show_less".localized)
-        .accessibilityHint("transcription.content.show_less".localized)
+        .accessibilityValue("common.expanded".localized)
         .accessibilityAddTraits([.isButton, .isSelected])
     }
 
