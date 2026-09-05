@@ -51,7 +51,7 @@ Status values: `TODO` | `IN PROGRESS` | `DONE` | `BLOCKED` | `REJECTED`.
 | [131](131-dictation-post-session-unload.md) | Unload local ASR after dictation idle grace | P1 | M | 128 | REVIEWED (`d0ad592b`, merged local) |
 | [132](132-enable-dictation-intelligence-mode.md) | Enable dictation Intelligence Kernel mode gating | P2 | M | prefer after 128–131 | REVIEWED (`7035c28e`, merged local) |
 
-| [133](133-visual-surface-contract.md) | Establish the shared visual surface contract | P1 | M | - | TODO |
+| [133](133-visual-surface-contract.md) | Establish the shared visual surface contract | P1 | M | - | REVIEWED (`a915fc91`, merged local) |
 | [134](134-simplify-settings-sidebar.md) | Simplify the Settings shell and sidebar | P1 | M | 133 | TODO |
 | [135](135-normalize-settings-surfaces.md) | Normalize Settings surfaces and visual density | P1 | L | 133, 134 | TODO |
 | [136](136-lighten-transcription-history.md) | Lighten transcription history with progressive disclosure | P1 | L | 133, 135 | TODO |
