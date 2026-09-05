@@ -1,4 +1,5 @@
 @testable import MeetingAssistantCore
+@testable import MeetingAssistantCoreUI
 import XCTest
 
 @MainActor
@@ -135,6 +136,31 @@ final class MetricsDashboardViewModelTests: XCTestCase {
         )
         XCTAssertTrue(viewModel.appUsageBuckets.last?.isOther ?? false)
         XCTAssertEqual(viewModel.appUsageBuckets.last?.sessions, 1)
+    }
+
+    func testFirstFoldContent_DoesNotTreatLoadingZerosAsSummary() {
+        XCTAssertEqual(
+            MetricsDashboardFirstFold.content(isLoading: true, sessionsRecorded: 0),
+            .loading,
+        )
+        XCTAssertEqual(
+            MetricsDashboardFirstFold.content(isLoading: false, sessionsRecorded: 0),
+            .empty,
+        )
+        XCTAssertEqual(
+            MetricsDashboardFirstFold.content(isLoading: false, sessionsRecorded: 2),
+            .summary,
+        )
+        XCTAssertEqual(
+            MetricsDashboardFirstFold.content(isLoading: true, sessionsRecorded: 2),
+            .summary,
+        )
+        XCTAssertFalse(MetricsDashboardFirstFold.showsHeroMetricsSubtitle(isLoading: true, sessionsRecorded: 0))
+        XCTAssertFalse(MetricsDashboardFirstFold.showsHeroMetricsSubtitle(isLoading: false, sessionsRecorded: 0))
+        XCTAssertTrue(MetricsDashboardFirstFold.showsHeroMetricsSubtitle(isLoading: false, sessionsRecorded: 1))
+        XCTAssertFalse(MetricsDashboardFirstFold.showsTrendSection(isLoading: true, sessionsRecorded: 0))
+        XCTAssertTrue(MetricsDashboardFirstFold.showsTrendSection(isLoading: false, sessionsRecorded: 0))
+        XCTAssertTrue(MetricsDashboardFirstFold.showsTrendSection(isLoading: false, sessionsRecorded: 1))
     }
 
     private func makeViewModel(storage: MockStorageService) -> MetricsDashboardViewModel {

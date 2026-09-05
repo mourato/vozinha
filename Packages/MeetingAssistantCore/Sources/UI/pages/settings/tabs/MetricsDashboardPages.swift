@@ -12,33 +12,17 @@ struct MetricsDashboardIndexPage: View {
 
     var body: some View {
         SettingsFormPage {
-            VStack(alignment: .leading, spacing: 4) {
-                SettingsFormSectionHeader(title: "settings.section.metrics".localized, icon: "chart.line.uptrend.xyaxis")
-                Text(
-                    "metrics.hero.subtitle".localized(
-                        with: MetricsDashboardFormatters.formattedNumber(viewModel.summary.wordsDictated),
-                        viewModel.summary.sessionsRecorded,
-                    ),
-                )
-                .font(.caption)
-                .foregroundStyle(.secondary)
-            }
+            MetricsDashboardActivityHero(
+                titleKey: "settings.section.metrics",
+                viewModel: viewModel,
+            )
 
             MetricsDashboardLoadErrorSection(
                 errorMessage: viewModel.errorMessage,
                 onRetry: { await viewModel.load() },
             )
         } content: {
-            Section {
-                Text("metrics.activity.subtitle".localized)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                MetricsDashboardActivitySection(viewModel: viewModel)
-            } header: {
-                SettingsFormSectionHeader(title: "metrics.activity.title".localized, icon: "calendar.badge.clock") {
-                    MetricsDashboardActivityFilterMenu(viewModel: viewModel)
-                }
-            }
+            MetricsDashboardActivityPrimaryContent(viewModel: viewModel)
 
             Section {
                 MetricsDashboardMoreInsightsLinkSection(openMoreInsights: openMoreInsights)
@@ -69,33 +53,17 @@ struct ActivityDashboardRootPage: View {
 
     var body: some View {
         SettingsFormPage {
-            VStack(alignment: .leading, spacing: 4) {
-                SettingsFormSectionHeader(title: "settings.section.activity".localized, icon: "chart.line.uptrend.xyaxis")
-                Text(
-                    "metrics.hero.subtitle".localized(
-                        with: MetricsDashboardFormatters.formattedNumber(viewModel.summary.wordsDictated),
-                        viewModel.summary.sessionsRecorded,
-                    ),
-                )
-                .font(.caption)
-                .foregroundStyle(.secondary)
-            }
+            MetricsDashboardActivityHero(
+                titleKey: "settings.section.activity",
+                viewModel: viewModel,
+            )
 
             MetricsDashboardLoadErrorSection(
                 errorMessage: viewModel.errorMessage,
                 onRetry: { await viewModel.load() },
             )
         } content: {
-            Section {
-                Text("metrics.activity.subtitle".localized)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                MetricsDashboardActivitySection(viewModel: viewModel)
-            } header: {
-                SettingsFormSectionHeader(title: "metrics.activity.title".localized, icon: "calendar.badge.clock") {
-                    MetricsDashboardActivityFilterMenu(viewModel: viewModel)
-                }
-            }
+            MetricsDashboardActivityPrimaryContent(viewModel: viewModel)
 
             Section {
                 SettingsListDrillDownButtonRow(
@@ -292,6 +260,77 @@ struct MetricsDashboardEventDetailPage: View {
         notesAutosaveTask?.cancel()
         notesAutosaveTask = nil
         viewModel.updateCalendarEventNotes(notesDraft, for: event)
+    }
+}
+
+private struct MetricsDashboardActivityHero: View {
+    let titleKey: String
+    @ObservedObject var viewModel: MetricsDashboardViewModel
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            SettingsFormSectionHeader(title: titleKey.localized, icon: "chart.line.uptrend.xyaxis")
+            if MetricsDashboardFirstFold.showsHeroMetricsSubtitle(
+                isLoading: viewModel.isLoading,
+                sessionsRecorded: viewModel.summary.sessionsRecorded,
+            ) {
+                Text(
+                    "metrics.hero.subtitle".localized(
+                        with: MetricsDashboardFormatters.formattedNumber(viewModel.summary.wordsDictated),
+                        viewModel.summary.sessionsRecorded,
+                    ),
+                )
+                .font(.caption)
+                .foregroundStyle(.secondary)
+            } else if !viewModel.isLoading, viewModel.summary.sessionsRecorded == 0 {
+                Text("metrics.empty.subtitle".localized)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+        }
+    }
+}
+
+@MainActor
+@ViewBuilder
+private func MetricsDashboardActivityPrimaryContent(viewModel: MetricsDashboardViewModel) -> some View {
+    Section {
+        switch MetricsDashboardFirstFold.content(
+            isLoading: viewModel.isLoading,
+            sessionsRecorded: viewModel.summary.sessionsRecorded,
+        ) {
+        case .loading:
+            ProgressView()
+                .tint(AppDesignSystem.Colors.accent)
+                .frame(maxWidth: .infinity, minHeight: 120)
+                .padding(.vertical, 8)
+                .accessibilityLabel(Text("settings.transcriptions.loading".localized))
+        case .empty:
+            MAEmptyStateView(
+                iconName: "chart.bar.xaxis",
+                title: "metrics.empty.title".localized,
+                message: "metrics.empty.subtitle".localized,
+                emphasis: .compact,
+            )
+        case .summary:
+            MetricsDashboardSummarySection(viewModel: viewModel)
+        }
+    }
+
+    if MetricsDashboardFirstFold.showsTrendSection(
+        isLoading: viewModel.isLoading,
+        sessionsRecorded: viewModel.summary.sessionsRecorded,
+    ) {
+        Section {
+            Text("metrics.activity.subtitle".localized)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+            MetricsDashboardActivitySection(viewModel: viewModel)
+        } header: {
+            SettingsFormSectionHeader(title: "metrics.activity.title".localized, icon: "calendar.badge.clock") {
+                MetricsDashboardActivityFilterMenu(viewModel: viewModel)
+            }
+        }
     }
 }
 

@@ -31,6 +31,36 @@ struct ActivityHeatmapMonthMarker: Identifiable, Equatable {
     let xOffset: CGFloat
 }
 
+/// Presentation mode for Activity's first-fold summary — never treat unknown
+/// loading zeros as a populated story.
+enum MetricsDashboardFirstFoldContent: Equatable {
+    case loading
+    case empty
+    case summary
+}
+
+enum MetricsDashboardFirstFold {
+    static func content(isLoading: Bool, sessionsRecorded: Int) -> MetricsDashboardFirstFoldContent {
+        if isLoading, sessionsRecorded == 0 {
+            return .loading
+        }
+        if sessionsRecorded == 0 {
+            return .empty
+        }
+        return .summary
+    }
+
+    static func showsHeroMetricsSubtitle(isLoading: Bool, sessionsRecorded: Int) -> Bool {
+        !isLoading && sessionsRecorded > 0
+    }
+
+    /// Hide the trend section only while the first fold is still resolving so
+    /// we do not stack two ProgressViews; keep it when empty so filters stay reachable.
+    static func showsTrendSection(isLoading: Bool, sessionsRecorded: Int) -> Bool {
+        !(isLoading && sessionsRecorded == 0)
+    }
+}
+
 enum MetricsDashboardFormatters {
     static let numberFormatter: NumberFormatter = {
         let formatter = NumberFormatter()

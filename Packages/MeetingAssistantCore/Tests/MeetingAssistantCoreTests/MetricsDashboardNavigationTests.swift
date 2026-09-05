@@ -1,4 +1,5 @@
 @testable import MeetingAssistantCore
+@testable import MeetingAssistantCoreUI
 import XCTest
 
 final class MetricsDashboardNavigationTests: XCTestCase {
@@ -46,5 +47,16 @@ final class MetricsDashboardNavigationTests: XCTestCase {
 
         XCTAssertEqual(navigationState.currentRoute, .performanceRecording(recordingID))
         XCTAssertTrue(navigationState.canGoBack)
+    }
+
+    func testActivityFirstFoldKeepsExploreAndCalendarSecondaryToSummary() {
+        // Composition invariant: summary is the populated first-fold story;
+        // trend stays available once loading zeros resolve so filters remain reachable.
+        XCTAssertEqual(
+            MetricsDashboardFirstFold.content(isLoading: false, sessionsRecorded: 3),
+            .summary,
+        )
+        XCTAssertTrue(MetricsDashboardFirstFold.showsTrendSection(isLoading: false, sessionsRecorded: 3))
+        XCTAssertTrue(MetricsDashboardFirstFold.showsTrendSection(isLoading: false, sessionsRecorded: 0))
     }
 }
