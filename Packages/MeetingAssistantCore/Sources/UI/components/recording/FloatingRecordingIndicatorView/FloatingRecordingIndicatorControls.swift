@@ -123,12 +123,31 @@ extension FloatingRecordingIndicatorView {
         settingsStore.selectedPromptId = selectionId
     }
 
+    /// Meeting mic/notes exist for the session; pill reveal is separate so super stays expanded.
     var showsMeetingMicrophoneControl: Bool {
         renderState.kind == .meeting && isRecordingMode
     }
 
     var showsMeetingNotesControl: Bool {
         renderState.kind == .meeting && isRecordingMode
+    }
+
+    /// Hover, keyboard focus, or VoiceOver focus — not pointer-only.
+    var revealsExpandedControls: Bool {
+        guard isRecordingMode else { return false }
+        return isHovering || isKeyboardFocused || isAccessibilityFocused
+    }
+
+    var showsMeetingTimerInPill: Bool {
+        overlayLayout.showsMeetingTimer && isRecordingMode
+    }
+
+    var showsExpandedMeetingMicrophoneControl: Bool {
+        showsMeetingMicrophoneControl && revealsExpandedControls
+    }
+
+    var showsExpandedMeetingNotesControl: Bool {
+        showsMeetingNotesControl && revealsExpandedControls
     }
 
     var meetingMicrophoneControl: some View {
@@ -182,19 +201,19 @@ extension FloatingRecordingIndicatorView {
     }
 
     var showsInlinePromptSelector: Bool {
-        usesInlineDictationSelectors && isRecordingMode && isHovering && overlayLayout.showsPromptSelector
+        usesInlineDictationSelectors && revealsExpandedControls && overlayLayout.showsPromptSelector
     }
 
     var showsInlineLanguageSelector: Bool {
-        usesInlineDictationSelectors && isRecordingMode && isHovering && overlayLayout.showsLanguageSelector
+        usesInlineDictationSelectors && revealsExpandedControls && overlayLayout.showsLanguageSelector
     }
 
     var showsExternalPromptSelector: Bool {
-        overlayLayout.showsPromptSelector && !usesInlineDictationSelectors
+        overlayLayout.showsPromptSelector && !usesInlineDictationSelectors && revealsExpandedControls
     }
 
     var showsExternalLanguageSelector: Bool {
-        overlayLayout.showsLanguageSelector && !usesInlineDictationSelectors
+        overlayLayout.showsLanguageSelector && !usesInlineDictationSelectors && revealsExpandedControls
     }
 
     func promptSelectionPill(size: IndicatorSize) -> some View {

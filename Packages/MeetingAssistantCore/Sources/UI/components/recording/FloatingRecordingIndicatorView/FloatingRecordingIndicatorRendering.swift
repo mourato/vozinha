@@ -93,6 +93,8 @@ extension FloatingRecordingIndicatorView {
         isMainRegionHovered = false
         isPromptRegionHovered = false
         isPromptSessionArmed = false
+        isKeyboardFocused = false
+        isAccessibilityFocused = false
     }
 
     var isRecordingMode: Bool {
@@ -333,15 +335,36 @@ extension FloatingRecordingIndicatorView {
     }
 
     var mainPillHorizontalPadding: CGFloat {
-        if isRecordingMode, isHovering {
+        if revealsExpandedControls {
             return AppDesignSystem.Layout.recordingIndicatorSidePadding
         }
         return max(AppDesignSystem.Layout.recordingIndicatorSidePadding, 16)
     }
 
     func mainPill(size: IndicatorSize) -> some View {
+        mainPillContent(size: size)
+            .padding(.horizontal, mainPillHorizontalPadding)
+            .frame(height: FloatingRecordingIndicatorViewUtilities.controlHeight(for: size))
+            .background(.ultraThinMaterial)
+            .background(AppDesignSystem.Colors.recordingIndicatorMaterialTint)
+            .overlay(
+                Capsule()
+                    .strokeBorder(AppDesignSystem.Colors.recordingIndicatorStroke, lineWidth: 1.2),
+            )
+            .clipShape(Capsule())
+            .contentShape(Capsule())
+            .focusable(isRecordingMode)
+            .focused($isKeyboardFocused)
+            .accessibilityFocused($isAccessibilityFocused)
+            .modifier(collapsedSecondaryAccessibilityActions())
+            .onHover { hovering in
+                handleMainRegionHover(hovering)
+            }
+    }
+
+    func mainPillContent(size: IndicatorSize) -> some View {
         HStack(spacing: FloatingRecordingIndicatorViewUtilities.contentSpacing(for: size)) {
-            if isRecordingMode, isHovering {
+            if revealsExpandedControls {
                 leadingControls
             }
 
@@ -357,41 +380,100 @@ extension FloatingRecordingIndicatorView {
                 inlineLanguageControl(size: size)
             }
 
-            if showsMeetingMicrophoneControl {
+            if showsMeetingTimerInPill {
                 divider
                 meetingTimerView
             }
 
-            if showsMeetingMicrophoneControl {
+            if showsExpandedMeetingMicrophoneControl {
                 divider
                 meetingMicrophoneControl
             }
 
-            if showsMeetingNotesControl {
+            if showsExpandedMeetingNotesControl {
                 divider
                 meetingNotesControl
             }
 
-            if isRecordingMode, isHovering {
+            if revealsExpandedControls {
                 trailingControl
             }
         }
-        .padding(.horizontal, mainPillHorizontalPadding)
-        .frame(height: FloatingRecordingIndicatorViewUtilities.controlHeight(for: size))
-        .background(.ultraThinMaterial)
-        .background(AppDesignSystem.Colors.recordingIndicatorMaterialTint)
-        .overlay(
-            Capsule()
-                .strokeBorder(AppDesignSystem.Colors.recordingIndicatorStroke, lineWidth: 1.2),
+    }
+
+    func collapsedSecondaryAccessibilityActions() -> some ViewModifier {
+        CollapsedSecondaryAccessibilityActions(
+            showsMeetingMicrophone: showsMeetingMicrophoneControl,
+            showsMeetingNotes: showsMeetingNotesControl,
+            showsPromptOrLanguage: overlayLayout.showsPromptSelector || overlayLayout.showsLanguageSelector,
+            microphoneActionName: collapsedMicrophoneActionName,
+            notesActionName: collapsedNotesActionName,
+            onToggleMicrophone: {
+                Task { await recordingManager.toggleMeetingMicrophone() }
+            },
+            onToggleNotes: {
+                Task { @MainActor in
+                    recordingManager.toggleMeetingNotesPanel()
+                }
+            },
+            onRevealSelectors: {
+                isAccessibilityFocused = true
+                isKeyboardFocused = true
+            },
         )
-        .clipShape(Capsule())
-        .contentShape(Capsule())
-        .onHover { hovering in
-            handleMainRegionHover(hovering)
-        }
+    }
+
+    var collapsedMicrophoneActionName: String {
+        recordingManager.isMeetingMicrophoneEnabled
+            ? "recording_indicator.microphone.enabled.help".localized
+            : "recording_indicator.microphone.disabled.help".localized
+    }
+
+    var collapsedNotesActionName: String {
+        recordingManager.isMeetingNotesPanelVisible
+            ? "recording_indicator.meeting_notes.hide.help".localized
+            : "recording_indicator.meeting_notes.show.help".localized
     }
 
     func controlSpacing(for size: IndicatorSize) -> CGFloat {
         FloatingRecordingIndicatorViewUtilities.controlSpacing(for: size)
+    }
+}
+
+/// VoiceOver actions for secondary controls while the quiet pill hides them visually.
+private struct CollapsedSecondaryAccessibilityActions: ViewModifier {
+    let showsMeetingMicrophone: Bool
+    let showsMeetingNotes: Bool
+    let showsPromptOrLanguage: Bool
+    let microphoneActionName: String
+    let notesActionName: String
+    let onToggleMicrophone: () -> Void
+    let onToggleNotes: () -> Void
+    let onRevealSelectors: () -> Void
+
+    func body(content: Content) -> some View {
+        content
+            .accessibilityActionIf(showsMeetingMicrophone, named: Text(microphoneActionName), action: onToggleMicrophone)
+            .accessibilityActionIf(showsMeetingNotes, named: Text(notesActionName), action: onToggleNotes)
+            .accessibilityActionIf(
+                showsPromptOrLanguage,
+                named: Text("recording_indicator.prompt.help".localized),
+                action: onRevealSelectors,
+            )
+    }
+}
+
+private extension View {
+    @ViewBuilder
+    func accessibilityActionIf(
+        _ condition: Bool,
+        named name: Text,
+        action: @escaping () -> Void,
+    ) -> some View {
+        if condition {
+            accessibilityAction(named: name, action)
+        } else {
+            self
+        }
     }
 }

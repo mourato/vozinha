@@ -29,6 +29,8 @@ public struct FloatingRecordingIndicatorView: View {
     @State var isPromptRegionHovered = false
     @State var isPromptSessionArmed = false
     @State var isSilenceWarningDialogPresented = false
+    @FocusState var isKeyboardFocused: Bool
+    @AccessibilityFocusState var isAccessibilityFocused: Bool
 
     public init(
         audioMonitor: AudioLevelMonitor,
@@ -114,6 +116,8 @@ public struct FloatingRecordingIndicatorView: View {
             isMainRegionHovered = false
             isPromptRegionHovered = false
             isPromptSessionArmed = false
+            isKeyboardFocused = false
+            isAccessibilityFocused = false
         }
         // Keep warning overlays out of layout sizing to prevent NSPanel constraint loops
         // when warnings appear/disappear while the panel uses a fixed content size.
