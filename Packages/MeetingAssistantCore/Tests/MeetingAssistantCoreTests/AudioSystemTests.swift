@@ -185,28 +185,6 @@ final class AudioSystemTests: XCTestCase {
 
     // MARK: - Testes de Estado Consistente
 
-    func testStateConsistency_AudioRecorderStateTransitions() async throws {
-        try XCTSkipIf(true, "Integration test requiring hardware")
-        let outputURL = createTemporaryURL()
-
-        // Estado inicial
-        XCTAssertFalse(audioRecorder.isRecording)
-        XCTAssertNil(audioRecorder.currentRecordingURL)
-
-        // Iniciar gravação
-        try await audioRecorder.startRecording(to: outputURL, source: .microphone, retryCount: 0)
-
-        XCTAssertTrue(audioRecorder.isRecording)
-        XCTAssertEqual(audioRecorder.currentRecordingURL, outputURL)
-
-        // Parar gravação
-        let stoppedURL = await audioRecorder.stopRecording()
-
-        XCTAssertFalse(audioRecorder.isRecording)
-        XCTAssertEqual(stoppedURL, outputURL)
-        XCTAssertNil(audioRecorder.currentRecordingURL)
-    }
-
     func testStateConsistency_BufferQueueStatsAccuracy() throws {
         let buffer = try createTestBuffer(frameCount: 512)
 
@@ -327,22 +305,6 @@ final class AudioSystemTests: XCTestCase {
     // Run with: swift test --filter "AudioSystemPerformanceTests"
 
     // MARK: - Testes de Cleanup Adequado
-
-    func testCleanup_AudioRecorderResourceCleanup() async throws {
-        try XCTSkipIf(true, "Integration test requiring hardware")
-        let outputURL = createTemporaryURL()
-
-        try await audioRecorder.startRecording(to: outputURL, source: .all, retryCount: 0)
-        XCTAssertTrue(audioRecorder.isRecording)
-
-        _ = await audioRecorder.stopRecording()
-
-        // Verificar estado limpo
-        XCTAssertFalse(audioRecorder.isRecording)
-        XCTAssertNil(audioRecorder.currentRecordingURL)
-        XCTAssertEqual(audioRecorder.currentAveragePower, -160.0)
-        XCTAssertEqual(audioRecorder.currentPeakPower, -160.0)
-    }
 
     func testCleanup_BufferQueueCompleteClear() throws {
         let buffer = try createTestBuffer(frameCount: 512)

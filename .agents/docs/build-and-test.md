@@ -27,11 +27,11 @@ separate. `scope-check` is an internal engine — do not run both for safety.
 
 Automatic classification treats Swift below `App/`,
 `MeetingAssistantAI/Sources/`, and `Packages/MeetingAssistantCore/Sources/` as
-Full. Only those production paths contribute to the more-than-eight production
-source-file threshold. Swift below `Packages/MeetingAssistantCore/Tests/` is
-test-only and may remain Fast when it has a trustworthy mapping. This path rule
-intentionally does not infer whether a production diff is semantic or a
-non-functional refactor.
+production. A trustworthy targeted-test mapping may keep a low-risk production
+change in Fast; unmapped changes and high-risk paths still escalate to Full.
+Only production paths contribute to the more-than-eight production source-file
+threshold. Swift below `Packages/MeetingAssistantCore/Tests/` is test-only and
+may remain Fast when it has a trustworthy mapping.
 
 ## Primary Build/Test Commands
 
@@ -49,6 +49,7 @@ make build              # Debug build only
 make test               # Fast local dev suite
 make test-full          # Broad swift-test suite
 make test-smoke         # Curated smoke suite
+make test-critical-coverage # Coverage for the curated critical smoke flows
 make test-perf          # Isolated performance suite
 make test-sensitive     # Isolated sensitive subsystem suite
 make test-appkit        # Isolated AppKit lifecycle suite
@@ -151,6 +152,7 @@ make test
 make test-agent          # Agent-focused, compact output
 make test-full
 make test-smoke
+make test-critical-coverage
 make test-perf
 make test-sensitive
 make test-appkit
@@ -164,6 +166,7 @@ make test-ci-strict      # Strict xcodebuild parity mode
 | Suite/Command | Best use case | Typical use |
 | --- | --- | --- |
 | `make test-smoke` | Quick iteration confidence | Inner loop |
+| `make test-critical-coverage` | Coverage measurement for critical smoke flows | Focused periodic check |
 | `make test` | Fast local dev suite | Inner loop |
 | `make test-full` | Broad swift-test confidence | Pre-gate validation |
 | `make test-sensitive` | Audio/concurrency/persistence focus | High-risk subsystem checks |

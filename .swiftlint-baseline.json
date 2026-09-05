@@ -1929,9 +1929,9 @@
       "location": {
         "character": 1,
         "file": "Packages/MeetingAssistantCore/Tests/MeetingAssistantCoreTests/RecordingManagerTests.swift",
-        "line": 748
+        "line": 752
       },
-      "reason": "File should contain 600 lines or less excluding comments and whitespaces: currently contains 622"
+      "reason": "File should contain 600 lines or less excluding comments and whitespaces: currently contains 626"
     }
   },
   {
