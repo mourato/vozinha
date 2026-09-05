@@ -33,11 +33,35 @@ one exists. Do not create a parallel design-system document.
   controls 30 points high.
 - Use semantic colors for accent, success, warning, error, neutral, recording,
   and permission states. Do not encode important state only through color.
+  Color is reserved for selection, status, and semantic emphasis.
 - Settings uses a native window background/material with an opaque fallback for
   Reduce Transparency and a clear title-bar boundary; avoid nested decorative
   plates that compete with the window surface.
 - Keep one semantic scroll owner per scrollable surface and preserve the
   existing Settings navigation and form hierarchy.
+- Lightness means fewer competing surface layers and a clear first action, not
+  lower contrast or less accessible information. Secondary actions belong behind
+  disclosure, menu, or detail when they are not required for the primary task.
+- User-facing copy stays localized with existing `.localized` keys. Do not copy
+  reference-app source, assets, or persistence behavior.
+
+### Surface roles
+
+Each Settings or overlay surface has one owning role. Do not invent a parallel
+token namespace or a second design-system document to express these roles.
+
+| Surface role | Owner | Allowed visual weight | Typical content |
+|---|---|---|---|
+| Window canvas | `SettingsWindowBackground` | Native window material or opaque accessibility fallback | The Settings page background |
+| Native settings form | `SettingsFormPage` and `Form`/`Section` | Lowest chrome; native row anatomy | Scalar preferences and drill-down rows |
+| Rich collection surface | `SettingsScrollableContent` plus a shared collection/list treatment | One restrained grouping treatment | History, analytics, status blocks, editors |
+| Transient editor surface | `SettingsSidePanel` or `ModeEditorDrawer` | Clearly bounded panel with its own header/footer | Mode and advanced editors |
+| Status/recording overlay | Existing `AppDesignSystem` recording tokens | High semantic contrast only when state demands it | Recording, processing, error, confirmation |
+
+`DSCard` and `DSGroup` may back a rich collection treatment, but they must not
+stack a second decorative plate on top of the window canvas or nest a second
+page-level scroll owner. Sidebar/navigation chrome stays native
+`NavigationSplitView`/`List` selection; it is not a card role.
 
 ## States, accessibility, and motion
 
@@ -90,6 +114,9 @@ hierarchy and feedback in every fallback.
 - [ ] Reuse `AppDesignSystem`, `AppTypography`, `AppleMotion`, and existing
       `DS*` components before adding local styling.
 - [ ] Preserve native window/material behavior and accessibility fallbacks.
+- [ ] Match the surface-role table: one owner per role, no nested decorative
+      plates or competing scroll owners, progressive disclosure for secondary
+      actions, and lightness without lowering contrast.
 - [ ] Verify relevant states, keyboard/VoiceOver, Light/Dark, increased
       contrast, Reduce Transparency, and Reduce Motion.
 - [ ] Update this file when a reusable UI rule or invariant changes.
