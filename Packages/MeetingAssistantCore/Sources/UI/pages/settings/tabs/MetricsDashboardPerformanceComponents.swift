@@ -175,7 +175,7 @@ private struct MetricsDashboardPerformanceStatCard: View {
     let tint: Color
 
     var body: some View {
-        DSCard {
+        DSCard(style: .settings) {
             VStack(alignment: .leading, spacing: 8) {
                 Image(systemName: icon)
                     .font(.system(size: 17, weight: .medium))

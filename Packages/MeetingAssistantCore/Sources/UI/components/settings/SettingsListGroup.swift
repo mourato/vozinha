@@ -31,7 +31,7 @@ public enum SettingsListRowBuilder {
 ///
 /// Scalar settings belong in the owning page's native `Form` and `Section`;
 /// this component intentionally keeps collection interactions and row rhythm
-/// outside that contract.
+/// outside that contract. Default surface intensity is `.subtle`.
 public struct SettingsListGroup<HeaderAccessory: View>: View {
     private let title: String
     private let icon: String?
@@ -42,7 +42,7 @@ public struct SettingsListGroup<HeaderAccessory: View>: View {
     public init(
         _ title: String,
         icon: String? = nil,
-        surfaceIntensity: AppDesignSystem.SettingsSurfaceIntensity = .regular,
+        surfaceIntensity: AppDesignSystem.SettingsSurfaceIntensity = .subtle,
         @SettingsListRowBuilder rows: () -> [AnyView],
     )
         where HeaderAccessory == EmptyView
@@ -57,7 +57,7 @@ public struct SettingsListGroup<HeaderAccessory: View>: View {
     public init(
         _ title: String,
         icon: String? = nil,
-        surfaceIntensity: AppDesignSystem.SettingsSurfaceIntensity = .regular,
+        surfaceIntensity: AppDesignSystem.SettingsSurfaceIntensity = .subtle,
         @ViewBuilder headerAccessory: () -> HeaderAccessory,
         @SettingsListRowBuilder rows: () -> [AnyView],
     ) {

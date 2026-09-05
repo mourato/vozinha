@@ -36,28 +36,38 @@ public struct InstalledAppsSelectionSection: View {
     }
 
     public var body: some View {
-        DSGroup(
-            titleKey.localized,
-            icon: icon,
-            headerAccessory: {
+        // Form-hosted collection: title + list only. No DSCard plate — the
+        // owning Form/Section (or expandable) already supplies hierarchy.
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(spacing: 8) {
+                Image(systemName: icon)
+                    .foregroundStyle(AppDesignSystem.Colors.accent)
+
+                Text(titleKey.localized)
+                    .font(.headline)
+                    .foregroundStyle(.primary)
+
+                Spacer(minLength: 0)
+
                 if !descriptionKey.localized.isEmpty {
                     DSInfoPopoverButton(
                         title: titleKey.localized,
                         message: descriptionKey.localized,
                     )
                 }
-            },
-            content: {
-                InstalledAppsSelectionList(
-                    emptyKey: emptyKey,
-                    addButtonKey: addButtonKey,
-                    removeButtonKey: removeButtonKey,
-                    protectedBadgeKey: protectedBadgeKey,
-                    onAddApp: onAddApp,
-                    viewModel: viewModel,
-                )
-            },
-        )
+            }
+            .padding(.leading, 4)
+
+            InstalledAppsSelectionList(
+                emptyKey: emptyKey,
+                addButtonKey: addButtonKey,
+                removeButtonKey: removeButtonKey,
+                protectedBadgeKey: protectedBadgeKey,
+                onAddApp: onAddApp,
+                viewModel: viewModel,
+            )
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
 
