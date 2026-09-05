@@ -1,6 +1,6 @@
 # Implementation Plans
 
-This is the active plan ledger. The next available plan number is 133.
+This is the active plan ledger. The next available plan number is 139.
 
 ## Execution rules
 
@@ -50,6 +50,13 @@ Status values: `TODO` | `IN PROGRESS` | `DONE` | `BLOCKED` | `REJECTED`.
 | [130](130-dictation-incremental-ready-gate.md) | Bound early incremental audio until ASR is ready | P1 | M | 128 | REVIEWED (`f0622716`, merged local) |
 | [131](131-dictation-post-session-unload.md) | Unload local ASR after dictation idle grace | P1 | M | 128 | REVIEWED (`d0ad592b`, merged local) |
 | [132](132-enable-dictation-intelligence-mode.md) | Enable dictation Intelligence Kernel mode gating | P2 | M | prefer after 128–131 | REVIEWED (`7035c28e`, merged local) |
+
+| [133](133-visual-surface-contract.md) | Establish the shared visual surface contract | P1 | M | - | TODO |
+| [134](134-simplify-settings-sidebar.md) | Simplify the Settings shell and sidebar | P1 | M | 133 | TODO |
+| [135](135-normalize-settings-surfaces.md) | Normalize Settings surfaces and visual density | P1 | L | 133, 134 | TODO |
+| [136](136-lighten-transcription-history.md) | Lighten transcription history with progressive disclosure | P1 | L | 133, 135 | TODO |
+| [137](137-recompose-activity-dashboard.md) | Recompose Activity around a clear first-fold story | P1 | M | 133, 135 | TODO |
+| [138](138-simplify-recorder-surface.md) | Simplify the recorder surface and reveal secondary controls progressively | P1 | M | 133 | TODO |
 
 ## Dependency order
 
@@ -132,6 +139,33 @@ Recommended serial order on shared capture/residency files:
 | 131 | Post-dictation ASR unload grace without weakening meeting residency |
 | 132 | Flip `enableDictationIntelligenceMode` and unify kernel gates (no dictation Q&A) |
 
+## VoiceInk-inspired UI batch (133–138)
+
+This batch addresses the visual comparison with VoiceInk without copying its
+source, assets, CloudKit behavior, or heavier onboarding flow. It keeps
+Vozinha's native macOS, localization, accessibility, and local-first
+contracts.
+
+Recommended serial order:
+
+133 -> 134 -> 135 -> 136 -> 137 -> 138
+
+Plan 133 establishes the shared surface-role contract and deterministic visual
+evidence. Plan 134 simplifies the native Settings sidebar. Plan 135 normalizes
+shared Form, ScrollView, card, group, panel, and disclosure composition. Plans
+136, 137, and 138 then focus separately on transcription history, Activity, and
+the floating recorder. Those final three have disjoint product surfaces and
+may run in separate isolated worktrees after their dependencies are stable,
+but a serial order is the lowest-coordination path.
+
+There is intentionally no separate onboarding plan: the reference onboarding
+is heavier than the target direction. There is also no generic design-system
+rewrite: Vozinha already has reusable tokens and owners; the highest-value
+work is reducing competing layers and improving progressive disclosure.
+
+Plan 083 remains listed above for historical continuity. Its referenced file is
+not present in this checkout, so this batch does not overwrite or renumber it.
+
 ## Archives
 
 - [2026-07-12 ledger history](archive/2026-07-12-plan-ledger-history.md)
@@ -157,6 +191,9 @@ Recommended serial order on shared capture/residency files:
   substitution semantics while adding a separate vocabulary model.
 - Use VoiceInk beta as a behavioral benchmark only; do not copy source or adopt
   its CloudKit persistence.
+- Treat the VoiceInk-inspired UI batch (133–138) as a composition and
+  hierarchy effort over existing native components; do not add a parallel
+  design-system namespace or reference-app assets.
 - Dictation VT parity (plans 128–132) reuses existing `holdOrToggle`, residency
   coordinator, and incremental coordinator seams; prefer extend-over-create and
   keep meeting defaults (30m residency, meeting warmup gates) intact unless a
