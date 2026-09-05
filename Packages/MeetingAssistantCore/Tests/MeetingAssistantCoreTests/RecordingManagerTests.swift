@@ -26,6 +26,8 @@ final class RecordingManagerTests: XCTestCase {
 
     override func setUp() async throws {
         try await super.setUp()
+        try AppSettingsTestIsolationLock.acquire()
+        AppSettingsStore.shared.resetToDefaults()
         // Initialize mocks locally first to ensure they are available for manager init
         let mic = MockAudioRecorder()
         let system = MockAudioRecorder()
@@ -112,6 +114,8 @@ final class RecordingManagerTests: XCTestCase {
         suiteName = nil
         markdownRootDirectoryURL = nil
         readyRetryProviders = []
+        AppSettingsStore.shared.resetToDefaults()
+        AppSettingsTestIsolationLock.release()
         try await super.tearDown()
     }
 
