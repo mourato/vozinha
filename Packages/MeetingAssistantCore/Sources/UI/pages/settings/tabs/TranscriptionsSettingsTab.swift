@@ -282,6 +282,7 @@ public struct TranscriptionsSettingsTab: View {
             onToggleDictation: handleDictationToggle,
             onBack: {
                 _ = navigationHistory.goBack()
+                viewModel.selectedId = nil
                 syncSelectionForCurrentRoute()
             },
         )
