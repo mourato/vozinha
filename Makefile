@@ -5,7 +5,7 @@
 # with CI/CD pipelines and headless environments.
 # =============================================================================
 
-.PHONY: help build build-release build-agent build-test build-test-strict xcodebuild-safe test test-agent test-full test-full-agent test-smoke test-perf test-sensitive test-appkit test-parity test-parity-agent test-verbose test-strict test-ci-strict scope-check scope-check-agent validate validate-lane validate-lane-command validate-agent workflow-test benchmark-summary benchmark-summary-agent lint lint-agent lint-report lint-strict lint-strict-agent lint-fix arch-check preview-check localization-check guidance-check preflight preflight-fast preflight-agent preflight-agent-fast agent-artifacts-report agent-artifacts-dry-run agent-artifacts-clean clean run run-release build-and-run dmg setup-self-signed-cert setup format health ci-build deliverable-gate docs docs-preview docs-clean profile profile-report profile-cpu profile-memory profile-animation profile-animation-report
+.PHONY: help build build-release build-agent build-test build-test-strict xcodebuild-safe test test-agent test-full test-full-agent test-smoke test-critical-coverage test-perf test-sensitive test-appkit test-parity test-parity-agent test-verbose test-strict test-ci-strict scope-check scope-check-agent validate validate-lane validate-lane-command validate-agent workflow-test benchmark-summary benchmark-summary-agent lint lint-agent lint-report lint-strict lint-strict-agent lint-fix arch-check preview-check localization-check guidance-check preflight preflight-fast preflight-agent preflight-agent-fast agent-artifacts-report agent-artifacts-dry-run agent-artifacts-clean clean run run-release build-and-run dmg setup-self-signed-cert setup format health ci-build deliverable-gate docs docs-preview docs-clean profile profile-report profile-cpu profile-memory profile-animation profile-animation-report
 
 # Default target
 help:
@@ -27,6 +27,7 @@ help:
 	@echo "  make test-full      - Run broad swift-test suite for preflight/local gates"
 	@echo "  make test-full-agent - Run broad swift-test suite in compact mode"
 	@echo "  make test-smoke     - Run curated smoke suite"
+	@echo "  make test-critical-coverage - Measure source coverage for critical smoke flows"
 	@echo "  make test-perf      - Run isolated performance tests"
 	@echo "  make test-sensitive - Run isolated sensitive subsystem tests"
 	@echo "  make test-appkit    - Run isolated AppKit lifecycle tests"
@@ -155,6 +156,9 @@ test-full-agent:
 
 test-smoke:
 	@./scripts/run-tests.sh --suite smoke
+
+test-critical-coverage:
+	@./scripts/run-critical-coverage.sh
 
 test-perf:
 	@./scripts/run-tests.sh --suite perf

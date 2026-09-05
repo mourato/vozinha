@@ -2,8 +2,6 @@
 
 # Internal sourced fixture suite used by workflow-test.sh; not a standalone command.
 
-CONSERVATIVE_SWIFT_REASON="Production Swift changed; auto lane is conservative because semantic Low risk cannot be proven"
-
 assert_scope_decision() {
     local output="$1"
     local expected_lane="$2"
@@ -42,7 +40,7 @@ test_scope_check_reuses_decision_file() {
     assert_contains "${output}" "Guidance passed."
 }
 
-test_app_product_swift_is_full() {
+test_app_product_swift_uses_mapping() {
     local fixture
     local base
     local head
@@ -57,12 +55,14 @@ test_app_product_swift_is_full() {
     head="$(git -C "${fixture}" rev-parse HEAD)"
 
     output="$(scope_output "${fixture}" "${TMP_ROOT}/scope-app-product" --committed --base "${base}" --head "${head}")"
-    assert_scope_decision "${output}" full full-gate "${CONSERVATIVE_SWIFT_REASON}"
+    assert_scope_decision "${output}" fast scoped-validation
     assert_contains "${output}" "Product source files changed: 1"
-    assert_contains "${output}" "Candidate targeted tests: 0"
+    assert_contains "${output}" "Candidate targeted tests: 2"
+    assert_contains "${output}" "--file AppCommandStateTests"
+    assert_contains "${output}" "--file NavigationServiceTests"
 }
 
-test_core_ui_product_swift_is_full() {
+test_core_ui_product_swift_without_mapping_is_full() {
     local fixture
     local base
     local head
@@ -77,7 +77,7 @@ test_core_ui_product_swift_is_full() {
     head="$(git -C "${fixture}" rev-parse HEAD)"
 
     output="$(scope_output "${fixture}" "${TMP_ROOT}/scope-ui-product" --committed --base "${base}" --head "${head}")"
-    assert_scope_decision "${output}" full full-gate "${CONSERVATIVE_SWIFT_REASON}"
+    assert_scope_decision "${output}" full full-gate "No trustworthy targeted test mapping from changed files"
     assert_contains "${output}" "Candidate targeted tests: 0"
 }
 
@@ -96,7 +96,7 @@ test_xpc_product_swift_direct_and_nested_are_full() {
     head="$(git -C "${fixture}" rev-parse HEAD)"
 
     output="$(scope_output "${fixture}" "${TMP_ROOT}/scope-xpc-product" --committed --base "${base}" --head "${head}")"
-    assert_scope_decision "${output}" full full-gate "${CONSERVATIVE_SWIFT_REASON}"
+    assert_scope_decision "${output}" full full-gate "No trustworthy targeted test mapping from changed files"
     assert_contains "${output}" "Product source files changed: 1"
     assert_contains "${output}" "Candidate targeted tests: 0"
 
@@ -109,12 +109,12 @@ test_xpc_product_swift_direct_and_nested_are_full() {
     head="$(git -C "${fixture}" rev-parse HEAD)"
 
     output="$(scope_output "${fixture}" "${TMP_ROOT}/scope-nested-xpc-product" --committed --base "${base}" --head "${head}")"
-    assert_scope_decision "${output}" full full-gate "${CONSERVATIVE_SWIFT_REASON}"
+    assert_scope_decision "${output}" full full-gate "No trustworthy targeted test mapping from changed files"
     assert_contains "${output}" "Product source files changed: 1"
     assert_contains "${output}" "Candidate targeted tests: 0"
 }
 
-test_domain_product_swift_is_full_without_semantic_parsing() {
+test_domain_product_swift_without_mapping_is_full() {
     local fixture
     local base
     local head
@@ -129,7 +129,7 @@ test_domain_product_swift_is_full_without_semantic_parsing() {
     head="$(git -C "${fixture}" rev-parse HEAD)"
 
     output="$(scope_output "${fixture}" "${TMP_ROOT}/scope-domain-product" --committed --base "${base}" --head "${head}")"
-    assert_scope_decision "${output}" full full-gate "${CONSERVATIVE_SWIFT_REASON}"
+    assert_scope_decision "${output}" full full-gate "No trustworthy targeted test mapping from changed files"
     assert_contains "${output}" "Candidate targeted tests: 0"
 }
 
@@ -293,9 +293,9 @@ import sys
 
 with open(sys.argv[1], encoding="utf-8") as handle:
     result = json.load(handle)
-assert result["decision"]["selectedLane"] == "full"
-assert result["decision"]["strategy"] == "full-gate"
-assert [command["name"] for command in result["commands"]] == ["lint-strict", "build-test"]
+assert result["decision"]["selectedLane"] == "fast"
+assert result["decision"]["strategy"] == "scoped-validation"
+assert [command["name"] for command in result["commands"]] == ["scope-check"]
 PY
 
     output="$(cd "${fixture}" && WORKFLOW_STEP_LOG="${step_log}" MA_AGENT_LOG_DIR="${TMP_ROOT}/requested-fast-strongest" ./scripts/validate-agent.sh --lane fast --committed --base "${base}" --head "${head}" --agent)"
@@ -304,14 +304,15 @@ PY
     assert_contains "${output}" "AGENT_REUSED=1"
     second_fingerprint="$(printf '%s\n' "${output}" | sed -n 's/^AGENT_VALIDATION_FINGERPRINT=//p' | tail -n 1)"
     test "${second_fingerprint}" = "${first_fingerprint}" || fail "requested Fast fingerprint changed before cache reuse"
-    test "$(grep -Fxc 'lint' "${step_log}")" -eq 1
-    test "$(grep -Fxc 'build-test' "${step_log}")" -eq 1
+    test "$(grep -Fxc 'scope-check' "${step_log}")" -eq 1
+    test "$(grep -Fxc 'lint' "${step_log}" || true)" -eq 0
+    test "$(grep -Fxc 'build-test' "${step_log}" || true)" -eq 0
 }
 
-test_app_product_swift_is_full
-test_core_ui_product_swift_is_full
+test_app_product_swift_uses_mapping
+test_core_ui_product_swift_without_mapping_is_full
 test_xpc_product_swift_direct_and_nested_are_full
-test_domain_product_swift_is_full_without_semantic_parsing
+test_domain_product_swift_without_mapping_is_full
 test_scope_check_reuses_decision_file
 test_test_only_swift_stays_fast_when_mapped
 test_nine_test_files_do_not_trigger_product_churn

@@ -702,7 +702,6 @@ main() {
 
         if is_product_swift_path "${file_path}"; then
             product_source_files_changed=$((product_source_files_changed + 1))
-            append_line_once "Production Swift changed; auto lane is conservative because semantic Low risk cannot be proven" "${full_reasons_file}"
         fi
 
         if should_treat_as_infra_trigger "${file_path}"; then
