@@ -132,12 +132,6 @@ extension FloatingRecordingIndicatorView {
         renderState.kind == .meeting && isRecordingMode
     }
 
-    /// Hover, keyboard focus, or VoiceOver focus — not pointer-only.
-    var revealsExpandedControls: Bool {
-        guard isRecordingMode else { return false }
-        return isHovering || isKeyboardFocused || isAccessibilityFocused
-    }
-
     var showsMeetingTimerInPill: Bool {
         overlayLayout.showsMeetingTimer && isRecordingMode
     }

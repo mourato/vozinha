@@ -1133,6 +1133,7 @@
 "recording_indicator.super.cancel.help" = "Cancelar e descartar (Esc)";
 "recording_indicator.duration" = "Duração da gravação";
 "recording_indicator.prompt.help" = "Escolher prompt de pós-processamento";
+"recording_indicator.expand.help" = "Mostrar controles da gravação";
 "recording_indicator.prompt.none" = "Sem pós-processamento";
 "recording_indicator.prompt.none_desc" = "Pular o pós-processamento por IA após a gravação.";
 "recording_indicator.microphone.enabled.help" = "O microfone está incluído nesta gravação de reunião";
@@ -1170,6 +1171,7 @@
 "transcription.empty_fallback" = "Nenhuma transcrição disponível";
 "transcription.no_segments" = "Nenhum segmento disponível";
 "transcription.qa.title" = "Perguntar sobre esta reunião";
+"transcription.qa.accessibility_hint" = "Abre o Q&A da reunião para esta transcrição.";
 "transcription.qa.placeholder" = "Faça uma pergunta com base nesta transcrição";
 "transcription.qa.ask" = "Perguntar";
 "transcription.qa.send_on_return" = "Enviar com Return";
